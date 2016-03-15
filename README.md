@@ -1,2 +1,2 @@
 # TravelOptimizer
-Collect and optimize flight tickets, bus tickets, parking costs, hotel prices for a specific interval.
+Collect and optimize timing and costs of flight tickets, bus tickets, parking costs, hotel bookings, etc. for a specific time interval.
