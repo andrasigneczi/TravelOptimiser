@@ -14,7 +14,6 @@ import java.awt.event.ActionListener;
 
 public class JxBrowserHelloWorld {
 
-	private static void
     // ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_AutocompleteOriginStation
     // ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_OriginStation
 	public static void HelloWorld() throws Exception {

@@ -5,4 +5,8 @@ package PageGuest;
  */
 public class RyanAirPageGuest implements WebPageGuest
 {
+	public boolean DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
+	{
+		return false;
+	}
 }
