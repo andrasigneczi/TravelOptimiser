@@ -45,11 +45,11 @@ public class WizzAirPageGuest implements WebPageGuest
 		addressPane.add(new JLabel(" URL: "), BorderLayout.WEST);
 		addressPane.add(addressBar, BorderLayout.CENTER);
 
-		JFrame frame = new JFrame("JxBrowser - Hello World");
+		JFrame frame = new JFrame("Travel Optimizer");
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.add(addressPane, BorderLayout.NORTH);
 		frame.add(view, BorderLayout.CENTER);
-		frame.setSize(800, 500);
+		frame.setSize(1152, 864);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 

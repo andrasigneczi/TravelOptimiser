@@ -3,7 +3,9 @@ package PageGuest;
 /**
  * Created by andras.igneczi on 15/03/2016.
  */
-public interface WebPageGuest
+public abstract class WebPageGuest
 {
-    boolean DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate );
+	private TravelDatas_RESULT mTravelDataResult = null;
+    public abstract boolean DoSearch( String aAirportCode_Way_From, String aAirportCode_Way_To,
+                                      String aDepartureDate_Way_To, String aReturnDate_Way_Back );
 }
