@@ -19,7 +19,7 @@ public class Main
             //JxBrowserHelloWorld.HelloWorld();
 	        //JxBrowserHelloWorld.FlashSample();
             WebPageGuest lGuest = WebPageGuestFactory.Create( "WizzAir" );
-            lGuest.DoSearch( "SOF", "HHN", "2016.07.21", "2016.07.23" );
+            lGuest.DoSearch( "SOF", "HHN", "2016.07.21.", "2016.07.23." );
         }
         catch( Exception e )
         {

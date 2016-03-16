@@ -1,0 +1,121 @@
+ABZ Aberdeen
+AES Ålesund
+AHO Alghero (Szardinia)
+ALC Alicante
+ARW Arad
+FKB Karlsruhe Baden-Baden
+GYD Baku
+BCN Barcelona-El Prat
+BRI Bari
+MLH Basel-Mulhouse-Freiburg
+BSL Basel-Mulhouse-Freiburg
+BFS Belfast
+BEG Belgrád
+BGO Bergen
+SXF Berlin Schönefeld
+BLL Billund
+BHX Birmingham
+BLQ Bologna
+BRS Bristol
+BRQ Brno
+CRL Brüsszel Charleroi
+BUD Budapest
+OTP Bukarest
+BOJ Burgasz (Fekete-tenger)
+CTA Catania (Szicília)
+CND Constanta
+CPH Copenhagen
+CRA Craiova (Románia)
+DEB Debrecen
+DSA Doncaster Sheffield
+DTM Dortmund
+DWC Dubaj
+EIN Eindhoven
+HHN Frankfurt Hahn
+FDH Friedrichshafen
+GDN Gdansk
+GVA Genf
+GLA Glasgow
+GOT Gothenburg Landvetter
+GSE Göteborg
+GNB Grenoble Lyon
+GRQ Groningen
+LBC Hamburg Lübeck
+HAU Haugesund
+HER Heraklion (Kréta)
+IBZ Ibiza
+SAW Isztambul
+IAS Jászvásár
+KSC Kassa
+KTW Katowice
+KUN Kaunas
+IEV Kijev Zhulyany
+KIV Kisinyov
+CLJ Kolozsvár
+CFU Korfu
+CGN Köln
+KRS Kristiansand
+KUT Kutaisi (Grúzia)
+LCA Lárnaka (Ciprus)
+LIS Lisszabon
+LPL Liverpool
+LJU Ljubljana
+LTN London Luton
+LUZ Lublin
+MST Maastricht Aachen
+MAD Madrid
+AGP Malaga
+MMX Malmö
+MLA Málta
+TGM Marosvásárhely
+FMM Memmingen (Nyugat-München)
+BGY Milánó Bergamo
+MXP Milánó Malpensa
+MOL Molde
+VKO Moszkva
+SBZ Nagyszeben
+NAP Nápoly
+INI Nis
+NCE Nizza
+NUE Nürnberg
+OHD Ohrid
+TRF Oslo Sandefjord Torp
+PLQ Palanga – Klaipėda
+PMI Palma de Mallorca
+BVA Párizs Beauvais
+PEG Perugia
+PSR Pescara
+PSA Pisa (Toszkána)
+TAT Poprad Tatry Airport
+OPO Porto Airport
+POZ Poznan
+BTS Pozsony
+PRG Prága
+KEF Reykjavik
+RIX Riga
+RHO Rodosz
+CIA Róma Ciampino
+FCO Róma Fiumicino
+SPU Split
+SVG Stavanger
+NYO Stockholm Skavsta
+SZZ Szczecin
+SKP Szkopje
+SOF Szófia
+TLV Tel-Aviv
+TSR Temesvár
+TFS Tenerife (Kanári szigetek)
+SKG Thesszaloniki
+TRN Torinó
+TRD Trondheim
+TKU Turku (Finnország)
+TZL Tuzla (Bosznia)
+VLC Valencia
+VAR Várna (Fekete-tenger)
+WAW Varsó Chopin
+TSF Velence Treviso
+VRN Verona
+VNO Vilnius
+WRO Wroclaw
+ZTH Zakynthos
+ZAZ Zaragoza

@@ -14,11 +14,11 @@ import java.awt.event.ActionListener;
 /**
  * Created by Andras on 15/03/2016.
  */
-public class WizzAirPageGuest implements WebPageGuest
+public class WizzAirPageGuest extends WebPageGuest
 {
 	public WizzAirPageGuest()
 	{
-
+		super();
 	}
 
 	public boolean OpenStartPage()
@@ -28,8 +28,17 @@ public class WizzAirPageGuest implements WebPageGuest
 
 	public boolean DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
 	{
+		new SearchStateInit().doAction( this );
+
 		final Browser browser = new Browser();
 		BrowserView view = new BrowserView(browser);
+
+		mTravelDataInput = new TravelDatas_INPUT();
+		mTravelDataInput.mAirportCode_Way_From = aFrom;
+		mTravelDataInput.mAirportCode_Way_To   = aTo;
+		mTravelDataInput.mWay_From_Departure_Day = aDepartureDate;
+		mTravelDataInput.mWay_Back_Departure_Day = aReturnDate;
+		mTravelDataInput.mReturnTicket = true;
 
 		//final JTextField addressBar = new JTextField("http://www.teamdev.com/jxbrowser");
 		//final JTextField addressBar = new JTextField("http://www.momondo.com");
@@ -56,40 +65,19 @@ public class WizzAirPageGuest implements WebPageGuest
 		browser.addLoadListener(new LoadAdapter() {
 			@Override
 			public void onFinishLoadingFrame(FinishLoadingEvent event) {
+				// A click után újra bejövök ide, erre ügyelni kell!!!!
 				if (event.isMainFrame())
 				{
 					DOMDocument document = event.getBrowser().getDocument();
-					//DOMElement element = document.findElement( By.xpath("//textarea"));
-					//DOMTextAreaElement textArea = (DOMTextAreaElement) element;
+					if( !getSearchState().toString().equals( "SearchStateInit" ))
+					{
+						CollectDatas( document );
+						new SearchStateSearchingFinished().doAction( getSearchState().getWebPageGuest() );
+						return;
+					}
+					new SearchStateSearching().doAction( getSearchState().getWebPageGuest() );
 
-					// source
-					DOMElement elementTextSource = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_AutocompleteOriginStation" ) );
-					DOMInputElement textInputSource = (DOMInputElement)elementTextSource;
-					textInputSource.setValue( "Szófia (SOF)" );
-
-					DOMElement elementIdSource = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_OriginStation" ) );
-					DOMInputElement hiddenInputSource = (DOMInputElement)elementIdSource;
-					hiddenInputSource.setValue( "SOF" );
-
-					// target
-					String lTargetInputId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_AutocompleteDestinationStation";
-					DOMElement elementTextTarget = document.findElement( By.id( lTargetInputId ) );
-					DOMInputElement textInputTarget = (DOMInputElement)elementTextTarget;
-					textInputTarget.setValue( "Frankfurt Hahn (HHN)" );
-
-					DOMElement elementIdTarget = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_DestinationStation" ) );
-					DOMInputElement hiddenInputTarget = (DOMInputElement)elementIdTarget;
-					hiddenInputTarget.setValue( "HHN" );
-
-					// departure date
-					DOMElement elementIdDepartureDate = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_DepartureDate" ) );
-					DOMInputElement inputDepartureDate = (DOMInputElement)elementIdDepartureDate;
-					inputDepartureDate.setValue( "2016.07.21." );
-
-					// arrival date
-					DOMElement elementIdReturnDate = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_ReturnDate" ) );
-					DOMInputElement inputReturnDate = (DOMInputElement)elementIdReturnDate;
-					inputReturnDate.setValue( "2016.07.23." );
+					FillTheForm(document);
 
 					// click the button
 					DOMNode link = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_ButtonSubmit" ) );
@@ -101,8 +89,50 @@ public class WizzAirPageGuest implements WebPageGuest
 			}
 		});
 
-
 		browser.loadURL(addressBar.getText());
 		return false;
+	}
+
+	private void FillTheForm(DOMDocument document)
+	{
+		//DOMElement element = document.findElement( By.xpath("//textarea"));
+		//DOMTextAreaElement textArea = (DOMTextAreaElement) element;
+
+		// source
+		DOMElement elementTextSource = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_AutocompleteOriginStation" ) );
+		DOMInputElement textInputSource = (DOMInputElement)elementTextSource;
+		String lAirportLabel = getAirportName( mTravelDataInput.mAirportCode_Way_From ) +  " (" + mTravelDataInput.mAirportCode_Way_From + ")";
+		textInputSource.setValue( lAirportLabel );
+
+
+		DOMElement elementIdSource = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_OriginStation" ) );
+		DOMInputElement hiddenInputSource = (DOMInputElement)elementIdSource;
+		hiddenInputSource.setValue( mTravelDataInput.mAirportCode_Way_From );
+
+		// target
+		String lTargetInputId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_AutocompleteDestinationStation";
+		DOMElement elementTextTarget = document.findElement( By.id( lTargetInputId ) );
+		DOMInputElement textInputTarget = (DOMInputElement)elementTextTarget;
+		lAirportLabel = getAirportName( mTravelDataInput.mAirportCode_Way_To ) +  " (" + mTravelDataInput.mAirportCode_Way_To + ")";
+		textInputTarget.setValue( lAirportLabel );
+
+		DOMElement elementIdTarget = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_DestinationStation" ) );
+		DOMInputElement hiddenInputTarget = (DOMInputElement)elementIdTarget;
+		hiddenInputTarget.setValue( mTravelDataInput.mAirportCode_Way_To );
+
+		// departure date
+		DOMElement elementIdDepartureDate = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_DepartureDate" ) );
+		DOMInputElement inputDepartureDate = (DOMInputElement)elementIdDepartureDate;
+		inputDepartureDate.setValue( mTravelDataInput.mWay_From_Departure_Day );
+
+		// arrival date
+		DOMElement elementIdReturnDate = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_ReturnDate" ) );
+		DOMInputElement inputReturnDate = (DOMInputElement)elementIdReturnDate;
+		inputReturnDate.setValue( mTravelDataInput.mWay_Back_Departure_Day );
+	}
+
+	private void CollectDatas(DOMDocument document)
+	{
+
 	}
 }
