@@ -34,11 +34,11 @@ public class WizzAirPageGuest extends WebPageGuest
 		BrowserView view = new BrowserView(browser);
 
 		mTravelDataInput = new TravelDatas_INPUT();
-		mTravelDataInput.mAirportCode_Way_From = aFrom;
-		mTravelDataInput.mAirportCode_Way_To   = aTo;
-		mTravelDataInput.mWay_From_Departure_Day = aDepartureDate;
-		mTravelDataInput.mWay_Back_Departure_Day = aReturnDate;
-		mTravelDataInput.mReturnTicket = true;
+		mTravelDataInput.mAirportCode_LeavingFrom = aFrom;
+		mTravelDataInput.mAirportCode_GoingTo     = aTo;
+		mTravelDataInput.mDepartureDay            = aDepartureDate;
+		mTravelDataInput.mReturnDay               = aReturnDate;
+		mTravelDataInput.mReturnTicket            = true;
 
 		//final JTextField addressBar = new JTextField("http://www.teamdev.com/jxbrowser");
 		//final JTextField addressBar = new JTextField("http://www.momondo.com");
@@ -101,58 +101,114 @@ public class WizzAirPageGuest extends WebPageGuest
 		// source
 		DOMElement elementTextSource = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_AutocompleteOriginStation" ) );
 		DOMInputElement textInputSource = (DOMInputElement)elementTextSource;
-		String lAirportLabel = getAirportName( mTravelDataInput.mAirportCode_Way_From ) +  " (" + mTravelDataInput.mAirportCode_Way_From + ")";
+		String lAirportLabel = getAirportName( mTravelDataInput.mAirportCode_LeavingFrom ) +  " (" + mTravelDataInput.mAirportCode_LeavingFrom + ")";
 		textInputSource.setValue( lAirportLabel );
 
-
+		// we have to fill the hidden fields as well
 		DOMElement elementIdSource = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_OriginStation" ) );
 		DOMInputElement hiddenInputSource = (DOMInputElement)elementIdSource;
-		hiddenInputSource.setValue( mTravelDataInput.mAirportCode_Way_From );
+		hiddenInputSource.setValue( mTravelDataInput.mAirportCode_LeavingFrom );
 
 		// target
 		String lTargetInputId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_AutocompleteDestinationStation";
 		DOMElement elementTextTarget = document.findElement( By.id( lTargetInputId ) );
 		DOMInputElement textInputTarget = (DOMInputElement)elementTextTarget;
-		lAirportLabel = getAirportName( mTravelDataInput.mAirportCode_Way_To ) +  " (" + mTravelDataInput.mAirportCode_Way_To + ")";
+		lAirportLabel = getAirportName( mTravelDataInput.mAirportCode_GoingTo ) +  " (" + mTravelDataInput.mAirportCode_GoingTo + ")";
 		textInputTarget.setValue( lAirportLabel );
 
+		// we have to fill the hidden fields as well
 		DOMElement elementIdTarget = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_DestinationStation" ) );
 		DOMInputElement hiddenInputTarget = (DOMInputElement)elementIdTarget;
-		hiddenInputTarget.setValue( mTravelDataInput.mAirportCode_Way_To );
+		hiddenInputTarget.setValue( mTravelDataInput.mAirportCode_GoingTo );
 
 		// departure date
 		DOMElement elementIdDepartureDate = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_DepartureDate" ) );
 		DOMInputElement inputDepartureDate = (DOMInputElement)elementIdDepartureDate;
-		inputDepartureDate.setValue( mTravelDataInput.mWay_From_Departure_Day );
+		inputDepartureDate.setValue( mTravelDataInput.mDepartureDay );
 
 		// arrival date
 		DOMElement elementIdReturnDate = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_ReturnDate" ) );
 		DOMInputElement inputReturnDate = (DOMInputElement)elementIdReturnDate;
-		inputReturnDate.setValue( mTravelDataInput.mWay_Back_Departure_Day );
+		inputReturnDate.setValue( mTravelDataInput.mReturnDay );
+	}
+
+	private void CollectDatas_ParseTheRows( DOMElement aFlightBodyElement, boolean aOutbound )
+	{
+		java.util.List<DOMElement> lRows = aFlightBodyElement.findElements( By.className( "flight-row" ) );
+		int lRowElementIndex = 0;
+		for( DOMElement lRowElement : lRows )
+		{
+			if( lRowElementIndex == 0 )
+			{
+				// header of the table
+			}
+			else
+			{
+				// rows of the table with useful datas
+				TravelDatas_RESULT.TravelDatas_PossibleTrips lTrip = new TravelDatas_RESULT.TravelDatas_PossibleTrips();
+				lTrip.mOutboundTrip = aOutbound;
+				java.util.List<DOMNode> lCells = lRowElement.getChildren();
+
+				int lCellIndex = 0;
+				for( DOMNode lCell : lCells )
+				{
+					if( lCellIndex == 0 )
+					{
+						// TODO: separate the departure and arrival dates; language handling
+						// class: flight-data flight-date
+						//          <span data-flight-departure="2016-04-08T07:45:00" data-flight-arrival="2016-04-08T09:40:00">Fri, 08 Apr</span>
+						lTrip.mDepartureDaytime = lCell.getTextContent();
+						lTrip.mArrivalDaytime = lCell.getTextContent();
+					}
+					else if( lCellIndex == 1 )
+					{
+						// class: flight-data flight-fare-container selectFlightTooltip
+						//       getChildren() getInnerText()
+						//       or: price somewhere after "input-nowizzclub" and "input-wizzclub"
+
+						// TODO: separate the prices; currency handling
+						lTrip.mPrices = lCell.getTextContent();
+					}
+					else if( lCellIndex == 2 )
+					{
+						// class: flight flight-data flight-fare-container selectFlightTooltip
+						//       getChildren() getInnerText()
+						//       or: price somewhere after "input-nowizzclub" and "input-wizzclub"
+
+						// TODO: separate the prices; currency handling
+						lTrip.mPrices2 = lCell.getTextContent();
+					}
+					lCellIndex++;
+				}
+				mTravelDataResult.mTrips.add( lTrip );
+			}
+			lRowElementIndex++;
+		}
 	}
 
 	private void CollectDatas(DOMDocument document)
 	{
-		// Odaút
-		// <b class="flights-header-title"><i class="ft-icon ft-icon--outbound-flight"></i>odaút</b>
-		// Indulás és érkezés
+		mTravelDataResult = new TravelDatas_RESULT();
+		mTravelDataResult.mAirportCode_GoingTo = mTravelDataInput.mAirportCode_GoingTo;
+		mTravelDataResult.mAirportCode_LeavingFrom = mTravelDataInput.mAirportCode_LeavingFrom;
 
-		/* fejléc */
-		/*
-		<div class="flight-row"><div class="flight-data flight-date">Indulás és érkezés</div><div class="flight-data fare-type fare-type--basic"><div class="fare-type-header"><h3 class="fare-type-title">Basic<span class="fare-type-info js-tooltip" data-tooltip-content="#fare-type-basic-tooltip-1"></span></h3><ul class="fare-type-ssrs"><li><i class="ft-icon ft-icon--CheckIn"></i></li><li><i class="ft-icon ft-icon--SmallCabinBag"></i></li></ul></div><div class="hide" id="fare-type-basic-tooltip-1"><p>A Basic viteldíj tartalmazza:
-		</p><ul class="fare-type--basic fare-type-ssrs fare-type-ssrs--vertical"><li><i class="ft-icon ft-icon--FlightTicket"></i><span>Repülőjegy</span></li><li><i class="ft-icon ft-icon--CheckIn"></i><span>Internetes utasfelvétel</span></li><li><i class="ft-icon ft-icon--SmallCabinBag"></i><span>1 kisméretű kézipoggyász</span></li></ul></div><div class="fare-type-variants"><div class="flight-data fare-type-variant">normál ár</div><div class="flight-data fare-type-variant fare-type-variant--wdc">WIZZ Discount Club<span class="fare-type-info js-tooltip" data-tooltip-content="#wizz-club-tooltip" data-tooltip-direction="top"></span></div></div></div><div class="hide" id="fare-type-plus-tooltip-1"><p>A Plus viteldíj tartalmazza:
-		</p><ul class="fare-type-ssrs fare-type-ssrs--vertical"><li><i class="ft-icon ft-icon--FlightTicket"></i><span>Repülőjegy</span></li><li><i class="ft-icon ft-icon--SeatSelection"></i><span>Ülőhelyválasztás, ide értve az első sorban lévő vagy a nagyobb lábterű ülőhelyeket is<br><span></span></span></li><li><i class="ft-icon ft-icon--WizzFlex"></i><span>WIZZ Flex a rugalmas járatmódosítások érdekében<br><span></span></span></li><li><i class="ft-icon ft-icon--AirportCheckIn"></i><span>Ingyenes&nbsp;reptéri vagy internetes utasfelvétel<br><span></span></span></li><li><i class="ft-icon ft-icon--PriorityComfort"></i><span>WIZZ Priority Boarding elsőbbségi beszállás<br><span>
-			Egy darab további kisméretű személyes csomag a fedélzeten
-			</span></span></li><li><i class="ft-icon ft-icon--CabinBaggage"></i><span>1 nagyméretű kézipoggyász<br><span></span></span></li><li><i class="ft-icon ft-icon--Baggage"></i><span>1 feladott poggyász max. 32 kg-ig<br><span></span></span></li></ul></div><div class="flight-data fare-type fare-type--plus"><div class="fare-type-header"><h3 class="fare-type-title">Plus<span class="fare-type-info js-tooltip" data-tooltip-content="#fare-type-plus-tooltip-1"></span></h3><ul class="fare-type-ssrs"><li><i class="ft-icon ft-icon--SeatSelection"></i></li><li><i class="ft-icon ft-icon--PriorityComfort"></i></li><li><i class="ft-icon ft-icon--WizzFlex"></i></li><li><i class="ft-icon ft-icon--AirportCheckIn"></i></li><li><i class="ft-icon ft-icon--CabinBaggage"></i></li><li><i class="ft-icon ft-icon--Baggage"></i></li></ul></div><div class="fare-type-variants"><div class="flight-data fare-type-variant">normál ár</div><div class="flight-data fare-type-variant fare-type-variant--wdc">WIZZ Discount Club<span class="fare-type-info js-tooltip" data-tooltip-content="#wizz-club-tooltip" data-tooltip-direction="top"></span></div></div></div></div>
-		*/
-		// <div class="flight-row"><div class="flight-data flight-date"><span data-flight-departure="2016-06-30T05:00:00" data-flight-arrival="2016-06-30T06:50:00">Cs, jún. 30.</span><br><b>6:00 → 7:50</b></div><div class="flight-data flight-fare-container selectFlightTooltip"><label for="ControlGroupRibbonSelectView_AvailabilityInputRibbonSelectView_RadioButtonMkt1Fare2" class="flight flight-data flight-fare flight-radio flight-fare-type--basic flight-fare--active"><span class="custom-radio  input-nowizzclub "><input id="ControlGroupRibbonSelectView_AvailabilityInputRibbonSelectView_RadioButtonMkt1Fare2" type="radio" name="ControlGroupRibbonSelectView$AvailabilityInputRibbonSelectView$Market1" value="0~B~~BREG~REG1~~3~X|W6~4327~ ~~SOF~06/30/2016 06:00~CRL~06/30/2016 07:50~" requirederror="Kérjük, válasszon viteldíjat." data-validation-required="true" data-validation-common-message="selectflight-0" class=" input-nowizzclub "></span>99,99 lv</label><label for="" class="flight flight-data flight-fare flight-radio flight-fare--wdc flight-fare-type--basic flight-fare--passive"><span class="custom-radio  input-wizzclub "><input id="ControlGroupRibbonSelectView_AvailabilityInputRibbonSelectView_RadioButtonMkt1Fare1" type="radio" name="ControlGroupRibbonSelectView$AvailabilityInputRibbonSelectView$Market1" value="0~BW~~BWZZC~WZZC~~3~X|W6~4327~ ~~SOF~06/30/2016 06:00~CRL~06/30/2016 07:50~" requirederror="Kérjük, válasszon viteldíjat." data-validation-required="true" data-validation-common-message="selectflight-0" class=" input-wizzclub "></span>79,99 lv</label></div><div class="flight flight-data flight-fare-container selectFlightTooltip"><label for="ControlGroupRibbonSelectView_AvailabilityInputRibbonSelectView_RadioButtonMkt1Fare2PLUS" class="flight flight-data flight-fare flight-radio flight-fare-type--plus flight-fare--active"><span class="custom-radio  input-nowizzclub "><input id="ControlGroupRibbonSelectView_AvailabilityInputRibbonSelectView_RadioButtonMkt1Fare2PLUS" type="radio" name="ControlGroupRibbonSelectView$AvailabilityInputRibbonSelectView$Market1" value="0~B~~BREG~REG1~~3~X|W6~4327~ ~~SOF~06/30/2016 06:00~CRL~06/30/2016 07:50~|PLUS" requirederror="Kérjük, válasszon viteldíjat." data-validation-required="true" data-validation-common-message="selectflight-0" class=" input-nowizzclub "></span>221,09 lv</label><label for="" class="flight flight-data flight-fare flight-radio flight-fare--wdc flight-fare-type--plus flight-fare--passive"><span class="custom-radio  input-wizzclub "><input id="ControlGroupRibbonSelectView_AvailabilityInputRibbonSelectView_RadioButtonMkt1Fare1PLUS" type="radio" name="ControlGroupRibbonSelectView$AvailabilityInputRibbonSelectView$Market1" value="0~BW~~BWZZC~WZZC~~3~X|W6~4327~ ~~SOF~06/30/2016 06:00~CRL~06/30/2016 07:50~|PLUS" requirederror="Kérjük, válasszon viteldíjat." data-validation-required="true" data-validation-common-message="selectflight-0" class=" input-wizzclub "></span>201,09 lv</label></div></div>
-		// <div class="flight-row disabled"><div class="flight-data flight-date"><span data-flight-departure="" data-flight-arrival="">P, júl. 1.</span></div><div class="flight flight-data flight-fare-container"><div class="flight-data flight-data--block">A megadott napon nem találhatók járatok.</div></div><div class="flight flight-data flight-fare-container"><div class="flight-data flight-data--block">A megadott napon nem találhatók járatok.</div></div></div>
-		// <div class="flight-row"><div class="flight-data flight-date"><span data-flight-departure="2016-07-02T05:00:00" data-flight-arrival="2016-07-02T06:50:00">Szo, júl. 2.</span><br><b>6:00 → 7:50</b></div><div class="flight-data flight-fare-container selectFlightTooltip"><label for="ControlGroupRibbonSelectView_AvailabilityInputRibbonSelectView_RadioButtonMkt1Fare4" class="flight flight-data flight-fare flight-radio flight-fare-type--basic flight-fare--active"><span class="custom-radio  input-nowizzclub "><input id="ControlGroupRibbonSelectView_AvailabilityInputRibbonSelectView_RadioButtonMkt1Fare4" type="radio" name="ControlGroupRibbonSelectView$AvailabilityInputRibbonSelectView$Market1" value="0~B~~BREG~REG1~~3~X|W6~4327~ ~~SOF~07/02/2016 06:00~CRL~07/02/2016 07:50~" requirederror="Kérjük, válasszon viteldíjat." data-validation-required="true" data-validation-common-message="selectflight-0" class=" input-nowizzclub "></span>99,99 lv</label><label for="" class="flight flight-data flight-fare flight-radio flight-fare--wdc flight-fare-type--basic flight-fare--passive"><span class="custom-radio  input-wizzclub "><input id="ControlGroupRibbonSelectView_AvailabilityInputRibbonSelectView_RadioButtonMkt1Fare3" type="radio" name="ControlGroupRibbonSelectView$AvailabilityInputRibbonSelectView$Market1" value="0~BW~~BWZZC~WZZC~~3~X|W6~4327~ ~~SOF~07/02/2016 06:00~CRL~07/02/2016 07:50~" requirederror="Kérjük, válasszon viteldíjat." data-validation-required="true" data-validation-common-message="selectflight-0" class=" input-wizzclub "></span>79,99 lv</label></div><div class="flight flight-data flight-fare-container selectFlightTooltip"><label for="ControlGroupRibbonSelectView_AvailabilityInputRibbonSelectView_RadioButtonMkt1Fare4PLUS" class="flight flight-data flight-fare flight-radio flight-fare-type--plus flight-fare--active"><span class="custom-radio  input-nowizzclub "><input id="ControlGroupRibbonSelectView_AvailabilityInputRibbonSelectView_RadioButtonMkt1Fare4PLUS" type="radio" name="ControlGroupRibbonSelectView$AvailabilityInputRibbonSelectView$Market1" value="0~B~~BREG~REG1~~3~X|W6~4327~ ~~SOF~07/02/2016 06:00~CRL~07/02/2016 07:50~|PLUS" requirederror="Kérjük, válasszon viteldíjat." data-validation-required="true" data-validation-common-message="selectflight-0" class=" input-nowizzclub "></span>221,09 lv</label><label for="" class="flight flight-data flight-fare flight-radio flight-fare--wdc flight-fare-type--plus flight-fare--passive"><span class="custom-radio  input-wizzclub "><input id="ControlGroupRibbonSelectView_AvailabilityInputRibbonSelectView_RadioButtonMkt1Fare3PLUS" type="radio" name="ControlGroupRibbonSelectView$AvailabilityInputRibbonSelectView$Market1" value="0~BW~~BWZZC~WZZC~~3~X|W6~4327~ ~~SOF~07/02/2016 06:00~CRL~07/02/2016 07:50~|PLUS" requirederror="Kérjük, válasszon viteldíjat." data-validation-required="true" data-validation-common-message="selectflight-0" class=" input-wizzclub "></span>201,09 lv</label></div></div>
+		java.util.List<DOMElement> lFlightsBodyElements = document.findElements( By.className( "flights-body" ) );
+		int lBodyElementIndex = 0;
+		for( DOMElement lFlightBodyElement : lFlightsBodyElements )
+		{
+			if( lBodyElementIndex == 0 )
+			{
+				// Outbound trip
+				CollectDatas_ParseTheRows( lFlightBodyElement, true );
+			}
+			else if( lBodyElementIndex == 1 )
+			{
+				// Return element
+				CollectDatas_ParseTheRows( lFlightBodyElement, false );
+			}
+			lBodyElementIndex++;
+		}
 
-
-		// Visszaút
-		// <b class="flights-header-title"><i class="ft-icon ft-icon--inbound-flight"></i>visszaút</b>
-		// Indulás és érkezés
-
+		ResultQueue.getInstance().push( mTravelDataResult );
 	}
 }

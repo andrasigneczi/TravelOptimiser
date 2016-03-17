@@ -5,9 +5,12 @@ package PageGuest;
  */
 public class TravelDatas_INPUT
 {
-	public String mAirportCode_Way_From;        // SOF
-	public String mAirportCode_Way_To;          // HHN
-	public String mWay_From_Departure_Day;      // 2016.03.25 17:10
-	public String mWay_Back_Departure_Day;      // 2016.03.27 17:10
+	public String mAirportCode_LeavingFrom;   // SOF
+	public String mAirportCode_GoingTo;       // HHN
+	public String mDepartureDay;              // 2016.03.25 17:10
+	public String mReturnDay;                 // 2016.03.27 17:10
+	public String mAdultNumber;
+	public String mChildNumber;
+	public String mInfantNumber;
 	public boolean mReturnTicket;
 }
