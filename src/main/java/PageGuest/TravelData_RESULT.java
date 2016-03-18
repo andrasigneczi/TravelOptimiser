@@ -2,10 +2,11 @@ package PageGuest;
 
 import java.util.ArrayList;
 
-public class TravelDatas_RESULT
+public class TravelData_RESULT
 {
-	public static class TravelDatas_PossibleTrips
+	public static class TravelData_PossibleTrips
 	{
+		public String mAirlines;
 		public String mDepartureDaytime;    // 2016.03.25 17:10
 		public String mArrivalDaytime;      // 2016.03.25 22:10
 		public String mPrices;
@@ -16,13 +17,20 @@ public class TravelDatas_RESULT
 		//public String mWayBack_Prices;
 	}
 
-	public TravelDatas_RESULT()
+	public TravelData_RESULT()
 	{
-		mTrips = new ArrayList<TravelDatas_PossibleTrips>();
+		mTrips = new ArrayList<TravelData_PossibleTrips>();
 	}
 
 	public String mAirportCode_LeavingFrom;   // SOF
 	public String mAirportCode_GoingTo;       // HHN
-	ArrayList<TravelDatas_PossibleTrips> mTrips;
+	ArrayList<TravelData_PossibleTrips> mTrips;
 	public boolean mReturnTicket;
+
+	String toString( TravelDataResultComposer aComposer )
+	{
+		if( aComposer != null )
+			return aComposer.toString( this );
+		return super.toString();
+	}
 }

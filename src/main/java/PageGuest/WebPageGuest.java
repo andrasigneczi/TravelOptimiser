@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 public abstract class WebPageGuest
 {
     private Hashtable<String, String> mAirports;
-	protected TravelDatas_INPUT  mTravelDataInput = null;
-    protected TravelDatas_RESULT mTravelDataResult = null;
+	protected TravelData_INPUT  mTravelDataInput = null;
+    protected TravelData_RESULT mTravelDataResult = null;
     protected SearchState mSearchState = null;
 
     public abstract boolean DoSearch( String aAirportCode_Way_From, String aAirportCode_Way_To,

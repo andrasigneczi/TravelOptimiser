@@ -3,8 +3,9 @@ package PageGuest;
 /**
  * Created by Andras on 15/03/2016.
  */
-public class TravelDatas_INPUT
+public class TravelData_INPUT
 {
+	public String mAirlines;
 	public String mAirportCode_LeavingFrom;   // SOF
 	public String mAirportCode_GoingTo;       // HHN
 	public String mDepartureDay;              // 2016.03.25 17:10

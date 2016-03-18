@@ -33,7 +33,8 @@ public class WizzAirPageGuest extends WebPageGuest
 		final Browser browser = new Browser();
 		BrowserView view = new BrowserView(browser);
 
-		mTravelDataInput = new TravelDatas_INPUT();
+		mTravelDataInput = new TravelData_INPUT();
+		mTravelDataInput.mAirlines                = "wizzair";
 		mTravelDataInput.mAirportCode_LeavingFrom = aFrom;
 		mTravelDataInput.mAirportCode_GoingTo     = aTo;
 		mTravelDataInput.mDepartureDay            = aDepartureDate;
@@ -145,7 +146,7 @@ public class WizzAirPageGuest extends WebPageGuest
 			else
 			{
 				// rows of the table with useful datas
-				TravelDatas_RESULT.TravelDatas_PossibleTrips lTrip = new TravelDatas_RESULT.TravelDatas_PossibleTrips();
+				TravelData_RESULT.TravelData_PossibleTrips lTrip = new TravelData_RESULT.TravelData_PossibleTrips();
 				lTrip.mOutboundTrip = aOutbound;
 				java.util.List<DOMNode> lCells = lRowElement.getChildren();
 
@@ -188,7 +189,7 @@ public class WizzAirPageGuest extends WebPageGuest
 
 	private void CollectDatas(DOMDocument document)
 	{
-		mTravelDataResult = new TravelDatas_RESULT();
+		mTravelDataResult = new TravelData_RESULT();
 		mTravelDataResult.mAirportCode_GoingTo = mTravelDataInput.mAirportCode_GoingTo;
 		mTravelDataResult.mAirportCode_LeavingFrom = mTravelDataInput.mAirportCode_LeavingFrom;
 

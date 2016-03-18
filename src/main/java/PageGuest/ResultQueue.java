@@ -8,13 +8,13 @@ import java.util.ArrayList;
 public class ResultQueue
 {
     private Object mMutex  = null;
-    ArrayList<TravelDatas_RESULT> mResultList = null;
+    ArrayList<TravelData_RESULT> mResultList = null;
     static ResultQueue mInstance = null;
 
     private ResultQueue()
     {
         mMutex = new Object();
-        mResultList = new ArrayList<TravelDatas_RESULT>();
+        mResultList = new ArrayList<TravelData_RESULT>();
     }
 
     public static ResultQueue getInstance()
@@ -35,7 +35,7 @@ public class ResultQueue
         return mInstance;
     }
 
-    public void push( TravelDatas_RESULT aResult )
+    public void push( TravelData_RESULT aResult )
     {
         synchronized( mMutex )
         {
@@ -43,7 +43,7 @@ public class ResultQueue
         }
     }
 
-    public TravelDatas_RESULT pop()
+    public TravelData_RESULT pop()
     {
         synchronized( mMutex )
         {
