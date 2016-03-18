@@ -3,7 +3,14 @@ package PageGuest;
 /**
  * Created by Andras on 18/03/2016.
  */
-public interface TravelDataResultComposer
+public abstract class TravelDataResultComposer
 {
-	String toString( TravelData_RESULT aResult );
+	protected TravelData_RESULT mResult;
+
+	public TravelDataResultComposer( TravelData_RESULT aResult )
+	{
+		mResult = aResult;
+	}
+
+	public abstract String toFormattedString();
 }

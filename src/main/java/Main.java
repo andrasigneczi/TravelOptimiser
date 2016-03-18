@@ -1,4 +1,7 @@
+import PageGuest.ResultQueue;
+import PageGuest.TravelData_RESULT;
 import PageGuest.WebPageGuest;
+import Storage.FileWriterAgent;
 import javafx.scene.shape.Path;
 
 import java.nio.file.FileSystems;
@@ -19,7 +22,16 @@ public class Main
             //JxBrowserHelloWorld.HelloWorld();
 	        //JxBrowserHelloWorld.FlashSample();
             WebPageGuest lGuest = WebPageGuestFactory.Create( "WizzAir" );
-            lGuest.DoSearch( "SOF", "HHN", "2016.07.21.", "2016.07.23." );
+            lGuest.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
+            FileWriterAgent lFWA = new FileWriterAgent( "database.html" );
+
+            for( int i = 0; i < 100; i++ )
+            {
+                TravelData_RESULT lResult = ResultQueue.getInstance().pop();
+                if( lResult != null )
+                    lFWA.Archive( lResult );
+                Thread.sleep( 1000 );
+            }
         }
         catch( Exception e )
         {

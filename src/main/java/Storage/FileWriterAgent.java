@@ -6,24 +6,47 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Scanner;
 
 /**
  * Created by Andras on 17/03/2016.
  */
 public class FileWriterAgent extends ArchiverAgent
 {
-	String mFileName = "database.txt";
+	private String mFileName = "database.txt";
+
+	public FileWriterAgent()
+	{
+
+	}
+
+	public FileWriterAgent( String aFileName )
+	{
+		if( aFileName != null )
+			mFileName = aFileName;
+	}
 
 	@Override
 	protected void WriteData( TravelData_RESULT aResult )
 	{
-		String lMessage = "";
+		TravelDataResultComposer_HTML lComposer = new TravelDataResultComposer_HTML( aResult );
 		try
 		{
+			String lTableBodyAndClosingTags = lComposer.toFormattedString() + lComposer.getClosingTags();
 			if (!Files.exists(Paths.get(mFileName)))
-				Files.write( Paths.get(mFileName), lMessage.getBytes(), StandardOpenOption.CREATE_NEW);
+			{
+				String lContent = lComposer.getTableHeader() + lTableBodyAndClosingTags;
+				Files.write( Paths.get( mFileName ), lContent.getBytes(), StandardOpenOption.CREATE_NEW );
+			}
 			else
-				Files.write(Paths.get(mFileName), lMessage.getBytes(), StandardOpenOption.APPEND);
+			{
+				Scanner lScanner = new Scanner( getClass().getClassLoader().getResourceAsStream( mFileName ), "UTF-8" );
+				String lContent = lScanner.useDelimiter( "\\A" ).next();
+				lScanner.close();
+
+				lContent = lContent.substring( 0, lContent.indexOf( "</body>")) + lTableBodyAndClosingTags;
+				Files.write( Paths.get( mFileName ), lContent.getBytes(), StandardOpenOption.TRUNCATE_EXISTING );
+			}
 		}
 		catch( IOException e )
 		{

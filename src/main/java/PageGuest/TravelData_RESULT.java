@@ -6,15 +6,11 @@ public class TravelData_RESULT
 {
 	public static class TravelData_PossibleTrips
 	{
-		public String mAirlines;
 		public String mDepartureDaytime;    // 2016.03.25 17:10
 		public String mArrivalDaytime;      // 2016.03.25 22:10
 		public String mPrices;
 		public String mPrices2;
 		public boolean mOutboundTrip;
-		//public String mWayBack_DepartureDaytime;  // 2016.03.27 17:10
-		//public String mWayBack_ArrivalDaytime;    // 2016.03.27 22:10
-		//public String mWayBack_Prices;
 	}
 
 	public TravelData_RESULT()
@@ -22,15 +18,16 @@ public class TravelData_RESULT
 		mTrips = new ArrayList<TravelData_PossibleTrips>();
 	}
 
+	public String mAirlines;
 	public String mAirportCode_LeavingFrom;   // SOF
 	public String mAirportCode_GoingTo;       // HHN
-	ArrayList<TravelData_PossibleTrips> mTrips;
+	public ArrayList<TravelData_PossibleTrips> mTrips;
 	public boolean mReturnTicket;
 
 	String toString( TravelDataResultComposer aComposer )
 	{
 		if( aComposer != null )
-			return aComposer.toString( this );
+			return aComposer.toFormattedString();
 		return super.toString();
 	}
 }

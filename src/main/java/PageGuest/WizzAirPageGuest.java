@@ -190,8 +190,12 @@ public class WizzAirPageGuest extends WebPageGuest
 	private void CollectDatas(DOMDocument document)
 	{
 		mTravelDataResult = new TravelData_RESULT();
+		mTravelDataResult.mAirlines = mTravelDataInput.mAirlines;
 		mTravelDataResult.mAirportCode_GoingTo = mTravelDataInput.mAirportCode_GoingTo;
 		mTravelDataResult.mAirportCode_LeavingFrom = mTravelDataInput.mAirportCode_LeavingFrom;
+		mTravelDataResult.mReturnTicket = false;
+		if( mTravelDataInput.mReturnDay != "" )
+			mTravelDataResult.mReturnTicket = true;
 
 		java.util.List<DOMElement> lFlightsBodyElements = document.findElements( By.className( "flights-body" ) );
 		int lBodyElementIndex = 0;
