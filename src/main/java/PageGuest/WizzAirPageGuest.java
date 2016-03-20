@@ -155,11 +155,14 @@ public class WizzAirPageGuest extends WebPageGuest
 				{
 					if( lCellIndex == 0 )
 					{
-						// TODO: separate the departure and arrival dates; language handling
 						// class: flight-data flight-date
 						//          <span data-flight-departure="2016-04-08T07:45:00" data-flight-arrival="2016-04-08T09:40:00">Fri, 08 Apr</span>
-						lTrip.mDepartureDaytime = lCell.getTextContent();
-						lTrip.mArrivalDaytime = lCell.getTextContent();
+						// "Fri, 08 Apr 8:45 → 10:40"
+						java.util.List<DOMNode> lChildren = lCell.getChildren();
+
+						lTrip.mDepartureDaytime = ((DOMElement)lChildren.get(0)).getAttribute("data-flight-departure");
+						lTrip.mArrivalDaytime = ((DOMElement)lChildren.get(0)).getAttribute("data-flight-arrival");
+
 					}
 					else if( lCellIndex == 1 )
 					{
@@ -168,7 +171,8 @@ public class WizzAirPageGuest extends WebPageGuest
 						//       or: price somewhere after "input-nowizzclub" and "input-wizzclub"
 
 						// TODO: separate the prices; currency handling
-						lTrip.mPrices = lCell.getTextContent();
+						java.util.List<DOMNode> lChildren = lCell.getChildren();
+						lTrip.mPrices = lChildren.get(0).getTextContent() + "; " + lChildren.get(1).getTextContent();
 					}
 					else if( lCellIndex == 2 )
 					{
@@ -177,7 +181,8 @@ public class WizzAirPageGuest extends WebPageGuest
 						//       or: price somewhere after "input-nowizzclub" and "input-wizzclub"
 
 						// TODO: separate the prices; currency handling
-						lTrip.mPrices2 = lCell.getTextContent();
+						java.util.List<DOMNode> lChildren = lCell.getChildren();
+						lTrip.mPrices2 = lChildren.get(0).getTextContent() + "; " + lChildren.get(1).getTextContent();
 					}
 					lCellIndex++;
 				}

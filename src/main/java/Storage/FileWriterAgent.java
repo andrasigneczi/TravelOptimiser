@@ -2,6 +2,7 @@ package Storage;
 
 import PageGuest.TravelData_RESULT;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -40,7 +41,7 @@ public class FileWriterAgent extends ArchiverAgent
 			}
 			else
 			{
-				Scanner lScanner = new Scanner( getClass().getClassLoader().getResourceAsStream( mFileName ), "UTF-8" );
+				Scanner lScanner = new Scanner( new File( mFileName ), "UTF-8" );
 				String lContent = lScanner.useDelimiter( "\\A" ).next();
 				lScanner.close();
 

@@ -4,16 +4,25 @@ import PageGuest.TravelDataResultComposer;
 import PageGuest.TravelData_RESULT;
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Andras on 18/03/2016.
  */
 public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 {
+	private DateTimeFormatter mFormatterWizzair;
+	private String [] mMonthNames;
 	public TravelDataResultComposer_HTML(  TravelData_RESULT aResult )
 	{
 		super( aResult );
+		mFormatterWizzair = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+		mMonthNames = new String[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 	}
 
 	public String getTableHeader()
@@ -51,8 +60,8 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 			if( !lTrip.mOutboundTrip )
 				continue;
 
-			lBody += "<tr><td>" + lSEUtils.escapeHtml4( lTrip.mDepartureDaytime ) + " &#45;&#62; " +
-					lSEUtils.escapeHtml4( lTrip.mArrivalDaytime ) + "</td><td>" +
+			lBody += "<tr><td>" + lSEUtils.escapeHtml4( FormatDatetime( lTrip.mDepartureDaytime )) + " &#45;&#62;</br>" +
+					lSEUtils.escapeHtml4( FormatDatetime( lTrip.mArrivalDaytime )) + "</td><td>" +
 					lSEUtils.escapeHtml4( lTrip.mPrices ) + "</td><td>" +
 					lSEUtils.escapeHtml4( lTrip.mPrices2 ) + "</td></tr>\n";
 		}
@@ -69,18 +78,43 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 		{
 			if( lTrip.mOutboundTrip )
 				continue;
-			lBody += "<tr><td>" + lSEUtils.escapeHtml4( lTrip.mDepartureDaytime ) + " &#45;&#62; " +
-					lSEUtils.escapeHtml4( lTrip.mArrivalDaytime ) + "</td><td>" +
+			lBody += "<tr><td>" + lSEUtils.escapeHtml4( FormatDatetime( lTrip.mDepartureDaytime )) + " &#45;&#62;</br>" +
+					lSEUtils.escapeHtml4( FormatDatetime( lTrip.mArrivalDaytime )) + "</td><td>" +
 					lSEUtils.escapeHtml4( lTrip.mPrices ) + "</td><td>" +
 					lSEUtils.escapeHtml4( lTrip.mPrices2 ) + "</td></tr>\n";
 		}
-		lBody += "</table></br></br>";
+		lBody += "</table></br></br>\n";
 		return lBody;
 	}
 
 	public String getClosingTags()
 	{
-		return "</body>\n</html>";
+		return "</body>\n</html>\n";
+	}
+
+	private String FormatDatetime( String aValue)
+	{
+		LocalDateTime lLocalDateTime = LocalDateTime.parse(aValue, mFormatterWizzair);
+
+		// TODO: why must a add 1 more hour to get the right time?
+		lLocalDateTime = lLocalDateTime.plusHours( 1 );
+
+		// Unfortunatelly the month won't be get in short format
+		DateTimeFormatter lNewFormat = DateTimeFormatter.ofPattern( "E, dd (M) H:mm" );
+
+		String lNewValue = lLocalDateTime.format( lNewFormat );
+
+		Pattern reg = Pattern.compile( "\\(\\d{1,2}\\)" );
+		Matcher m = reg.matcher( lNewValue );
+
+		while( m.find() )
+		{
+			String lRow = m.group().toString().trim();
+			lRow = lRow.replace( "(", "" );
+			lRow = lRow.replace( ")", "" );
+			lNewValue = lNewValue.replace( lRow, mMonthNames[ Integer.parseInt( lRow ) - 1 ] );
+		}
+		return lNewValue;
 	}
 }
 /*
