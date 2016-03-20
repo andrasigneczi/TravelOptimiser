@@ -60,8 +60,10 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 			if( !lTrip.mOutboundTrip )
 				continue;
 
-			lBody += "<tr><td>" + lSEUtils.escapeHtml4( FormatDatetime( lTrip.mDepartureDaytime )) + " &#45;&#62;</br>" +
-					lSEUtils.escapeHtml4( FormatDatetime( lTrip.mArrivalDaytime )) + "</td><td>" +
+			ArrayList<String> lNormalizedDatetimes = NormalizeDatetimes( FormatDatetime( lTrip.mDepartureDaytime ), FormatDatetime( lTrip.mArrivalDaytime ));
+			lBody += "<tr><td>" + lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 0 )) + "</br>" +
+					lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 1 )) + "&#45;&#62;</br>" +
+					lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 2 )) + "</td><td>" +
 					lSEUtils.escapeHtml4( lTrip.mPrices ) + "</td><td>" +
 					lSEUtils.escapeHtml4( lTrip.mPrices2 ) + "</td></tr>\n";
 		}
@@ -78,8 +80,11 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 		{
 			if( lTrip.mOutboundTrip )
 				continue;
-			lBody += "<tr><td>" + lSEUtils.escapeHtml4( FormatDatetime( lTrip.mDepartureDaytime )) + " &#45;&#62;</br>" +
-					lSEUtils.escapeHtml4( FormatDatetime( lTrip.mArrivalDaytime )) + "</td><td>" +
+			ArrayList<String> lNormalizedDatetimes = NormalizeDatetimes( FormatDatetime( lTrip.mDepartureDaytime ), FormatDatetime( lTrip.mArrivalDaytime ));
+
+			lBody += "<tr><td>" + lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 0 )) + "</br>" +
+					lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 1 )) + "&#45;&#62;</br>" +
+					lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 2 )) + "</td><td>" +
 					lSEUtils.escapeHtml4( lTrip.mPrices ) + "</td><td>" +
 					lSEUtils.escapeHtml4( lTrip.mPrices2 ) + "</td></tr>\n";
 		}
@@ -110,11 +115,28 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 		while( m.find() )
 		{
 			String lRow = m.group().toString().trim();
-			lRow = lRow.replace( "(", "" );
-			lRow = lRow.replace( ")", "" );
-			lNewValue = lNewValue.replace( lRow, mMonthNames[ Integer.parseInt( lRow ) - 1 ] );
+			String lIndex = lRow.replace( "(", "" );
+			lIndex = lIndex.replace( ")", "" );
+			lNewValue = lNewValue.replace( lRow, mMonthNames[ Integer.parseInt( lIndex ) - 1 ] );
 		}
 		return lNewValue;
+	}
+
+	private ArrayList<String> NormalizeDatetimes( String aDeparture, String aArrival )
+	{
+		String lDate = "";
+		for( int i = 0; i < aDeparture.length() && i < aArrival.length(); i++ )
+		{
+			if( aDeparture.charAt( i ) == aArrival.charAt( i ))
+				lDate += aDeparture.charAt( i );
+			else
+				break;
+		}
+		ArrayList<String> lReturn = new ArrayList<String>();
+		lReturn.add( lDate.trim() );
+		lReturn.add( aDeparture.substring( lDate.length() ).trim() );
+		lReturn.add( aArrival.substring( lDate.length() ).trim() );
+		return lReturn;
 	}
 }
 /*
