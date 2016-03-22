@@ -5,6 +5,13 @@ package PageGuest;
  */
 public class SearchStateSearching extends SearchState
 {
+    TravelData_INPUT mTravelDataInput;
+
+    public SearchStateSearching( TravelData_INPUT aTravelDataInput )
+    {
+        mTravelDataInput = aTravelDataInput;
+    }
+
     @Override
     public void doAction( WebPageGuest aWebPageGuest )
     {
@@ -15,5 +22,10 @@ public class SearchStateSearching extends SearchState
     public String toString()
     {
         return "SearchStateSearching";
+    }
+
+    public TravelData_INPUT getTravelDataInput()
+    {
+        return mTravelDataInput;
     }
 }

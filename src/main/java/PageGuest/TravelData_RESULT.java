@@ -8,8 +8,10 @@ public class TravelData_RESULT
 	{
 		public String mDepartureDaytime;    // 2016.03.25 17:10
 		public String mArrivalDaytime;      // 2016.03.25 22:10
-		public String mPrices;
-		public String mPrices2;
+		public String mPrices_BasicFare_Normal;
+		public String mPrices_BasicFare_Discount;
+		public String mPrices_PlusFare_Normal;
+		public String mPrices_PlusFare_Discount;
 		public boolean mOutboundTrip;
 	}
 

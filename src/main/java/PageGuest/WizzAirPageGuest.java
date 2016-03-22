@@ -10,73 +10,120 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 /**
  * Created by Andras on 15/03/2016.
  */
-public class WizzAirPageGuest extends WebPageGuest
+public class WizzAirPageGuest extends WebPageGuest implements Runnable
 {
+	ArrayList<TravelData_INPUT> mSearchQueue;
+	Thread mThread;
+	Browser mBrowser = null;
+	Object mMutex = new Object();
+
 	public WizzAirPageGuest()
 	{
 		super();
+		mSearchQueue = new ArrayList<TravelData_INPUT>();
+		mThread = new Thread( this );
+		mThread.setName( "WizzAirThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME ) );
+		mThread.start();
 	}
 
 	public boolean OpenStartPage()
 	{
 		return false;
 	}
-
 	public boolean DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
+	{
+		synchronized( mMutex )
+		{
+			if( mBrowser == null )
+			{
+				InitBrowser();
+				mBrowser.loadURL( "http://www.wizzair.com" );
+			}
+
+			TravelData_INPUT lTravelDataInput = new TravelData_INPUT();
+			lTravelDataInput.mAirlines                = "wizzair";
+			lTravelDataInput.mAirportCode_LeavingFrom = aFrom;
+			lTravelDataInput.mAirportCode_GoingTo     = aTo;
+			lTravelDataInput.mDepartureDay            = aDepartureDate;
+			lTravelDataInput.mReturnDay               = aReturnDate;
+			if( aReturnDate.length() == 0 )
+				lTravelDataInput.mReturnTicket = false;
+			else
+				lTravelDataInput.mReturnTicket = true;
+
+			mSearchQueue.add( lTravelDataInput );
+		}
+	}
+
+	private boolean InitBrowser()
 	{
 		new SearchStateInit().doAction( this );
 
-		final Browser browser = new Browser();
-		BrowserView view = new BrowserView(browser);
-
-		mTravelDataInput = new TravelData_INPUT();
-		mTravelDataInput.mAirlines                = "wizzair";
-		mTravelDataInput.mAirportCode_LeavingFrom = aFrom;
-		mTravelDataInput.mAirportCode_GoingTo     = aTo;
-		mTravelDataInput.mDepartureDay            = aDepartureDate;
-		mTravelDataInput.mReturnDay               = aReturnDate;
-		mTravelDataInput.mReturnTicket            = true;
+		mBrowser = new Browser();
+		BrowserView view = new BrowserView(mBrowser);
 
 		//final JTextField addressBar = new JTextField("http://www.teamdev.com/jxbrowser");
 		//final JTextField addressBar = new JTextField("http://www.momondo.com");
-		final JTextField addressBar = new JTextField("http://www.wizzair.com");
-		addressBar.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				browser.loadURL(addressBar.getText());
-			}
-		});
+//		final JTextField addressBar = new JTextField("http://www.wizzair.com");
+//		addressBar.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				mBrowser.loadURL(addressBar.getText());
+//			}
+//		});
 
-		JPanel addressPane = new JPanel(new BorderLayout());
-		addressPane.add(new JLabel(" URL: "), BorderLayout.WEST);
-		addressPane.add(addressBar, BorderLayout.CENTER);
+//		JPanel addressPane = new JPanel(new BorderLayout());
+//		addressPane.add(new JLabel(" URL: "), BorderLayout.WEST);
+//		addressPane.add(addressBar, BorderLayout.CENTER);
 
 		JFrame frame = new JFrame("Travel Optimizer");
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		frame.add(addressPane, BorderLayout.NORTH);
+//		frame.add(addressPane, BorderLayout.NORTH);
 		frame.add(view, BorderLayout.CENTER);
 		frame.setSize(1152, 864);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 
-		browser.addLoadListener(new LoadAdapter() {
+		mBrowser.addLoadListener(new LoadAdapter() {
 			@Override
 			public void onFinishLoadingFrame(FinishLoadingEvent event) {
 				// A click után újra bejövök ide, erre ügyelni kell!!!!
 				if (event.isMainFrame())
 				{
+					TravelData_INPUT lTravelDataInput = null;
+					if( getSearchState().toString().equals( "SearchStateSearching" ))
+					{
+						lTravelDataInput = ((SearchStateSearching)getSearchState()).getTravelDataInput();
+					}
+
+					DOMDocument document = event.getBrowser().getDocument();
+					new SearchStateSearchingFinished( document, lTravelDataInput ).doAction( getSearchState().getWebPageGuest() );
+					return;
+
+
+
+
 					DOMDocument document = event.getBrowser().getDocument();
 					if( !getSearchState().toString().equals( "SearchStateInit" ))
 					{
 						CollectDatas( document );
-						new SearchStateSearchingFinished().doAction( getSearchState().getWebPageGuest() );
+						new SearchStateSearchingFinished( document ).doAction( getSearchState().getWebPageGuest() );
 						return;
 					}
-					new SearchStateSearching().doAction( getSearchState().getWebPageGuest() );
+
+					TravelData_INPUT lTravelDataInput;
+					synchronized( mMutex )
+					{
+						lTravelDataInput = mSearchQueue.remove( 0 );
+					}
+					new SearchStateSearching( lTravelDataInput ).doAction( getSearchState().getWebPageGuest() );
 
 					FillTheForm(document);
 
@@ -90,11 +137,10 @@ public class WizzAirPageGuest extends WebPageGuest
 			}
 		});
 
-		browser.loadURL(addressBar.getText());
 		return false;
 	}
 
-	private void FillTheForm(DOMDocument document)
+	private void FillTheForm(DOMDocument document, TravelData_INPUT aTravelDataInput )
 	{
 		//DOMElement element = document.findElement( By.xpath("//textarea"));
 		//DOMTextAreaElement textArea = (DOMTextAreaElement) element;
@@ -172,7 +218,8 @@ public class WizzAirPageGuest extends WebPageGuest
 
 						// TODO: separate the prices; currency handling
 						java.util.List<DOMNode> lChildren = lCell.getChildren();
-						lTrip.mPrices = lChildren.get(0).getTextContent() + "; " + lChildren.get(1).getTextContent();
+						lTrip.mPrices_BasicFare_Normal = lChildren.get(0).getTextContent();
+						lTrip.mPrices_BasicFare_Discount = lChildren.get(1).getTextContent();
 					}
 					else if( lCellIndex == 2 )
 					{
@@ -182,7 +229,8 @@ public class WizzAirPageGuest extends WebPageGuest
 
 						// TODO: separate the prices; currency handling
 						java.util.List<DOMNode> lChildren = lCell.getChildren();
-						lTrip.mPrices2 = lChildren.get(0).getTextContent() + "; " + lChildren.get(1).getTextContent();
+						lTrip.mPrices_PlusFare_Normal = lChildren.get(0).getTextContent();
+						lTrip.mPrices_PlusFare_Discount = lChildren.get(1).getTextContent();
 					}
 					lCellIndex++;
 				}
@@ -198,9 +246,7 @@ public class WizzAirPageGuest extends WebPageGuest
 		mTravelDataResult.mAirlines = mTravelDataInput.mAirlines;
 		mTravelDataResult.mAirportCode_GoingTo = mTravelDataInput.mAirportCode_GoingTo;
 		mTravelDataResult.mAirportCode_LeavingFrom = mTravelDataInput.mAirportCode_LeavingFrom;
-		mTravelDataResult.mReturnTicket = false;
-		if( mTravelDataInput.mReturnDay != "" )
-			mTravelDataResult.mReturnTicket = true;
+		mTravelDataResult.mReturnTicket = mTravelDataResult.mReturnTicket;
 
 		java.util.List<DOMElement> lFlightsBodyElements = document.findElements( By.className( "flights-body" ) );
 		int lBodyElementIndex = 0;
@@ -220,5 +266,17 @@ public class WizzAirPageGuest extends WebPageGuest
 		}
 
 		ResultQueue.getInstance().push( mTravelDataResult );
+	}
+
+	public void run()
+	{
+		while( !mThreadStopped )
+		{
+			if( !getSearchState().toString().equals( "SearchStateInit" ))
+		}
+		synchronized( mMutex )
+		{
+		}
+
 	}
 }

@@ -30,6 +30,7 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 		String lHead = "";
 		lHead += "<html>\n";
 		lHead += "<head>\n";
+		lHead += "<meta charset=\"UTF-8\">\n";
 		lHead += "</head>\n";
 		lHead += "<body>\n";
 
@@ -51,8 +52,9 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 */
 		StringEscapeUtils lSEUtils = new StringEscapeUtils();
 		String lBody = "";
-		lBody += "<table border=1>\n";
-		lBody += "<tr><th colspan=3>checking date &#45;" + lSEUtils.escapeHtml4( mResult.mAirlines ) + " &#45;" + mResult.mAirportCode_LeavingFrom + "&nbsp;&#61;&#62;" + mResult.mAirportCode_GoingTo + "</th></tr>\n";
+		String lCheckingDate = LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE );
+		lBody += "<div style=\"float:left;\"><table border=1>\n";
+		lBody += "<tr><th colspan=3>" + lCheckingDate + " &#45;" + lSEUtils.escapeHtml4( mResult.mAirlines ) + " &#45;" + mResult.mAirportCode_LeavingFrom + "→" + mResult.mAirportCode_GoingTo + "</th></tr>\n";
 
 		// Outbound
 		for( TravelData_RESULT.TravelData_PossibleTrips lTrip : mResult.mTrips )
@@ -60,35 +62,43 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 			if( !lTrip.mOutboundTrip )
 				continue;
 
-			ArrayList<String> lNormalizedDatetimes = NormalizeDatetimes( FormatDatetime( lTrip.mDepartureDaytime ), FormatDatetime( lTrip.mArrivalDaytime ));
-			lBody += "<tr><td>" + lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 0 )) + "</br>" +
-					lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 1 )) + "&#45;&#62;</br>" +
-					lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 2 )) + "</td><td>" +
-					lSEUtils.escapeHtml4( lTrip.mPrices ) + "</td><td>" +
-					lSEUtils.escapeHtml4( lTrip.mPrices2 ) + "</td></tr>\n";
+			lBody += toFormattedString_Trip( lTrip );
 		}
-		lBody += "</table></br></br>\n";
 
+		lBody += "</table></div>\n";
 		if( !mResult.mReturnTicket )
+		{
+			lBody += "<div></div>";
 			return lBody;
+		}
 
 		lBody += "<table border=1>\n";
-		lBody += "<tr><th colspan=3>checking date &#45;" + lSEUtils.escapeHtml4( mResult.mAirlines ) + " &#45;" + mResult.mAirportCode_GoingTo + "&nbsp;&#61;&#62;" + mResult.mAirportCode_LeavingFrom + "</th></tr>\n";
+		lBody += "<tr><th colspan=3>" + lSEUtils.escapeHtml4( mResult.mAirlines ) + " &#45;" + mResult.mAirportCode_GoingTo + "→" + mResult.mAirportCode_LeavingFrom + "</th></tr>\n";
 
 		// Return
 		for( TravelData_RESULT.TravelData_PossibleTrips lTrip : mResult.mTrips )
 		{
 			if( lTrip.mOutboundTrip )
 				continue;
-			ArrayList<String> lNormalizedDatetimes = NormalizeDatetimes( FormatDatetime( lTrip.mDepartureDaytime ), FormatDatetime( lTrip.mArrivalDaytime ));
-
-			lBody += "<tr><td>" + lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 0 )) + "</br>" +
-					lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 1 )) + "&#45;&#62;</br>" +
-					lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 2 )) + "</td><td>" +
-					lSEUtils.escapeHtml4( lTrip.mPrices ) + "</td><td>" +
-					lSEUtils.escapeHtml4( lTrip.mPrices2 ) + "</td></tr>\n";
+			lBody += toFormattedString_Trip( lTrip );
 		}
 		lBody += "</table></br></br>\n";
+		return lBody;
+	}
+
+	private String toFormattedString_Trip( TravelData_RESULT.TravelData_PossibleTrips aTrip )
+	{
+		StringEscapeUtils lSEUtils = new StringEscapeUtils();
+		ArrayList<String> lNormalizedDatetimes = NormalizeDatetimes( FormatDatetime( aTrip.mDepartureDaytime ), FormatDatetime( aTrip.mArrivalDaytime ));
+		String lBody = "<tr><td nowrap>" + lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 0 )) + "</br>" +
+				lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 1 )) + "→" +
+				lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 2 )) + "</td><td>BASIC</br>" +
+				lSEUtils.escapeHtml4( aTrip.mPrices_BasicFare_Normal ) + " &#47; " +
+				lSEUtils.escapeHtml4( aTrip.mPrices_BasicFare_Discount ) +
+				"</td><td>PLUS</br>" +
+				lSEUtils.escapeHtml4( aTrip.mPrices_PlusFare_Normal ) + " &#47; " +
+				lSEUtils.escapeHtml4( aTrip.mPrices_PlusFare_Discount ) + "</td></tr>\n";
+
 		return lBody;
 	}
 
@@ -177,15 +187,4 @@ departure datetime -> arrival date time |  prices1 | prices2 |
 departure datetime -> arrival date time |  prices1 | prices2 |
 --------------------------------------------------------------
 
-
-<html>
-<head>
-</head>
-<body>
-<table>
-<tr><th colspan=3>checking date - Wizzair - SOF - CRL </th></tr>
-<tr><td>departure datetime -> arrival date time</td><td>prices1</td><td>prices2</td></tr>
-</table>
-</body>
-</html>
  */
