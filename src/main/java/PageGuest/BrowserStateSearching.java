@@ -3,11 +3,11 @@ package PageGuest;
 /**
  * Created by andras.igneczi on 16/03/2016.
  */
-public class SearchStateSearching extends SearchState
+public class BrowserStateSearching extends BrowserState
 {
     TravelData_INPUT mTravelDataInput;
 
-    public SearchStateSearching( TravelData_INPUT aTravelDataInput )
+    public BrowserStateSearching( TravelData_INPUT aTravelDataInput )
     {
         mTravelDataInput = aTravelDataInput;
     }
@@ -16,12 +16,12 @@ public class SearchStateSearching extends SearchState
     public void doAction( WebPageGuest aWebPageGuest )
     {
         mWebPageGuest = aWebPageGuest;
-        aWebPageGuest.setSearchState( this );
+        aWebPageGuest.setBrowserState( this );
     }
 
     public String toString()
     {
-        return "SearchStateSearching";
+        return "BrowserStateSearching";
     }
 
     public TravelData_INPUT getTravelDataInput()

@@ -13,10 +13,11 @@ public abstract class WebPageGuest
     private Hashtable<String, String> mAirports;
 	//protected TravelData_INPUT  mTravelDataInput = null;
     protected TravelData_RESULT mTravelDataResult = null;
-    protected SearchState mSearchState = null;
+    protected BrowserState mBrowserState = null;
 
-    public abstract boolean DoSearch( String aAirportCode_Way_From, String aAirportCode_Way_To,
-                                      String aDepartureDate_Way_To, String aReturnDate_Way_Back );
+    public abstract void DoSearch( String aAirportCode_Way_From, String aAirportCode_Way_To,
+                                   String aDepartureDate_Way_To, String aReturnDate_Way_Back );
+    public abstract void stop();
 
     public WebPageGuest()
     {
@@ -50,13 +51,13 @@ public abstract class WebPageGuest
         return mAirports.get( aCode );
     }
 
-    public void setSearchState( SearchState aSearchState )
+    public void setBrowserState( BrowserState aBrowserState )
     {
-        mSearchState = aSearchState;
+        mBrowserState = aBrowserState;
     }
 
-    public SearchState getSearchState()
+    public BrowserState getBrowserState()
     {
-        return mSearchState;
+        return mBrowserState;
     }
 }

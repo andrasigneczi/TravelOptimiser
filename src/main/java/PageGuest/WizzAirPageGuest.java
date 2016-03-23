@@ -23,6 +23,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	Thread mThread;
 	Browser mBrowser = null;
 	Object mMutex = new Object();
+	boolean mThreadStopped = true;
 
 	public WizzAirPageGuest()
 	{
@@ -31,13 +32,14 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		mThread = new Thread( this );
 		mThread.setName( "WizzAirThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME ) );
 		mThread.start();
+		System.out.println("WizzAirPageGuest()");
 	}
 
 	public boolean OpenStartPage()
 	{
 		return false;
 	}
-	public boolean DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
+	public void DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
 	{
 		synchronized( mMutex )
 		{
@@ -60,11 +62,12 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 			mSearchQueue.add( lTravelDataInput );
 		}
+		System.out.println("DoSearch()");
 	}
 
 	private boolean InitBrowser()
 	{
-		new SearchStateInit().doAction( this );
+		new BrowserStateInit().doAction( this );
 
 		mBrowser = new Browser();
 		BrowserView view = new BrowserView(mBrowser);
@@ -98,23 +101,27 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 				if (event.isMainFrame())
 				{
 					TravelData_INPUT lTravelDataInput = null;
-					if( getSearchState().toString().equals( "SearchStateSearching" ))
+					if( getBrowserState().toString().equals( "BrowserStateSearching" ))
 					{
-						lTravelDataInput = ((SearchStateSearching)getSearchState()).getTravelDataInput();
+						lTravelDataInput = ((BrowserStateSearching)getBrowserState()).getTravelDataInput();
 					}
 
-					DOMDocument document = event.getBrowser().getDocument();
-					new SearchStateSearchingFinished( document, lTravelDataInput ).doAction( getSearchState().getWebPageGuest() );
+					DOMDocument lDOMDocument = event.getBrowser().getDocument();
+					if( lTravelDataInput == null )
+						new BrowserStateReadyToSearch( lDOMDocument ).doAction( getBrowserState().getWebPageGuest());
+					else
+						new BrowserStateSearchingFinished( lDOMDocument, lTravelDataInput ).doAction( getBrowserState().getWebPageGuest() );
+					System.out.println("addLoadListener()");
 					return;
 
 
 
-
+/*
 					DOMDocument document = event.getBrowser().getDocument();
-					if( !getSearchState().toString().equals( "SearchStateInit" ))
+					if( !getBrowserState().toString().equals( "BrowserStateInit" ))
 					{
 						CollectDatas( document );
-						new SearchStateSearchingFinished( document ).doAction( getSearchState().getWebPageGuest() );
+						new BrowserStateSearchingFinished( document ).doAction( getBrowserState().getWebPageGuest() );
 						return;
 					}
 
@@ -123,7 +130,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 					{
 						lTravelDataInput = mSearchQueue.remove( 0 );
 					}
-					new SearchStateSearching( lTravelDataInput ).doAction( getSearchState().getWebPageGuest() );
+					new BrowserStateSearching( lTravelDataInput ).doAction( getBrowserState().getWebPageGuest() );
 
 					FillTheForm(document);
 
@@ -133,11 +140,18 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 					{
 						link.click();
 					}
+*/
 				}
 			}
 		});
 
+		System.out.println("InitBrowser()");
 		return false;
+	}
+
+	private void FillTheResultForm(DOMDocument document, TravelData_INPUT aTravelDataInput )
+	{
+
 	}
 
 	private void FillTheForm(DOMDocument document, TravelData_INPUT aTravelDataInput )
@@ -148,35 +162,36 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		// source
 		DOMElement elementTextSource = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_AutocompleteOriginStation" ) );
 		DOMInputElement textInputSource = (DOMInputElement)elementTextSource;
-		String lAirportLabel = getAirportName( mTravelDataInput.mAirportCode_LeavingFrom ) +  " (" + mTravelDataInput.mAirportCode_LeavingFrom + ")";
+		String lAirportLabel = getAirportName( aTravelDataInput.mAirportCode_LeavingFrom ) +  " (" + aTravelDataInput.mAirportCode_LeavingFrom + ")";
 		textInputSource.setValue( lAirportLabel );
 
 		// we have to fill the hidden fields as well
 		DOMElement elementIdSource = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_OriginStation" ) );
 		DOMInputElement hiddenInputSource = (DOMInputElement)elementIdSource;
-		hiddenInputSource.setValue( mTravelDataInput.mAirportCode_LeavingFrom );
+		hiddenInputSource.setValue( aTravelDataInput.mAirportCode_LeavingFrom );
 
 		// target
 		String lTargetInputId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_AutocompleteDestinationStation";
 		DOMElement elementTextTarget = document.findElement( By.id( lTargetInputId ) );
 		DOMInputElement textInputTarget = (DOMInputElement)elementTextTarget;
-		lAirportLabel = getAirportName( mTravelDataInput.mAirportCode_GoingTo ) +  " (" + mTravelDataInput.mAirportCode_GoingTo + ")";
+		lAirportLabel = getAirportName( aTravelDataInput.mAirportCode_GoingTo ) +  " (" + aTravelDataInput.mAirportCode_GoingTo + ")";
 		textInputTarget.setValue( lAirportLabel );
 
 		// we have to fill the hidden fields as well
 		DOMElement elementIdTarget = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_DestinationStation" ) );
 		DOMInputElement hiddenInputTarget = (DOMInputElement)elementIdTarget;
-		hiddenInputTarget.setValue( mTravelDataInput.mAirportCode_GoingTo );
+		hiddenInputTarget.setValue( aTravelDataInput.mAirportCode_GoingTo );
 
 		// departure date
 		DOMElement elementIdDepartureDate = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_DepartureDate" ) );
 		DOMInputElement inputDepartureDate = (DOMInputElement)elementIdDepartureDate;
-		inputDepartureDate.setValue( mTravelDataInput.mDepartureDay );
+		inputDepartureDate.setValue( aTravelDataInput.mDepartureDay );
 
 		// arrival date
 		DOMElement elementIdReturnDate = document.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_ReturnDate" ) );
 		DOMInputElement inputReturnDate = (DOMInputElement)elementIdReturnDate;
-		inputReturnDate.setValue( mTravelDataInput.mReturnDay );
+		inputReturnDate.setValue( aTravelDataInput.mReturnDay );
+		System.out.println("FillTheForm()");
 	}
 
 	private void CollectDatas_ParseTheRows( DOMElement aFlightBodyElement, boolean aOutbound )
@@ -238,14 +253,15 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			}
 			lRowElementIndex++;
 		}
+		System.out.println("CollectDatas_ParseTheRows()");
 	}
 
-	private void CollectDatas(DOMDocument document)
+	private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
 	{
 		mTravelDataResult = new TravelData_RESULT();
-		mTravelDataResult.mAirlines = mTravelDataInput.mAirlines;
-		mTravelDataResult.mAirportCode_GoingTo = mTravelDataInput.mAirportCode_GoingTo;
-		mTravelDataResult.mAirportCode_LeavingFrom = mTravelDataInput.mAirportCode_LeavingFrom;
+		mTravelDataResult.mAirlines = aTravelDataInput.mAirlines;
+		mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
+		mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
 		mTravelDataResult.mReturnTicket = mTravelDataResult.mReturnTicket;
 
 		java.util.List<DOMElement> lFlightsBodyElements = document.findElements( By.className( "flights-body" ) );
@@ -266,17 +282,79 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		}
 
 		ResultQueue.getInstance().push( mTravelDataResult );
+		System.out.println("CollectDatas()");
 	}
 
 	public void run()
 	{
+		mThreadStopped = false;
 		while( !mThreadStopped )
 		{
-			if( !getSearchState().toString().equals( "SearchStateInit" ))
-		}
-		synchronized( mMutex )
-		{
-		}
+			int lSearQueueSize;
+			synchronized( mMutex )
+			{
+				lSearQueueSize = mSearchQueue.size();
+			}
 
+			String lBrowserState = getBrowserState().toString();
+			if(( lSearQueueSize == 0 && !lBrowserState.equals( "BrowserStateSearchingFinished" )) || lBrowserState.equals( "BrowserStateInit" ))
+				{
+				try
+				{
+					Thread.sleep( 100 );
+				}
+				catch( InterruptedException e )
+				{
+					e.printStackTrace();
+				}
+				continue;
+			}
+
+			if( lBrowserState.equals( "BrowserStateSearchingFinished" ))
+			{
+				BrowserStateSearchingFinished lState = (BrowserStateSearchingFinished)getBrowserState();
+				TravelData_INPUT lTravelDataInput = lState.getTravelDataInput();
+				DOMDocument lDOMDocument = lState.getDOMDocument();
+
+				// The last search has been finished, collect the datas, start a new search
+				CollectDatas( lDOMDocument, lTravelDataInput );
+				new BrowserStateReadyToSearch( lDOMDocument ).doAction( this );
+			}
+			else if( lBrowserState.equals( "BrowserStateReadyToSearch" ))
+			{
+				BrowserStateReadyToSearch lState = (BrowserStateReadyToSearch)getBrowserState();
+				TravelData_INPUT lTravelDataInput;
+				DOMDocument lDOMDocument = lState.getDOMDocument();
+
+				synchronized( mMutex )
+				{
+					lTravelDataInput = mSearchQueue.remove( 0 );
+				}
+				new BrowserStateSearching( lTravelDataInput ).doAction( this );
+
+				FillTheForm(lDOMDocument, lTravelDataInput);
+
+				// click the button
+				DOMNode link = lDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_ButtonSubmit" ) );
+				if( link != null )
+				{
+					link.click();
+				}
+			}
+		}
+		System.out.println("run()");
+	}
+
+	public void stop()
+	{
+		mThreadStopped = true;
+		try
+		{
+			mThread.join();
+		}
+		catch( InterruptedException e )
+		{
+			e.printStackTrace();
+		}
 	}
 }

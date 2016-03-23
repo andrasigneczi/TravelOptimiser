@@ -5,8 +5,13 @@ package PageGuest;
  */
 public class FlibcoPageGuest extends WebPageGuest
 {
-	public boolean DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
+	public void DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
 	{
-		return false;
+	}
+
+	@Override
+	public void stop()
+	{
+
 	}
 }

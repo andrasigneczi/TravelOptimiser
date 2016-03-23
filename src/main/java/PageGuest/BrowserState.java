@@ -3,7 +3,7 @@ package PageGuest;
 /**
  * Created by andras.igneczi on 16/03/2016.
  */
-public abstract class SearchState
+public abstract class BrowserState
 {
     WebPageGuest mWebPageGuest = null;
 

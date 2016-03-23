@@ -52,4 +52,12 @@ public class ResultQueue
             return mResultList.remove ( 0 );
         }
     }
+
+    public int size()
+    {
+        synchronized( mMutex )
+        {
+            return mResultList.size();
+        }
+    }
 }
