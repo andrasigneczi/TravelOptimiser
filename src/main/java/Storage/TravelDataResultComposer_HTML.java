@@ -134,6 +134,8 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 
 	private ArrayList<String> NormalizeDatetimes( String aDeparture, String aArrival )
 	{
+		// Fri, 08 Jul 20:40; Fri, 08 Jul 22:40
+		/*
 		String lDate = "";
 		for( int i = 0; i < aDeparture.length() && i < aArrival.length(); i++ )
 		{
@@ -142,6 +144,10 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 			else
 				break;
 		}
+		*/
+		String lDate = aDeparture.substring( 0, 11 );
+		if( !lDate.equals( aArrival.substring( 0, 11 )))
+			lDate = "";
 		ArrayList<String> lReturn = new ArrayList<String>();
 		lReturn.add( lDate.trim() );
 		lReturn.add( aDeparture.substring( lDate.length() ).trim() );
