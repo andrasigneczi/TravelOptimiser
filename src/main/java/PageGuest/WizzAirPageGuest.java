@@ -255,8 +255,8 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 						// TODO: separate the prices; currency handling
 						java.util.List<DOMNode> lChildren = lCell.getChildren();
-						lTrip.mPrices_BasicFare_Normal = lChildren.get(0).getTextContent();
-						lTrip.mPrices_BasicFare_Discount = lChildren.get(1).getTextContent();
+						lTrip.mPrices_BasicFare_Normal = ((DOMElement)lChildren.get(0)).getInnerText();
+						lTrip.mPrices_BasicFare_Discount = ((DOMElement)lChildren.get(1)).getInnerText();
 					}
 					else if( lCellIndex == 2 )
 					{
@@ -266,8 +266,8 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 						// TODO: separate the prices; currency handling
 						java.util.List<DOMNode> lChildren = lCell.getChildren();
-						lTrip.mPrices_PlusFare_Normal = lChildren.get(0).getTextContent();
-						lTrip.mPrices_PlusFare_Discount = lChildren.get(1).getTextContent();
+						lTrip.mPrices_PlusFare_Normal = ((DOMElement)lChildren.get(0)).getInnerText();
+						lTrip.mPrices_PlusFare_Discount = ((DOMElement)lChildren.get(1)).getInnerText();
 					}
 					lCellIndex++;
 				}
