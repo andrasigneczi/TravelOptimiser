@@ -5,7 +5,7 @@ package PageGuest;
  */
 public class TravelData_INPUT
 {
-	public String mAirlines;
+	public String mAirline;
 	public String mAirportCode_LeavingFrom;   // SOF
 	public String mAirportCode_GoingTo;       // HHN
 	public String mDepartureDay;              // 2016.03.25 17:10

@@ -50,7 +50,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			}
 
 			TravelData_INPUT lTravelDataInput = new TravelData_INPUT();
-			lTravelDataInput.mAirlines                = "wizzair";
+			lTravelDataInput.mAirline                 = "wizzair";
 			lTravelDataInput.mAirportCode_LeavingFrom = aFrom;
 			lTravelDataInput.mAirportCode_GoingTo     = aTo;
 			lTravelDataInput.mDepartureDay            = aDepartureDate;
@@ -281,7 +281,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
 	{
 		mTravelDataResult = new TravelData_RESULT();
-		mTravelDataResult.mAirlines = aTravelDataInput.mAirlines;
+		mTravelDataResult.mAirline = aTravelDataInput.mAirline;
 		mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
 		mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
 		mTravelDataResult.mReturnTicket = aTravelDataInput.mReturnTicket;

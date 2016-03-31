@@ -2,6 +2,7 @@ import PageGuest.ResultQueue;
 import PageGuest.TravelData_RESULT;
 import PageGuest.WebPageGuest;
 import Storage.FileWriterAgent;
+import Storage.SQLiteAgent;
 import javafx.scene.shape.Path;
 import org.apache.log4j.Logger;
 
@@ -20,31 +21,33 @@ public class Main
 
     public static void main( String[] args ) throws InterruptedException
     {
-//
-//        try
-//        {
-//            //JxBrowserHelloWorld.HelloWorld();
-//	        //JxBrowserHelloWorld.FlashSample();
-//            WebPageGuest lGuest = WebPageGuestFactory.Create( "WizzAir" );
-//            lGuest.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
-//            lGuest.DoSearch( "SOF", "HHN", "2016.08.06.", "2016.08.09." );
-//            lGuest.DoSearch( "CRL", "BUD", "2016.07.08.", "2016.07.11." );
-//            FileWriterAgent lFWA = new FileWriterAgent( "database.html" );
-//
-//            for( int i = 0; i < 100; i++ )
-//            {
-//                TravelData_RESULT lResult = ResultQueue.getInstance().pop();
-//                if( lResult != null )
-//                    lFWA.Archive( lResult );
-//                Thread.sleep( 1000 );
-//            }
-//            lGuest.stop();
-//        }
-//        catch( Exception e )
-//        {
-//            e.printStackTrace();
-//        }
+        try
+        {
+            //JxBrowserHelloWorld.HelloWorld();
+	        //JxBrowserHelloWorld.FlashSample();
+            WebPageGuest lGuest = WebPageGuestFactory.Create( "WizzAir" );
+            lGuest.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
+            lGuest.DoSearch( "SOF", "HHN", "2016.08.06.", "2016.08.09." );
+            lGuest.DoSearch( "CRL", "BUD", "2016.07.08.", "2016.07.11." );
+            FileWriterAgent lFWA = new FileWriterAgent( "database.html" );
+            SQLiteAgent lSQLiteAgent = new SQLiteAgent();
+            lSQLiteAgent.InitializeDatabase();
+            //lFWA.setNextAgent( lSQLiteAgent );
 
+            for( int i = 0; i < 100; i++ )
+            {
+                TravelData_RESULT lResult = ResultQueue.getInstance().pop();
+                if( lResult != null )
+                    lFWA.Archive( lResult );
+                Thread.sleep( 1000 );
+            }
+            lGuest.stop();
+        }
+        catch( Exception e )
+        {
+            e.printStackTrace();
+        }
+/*
         SQLiteHelloWorld.Test1( new String[0] );
         SQLiteHelloWorld.Test2( new String[0] );
         SQLiteHelloWorld.Test3( new String[0] );
@@ -53,7 +56,7 @@ public class Main
         SQLiteHelloWorld.Test6( new String[0] );
 
         runMe( "hello" );
-
+*/
 /*
         Thread.sleep(1000000);
         System.exit(-1);
