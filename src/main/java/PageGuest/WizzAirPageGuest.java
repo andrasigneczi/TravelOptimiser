@@ -242,9 +242,9 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 						// "Fri, 08 Apr 8:45 → 10:40"
 						java.util.List<DOMNode> lChildren = lCell.getChildren();
 
-						lTrip.mDepartureDaytime = ((DOMElement)lChildren.get(0)).getAttribute("data-flight-departure");
-						lTrip.mArrivalDaytime = ((DOMElement)lChildren.get(0)).getAttribute("data-flight-arrival");
-						System.out.println( lTrip.mDepartureDaytime );
+						lTrip.mDepartureDatetime = ((DOMElement)lChildren.get(0)).getAttribute("data-flight-departure");
+						lTrip.mArrivalDatetime = ((DOMElement)lChildren.get(0)).getAttribute("data-flight-arrival");
+						System.out.println( lTrip.mDepartureDatetime );
 
 					}
 					else if( lCellIndex == 1 )
@@ -281,10 +281,11 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
 	{
 		mTravelDataResult = new TravelData_RESULT();
-		mTravelDataResult.mAirline = aTravelDataInput.mAirline;
-		mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
-		mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
-		mTravelDataResult.mReturnTicket = aTravelDataInput.mReturnTicket;
+		//mTravelDataResult.mAirline = aTravelDataInput.mAirline;
+		//mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
+		//mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
+		mTravelDataResult.mTravelDataInput = aTravelDataInput;
+		//mTravelDataResult.mReturnTicket = aTravelDataInput.mReturnTicket;
 
 		java.util.List<DOMElement> lFlightsBodyElements = document.findElements( By.className( "flights-body" ) );
 		int lBodyElementIndex = 0;
