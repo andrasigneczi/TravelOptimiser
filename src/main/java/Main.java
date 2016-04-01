@@ -23,6 +23,10 @@ public class Main
     {
         try
         {
+            SQLiteAgent lSQLiteAgent2 = new SQLiteAgent();
+            lSQLiteAgent2.InitializeDatabase();
+            System.exit(0);
+
             //JxBrowserHelloWorld.HelloWorld();
 	        //JxBrowserHelloWorld.FlashSample();
             WebPageGuest lGuest = WebPageGuestFactory.Create( "WizzAir" );

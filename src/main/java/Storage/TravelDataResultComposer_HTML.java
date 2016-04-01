@@ -54,7 +54,7 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 		String lBody = "";
 		String lCheckingDate = LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE );
 		lBody += "<div style=\"float:left;\"><table border=1>\n";
-		lBody += "<tr><th colspan=3>" + lCheckingDate + " &#45;" + lSEUtils.escapeHtml4( mResult.mAirline ) + " &#45;" + mResult.mAirportCode_LeavingFrom + "→" + mResult.mAirportCode_GoingTo + "</th></tr>\n";
+		lBody += "<tr><th colspan=3>" + lCheckingDate + " &#45;" + lSEUtils.escapeHtml4( mResult.mTravelDataInput.mAirline ) + " &#45;" + mResult.mTravelDataInput.mAirportCode_LeavingFrom + "→" + mResult.mTravelDataInput.mAirportCode_GoingTo + "</th></tr>\n";
 
 		// Outbound
 		for( TravelData_RESULT.TravelData_PossibleTrips lTrip : mResult.mTrips )
@@ -66,14 +66,14 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 		}
 
 		lBody += "</table></div>\n";
-		if( !mResult.mReturnTicket )
+		if( !mResult.mTravelDataInput.mReturnTicket )
 		{
 			lBody += "<div></div>";
 			return lBody;
 		}
 
 		lBody += "<table border=1>\n";
-		lBody += "<tr><th colspan=3>" + lSEUtils.escapeHtml4( mResult.mAirline ) + " &#45;" + mResult.mAirportCode_GoingTo + "→" + mResult.mAirportCode_LeavingFrom + "</th></tr>\n";
+		lBody += "<tr><th colspan=3>" + lSEUtils.escapeHtml4( mResult.mTravelDataInput.mAirline ) + " &#45;" + mResult.mTravelDataInput.mAirportCode_GoingTo + "→" + mResult.mTravelDataInput.mAirportCode_LeavingFrom + "</th></tr>\n";
 
 		// Return
 		for( TravelData_RESULT.TravelData_PossibleTrips lTrip : mResult.mTrips )
@@ -89,7 +89,7 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 	private String toFormattedString_Trip( TravelData_RESULT.TravelData_PossibleTrips aTrip )
 	{
 		StringEscapeUtils lSEUtils = new StringEscapeUtils();
-		ArrayList<String> lNormalizedDatetimes = NormalizeDatetimes( FormatDatetime( aTrip.mDepartureDaytime ), FormatDatetime( aTrip.mArrivalDaytime ));
+		ArrayList<String> lNormalizedDatetimes = NormalizeDatetimes( FormatDatetime( aTrip.mDepartureDatetime ), FormatDatetime( aTrip.mArrivalDatetime ));
 		String lBody = "<tr><td nowrap>" + lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 0 )) + "</br>" +
 				lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 1 )) + "→" +
 				lSEUtils.escapeHtml4( lNormalizedDatetimes.get( 2 )) + "</td><td>BASIC</br>" +

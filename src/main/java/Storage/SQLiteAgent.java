@@ -34,29 +34,8 @@ public class SQLiteAgent extends ArchiverAgent
 			stmt.close();
 		}
 		catch ( Exception e ) {
-			//if( !e.getMessage().equals( "table " + aTableName + " already exists" ))
-			{
-				System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-				System.exit( 0 );
-			}
-		}
-	}
-
-	private void CreateTable( String aTableName, String aSql )
-	{
-		Statement stmt = null;
-		try
-		{
-			stmt = mConnection.createStatement();
-			stmt.executeUpdate( aSql );
-			stmt.close();
-		}
-		catch ( Exception e ) {
-			if( !e.getMessage().equals( "table " + aTableName + " already exists" ))
-			{
-				System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-				System.exit( 0 );
-			}
+			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			System.exit( 0 );
 		}
 	}
 
@@ -67,7 +46,7 @@ public class SQLiteAgent extends ArchiverAgent
 			mConnection = DriverManager.getConnection("jdbc:sqlite:test.db");
 			System.out.println("Opened database successfully");
 
-			String aSql = "CREATE TABLE Search\n" +
+			String aSql = "CREATE TABLE IF NOT EXISTS Search\n" +
 					"(\n" +
 					"\tID                      INT PRIMARY KEY NOT NULL,\n" +
 					"\tAirportCode_LeavingFrom CHAR(3)  NOT NULL,\n" +
@@ -80,31 +59,45 @@ public class SQLiteAgent extends ArchiverAgent
 					"\tNearbyAirports          TINYINT NOT NULL DEFAULT 0\n" +
 					");\n";
 
-			CreateTable( "Search", aSql );
+			ExecuteStatement( aSql );
 
-			aSql = "CREATE TABLE TravelDataResult\n" +
+			aSql = "CREATE TABLE IF NOT EXISTS Search_datetime\n" +
+					"(\n" +
+					"\tID                      INT PRIMARY KEY NOT NULL,\n" +
+					"\tSearchDatetime          CHAR(19) NOT NULL,\n" +
+					"\tSearch_ID               INT NOT NULL,\n" +
+					"\tFOREIGN KEY(Search_ID) REFERENCES Search(ID)\n" +
+					");\n";
+
+			ExecuteStatement( aSql );
+
+			aSql = "CREATE TABLE IF NOT EXISTS TravelDataResult\n" +
 					"(\n" +
 					"\tID INT PRIMARY KEY      NOT NULL,\n" +
 					"\tAirline                 CHAR(100),\n" +
 					"\tAirportCode_LeavingFrom CHAR(3),\n" +
-					"\tAirportCode_GoingTo     CHAR(3)\n" +
+					"\tAirportCode_GoingTo     CHAR(3),\n" +
+					"\tSearch_ID               INT NOT NULL,\n" +
+					"\tFOREIGN KEY(Search_ID) REFERENCES Search(ID)\n" +
 					");\n";
 
-			CreateTable( "TravelDataResult", aSql );
+			ExecuteStatement( aSql );
 
-			aSql = "CREATE TABLE TravelDataResult_PossibleTrips\n" +
+			aSql = "CREATE TABLE IF NOT EXISTS TravelDataResult_PossibleTrips\n" +
 					"(\n" +
 					"\tID INT PRIMARY KEY        NOT NULL,\n" +
-					"\tDepartureDaytime CHAR(16) NOT NULL,\n" +     // 2016.03.25 17:10
-					"\tArrivalDaytime   CHAR(16) NOT NULL,\n" +     // 2016.03.25 22:10
+					"\tDepartureDatetime CHAR(16) NOT NULL,\n" +     // 2016.03.25 17:10
+					"\tArrivalDatetime   CHAR(16) NOT NULL,\n" +     // 2016.03.25 22:10
 					"\tPrices_BasicFare_Normal   FLOAT NOT NULL,\n" +
 					"\tPrices_BasicFare_Discount FLOAT,\n" +
 					"\tPrices_PlusFare_Normal    FLOAT,\n" +
 					"\tPrices_PlusFare_Discount  FLOAT,\n" +
-					"\tOutboundTrip              TINYINT NOT NULL DEFAULT 0\n" +
+					"\tOutboundTrip              TINYINT NOT NULL DEFAULT 0,\n" +
+					"\tTravelDataResult_ID       INT NOT NULL,\n" +
+					"\tFOREIGN KEY(TravelDataResult_ID) REFERENCES TravelDataResult(ID)\n" +
 					");\n";
 
-			CreateTable( "TravelDataResult_PossibleTrips", aSql );
+			ExecuteStatement( aSql );
 
 		} catch ( Exception e ) {
 			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
