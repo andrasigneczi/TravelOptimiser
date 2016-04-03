@@ -1,3 +1,5 @@
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -197,5 +199,71 @@ public class SQLiteHelloWorld
         System.out.println("Operation done successfully");
     }
 
+    public static void Test7()
+    {
+        try
+        {
+            Class.forName("org.sqlite.JDBC");
+            Connection mConnection = DriverManager.getConnection("jdbc:sqlite:test.db");
+            System.out.println("Opened database successfully");
+
+            Statement stmt = mConnection.createStatement();
+            stmt.executeUpdate("drop table Search;");
+
+            String lSql = "CREATE TABLE IF NOT EXISTS Search\n" +
+                    "(\n" +
+                    "\tID                      INTEGER PRIMARY KEY NOT NULL,\n" +
+                    "\tAirportCode_LeavingFrom CHAR(3)  NOT NULL,\n" +
+                    "\tAirportCode_GoingTo     CHAR(3)  NOT NULL,\n" +
+                    "\tDepartureDay            CHAR(10) NOT NULL,\n" +
+                    "\tReturnDay               CHAR(10),\n" +
+                    "\tAdultNumber             TINYINT NOT NULL DEFAULT 1,\n" +
+                    "\tChildNumber             TINYINT NOT NULL DEFAULT 0,\n" +
+                    "\tInfantNumber            TINYINT NOT NULL DEFAULT 0,\n" +
+                    "\tNearbyAirports          TINYINT NOT NULL DEFAULT 0\n" +
+                    ");\n";
+
+            stmt.executeUpdate(lSql);
+
+
+            lSql = "INSERT INTO Search(\n" +
+                    "AirportCode_LeavingFrom,\n" +
+                    "AirportCode_GoingTo,\n" +
+                    "DepartureDay,\n" +
+                    "ReturnDay,\n" +
+                    "AdultNumber,\n" +
+                    "ChildNumber,\n" +
+                    "InfantNumber,\n" +
+                    "NearbyAirports)\n" +
+                    "VALUES(\n" +
+                    "'HHN', 'BUD', '" + Util.StringHelper.escapeSQL( "-1%='1-" ) + "', '2016-11-12', '1', '1', '1', '0'" +
+                    ");\n";
+
+            stmt.executeUpdate(lSql);
+
+
+            lSql = "SELECT ID FROM Search WHERE AirportCode_LeavingFrom='" + "HHN" + "' " +
+                    "AND AirportCode_GoingTo='" + "BUD" + "' " +
+                    "AND DepartureDay='" + "2016-10-11" + "' "+
+                    "AND ReturnDay='" + "2016-10-13" + "' " +
+                    "AND AdultNumber='" + "1" + "' " +
+                    "AND ChildNumber='" + "1" + "' " +
+                    "AND InfantNumber='" + "1" + "' " +
+                    "AND NearbyAirports='" + "1" + "';";
+            ResultSet rs = stmt.executeQuery( lSql );
+            while ( rs.next() )
+            {
+                int id = rs.getInt( "id" );
+            }
+            rs.close();
+            stmt.close();
+            mConnection.close();
+        }
+        catch( Exception e )
+        {
+            e.printStackTrace();
+        }
+
+    }
 
 }

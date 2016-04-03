@@ -20,9 +20,9 @@ import java.util.ArrayList;
 public class WizzAirPageGuest extends WebPageGuest implements Runnable
 {
 	ArrayList<TravelData_INPUT> mSearchQueue;
-	Thread mThread;
+	Thread  mThread;
 	Browser mBrowser = null;
-	Object mMutex = new Object();
+	Object  mMutex = new Object();
 	boolean mThreadStopped = true;
 
 	public WizzAirPageGuest()
@@ -281,9 +281,9 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
 	{
 		mTravelDataResult = new TravelData_RESULT();
-		//mTravelDataResult.mAirline = aTravelDataInput.mAirline;
-		//mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
-		//mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
+		mTravelDataResult.mAirline = aTravelDataInput.mAirline;
+		mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
+		mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
 		mTravelDataResult.mTravelDataInput = aTravelDataInput;
 		//mTravelDataResult.mReturnTicket = aTravelDataInput.mReturnTicket;
 

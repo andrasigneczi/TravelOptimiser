@@ -20,9 +20,9 @@ public class TravelData_RESULT
 		mTrips = new ArrayList<TravelData_PossibleTrips>();
 	}
 
-	//public String mAirline;
-	//public String mAirportCode_LeavingFrom;   // SOF
-	//public String mAirportCode_GoingTo;       // HHN
+	public String mAirline;
+	public String mAirportCode_LeavingFrom;   // SOF
+	public String mAirportCode_GoingTo;       // HHN
 	public TravelData_INPUT mTravelDataInput;
 	public ArrayList<TravelData_PossibleTrips> mTrips;
 	//public boolean mReturnTicket;

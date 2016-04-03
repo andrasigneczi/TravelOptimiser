@@ -2,10 +2,7 @@ package Storage;
 
 import PageGuest.TravelData_RESULT;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 /**
  * Created by Andras on 27/03/2016.
@@ -13,30 +10,122 @@ import java.sql.Statement;
 public class SQLiteAgent extends ArchiverAgent
 {
 	Connection mConnection = null;
+	TravelData_RESULT mResult;
+	TravelDataResultComposer_SQL mComposer;
+
 	public void SQLiteAgent()
 	{
 
 	}
 
-	protected void WriteData( TravelData_RESULT aResult )
+	private int GetSearchId()
 	{
-		TravelDataResultComposer_SQL lComposer = new TravelDataResultComposer_SQL( aResult );
-		ExecuteStatement( lComposer.toFormattedString());
-	}
-
-	private void ExecuteStatement( String aSql )
-	{
-		Statement stmt = null;
+		String lQuery = mComposer.getSearchRecordIdString();
+		Statement lStmt = null;
 		try
 		{
-			stmt = mConnection.createStatement();
-			stmt.executeUpdate( aSql );
-			stmt.close();
+			int lID = -1;
+			lStmt = mConnection.createStatement();
+			ResultSet lResultSet = lStmt.executeQuery( lQuery );
+			while ( lResultSet.next() ) {
+				lID = lResultSet.getInt("ID");
+			}
+			lResultSet.close();
+			lStmt.close();
+			return lID;
 		}
 		catch ( Exception e ) {
 			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
 			System.exit( 0 );
 		}
+
+		return -1;
+	}
+
+	private int GetTravelDataResultId( int aSearchId )
+	{
+		String lQuery = mComposer.getTravelDataResultRecordIdString( aSearchId );
+		Statement lStmt = null;
+		try
+		{
+			int lID = -1;
+			lStmt = mConnection.createStatement();
+			ResultSet lResultSet = lStmt.executeQuery( lQuery );
+			while ( lResultSet.next() ) {
+				lID = lResultSet.getInt("ID");
+			}
+			lResultSet.close();
+			lStmt.close();
+			return lID;
+		}
+		catch ( Exception e ) {
+			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			System.exit( 0 );
+		}
+
+		return -1;
+	}
+
+	private int InsertNewSearch()
+	{
+		String lQuery = mComposer.insertNewSearchString();
+		return ExecuteStatement( lQuery, Statement.RETURN_GENERATED_KEYS );
+	}
+
+	private int InsertTravelDataResult( int aSearchId )
+	{
+		String lQuery = mComposer.insertTravelDataResultString( aSearchId );
+		return ExecuteStatement( lQuery, Statement.RETURN_GENERATED_KEYS );
+	}
+
+	private void InsertTravelDataResult_PossibleTrips( int aTravelDataResultId )
+	{
+		for( int i = 0; i < mResult.mTrips.size(); i++ )
+		{
+			String lQuery = mComposer.insertTravelDataResult_PossibleTrips( aTravelDataResultId );
+			ExecuteStatement( lQuery );
+		}
+	}
+
+	protected void WriteData( TravelData_RESULT aResult )
+	{
+		mComposer = new TravelDataResultComposer_SQL( aResult );
+		mResult = aResult;
+
+		int lSearchId = GetSearchId();
+		if( lSearchId == -1 )
+		{
+			lSearchId = InsertNewSearch();
+		}
+
+		int lTravelDataResultId =  GetTravelDataResultId( lSearchId );
+		if( lTravelDataResultId == -1 )
+		{
+			lTravelDataResultId = InsertTravelDataResult( lSearchId );
+		}
+		InsertTravelDataResult_PossibleTrips( lTravelDataResultId );
+	}
+
+	private int ExecuteStatement( String aSql )
+	{
+		return ExecuteStatement( aSql, Statement.EXECUTE_FAILED );
+	}
+
+	private int ExecuteStatement( String aSql, int aReturnValueType )
+	{
+		Statement lStmt = null;
+		int lReturnValue = -1;
+		try
+		{
+			lStmt = mConnection.createStatement();
+			lReturnValue = lStmt.executeUpdate( aSql, aReturnValueType );
+			lStmt.close();
+		}
+		catch ( Exception e ) {
+			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			System.exit( 0 );
+		}
+		return lReturnValue;
 	}
 
 	public void InitializeDatabase()
@@ -46,9 +135,14 @@ public class SQLiteAgent extends ArchiverAgent
 			mConnection = DriverManager.getConnection("jdbc:sqlite:test.db");
 			System.out.println("Opened database successfully");
 
+			ExecuteStatement("DROP TABLE IF EXISTS Search;");
+			ExecuteStatement("DROP TABLE IF EXISTS TravelDataResult;");
+			ExecuteStatement("DROP TABLE IF EXISTS TravelDataResult_PossibleTrips;");
+			ExecuteStatement("DROP INDEX IF EXISTS SearchIndex;");
+
 			String aSql = "CREATE TABLE IF NOT EXISTS Search\n" +
 					"(\n" +
-					"\tID                      INT PRIMARY KEY NOT NULL,\n" +
+					"\tID                      INTEGER PRIMARY KEY NOT NULL,\n" +
 					"\tAirportCode_LeavingFrom CHAR(3)  NOT NULL,\n" +
 					"\tAirportCode_GoingTo     CHAR(3)  NOT NULL,\n" +
 					"\tDepartureDay            CHAR(10) NOT NULL,\n" +
@@ -61,39 +155,40 @@ public class SQLiteAgent extends ArchiverAgent
 
 			ExecuteStatement( aSql );
 
-			aSql = "CREATE TABLE IF NOT EXISTS Search_datetime\n" +
-					"(\n" +
-					"\tID                      INT PRIMARY KEY NOT NULL,\n" +
-					"\tSearchDatetime          CHAR(19) NOT NULL,\n" +
-					"\tSearch_ID               INT NOT NULL,\n" +
-					"\tFOREIGN KEY(Search_ID) REFERENCES Search(ID)\n" +
-					");\n";
+			aSql = "CREATE INDEX IF NOT EXISTS SearchIndex ON Search (AirportCode_LeavingFrom, AirportCode_GoingTo, DepartureDay, ReturnDay, " +
+					"AdultNumber, ChildNumber, InfantNumber, NearbyAirports );";
 
 			ExecuteStatement( aSql );
 
 			aSql = "CREATE TABLE IF NOT EXISTS TravelDataResult\n" +
 					"(\n" +
-					"\tID INT PRIMARY KEY      NOT NULL,\n" +
+					"\tID                      INTEGER PRIMARY KEY NOT NULL,\n" +
 					"\tAirline                 CHAR(100),\n" +
 					"\tAirportCode_LeavingFrom CHAR(3),\n" +
 					"\tAirportCode_GoingTo     CHAR(3),\n" +
-					"\tSearch_ID               INT NOT NULL,\n" +
+					"\tSearch_ID               INTEGER NOT NULL,\n" +
 					"\tFOREIGN KEY(Search_ID) REFERENCES Search(ID)\n" +
 					");\n";
 
 			ExecuteStatement( aSql );
 
+			aSql = "CREATE INDEX IF NOT EXISTS TravelDataResultIndex ON TravelDataResult (Airline,AirportCode_LeavingFrom, " +
+					"AirportCode_GoingTo, Search_ID );";
+
+			ExecuteStatement( aSql );
+
 			aSql = "CREATE TABLE IF NOT EXISTS TravelDataResult_PossibleTrips\n" +
 					"(\n" +
-					"\tID INT PRIMARY KEY        NOT NULL,\n" +
-					"\tDepartureDatetime CHAR(16) NOT NULL,\n" +     // 2016.03.25 17:10
-					"\tArrivalDatetime   CHAR(16) NOT NULL,\n" +     // 2016.03.25 22:10
+					"\tID                        INTEGER PRIMARY KEY NOT NULL,\n" +
+					"\tDepartureDatetime         CHAR(16) NOT NULL,\n" +     // 2016.03.25 17:10
+					"\tArrivalDatetime           CHAR(16) NOT NULL,\n" +     // 2016.03.25 22:10
 					"\tPrices_BasicFare_Normal   FLOAT NOT NULL,\n" +
 					"\tPrices_BasicFare_Discount FLOAT,\n" +
 					"\tPrices_PlusFare_Normal    FLOAT,\n" +
 					"\tPrices_PlusFare_Discount  FLOAT,\n" +
 					"\tOutboundTrip              TINYINT NOT NULL DEFAULT 0,\n" +
-					"\tTravelDataResult_ID       INT NOT NULL,\n" +
+					"\tSearchDatetime            CHAR(19) NOT NULL,\n" +
+					"\tTravelDataResult_ID       INTEGER NOT NULL,\n" +
 					"\tFOREIGN KEY(TravelDataResult_ID) REFERENCES TravelDataResult(ID)\n" +
 					");\n";
 
