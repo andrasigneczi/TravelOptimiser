@@ -84,9 +84,30 @@ public class TravelDataResultComposer_SQL extends TravelDataResultComposer
 		return lSQL;
 	}
 
-	public String insertTravelDataResult_PossibleTrips( int aTravelDataResultId )
+	public String insertTravelDataResult_PossibleTrips( TravelData_RESULT.TravelData_PossibleTrips aTrip,  int aTravelDataResultId )
 	{
-		return "";
+		String lSQL = "INSERT INTO TravelDataResult_PossibleTrips (\n" +
+				"\tDepartureDatetime         ,\n" +     // 2016.03.25 17:10
+				"\tArrivalDatetime           ,\n" +     // 2016.03.25 22:10
+				"\tPrices_BasicFare_Normal   ,\n" +
+				"\tPrices_BasicFare_Discount ,\n" +
+				"\tPrices_PlusFare_Normal    ,\n" +
+				"\tPrices_PlusFare_Discount  ,\n" +
+				"\tOutboundTrip              ,\n" +
+				"\tSearchDatetime            ,\n" +
+				"\tTravelDataResult_ID       )\n" +
+				"VALUES(\n'" + aTrip.mDepartureDatetime + "', '" +
+				aTrip.mArrivalDatetime + "', '" +
+				aTrip.mPrices_BasicFare_Normal + "', '" +
+				aTrip.mPrices_BasicFare_Discount + "', '" +
+				aTrip.mPrices_PlusFare_Normal + "', '" +
+				aTrip.mPrices_PlusFare_Discount + "', '" +
+				aTrip.mOutboundTrip + "', " +
+				"now()," +
+				aTravelDataResultId + ");\n";
+
+
+		return lSQL;
 	}
 
 	public String toFormattedString()

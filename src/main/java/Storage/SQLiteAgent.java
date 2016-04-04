@@ -20,7 +20,17 @@ public class SQLiteAgent extends ArchiverAgent
 
 	private int GetSearchId()
 	{
-		String lQuery = mComposer.getSearchRecordIdString();
+		return GetSearchId( null );
+	}
+
+	private int GetSearchId( String aQuery )
+	{
+		String lQuery;
+		if( aQuery == null )
+			lQuery = mComposer.getSearchRecordIdString();
+		else
+			lQuery = aQuery;
+
 		Statement lStmt = null;
 		try
 		{
@@ -82,7 +92,7 @@ public class SQLiteAgent extends ArchiverAgent
 	{
 		for( int i = 0; i < mResult.mTrips.size(); i++ )
 		{
-			String lQuery = mComposer.insertTravelDataResult_PossibleTrips( aTravelDataResultId );
+			String lQuery = mComposer.insertTravelDataResult_PossibleTrips( mResult.mTrips.get( i ), aTravelDataResultId );
 			ExecuteStatement( lQuery );
 		}
 	}
@@ -118,7 +128,14 @@ public class SQLiteAgent extends ArchiverAgent
 		try
 		{
 			lStmt = mConnection.createStatement();
-			lReturnValue = lStmt.executeUpdate( aSql, aReturnValueType );
+
+			// The executeUpdate with statement parameter isn't implemented in SQLite
+			lReturnValue = lStmt.executeUpdate( aSql/*, aReturnValueType*/ );
+
+			if( aReturnValueType == Statement.RETURN_GENERATED_KEYS )
+			{
+				lReturnValue = GetSearchId( "select last_insert_rowid() as ID;" );
+			}
 			lStmt.close();
 		}
 		catch ( Exception e ) {
