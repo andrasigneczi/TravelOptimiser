@@ -30,6 +30,11 @@ public class XmlHelloWorld
 				                         String qName, Attributes attributes)
 						throws SAXException {
 
+					/*
+					attributes.getName(0)
+					attributes.getValue(0)
+					attributes.getLength()
+					 */
 					System.out.println("Start Element :" + qName);
 
 					if (qName.equalsIgnoreCase("LeavingFrom")) {
@@ -47,7 +52,6 @@ public class XmlHelloWorld
 					if (qName.equalsIgnoreCase("ReturnDay")) {
 						bReturnDay = true;
 					}
-
 				}
 
 				public void endElement(String uri, String localName,
@@ -105,6 +109,5 @@ public class XmlHelloWorld
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 }
