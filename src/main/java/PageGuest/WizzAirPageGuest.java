@@ -55,6 +55,10 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			lTravelDataInput.mAirportCode_GoingTo     = aTo;
 			lTravelDataInput.mDepartureDay            = aDepartureDate;
 			lTravelDataInput.mReturnDay               = aReturnDate;
+			lTravelDataInput.mAdultNumber             = "1";
+			lTravelDataInput.mChildNumber             = "0";
+			lTravelDataInput.mInfantNumber            = "0";
+			lTravelDataInput.mNearbyAirports          = false;
 			if( aReturnDate.length() == 0 )
 				lTravelDataInput.mReturnTicket = false;
 			else

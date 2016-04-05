@@ -40,7 +40,7 @@ public class Main
             FileWriterAgent lFWA = new FileWriterAgent( "database.html" );
             SQLiteAgent lSQLiteAgent = new SQLiteAgent();
             lSQLiteAgent.InitializeDatabase();
-            //lFWA.setNextAgent( lSQLiteAgent );
+            lFWA.setNextAgent( lSQLiteAgent );
 
             for( int i = 0; i < 100; i++ )
             {

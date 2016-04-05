@@ -31,7 +31,7 @@ public class TravelDataResultComposer_SQL extends TravelDataResultComposer
 				Util.StringHelper.escapeSQL( mResult.mTravelDataInput.mChildNumber ) + " " +
 				"AND InfantNumber=" +
 				Util.StringHelper.escapeSQL( mResult.mTravelDataInput.mInfantNumber ) + " " +
-				"AND NearbyAirports=" + mResult.mTravelDataInput.mNearbyAirports + ";";
+				"AND NearbyAirports=" + (mResult.mTravelDataInput.mNearbyAirports ? 1 : 0) + ";";
 		return lSql;
 	}
 
@@ -54,7 +54,7 @@ public class TravelDataResultComposer_SQL extends TravelDataResultComposer
 				Util.StringHelper.escapeSQL( mResult.mTravelDataInput.mAdultNumber ) + ", " +
 				Util.StringHelper.escapeSQL( mResult.mTravelDataInput.mChildNumber ) + ", " +
 				Util.StringHelper.escapeSQL( mResult.mTravelDataInput.mInfantNumber ) + ", " +
-				mResult.mTravelDataInput.mNearbyAirports +
+				( mResult.mTravelDataInput.mNearbyAirports ? 1 : 0 )+
 				");\n";
 		return lSQL;
 	}
@@ -64,11 +64,11 @@ public class TravelDataResultComposer_SQL extends TravelDataResultComposer
 		String lSql;
 
 		lSql = "SELECT ID FROM TravelDataResult WHERE Airline='" +
-				Util.StringHelper.escapeSQL( mResult.mAirline ) + "' " +
+				Util.StringHelper.escapeSQL( mResult.mAirline ) + "' AND " +
 				"AirportCode_LeavingFrom='" +
-				Util.StringHelper.escapeSQL( mResult.mAirportCode_LeavingFrom ) + "' " +
+				Util.StringHelper.escapeSQL( mResult.mAirportCode_LeavingFrom ) + "' AND " +
 				"AirportCode_GoingTo='" +
-				Util.StringHelper.escapeSQL( mResult.mAirportCode_GoingTo ) + "' " +
+				Util.StringHelper.escapeSQL( mResult.mAirportCode_GoingTo ) + "' AND " +
 				"Search_ID=" + aSearchId + ";";
 		return lSql;
 	}
@@ -76,8 +76,9 @@ public class TravelDataResultComposer_SQL extends TravelDataResultComposer
 	public String insertTravelDataResultString( int aSearchId )
 	{
 		String lSQL ="INSERT INTO TravelDataResult (\n" +
-				"AirportCode_LeavingFrom, AirportCode_GoingTo, Search_ID) \n" +
+				"Airline, AirportCode_LeavingFrom, AirportCode_GoingTo, Search_ID) \n" +
 				"VALUES(\n '" +
+				Util.StringHelper.escapeSQL( mResult.mAirline + "', '" +
 				Util.StringHelper.escapeSQL( mResult.mAirportCode_LeavingFrom ) + "', '" +
 				Util.StringHelper.escapeSQL( mResult.mAirportCode_GoingTo ) + "', " +
 				aSearchId + ");\n";
@@ -103,7 +104,7 @@ public class TravelDataResultComposer_SQL extends TravelDataResultComposer
 				aTrip.mPrices_PlusFare_Normal + "', '" +
 				aTrip.mPrices_PlusFare_Discount + "', '" +
 				aTrip.mOutboundTrip + "', " +
-				"now()," +
+				"date('now')," +
 				aTravelDataResultId + ");\n";
 
 
