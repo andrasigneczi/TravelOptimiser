@@ -8,8 +8,8 @@ import java.util.ArrayList;
 public class ResultQueue
 {
     private Object mMutex  = null;
-    ArrayList<TravelData_RESULT> mResultList = null;
-    static ResultQueue mInstance = null;
+    private ArrayList<TravelData_RESULT> mResultList = null;
+    private static ResultQueue mInstance = null;
 
     private ResultQueue()
     {
