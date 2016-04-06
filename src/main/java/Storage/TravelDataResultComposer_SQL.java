@@ -3,14 +3,33 @@ package Storage;
 import PageGuest.TravelDataResultComposer;
 import PageGuest.TravelData_RESULT;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 /**
  * Created by Andras on 30/03/2016.
  */
 public class TravelDataResultComposer_SQL extends TravelDataResultComposer
 {
+	private DateTimeFormatter mFormatterWizzair;
+
 	public TravelDataResultComposer_SQL( TravelData_RESULT aResult )
 	{
 		super( aResult );
+		mFormatterWizzair = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+	}
+
+	private String FormatDatetime( String aValue )
+	{
+		LocalDateTime lLocalDateTime = LocalDateTime.parse(aValue, mFormatterWizzair);
+
+		// TODO: why must I add 1 more hour to get the right time?
+		lLocalDateTime = lLocalDateTime.plusHours( 1 );
+
+		DateTimeFormatter lNewFormat = DateTimeFormatter.ofPattern( "yyyy-MM-dd HH:mm" );
+
+		String lNewValue = lLocalDateTime.format( lNewFormat );
+		return lNewValue;
 	}
 
 	public String getSearchRecordIdString()
@@ -78,7 +97,7 @@ public class TravelDataResultComposer_SQL extends TravelDataResultComposer
 		String lSQL ="INSERT INTO TravelDataResult (\n" +
 				"Airline, AirportCode_LeavingFrom, AirportCode_GoingTo, Search_ID) \n" +
 				"VALUES(\n '" +
-				Util.StringHelper.escapeSQL( mResult.mAirline + "', '" +
+				Util.StringHelper.escapeSQL( mResult.mAirline ) + "', '" +
 				Util.StringHelper.escapeSQL( mResult.mAirportCode_LeavingFrom ) + "', '" +
 				Util.StringHelper.escapeSQL( mResult.mAirportCode_GoingTo ) + "', " +
 				aSearchId + ");\n";
@@ -97,14 +116,14 @@ public class TravelDataResultComposer_SQL extends TravelDataResultComposer
 				"\tOutboundTrip              ,\n" +
 				"\tSearchDatetime            ,\n" +
 				"\tTravelDataResult_ID       )\n" +
-				"VALUES(\n'" + aTrip.mDepartureDatetime + "', '" +
-				aTrip.mArrivalDatetime + "', '" +
+				"VALUES(\n'" + FormatDatetime( aTrip.mDepartureDatetime )+ "', '" +
+				FormatDatetime( aTrip.mArrivalDatetime ) + "', '" +
 				aTrip.mPrices_BasicFare_Normal + "', '" +
 				aTrip.mPrices_BasicFare_Discount + "', '" +
 				aTrip.mPrices_PlusFare_Normal + "', '" +
 				aTrip.mPrices_PlusFare_Discount + "', '" +
 				aTrip.mOutboundTrip + "', " +
-				"date('now')," +
+				"datetime('now')," +
 				aTravelDataResultId + ");\n";
 
 

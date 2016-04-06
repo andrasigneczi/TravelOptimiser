@@ -111,7 +111,7 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 	{
 		LocalDateTime lLocalDateTime = LocalDateTime.parse(aValue, mFormatterWizzair);
 
-		// TODO: why must a add 1 more hour to get the right time?
+		// TODO: why must I add 1 more hour to get the right time?
 		lLocalDateTime = lLocalDateTime.plusHours( 1 );
 
 		// Unfortunatelly the month won't be get in short format

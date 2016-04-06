@@ -17,6 +17,8 @@ public abstract class WebPageGuest
 
     public abstract void DoSearch( String aAirportCode_Way_From, String aAirportCode_Way_To,
                                    String aDepartureDate_Way_To, String aReturnDate_Way_Back );
+    public abstract void DoSearchFromConfig();
+
     public abstract void stop();
 
     public WebPageGuest()

@@ -31,12 +31,19 @@ public class Main
 
             //JxBrowserHelloWorld.HelloWorld();
 	        //JxBrowserHelloWorld.FlashSample();
+
+            // Initialize the configuration
+            Util.Configuration lConfiguration = Util.Configuration.getInstance();
+
             WebPageGuest lGuest = WebPageGuestFactory.Create( "WizzAir" );
+            lGuest.DoSearchFromConfig();
+/*
             lGuest.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
             lGuest.DoSearch( "SOF", "HHN", "2016.08.06.", "2016.08.09." );
             lGuest.DoSearch( "CRL", "BUD", "2016.07.08.", "2016.07.11." );
             lGuest.DoSearch( "CRL", "BUD", "2016.07.22.", "2016.07.25." );
             lGuest.DoSearch( "BUD", "CRL", "2016.07.11.", "" );
+*/
             FileWriterAgent lFWA = new FileWriterAgent( "database.html" );
             SQLiteAgent lSQLiteAgent = new SQLiteAgent();
             lSQLiteAgent.InitializeDatabase();

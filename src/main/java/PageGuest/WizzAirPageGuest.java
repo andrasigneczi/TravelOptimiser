@@ -1,3 +1,7 @@
+/*
+TODO: fill the adult-,infant-,children number and handle it.
+ */
+
 package PageGuest;
 
 import com.teamdev.jxbrowser.chromium.Browser;
@@ -6,6 +10,7 @@ import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
 import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 
+import javax.security.auth.login.Configuration;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -58,7 +63,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			lTravelDataInput.mAdultNumber             = "1";
 			lTravelDataInput.mChildNumber             = "0";
 			lTravelDataInput.mInfantNumber            = "0";
-			lTravelDataInput.mNearbyAirports          = false;
+			//lTravelDataInput.mNearbyAirports          = false;
 			if( aReturnDate.length() == 0 )
 				lTravelDataInput.mReturnTicket = false;
 			else
@@ -67,6 +72,29 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			mSearchQueue.add( lTravelDataInput );
 		}
 		System.out.println("DoSearch()");
+	}
+
+	public void DoSearchFromConfig()
+	{
+		synchronized( mMutex )
+		{
+			if( mBrowser == null )
+			{
+				InitBrowser();
+				mBrowser.loadURL( "http://www.wizzair.com" );
+			}
+
+			ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
+			for( TravelData_INPUT lTDI : lSearchList )
+			{
+				if( !lTDI.mAirline.equals( "wizzair" ))
+					continue;
+
+				if( lTDI.mReturnDay.length() == 0 )
+					lTDI.mReturnTicket = false;
+				mSearchQueue.add( lTDI );
+			}
+		}
 	}
 
 	private boolean InitBrowser()
@@ -208,6 +236,15 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	private void ClickTheSearchButton( DOMDocument aDOMDocument )
 	{
+		String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
+		try
+		{
+			Thread.sleep( 1000 * Integer.parseInt( lSleep ) );
+		}
+		catch( InterruptedException e )
+		{
+			e.printStackTrace();
+		}
 		// click the button
 		DOMNode link = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_ButtonSubmit" ) );
 		if( link == null )

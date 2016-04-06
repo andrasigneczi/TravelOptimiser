@@ -152,18 +152,20 @@ public class SQLiteAgent extends ArchiverAgent
 			mConnection = DriverManager.getConnection("jdbc:sqlite:test.db");
 			System.out.println("Opened database successfully");
 
+			/*
 			ExecuteStatement("DROP TABLE IF EXISTS Search;");
 			ExecuteStatement("DROP TABLE IF EXISTS TravelDataResult;");
 			ExecuteStatement("DROP TABLE IF EXISTS TravelDataResult_PossibleTrips;");
 			ExecuteStatement("DROP INDEX IF EXISTS SearchIndex;");
+*/
 
 			String aSql = "CREATE TABLE IF NOT EXISTS Search\n" +
 					"(\n" +
 					"\tID                      INTEGER PRIMARY KEY NOT NULL,\n" +
 					"\tAirportCode_LeavingFrom CHAR(3)  NOT NULL,\n" +
 					"\tAirportCode_GoingTo     CHAR(3)  NOT NULL,\n" +
-					"\tDepartureDay            CHAR(10) NOT NULL,\n" +
-					"\tReturnDay               CHAR(10),\n" +
+					"\tDepartureDay            CHAR(11) NOT NULL,\n" + // 2016.03.03.
+					"\tReturnDay               CHAR(11),\n" +
 					"\tAdultNumber             TINYINT NOT NULL DEFAULT 1,\n" +
 					"\tChildNumber             TINYINT NOT NULL DEFAULT 0,\n" +
 					"\tInfantNumber            TINYINT NOT NULL DEFAULT 0,\n" +

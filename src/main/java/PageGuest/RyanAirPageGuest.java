@@ -9,6 +9,11 @@ public class RyanAirPageGuest extends WebPageGuest
 	{
 	}
 
+	public void DoSearchFromConfig()
+	{
+
+	}
+
 	@Override
 	public void stop()
 	{
