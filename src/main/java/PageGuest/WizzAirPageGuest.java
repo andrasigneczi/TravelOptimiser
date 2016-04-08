@@ -9,12 +9,14 @@ import com.teamdev.jxbrowser.chromium.dom.*;
 import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
 import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
+import org.apache.log4j.Logger;
 
 import javax.security.auth.login.Configuration;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -24,6 +26,8 @@ import java.util.ArrayList;
  */
 public class WizzAirPageGuest extends WebPageGuest implements Runnable
 {
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuest.class);
+
 	ArrayList<TravelData_INPUT> mSearchQueue;
 	Thread  mThread;
 	Browser mBrowser = null;
@@ -46,6 +50,13 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	}
 	public void DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
 	{
+		if( !ValidateDate( aDepartureDate, aReturnDate ))
+		{
+			mLogger.warn( "DoSearch: the departure date (" + aDepartureDate + ") or the return date " +
+					aReturnDate + " expired!" );
+			return;
+		}
+
 		synchronized( mMutex )
 		{
 			if( mBrowser == null )
@@ -90,11 +101,44 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 				if( !lTDI.mAirline.equals( "wizzair" ))
 					continue;
 
+				if( !ValidateDate( lTDI.mDepartureDay, lTDI.mReturnDay ))
+				{
+					mLogger.warn( "DoSearch: the departure date (" + lTDI.mDepartureDay + ") or the return date " +
+							lTDI.mReturnDay + " expired!" );
+					continue;
+				}
+
 				if( lTDI.mReturnDay.length() == 0 )
 					lTDI.mReturnTicket = false;
 				mSearchQueue.add( lTDI );
 			}
 		}
+	}
+
+	private boolean ValidateDate( String aDepartureDay, String aReturnDay )
+	{
+		try
+		{
+			DateTimeFormatter lFormatter = DateTimeFormatter.ofPattern( "yyyy.MM.dd." );
+			LocalDate lDepartureDay = LocalDate.parse( aDepartureDay, lFormatter );
+			if( LocalDate.now().isAfter( lDepartureDay ) )
+			{
+				return false;
+			}
+
+			if( aDepartureDay.length() == 0 )
+				return true;
+
+			LocalDate lReturnDay = LocalDate.parse( aReturnDay, lFormatter );
+			if( lReturnDay.isBefore( lDepartureDay ) )
+				return false;
+			return true;
+		}
+		catch( Exception e )
+		{
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	private boolean InitBrowser()
@@ -152,89 +196,67 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		return false;
 	}
 
-	private void setDOMInput( String aId, String aValue )
+	private void setDOMInput( DOMDocument aDOMDocument, String aId, String aValue )
 	{
-
+		DOMElement elementTextSource = aDOMDocument.findElement( By.id( aId ) );
+		DOMInputElement textInputSource = (DOMInputElement)elementTextSource;
+		textInputSource.setValue( aValue );
 	}
 
-	private void setDOMSelect( String aId, String aValue )
+	private void setDOMSelect( DOMDocument aDOMDocument, String aId, String aValue )
 	{
-
+		DOMElement elementAdultNumber = aDOMDocument.findElement( By.id( aId ) );
+		DOMSelectElement selectAdultNumber = (DOMSelectElement)elementAdultNumber;
+		java.util.List<DOMOptionElement> lOptionsAdultNumber = selectAdultNumber.getOptions();
+		for( DOMOptionElement lDOMOptionElement : lOptionsAdultNumber )
+		{
+			if( lDOMOptionElement.getAttribute("value").equals( aValue ))
+			{
+				lDOMOptionElement.setSelected( true );
+				break;
+			}
+		}
 	}
 
 	private void FillTheResultForm(DOMDocument aDOMDocument, TravelData_INPUT aTravelDataInput )
 	{
 		// leaving from
-		DOMElement elementTextSource = aDOMDocument.findElement( By.id( "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_AutocompleteOriginStation" ) );
-		DOMInputElement textInputSource = (DOMInputElement)elementTextSource;
-		String lAirportLabel = getAirportName( aTravelDataInput.mAirportCode_LeavingFrom ) +  " (" + aTravelDataInput.mAirportCode_LeavingFrom + ")";
-		textInputSource.setValue( lAirportLabel );
+		String lId    = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_AutocompleteOriginStation";
+		String lValue = getAirportName( aTravelDataInput.mAirportCode_LeavingFrom ) +  " (" + aTravelDataInput.mAirportCode_LeavingFrom + ")";
+		setDOMInput( aDOMDocument, lId, lValue );
 
 		// we have to fill the hidden fields as well
-		DOMElement elementIdSource = aDOMDocument.findElement( By.id( "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_OriginStation" ) );
-		DOMInputElement hiddenInputSource = (DOMInputElement)elementIdSource;
-		hiddenInputSource.setValue( aTravelDataInput.mAirportCode_LeavingFrom );
+		lId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_OriginStation";
+		setDOMInput( aDOMDocument, lId, aTravelDataInput.mAirportCode_LeavingFrom );
 
 		// going to
-		String lTargetInputId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_AutocompleteDestinationStation";
-		DOMElement elementTextTarget = aDOMDocument.findElement( By.id( lTargetInputId ) );
-		DOMInputElement textInputTarget = (DOMInputElement)elementTextTarget;
-		lAirportLabel = getAirportName( aTravelDataInput.mAirportCode_GoingTo ) +  " (" + aTravelDataInput.mAirportCode_GoingTo + ")";
-		textInputTarget.setValue( lAirportLabel );
+		lId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_AutocompleteDestinationStation";
+		lValue = getAirportName( aTravelDataInput.mAirportCode_GoingTo ) +  " (" + aTravelDataInput.mAirportCode_GoingTo + ")";
+		setDOMInput( aDOMDocument, lId, lValue );
 
 		// we have to fill the hidden fields as well
-		DOMElement elementIdTarget = aDOMDocument.findElement( By.id( "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DestinationStation" ) );
-		DOMInputElement hiddenInputTarget = (DOMInputElement)elementIdTarget;
-		hiddenInputTarget.setValue( aTravelDataInput.mAirportCode_GoingTo );
+		lId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DestinationStation";
+		setDOMInput( aDOMDocument, lId, aTravelDataInput.mAirportCode_GoingTo );
 
 		// departure date
-		DOMElement elementIdDepartureDate = aDOMDocument.findElement( By.id( "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DepartureDate" ) );
-		DOMInputElement inputDepartureDate = (DOMInputElement)elementIdDepartureDate;
-		inputDepartureDate.setValue( aTravelDataInput.mDepartureDay );
+		lId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DepartureDate";
+		setDOMInput( aDOMDocument, lId, aTravelDataInput.mDepartureDay );
 
 		// return date
-		DOMElement elementIdReturnDate = aDOMDocument.findElement( By.id( "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_ReturnDate" ) );
-		DOMInputElement inputReturnDate = (DOMInputElement)elementIdReturnDate;
-		inputReturnDate.setValue( aTravelDataInput.mReturnDay );
+		lId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_ReturnDate";
+		setDOMInput( aDOMDocument, lId, aTravelDataInput.mReturnDay );
 
 		// Adult id
-		DOMElement elementAdultNumber = aDOMDocument.findElement( By.id( "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountADT" ) );
-		DOMSelectElement selectAdultNumber = (DOMSelectElement)elementAdultNumber;
-		java.util.List<DOMOptionElement> lOptionsAdultNumber = selectAdultNumber.getOptions();
-		for( DOMOptionElement lDOMOptionElement : lOptionsAdultNumber )
-		{
-			if( lDOMOptionElement.getAttribute("value").equals( aTravelDataInput.mAdultNumber ))
-			{
-				lDOMOptionElement.setSelected( true );
-				break;
-			}
-		}
+		lId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountADT";
+		setDOMSelect( aDOMDocument, lId, aTravelDataInput.mAdultNumber );
 
 		// Children id
-		DOMElement elementChildNumber = aDOMDocument.findElement( By.id( "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountCHD" ) );
-		DOMSelectElement selectChildNumber = (DOMSelectElement)elementChildNumber;
-		java.util.List<DOMOptionElement> lOptionsChildNumber = selectChildNumber.getOptions();
-		for( DOMOptionElement lDOMOptionElement : lOptionsChildNumber )
-		{
-			if( lDOMOptionElement.getAttribute("value").equals( aTravelDataInput.mChildNumber ))
-			{
-				lDOMOptionElement.setSelected( true );
-				break;
-			}
-		}
+		lId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountCHD";
+		setDOMSelect( aDOMDocument, lId, aTravelDataInput.mChildNumber );
 
 		// Infant id
-		DOMElement elementInfantNumber = aDOMDocument.findElement( By.id( "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountINFANT" ) );
-		DOMSelectElement selectInfantNumber = (DOMSelectElement)elementInfantNumber;
-		java.util.List<DOMOptionElement> lOptionsInfantNumber = selectInfantNumber.getOptions();
-		for( DOMOptionElement lDOMOptionElement : lOptionsInfantNumber )
-		{
-			if( lDOMOptionElement.getAttribute("value").equals( aTravelDataInput.mInfantNumber ))
-			{
-				lDOMOptionElement.setSelected( true );
-				break;
-			}
-		}
+		lId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountINFANT";
+		setDOMSelect( aDOMDocument, lId, aTravelDataInput.mInfantNumber );
 
 		System.out.println("FillTheResultForm()");
 	}
@@ -256,70 +278,37 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		textInputSource.setValue( lAirportLabel );
 
 		// we have to fill the hidden fields as well
-		DOMElement elementIdSource = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_OriginStation" ) );
-		DOMInputElement hiddenInputSource = (DOMInputElement)elementIdSource;
-		hiddenInputSource.setValue( aTravelDataInput.mAirportCode_LeavingFrom );
+		String lId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_OriginStation";
+		setDOMInput( aDOMDocument, lId, aTravelDataInput.mAirportCode_LeavingFrom );
 
 		// going to
-		String lTargetInputId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_AutocompleteDestinationStation";
-		DOMElement elementTextTarget = aDOMDocument.findElement( By.id( lTargetInputId ) );
-		DOMInputElement textInputTarget = (DOMInputElement)elementTextTarget;
-		lAirportLabel = getAirportName( aTravelDataInput.mAirportCode_GoingTo ) +  " (" + aTravelDataInput.mAirportCode_GoingTo + ")";
-		textInputTarget.setValue( lAirportLabel );
+		lId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_AutocompleteDestinationStation";
+		String lValue = getAirportName( aTravelDataInput.mAirportCode_GoingTo ) +  " (" + aTravelDataInput.mAirportCode_GoingTo + ")";
+		setDOMInput( aDOMDocument, lId, lValue );
 
 		// we have to fill the hidden fields as well
-		DOMElement elementIdTarget = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_DestinationStation" ) );
-		DOMInputElement hiddenInputTarget = (DOMInputElement)elementIdTarget;
-		hiddenInputTarget.setValue( aTravelDataInput.mAirportCode_GoingTo );
+		lId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_DestinationStation" ;
+		setDOMInput( aDOMDocument, lId, aTravelDataInput.mAirportCode_GoingTo );
 
 		// departure date
-		DOMElement elementIdDepartureDate = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_DepartureDate" ) );
-		DOMInputElement inputDepartureDate = (DOMInputElement)elementIdDepartureDate;
-		inputDepartureDate.setValue( aTravelDataInput.mDepartureDay );
+		lId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_DepartureDate";
+		setDOMInput( aDOMDocument, lId, aTravelDataInput.mDepartureDay );
 
 		// return date
-		DOMElement elementIdReturnDate = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_ReturnDate" ) );
-		DOMInputElement inputReturnDate = (DOMInputElement)elementIdReturnDate;
-		inputReturnDate.setValue( aTravelDataInput.mReturnDay );
+		lId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_ReturnDate";
+		setDOMInput( aDOMDocument, lId, aTravelDataInput.mReturnDay );
 
 		// Adult id
-		DOMElement elementAdultNumber = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountADT" ) );
-		DOMSelectElement selectAdultNumber = (DOMSelectElement)elementAdultNumber;
-		java.util.List<DOMOptionElement> lOptionsAdultNumber = selectAdultNumber.getOptions();
-		for( DOMOptionElement lDOMOptionElement : lOptionsAdultNumber )
-		{
-			 if( lDOMOptionElement.getAttribute("value").equals( aTravelDataInput.mAdultNumber ))
-			 {
-				 lDOMOptionElement.setSelected( true );
-				 break;
-			 }
-		}
+		lId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountADT";
+		setDOMSelect( aDOMDocument, lId, aTravelDataInput.mAdultNumber );
 
 		// Children id
-		DOMElement elementChildNumber = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountCHD" ) );
-		DOMSelectElement selectChildNumber = (DOMSelectElement)elementChildNumber;
-		java.util.List<DOMOptionElement> lOptionsChildNumber = selectChildNumber.getOptions();
-		for( DOMOptionElement lDOMOptionElement : lOptionsChildNumber )
-		{
-			if( lDOMOptionElement.getAttribute("value").equals( aTravelDataInput.mChildNumber ))
-			{
-				lDOMOptionElement.setSelected( true );
-				break;
-			}
-		}
+		lId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountCHD";
+		setDOMSelect( aDOMDocument, lId, aTravelDataInput.mChildNumber );
 
 		// Infant id
-		DOMElement elementInfantNumber = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountINFANT" ) );
-		DOMSelectElement selectInfantNumber = (DOMSelectElement)elementInfantNumber;
-		java.util.List<DOMOptionElement> lOptionsInfantNumber = selectInfantNumber.getOptions();
-		for( DOMOptionElement lDOMOptionElement : lOptionsInfantNumber )
-		{
-			if( lDOMOptionElement.getAttribute("value").equals( aTravelDataInput.mInfantNumber ))
-			{
-				lDOMOptionElement.setSelected( true );
-				break;
-			}
-		}
+		lId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountINFANT";
+		setDOMSelect( aDOMDocument, lId, aTravelDataInput.mInfantNumber );
 
 		System.out.println("FillTheForm()");
 	}

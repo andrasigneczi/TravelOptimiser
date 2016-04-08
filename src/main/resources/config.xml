@@ -17,6 +17,16 @@
         <wizzair>
             <LeavingFrom>SOF</LeavingFrom>
             <GoingTo>HHN</GoingTo>
+            <DepartureDay>2016.07.16.</DepartureDay>
+            <ReturnDay>2016.07.19.</ReturnDay>
+            <AdultNumber>1</AdultNumber>
+            <ChildNumber>0</ChildNumber>
+            <InfantNumber>0</InfantNumber>
+            <NearbyAirports>false</NearbyAirports>
+        </wizzair>
+        <wizzair>
+            <LeavingFrom>SOF</LeavingFrom>
+            <GoingTo>HHN</GoingTo>
             <DepartureDay>2016.08.06.</DepartureDay>
             <ReturnDay>2016.08.09.</ReturnDay>
             <AdultNumber>1</AdultNumber>
