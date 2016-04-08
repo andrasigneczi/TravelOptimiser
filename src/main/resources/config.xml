@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
     <global>
-        <DelayBeforeClick>3</DelayBeforeClick>
+        <DelayBeforeClick>5</DelayBeforeClick>
     </global>
     <searches>
         <wizzair>
@@ -45,4 +45,14 @@
             <NearbyAirports>false</NearbyAirports>
         </wizzair>
     </searches>
+    <charts>
+        <LeavingFrom>CRL</LeavingFrom>
+        <GoingTo>BUD</GoingTo>
+        <DepartureDay>2016.07.08.</DepartureDay>
+        <ReturnDay>2016.07.11.</ReturnDay>
+        <AdultNumber>1</AdultNumber>
+        <ChildNumber>0</ChildNumber>
+        <InfantNumber>0</InfantNumber>
+        <NearbyAirports>false</NearbyAirports>
+    </charts>
 </configuration>

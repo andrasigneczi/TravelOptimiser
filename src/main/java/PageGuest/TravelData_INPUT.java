@@ -9,7 +9,7 @@ public class TravelData_INPUT implements Cloneable
 	public String  mAirportCode_LeavingFrom;   // SOF
 	public String  mAirportCode_GoingTo;       // HHN
 	public String  mDepartureDay;              // 2016.03.25 17:10
-	public String  mReturnDay;                 // 2016.03.27 17:10
+	public String  mReturnDay         = "";    // 2016.03.27 17:10
 	public String  mAdultNumber       = "1";
 	public String  mChildNumber       = "0";
 	public String  mInfantNumber      = "0";

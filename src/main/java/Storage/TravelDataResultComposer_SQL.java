@@ -123,7 +123,7 @@ public class TravelDataResultComposer_SQL extends TravelDataResultComposer
 				aTrip.mPrices_PlusFare_Normal + "', '" +
 				aTrip.mPrices_PlusFare_Discount + "', '" +
 				aTrip.mOutboundTrip + "', " +
-				"datetime('now')," +
+				"datetime('now', 'localtime')," +
 				aTravelDataResultId + ");\n";
 
 

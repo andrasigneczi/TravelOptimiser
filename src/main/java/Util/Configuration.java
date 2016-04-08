@@ -132,7 +132,7 @@ public class Configuration
 
 					String lNodeName = mCurrentPath.get( mCurrentPath.size() - 1 );
 					String lNodeValue = new String(ch, start, length).trim();
-					if( mValidSearchNodes.contains( lNodeName ))
+					if( mCurrentTravelDataInput != null && mValidSearchNodes.contains( lNodeName ) )
 					{
 						mCurrentTravelDataInput.set( lNodeName, lNodeValue );
 					}

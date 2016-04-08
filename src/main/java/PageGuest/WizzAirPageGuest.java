@@ -152,6 +152,16 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		return false;
 	}
 
+	private void setDOMInput( String aId, String aValue )
+	{
+
+	}
+
+	private void setDOMSelect( String aId, String aValue )
+	{
+
+	}
+
 	private void FillTheResultForm(DOMDocument aDOMDocument, TravelData_INPUT aTravelDataInput )
 	{
 		// leaving from
@@ -186,6 +196,46 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		DOMElement elementIdReturnDate = aDOMDocument.findElement( By.id( "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_ReturnDate" ) );
 		DOMInputElement inputReturnDate = (DOMInputElement)elementIdReturnDate;
 		inputReturnDate.setValue( aTravelDataInput.mReturnDay );
+
+		// Adult id
+		DOMElement elementAdultNumber = aDOMDocument.findElement( By.id( "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountADT" ) );
+		DOMSelectElement selectAdultNumber = (DOMSelectElement)elementAdultNumber;
+		java.util.List<DOMOptionElement> lOptionsAdultNumber = selectAdultNumber.getOptions();
+		for( DOMOptionElement lDOMOptionElement : lOptionsAdultNumber )
+		{
+			if( lDOMOptionElement.getAttribute("value").equals( aTravelDataInput.mAdultNumber ))
+			{
+				lDOMOptionElement.setSelected( true );
+				break;
+			}
+		}
+
+		// Children id
+		DOMElement elementChildNumber = aDOMDocument.findElement( By.id( "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountCHD" ) );
+		DOMSelectElement selectChildNumber = (DOMSelectElement)elementChildNumber;
+		java.util.List<DOMOptionElement> lOptionsChildNumber = selectChildNumber.getOptions();
+		for( DOMOptionElement lDOMOptionElement : lOptionsChildNumber )
+		{
+			if( lDOMOptionElement.getAttribute("value").equals( aTravelDataInput.mChildNumber ))
+			{
+				lDOMOptionElement.setSelected( true );
+				break;
+			}
+		}
+
+		// Infant id
+		DOMElement elementInfantNumber = aDOMDocument.findElement( By.id( "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountINFANT" ) );
+		DOMSelectElement selectInfantNumber = (DOMSelectElement)elementInfantNumber;
+		java.util.List<DOMOptionElement> lOptionsInfantNumber = selectInfantNumber.getOptions();
+		for( DOMOptionElement lDOMOptionElement : lOptionsInfantNumber )
+		{
+			if( lDOMOptionElement.getAttribute("value").equals( aTravelDataInput.mInfantNumber ))
+			{
+				lDOMOptionElement.setSelected( true );
+				break;
+			}
+		}
+
 		System.out.println("FillTheResultForm()");
 	}
 
@@ -231,6 +281,46 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		DOMElement elementIdReturnDate = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_ReturnDate" ) );
 		DOMInputElement inputReturnDate = (DOMInputElement)elementIdReturnDate;
 		inputReturnDate.setValue( aTravelDataInput.mReturnDay );
+
+		// Adult id
+		DOMElement elementAdultNumber = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountADT" ) );
+		DOMSelectElement selectAdultNumber = (DOMSelectElement)elementAdultNumber;
+		java.util.List<DOMOptionElement> lOptionsAdultNumber = selectAdultNumber.getOptions();
+		for( DOMOptionElement lDOMOptionElement : lOptionsAdultNumber )
+		{
+			 if( lDOMOptionElement.getAttribute("value").equals( aTravelDataInput.mAdultNumber ))
+			 {
+				 lDOMOptionElement.setSelected( true );
+				 break;
+			 }
+		}
+
+		// Children id
+		DOMElement elementChildNumber = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountCHD" ) );
+		DOMSelectElement selectChildNumber = (DOMSelectElement)elementChildNumber;
+		java.util.List<DOMOptionElement> lOptionsChildNumber = selectChildNumber.getOptions();
+		for( DOMOptionElement lDOMOptionElement : lOptionsChildNumber )
+		{
+			if( lDOMOptionElement.getAttribute("value").equals( aTravelDataInput.mChildNumber ))
+			{
+				lDOMOptionElement.setSelected( true );
+				break;
+			}
+		}
+
+		// Infant id
+		DOMElement elementInfantNumber = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountINFANT" ) );
+		DOMSelectElement selectInfantNumber = (DOMSelectElement)elementInfantNumber;
+		java.util.List<DOMOptionElement> lOptionsInfantNumber = selectInfantNumber.getOptions();
+		for( DOMOptionElement lDOMOptionElement : lOptionsInfantNumber )
+		{
+			if( lDOMOptionElement.getAttribute("value").equals( aTravelDataInput.mInfantNumber ))
+			{
+				lDOMOptionElement.setSelected( true );
+				break;
+			}
+		}
+
 		System.out.println("FillTheForm()");
 	}
 
@@ -349,6 +439,18 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		System.out.println("CollectDatas()");
 	}
 
+	private void Sleep( int aValue )
+	{
+		try
+		{
+			Thread.sleep( aValue );
+		}
+		catch( InterruptedException e )
+		{
+			e.printStackTrace();
+		}
+	}
+
 	public void run()
 	{
 		try
@@ -364,17 +466,16 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 					lSearQueueSize = mSearchQueue.size();
 				}
 
+				if( getBrowserState() == null )
+				{
+					Sleep( 100 );
+					continue;
+				}
+
 				String lBrowserState = getBrowserState().toString();
 				if( ( lSearQueueSize == 0 && !lBrowserState.equals( "BrowserStateSearchingFinished" ) ) || lBrowserState.equals( "BrowserStateInit" ) )
 				{
-					try
-					{
-						Thread.sleep( 100 );
-					}
-					catch( InterruptedException e )
-					{
-						e.printStackTrace();
-					}
+					Sleep( 100 );
 					continue;
 				}
 
