@@ -22,11 +22,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
-        <module name="DataFromBrowser" />
+        <module name="Webhost" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="DataFromBrowser" target="1.5" />
+      <module name="Webhost" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

@@ -9,11 +9,11 @@ import java.time.format.DateTimeFormatter;
 /**
  * Created by Andras on 30/03/2016.
  */
-public class TravelDataResultComposer_SQL extends TravelDataResultComposer
+public class TravelDataResultComposer_LiteSQL extends TravelDataResultComposer
 {
 	private DateTimeFormatter mFormatterWizzair;
 
-	public TravelDataResultComposer_SQL( TravelData_RESULT aResult )
+	public TravelDataResultComposer_LiteSQL( TravelData_RESULT aResult )
 	{
 		super( aResult );
 		mFormatterWizzair = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");

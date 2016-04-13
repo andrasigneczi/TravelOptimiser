@@ -1,4 +1,4 @@
-/**
+package Root; /**
  * Created by andras.igneczi on 11/03/2016.
  */
 import com.teamdev.jxbrowser.chromium.Browser;

@@ -9,6 +9,7 @@ import com.teamdev.jxbrowser.chromium.dom.*;
 import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
 import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
+import com.traveloptimizer.browserengine.TeamDevJxBrowser;
 import org.apache.log4j.Logger;
 
 import javax.security.auth.login.Configuration;
@@ -145,7 +146,8 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	{
 		new BrowserStateInit().doAction( this );
 
-		mBrowser = new Browser();
+		//mBrowser = new Browser();
+		mBrowser = TeamDevJxBrowser.getInstance().getJxBrowser();
 		BrowserView view = new BrowserView(mBrowser);
 
 		//final JTextField addressBar = new JTextField("http://www.teamdev.com/jxbrowser");

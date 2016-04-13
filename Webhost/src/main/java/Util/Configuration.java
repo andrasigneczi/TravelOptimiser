@@ -1,15 +1,14 @@
 package Util;
 
-import PageGuest.TravelData_INPUT;
-import PageGuest.TravelData_RESULT;
-import org.xml.sax.Attributes;
+import Util.TravelData_INPUT;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.io.*;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -78,7 +77,7 @@ public class Configuration
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
 
-			DefaultHandler handler = new ConfigurationHandler( this, "/configuration/searches/" );
+			DefaultHandler handler = new ConfigurationHandler( this, "/configuration/charts/" );
 
 			//File file = new File("test.xml");
 			//InputStream inputStream= new FileInputStream(file);

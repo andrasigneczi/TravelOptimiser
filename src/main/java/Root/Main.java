@@ -1,16 +1,11 @@
+package Root;
+
 import PageGuest.ResultQueue;
 import PageGuest.TravelData_RESULT;
 import PageGuest.WebPageGuest;
 import Storage.FileWriterAgent;
 import Storage.SQLiteAgent;
-import javafx.scene.shape.Path;
 import org.apache.log4j.Logger;
-
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.logging.Level;
 
 /**
  * Created by andras.igneczi on 10/03/2016.
@@ -19,18 +14,19 @@ public class Main
 {
     private static org.apache.log4j.Logger log = Logger.getLogger(Main.class);
 
-    public static void main( String[] args ) throws InterruptedException
+    public static void main(String [] argv)
     {
         try
         {
+            //MozillaHelloWorld.Starter();
             //SQLiteAgent lSQLiteAgent2 = new SQLiteAgent();
             //lSQLiteAgent2.InitializeDatabase();
-            //SQLiteHelloWorld.Test7();
-            //XmlHelloWorld.Test();
+            //Root.SQLiteHelloWorld.Test7();
+            //Root.XmlHelloWorld.Test();
             //System.exit(0);
 
-            //JxBrowserHelloWorld.HelloWorld();
-	        //JxBrowserHelloWorld.FlashSample();
+            //Root.JxBrowserHelloWorld.HelloWorld();
+	        //Root.JxBrowserHelloWorld.FlashSample();
 
             // Initialize the configuration
             Util.Configuration lConfiguration = Util.Configuration.getInstance();
@@ -63,12 +59,12 @@ public class Main
             e.printStackTrace();
         }
 /*
-        SQLiteHelloWorld.Test1( new String[0] );
-        SQLiteHelloWorld.Test2( new String[0] );
-        SQLiteHelloWorld.Test3( new String[0] );
-        SQLiteHelloWorld.Test4( new String[0] );
-        SQLiteHelloWorld.Test5( new String[0] );
-        SQLiteHelloWorld.Test6( new String[0] );
+        Root.SQLiteHelloWorld.Test1( new String[0] );
+        Root.SQLiteHelloWorld.Test2( new String[0] );
+        Root.SQLiteHelloWorld.Test3( new String[0] );
+        Root.SQLiteHelloWorld.Test4( new String[0] );
+        Root.SQLiteHelloWorld.Test5( new String[0] );
+        Root.SQLiteHelloWorld.Test6( new String[0] );
 
         runMe( "hello" );
 */
@@ -76,7 +72,7 @@ public class Main
         Thread.sleep(1000000);
         System.exit(-1);
 
-        HttpRequest lH = new HttpRequest();
+        Root.HttpRequest lH = new Root.HttpRequest();
         try
         {
             String lResponse = lH.sendGet( "https://wizzair.com/hu-HU/TimeTable/Brussels-Charleroi/Budapest", 30 );

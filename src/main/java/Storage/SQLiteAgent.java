@@ -11,7 +11,7 @@ public class SQLiteAgent extends ArchiverAgent
 {
 	Connection mConnection = null;
 	TravelData_RESULT mResult;
-	TravelDataResultComposer_SQL mComposer;
+	TravelDataResultComposer_LiteSQL mComposer;
 
 	public void SQLiteAgent()
 	{
@@ -99,7 +99,7 @@ public class SQLiteAgent extends ArchiverAgent
 
 	protected void WriteData( TravelData_RESULT aResult )
 	{
-		mComposer = new TravelDataResultComposer_SQL( aResult );
+		mComposer = new TravelDataResultComposer_LiteSQL( aResult );
 		mResult = aResult;
 
 		int lSearchId = GetSearchId();

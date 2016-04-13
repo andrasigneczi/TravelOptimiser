@@ -221,7 +221,6 @@ WHERE
 		AND TDR.AirportCode_GoingTo='BUD'
 		AND TDR_PT.OutboundTrip='false'
 	))
-
 ORDER BY DepartureDatetime ASC, OutboundTrip DESC, SearchDatetime ASC;
 
 SELECT
@@ -275,5 +274,4 @@ WHERE
 		AND TDR.AirportCode_GoingTo='HHN'
 		AND TDR_PT.OutboundTrip='false'
 	))
-
 ORDER BY DepartureDatetime ASC, OutboundTrip DESC, SearchDatetime ASC;
