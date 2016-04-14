@@ -1,5 +1,3 @@
-BUD-CRL Mon, 11 Jul 6:10-8:15
-
 SOF-HHN Sat, 06 Aug Tue, 09 Aug
 
 HHN-SOF Tue, 05 Jul

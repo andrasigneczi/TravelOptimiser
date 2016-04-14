@@ -9,9 +9,9 @@ import java.sql.*;
  */
 public class SQLiteAgent extends ArchiverAgent
 {
-	Connection mConnection = null;
-	TravelData_RESULT mResult;
-	TravelDataResultComposer_LiteSQL mComposer;
+	private Connection mConnection = null;
+	private TravelData_RESULT mResult;
+	private TravelDataResultComposer_LiteSQL mComposer;
 
 	public void SQLiteAgent()
 	{

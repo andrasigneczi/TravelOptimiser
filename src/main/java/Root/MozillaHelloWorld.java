@@ -69,8 +69,8 @@ public class MozillaHelloWorld  implements nsIWebProgressListener,nsIWeakReferen
 		try {
 			grePath = Mozilla.getGREPathWithProperties(range, null);
 			mozilla.initialize(grePath);
-			File lF1 = new File( "c:\\Users\\Andras\\IdeaProjects\\TravelOptimizer\\mozilla\\xulrunner-sdk\\bin" );
-			File lF2 = new File("c:\\Users\\Andras\\IdeaProjects\\TravelOptimizer\\mozilla\\profile" );
+			//File lF1 = new File( "c:\\Users\\Andras\\IdeaProjects\\TravelOptimizer\\mozilla\\xulrunner-sdk\\bin" );
+			//File lF2 = new File("c:\\Users\\Andras\\IdeaProjects\\TravelOptimizer\\mozilla\\profile" );
 
 			//locProvider = new LocationProvider(/*grePath*/lF1, lF2);
 			locProvider = new LocationProvider(grePath);

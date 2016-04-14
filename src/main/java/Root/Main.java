@@ -45,12 +45,16 @@ public class Main
             lSQLiteAgent.InitializeDatabase();
             lFWA.setNextAgent( lSQLiteAgent );
 
-            for( int i = 0; i < 100; i++ )
+            for( int i = 0; i < 1000; )
             {
                 TravelData_RESULT lResult = ResultQueue.getInstance().pop();
                 if( lResult != null )
+                {
                     lFWA.Archive( lResult );
-                Thread.sleep( 1000 );
+                    continue;
+                }
+                Thread.sleep( 1800 );
+                i++;
             }
             lGuest.stop();
         }
