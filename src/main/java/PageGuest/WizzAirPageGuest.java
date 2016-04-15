@@ -516,5 +516,6 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			e.printStackTrace();
 		}
 		System.out.println("stop()");
+		mBrowser.dispose();
 	}
 }

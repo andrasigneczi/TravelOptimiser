@@ -1,11 +1,22 @@
 package Util;
 
+import java.util.ArrayList;
+
 /**
  * Created by Andras on 13/04/2016.
  */
 public class HighChartDataResultComposer extends DataResultComposer
 {
-	private String mResult = new String();
+	//private String mResult = new String();
+	// if 3 or more value one by one are the same in the list, only the first one and the last one will be displayed
+	private ArrayList<Double> mValues;
+	private ArrayList<String> mDates;
+
+	public HighChartDataResultComposer()
+	{
+		mValues = new ArrayList<>( );
+		mDates = new ArrayList<>( );
+	}
 
 	@Override
 	public void add( String aDate, String aValue, String aCurrency )
@@ -18,15 +29,39 @@ public class HighChartDataResultComposer extends DataResultComposer
 		String lValue = aValue.substring( 0, aValue.length() - aCurrency.length() ).trim();
 		lValue = lValue.replace( ",", "." );
 		lValue.replace( " ", "" );
+		double lDValue = Double.parseDouble( lValue );
 
-		if( mResult.length() > 0 )
-			mResult += ",\n";
-		mResult += "[Date.parse('" + aDate + "'), " + lValue + "]";
+		if( mValues.size() < 2 )
+		{
+			mDates.add( aDate );
+			mValues.add( lDValue );
+		}
+		else
+		{
+			if( mValues.get( mValues.size() - 2 ).doubleValue() == mValues.get( mValues.size() - 1 ).doubleValue()
+					&& mValues.get( mValues.size() - 1 ).doubleValue() == lDValue )
+			{
+				mDates.set( mValues.size() - 1, aDate );
+				mValues.set( mValues.size() - 1, lDValue );
+			}
+			else
+			{
+				mDates.add( aDate );
+				mValues.add( lDValue );
+			}
+		}
 	}
 
 	@Override
 	public String getResult()
 	{
-		return mResult;
+		String lResult = "";
+		for( int i = 0; i < mValues.size(); i++ )
+		{
+			if( lResult.length() > 0 )
+				lResult += ",\n";
+			lResult += "[Date.parse('" + mDates.get( i ) + "'), " + mValues.get( i ) + "]";
+		}
+		return lResult;
 	}
 }
