@@ -1,14 +1,18 @@
 package www;
 
 import Util.DataProvider;
+import Util.DataResultComposer;
 import Util.HighChartDataResultComposer;
 import Util.SQLiteDataProvider;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.stream.IntStream;
 
 /**
  * Created by Andras on 08/04/2016.
@@ -16,13 +20,61 @@ import java.util.Scanner;
 @RestController
 public class WebService
 {
+	private String mHtmlTemplate;
+	private String mJsTemplate;
+	private String mDivTemplate;
+
+	public WebService()
+	{
+		Scanner lScanner  = new Scanner(getClass().getClassLoader().getResourceAsStream("charts_template.html" ), "UTF-8" );
+		mHtmlTemplate = lScanner.useDelimiter( "\\A" ).next();
+		lScanner.close();
+
+		lScanner  = new Scanner(getClass().getClassLoader().getResourceAsStream("charts_template.js" ), "UTF-8" );
+		mJsTemplate = lScanner.useDelimiter( "\\A" ).next();
+		lScanner.close();
+
+		mDivTemplate = "<div id=\"[CONTAINER]\" style=\"min-width: 310px; height: 400px; margin: 0 auto\"></div>";
+	}
+
+	private String IsoDatetimeToEngDate( String aDateTime )
+	{
+		String lDate = aDateTime.substring( 0, 10 );
+		/*
+		StringBuffer lReturn = new StringBuffer();
+		IntStream
+				.range( 0, lDate.length() - 1 )
+				.forEach( s -> lReturn.append( lDate.charAt( lDate.length() - 1 - s ) ) );
+		*/
+		LocalDate lLocalDate = LocalDate.parse(lDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+		return String.format( "%02d-%02d-%04d", lLocalDate.getDayOfMonth(),
+				lLocalDate.getMonthValue(), lLocalDate.getYear() );
+	}
+
+	private String [] GetHtmlContent( String aDateTime1, String aDateTime2, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency, String aHtmlTagId, boolean aOneWay )
+	{
+		String lResult1 = SQLiteDataProvider.getInstance().GetData( aDateTime1/*2016-07-16 06:30*/, aAirline, aAirportFrom, aAirportTo, aCurrency, new HighChartDataResultComposer() );
+		String lResult2 = SQLiteDataProvider.getInstance().GetData( aDateTime2/*2016-07-19 08:30*/, aAirline, aAirportTo, aAirportFrom, aCurrency, new HighChartDataResultComposer() );
+
+		String lDate1 = IsoDatetimeToEngDate( aDateTime1 );
+		String lDate2 = IsoDatetimeToEngDate( aDateTime2 );
+
+		String lJS = mJsTemplate.replace( "[TITLE]", lDate1 + " - " + lDate2 + " " + aAirportFrom + " - " + aAirportTo )
+				.replace( "[SUBTITLE]", aAirline )
+				.replace( "[DEVIZA]", aCurrency )
+				.replace( "[SERIES1.NAME]", lDate1 )
+				.replace( "[SERIES2.NAME]", lDate2 )
+				.replace( "[SERIES1.DATA]", lResult1 )
+				.replace( "[SERIES2.DATA]", lResult2 )
+				.replace( "[CONTAINER]", aHtmlTagId );
+		String lDiv = mDivTemplate.replace( "[CONTAINER]", aHtmlTagId );
+
+		return new String[] { lDiv, lJS };
+	}
+
 	@RequestMapping( "/" )
 	public String index() throws IOException
 	{
-		Scanner lScanner  = new Scanner(getClass().getClassLoader().getResourceAsStream("charts_template.html" ), "UTF-8" );
-		String  lHtml = lScanner.useDelimiter( "\\A" ).next();
-		lScanner.close();
-
 		/* Template format
 		[TITLE] 06.08.2016 - 09.08.2016 SOF - HHN
 		[SUBTITLE] wizzair
@@ -32,18 +84,30 @@ public class WebService
 		[SERIES1.DATA] [Date.UTC(1970, 9, 29), 0], ...
 		[SERIES2.DATA] [Date.UTC(1970, 10, 9), 0.4], ...
 		 */
-
+/*
 		String lResult1 = SQLiteDataProvider.getInstance().GetData( "2016-07-16 %", "wizzair", "SOF", "HHN", "lv", new HighChartDataResultComposer() );
 		String lResult2 = SQLiteDataProvider.getInstance().GetData( "2016-07-19 %", "wizzair", "HHN", "SOF", "lv", new HighChartDataResultComposer() );
 
-		lHtml = lHtml.replace( "[TITLE]", "16.07.2016 - 19.07.2016 SOF - HHN" );
-		lHtml = lHtml.replace( "[SUBTITLE]", "wizzair" );
-		lHtml = lHtml.replace( "[DEVIZA]", "lv" );
-		lHtml = lHtml.replace( "[SERIES1.NAME]", "16.07.2016" );
-		lHtml = lHtml.replace( "[SERIES2.NAME]", "19.07.2016" );
-		lHtml = lHtml.replace( "[SERIES1.DATA]", lResult1 );
-		lHtml = lHtml.replace( "[SERIES2.DATA]", lResult2 );
+		String lJS = lJsTemplate.replace( "[TITLE]", "16.07.2016 - 19.07.2016 SOF - HHN" )
+								.replace( "[SUBTITLE]", "wizzair" )
+								.replace( "[DEVIZA]", "lv" )
+								.replace( "[SERIES1.NAME]", "16.07.2016" )
+								.replace( "[SERIES2.NAME]", "19.07.2016" )
+								.replace( "[SERIES1.DATA]", lResult1 )
+								.replace( "[SERIES2.DATA]", lResult2 )
+								.replace( "[CONTAINER]", "container1" );
+		String lDiv = lDivTemplate.replace( "[CONTAINER]", "container1" );
+
 		//SQLiteDataProvider.getInstance().ConnectionClose();
+
+		String  lHtml = lHtmlTemplate.replace( "[CHART_SCRIPTS]", lJS )
+				.replace( "[CHART_DIVS]", lDiv );
+*/
+		String [] lContent1 = GetHtmlContent( "2016-07-16 06:30", "2016-07-19 08:30", "wizzair", "SOF", "HHN", "lv", "container1", false );
+		String [] lContent2 = GetHtmlContent( "2016-08-06 06:30", "2016-08-09 08:30", "wizzair", "SOF", "HHN", "lv", "container2", false );
+
+		String  lHtml = mHtmlTemplate.replace( "[CHART_SCRIPTS]", lContent1[ 1 ] + lContent2[ 1 ] )
+				.replace( "[CHART_DIVS]", lContent1[ 0 ] + lContent2[ 0 ] );
 		return lHtml;
 	}
 }
