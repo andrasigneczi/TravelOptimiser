@@ -39,17 +39,7 @@
                 }
             },
 
-            series: [{
-                name: '[SERIES1.NAME]',
-                data: [
-                [SERIES1.DATA]
-                ]
-            }, {
-                name: '[SERIES2.NAME]',
-                data: [
-                [SERIES2.DATA]
-                ]
-            }]
+            series: [ [SERIES] ]
         });
     });
 
