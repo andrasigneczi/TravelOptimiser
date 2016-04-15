@@ -8,13 +8,14 @@ public class TravelData_INPUT implements Cloneable
 	public String  mAirline;
 	public String  mAirportCode_LeavingFrom;   // SOF
 	public String  mAirportCode_GoingTo;       // HHN
-	public String  mDepartureDay;              // 2016.03.25 17:10
-	public String  mReturnDay         = "";    // 2016.03.27 17:10
+	public String  mDepartureDatetime;         // 2016.03.25 17:10
+	public String  mReturnDatetime    = "";    // 2016.03.27 17:10
 	public String  mAdultNumber       = "1";
 	public String  mChildNumber       = "0";
 	public String  mInfantNumber      = "0";
 	public boolean mNearbyAirports    = false;
 	public boolean mReturnTicket      = false;
+	public String mCurrency           = "";
 
 	public boolean set( String aName, String aValue )
 	{
@@ -42,16 +43,16 @@ public class TravelData_INPUT implements Cloneable
 				break setvalues;
 			}
 
-			if( aName.equals( "DepartureDay" ) )
+			if( aName.equals( "DepartureDatetime" ) )
 			{
-				mDepartureDay = aValue;
+				mDepartureDatetime = aValue;
 				lReturnValue = true;
 				break setvalues;
 			}
 
-			if( aName.equals( "ReturnDay" ) )
+			if( aName.equals( "ReturnDatetime" ) )
 			{
-				mReturnDay = aValue;
+				mReturnDatetime = aValue;
 				lReturnValue = true;
 				break setvalues;
 			}
@@ -87,6 +88,13 @@ public class TravelData_INPUT implements Cloneable
 			if( aName.equals( "ReturnTicket" ) )
 			{
 				mReturnTicket = aValue.equals( "true" );
+				lReturnValue = true;
+				break setvalues;
+			}
+
+			if( aName.equals( "Currency" ) )
+			{
+				mCurrency = aValue;
 				lReturnValue = true;
 				break setvalues;
 			}

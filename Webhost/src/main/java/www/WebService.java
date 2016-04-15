@@ -1,9 +1,6 @@
 package www;
 
-import Util.DataProvider;
-import Util.DataResultComposer;
-import Util.HighChartDataResultComposer;
-import Util.SQLiteDataProvider;
+import Util.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -94,6 +91,29 @@ public class WebService
 		return new String[] { lDiv, lJS };
 	}
 
+	private String GenHtmlContentUsingConfig()
+	{
+		ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
+		String lScriptCotent = "";
+		String lDivContent = "";
+		int lContainerIndex = 0;
+		for( TravelData_INPUT lTDI : lSearchList )
+		{
+			if( !lTDI.mAirline.equals( "wizzair" ))
+				continue;
+
+			lTDI.mReturnTicket = ( lTDI.mReturnDatetime.length() != 0 );
+			String[] lContent = GetHtmlContent( lTDI.mDepartureDatetime, lTDI.mReturnDatetime, lTDI.mAirline,
+					lTDI.mAirportCode_LeavingFrom, lTDI.mAirportCode_GoingTo,
+					lTDI.mCurrency, "container" + lContainerIndex++, !lTDI.mReturnTicket );
+			lScriptCotent += lContent[ 1 ];
+			lDivContent += lContent[ 0 ];
+		}
+		String  lHtml = mHtmlTemplate.replace( "[CHART_SCRIPTS]", lScriptCotent )
+				.replace( "[CHART_DIVS]", lDivContent );
+		return lHtml;
+	}
+
 	@RequestMapping( "/" )
 	public String index() throws IOException
 	{
@@ -107,24 +127,6 @@ public class WebService
 		[SERIES2.DATA] [Date.UTC(1970, 10, 9), 0.4], ...
 		 */
 /*
-		String lResult1 = SQLiteDataProvider.getInstance().GetData( "2016-07-16 %", "wizzair", "SOF", "HHN", "lv", new HighChartDataResultComposer() );
-		String lResult2 = SQLiteDataProvider.getInstance().GetData( "2016-07-19 %", "wizzair", "HHN", "SOF", "lv", new HighChartDataResultComposer() );
-
-		String lJS = lJsTemplate.replace( "[TITLE]", "16.07.2016 - 19.07.2016 SOF - HHN" )
-								.replace( "[SUBTITLE]", "wizzair" )
-								.replace( "[DEVIZA]", "lv" )
-								.replace( "[SERIES1.NAME]", "16.07.2016" )
-								.replace( "[SERIES2.NAME]", "19.07.2016" )
-								.replace( "[SERIES1.DATA]", lResult1 )
-								.replace( "[SERIES2.DATA]", lResult2 )
-								.replace( "[CONTAINER]", "container1" );
-		String lDiv = lDivTemplate.replace( "[CONTAINER]", "container1" );
-
-		//SQLiteDataProvider.getInstance().ConnectionClose();
-
-		String  lHtml = lHtmlTemplate.replace( "[CHART_SCRIPTS]", lJS )
-				.replace( "[CHART_DIVS]", lDiv );
-*/
 		String [] lContent1 = GetHtmlContent( "2016-07-16 06:30", "2016-07-19 08:30", "wizzair", "SOF", "HHN", "lv", "container1", false );
 		String [] lContent2 = GetHtmlContent( "2016-08-06 06:30", "2016-08-09 08:30", "wizzair", "SOF", "HHN", "lv", "container2", false );
 		String [] lContent3 = GetHtmlContent( "2016-04-15 20:45", "", "wizzair", "CRL", "BUD", "€", "container3", true );
@@ -132,5 +134,7 @@ public class WebService
 		String  lHtml = mHtmlTemplate.replace( "[CHART_SCRIPTS]", lContent1[ 1 ] + lContent2[ 1 ] + lContent3[ 1 ] )
 				.replace( "[CHART_DIVS]", lContent1[ 0 ] + lContent2[ 0 ] + lContent3[ 0 ] );
 		return lHtml;
+*/
+		return GenHtmlContentUsingConfig();
 	}
 }
