@@ -1,5 +1,5 @@
 package Root;
-
+/*
 import org.mozilla.xpcom.IAppFileLocProvider;
 
 import java.io.File;
@@ -45,3 +45,4 @@ public class LocationProvider implements IAppFileLocProvider
     }
 
 }
+*/

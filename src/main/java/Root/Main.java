@@ -31,7 +31,8 @@ public class Main
             // Initialize the configuration
             Util.Configuration lConfiguration = Util.Configuration.getInstance();
 
-            WebPageGuest lGuest = WebPageGuestFactory.Create( "WizzAir" );
+            //WebPageGuest lGuest = WebPageGuestFactory.Create( "WizzAir" );
+            WebPageGuest lGuest = WebPageGuestFactory.Create( "RyanAir" );
             lGuest.DoSearchFromConfig();
 /*
             lGuest.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );

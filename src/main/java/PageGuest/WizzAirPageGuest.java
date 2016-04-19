@@ -45,10 +45,6 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		System.out.println("WizzAirPageGuest()");
 	}
 
-	public boolean OpenStartPage()
-	{
-		return false;
-	}
 	public void DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
 	{
 		if( !ValidateDate( aDepartureDate, aReturnDate ))

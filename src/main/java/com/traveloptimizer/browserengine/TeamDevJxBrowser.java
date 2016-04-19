@@ -8,11 +8,9 @@ import com.teamdev.jxbrowser.chromium.Browser;
 public class TeamDevJxBrowser
 {
 	private static TeamDevJxBrowser mInstance;
-	private Browser mJxBrowser;
 
 	private TeamDevJxBrowser()
 	{
-		mJxBrowser = new Browser();
 	}
 
 	public static TeamDevJxBrowser getInstance()
@@ -35,6 +33,6 @@ public class TeamDevJxBrowser
 
 	public Browser getJxBrowser()
 	{
-		return mJxBrowser;
+		return new Browser();
 	}
 }

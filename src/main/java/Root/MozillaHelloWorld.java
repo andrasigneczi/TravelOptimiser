@@ -1,8 +1,8 @@
 package Root;
-
-/**
+/*
+/ **
  * Created by Andras on 11/04/2016.
- */
+ * /
 
 import java.awt.Color;
 import java.awt.Component;
@@ -23,13 +23,13 @@ import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.win32.*;
 import sun.awt.windows.WComponentPeer;
 
-/*
-Websites ref
-http://groups.google.com/group/mozilla.dev.tech.java/browse_thread/thread/898ba6751d0c57f7
-http://skrul.com/blog/code/
-http://wirestorm.net/blog/?cat=9
 
-*/
+//Websites ref
+//http://groups.google.com/group/mozilla.dev.tech.java/browse_thread/thread/898ba6751d0c57f7
+//http://skrul.com/blog/code/
+//http://wirestorm.net/blog/?cat=9
+
+
 
 
 public class MozillaHelloWorld  implements nsIWebProgressListener,nsIWeakReference, nsIInterfaceRequestor, nsIWebBrowserChrome, nsISHistoryListener{
@@ -72,7 +72,7 @@ public class MozillaHelloWorld  implements nsIWebProgressListener,nsIWeakReferen
 			//File lF1 = new File( "c:\\Users\\Andras\\IdeaProjects\\TravelOptimizer\\mozilla\\xulrunner-sdk\\bin" );
 			//File lF2 = new File("c:\\Users\\Andras\\IdeaProjects\\TravelOptimizer\\mozilla\\profile" );
 
-			//locProvider = new LocationProvider(/*grePath*/lF1, lF2);
+			//locProvider = new LocationProvider(lF1, lF2);
 			locProvider = new LocationProvider(grePath);
 			mozilla.initEmbedding(grePath, grePath, locProvider);
 		}
@@ -274,3 +274,4 @@ public class MozillaHelloWorld  implements nsIWebProgressListener,nsIWeakReferen
 
 
 } //public class JavaXPCOM_test1[/code]
+*/
