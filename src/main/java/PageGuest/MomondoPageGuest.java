@@ -5,7 +5,12 @@ package PageGuest;
  */
 public class MomondoPageGuest extends WebPageGuest
 {
-	public void DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
+	public MomondoPageGuest()
+	{
+		super("momondo");
+	}
+
+	public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate )
 	{
 	}
 

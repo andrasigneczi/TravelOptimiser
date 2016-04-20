@@ -33,6 +33,11 @@ public class Main
 
             //WebPageGuest lGuest = WebPageGuestFactory.Create( "WizzAir" );
             WebPageGuest lGuest = WebPageGuestFactory.Create( "RyanAir" );
+            lGuest.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
+            Thread.sleep( 100000 );
+            lGuest.stop();
+            System.exit( -1 );
+
             lGuest.DoSearchFromConfig();
 /*
             lGuest.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );

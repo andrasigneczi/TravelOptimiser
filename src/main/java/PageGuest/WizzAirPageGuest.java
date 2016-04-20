@@ -37,7 +37,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	public WizzAirPageGuest()
 	{
-		super();
+		super( "wizzair" );
 		mSearchQueue = new ArrayList<TravelData_INPUT>();
 		mThread = new Thread( this );
 		mThread.setName( "WizzAirThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME ) );
@@ -63,7 +63,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			}
 
 			TravelData_INPUT lTravelDataInput = new TravelData_INPUT();
-			lTravelDataInput.mAirline                 = "wizzair";
+			lTravelDataInput.mAirline                 = getAirline();
 			lTravelDataInput.mAirportCode_LeavingFrom = aFrom;
 			lTravelDataInput.mAirportCode_GoingTo     = aTo;
 			lTravelDataInput.mDepartureDay            = aDepartureDate;
@@ -95,7 +95,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
 			for( TravelData_INPUT lTDI : lSearchList )
 			{
-				if( !lTDI.mAirline.equals( "wizzair" ))
+				if( !lTDI.mAirline.equals( getAirline() ))
 					continue;
 
 				if( !ValidateDate( lTDI.mDepartureDay, lTDI.mReturnDay ))
@@ -424,18 +424,6 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 		ResultQueue.getInstance().push( mTravelDataResult );
 		System.out.println("CollectDatas()");
-	}
-
-	private void Sleep( int aValue )
-	{
-		try
-		{
-			Thread.sleep( aValue );
-		}
-		catch( InterruptedException e )
-		{
-			e.printStackTrace();
-		}
 	}
 
 	public void run()

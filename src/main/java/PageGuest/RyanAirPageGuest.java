@@ -1,9 +1,15 @@
 package PageGuest;
 
 import com.teamdev.jxbrowser.chromium.Browser;
+import com.teamdev.jxbrowser.chromium.Callback;
+import com.teamdev.jxbrowser.chromium.dom.By;
 import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
+import com.teamdev.jxbrowser.chromium.dom.DOMElement;
+import com.teamdev.jxbrowser.chromium.dom.DOMInputElement;
 import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
 import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
+import com.teamdev.jxbrowser.chromium.events.RenderAdapter;
+import com.teamdev.jxbrowser.chromium.events.RenderEvent;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 import com.traveloptimizer.browserengine.TeamDevJxBrowser;
 import org.apache.log4j.Logger;
@@ -30,7 +36,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 
 	public RyanAirPageGuest()
 	{
-		super();
+		super( "ryanair" );
 		mSearchQueue = new ArrayList<TravelData_INPUT>();
 		mThread = new Thread( this );
 		mThread.setName( "RyanAirThread " + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME ) );
@@ -52,11 +58,11 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 			if( mBrowser == null )
 			{
 				InitBrowser();
-				mBrowser.loadURL( "http://www.wizzair.com" );
+				mBrowser.loadURL( "http://www.ryanair.com" );
 			}
 
 			TravelData_INPUT lTravelDataInput = new TravelData_INPUT();
-			lTravelDataInput.mAirline                 = "ryanair";
+			lTravelDataInput.mAirline                 = getAirline();
 			lTravelDataInput.mAirportCode_LeavingFrom = aFrom;
 			lTravelDataInput.mAirportCode_GoingTo     = aTo;
 			lTravelDataInput.mDepartureDay            = aDepartureDate;
@@ -82,13 +88,13 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 			if( mBrowser == null )
 			{
 				InitBrowser();
-				mBrowser.loadURL( "http://www.wizzair.com" );
+				mBrowser.loadURL( "http://www.ryanair.com" );
 			}
 
 			ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
 			for( TravelData_INPUT lTDI : lSearchList )
 			{
-				if( !lTDI.mAirline.equals( "wizzair" ))
+				if( !lTDI.mAirline.equals( getAirline() ))
 					continue;
 
 				if( !ValidateDate( lTDI.mDepartureDay, lTDI.mReturnDay ))
@@ -167,13 +173,23 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 				// A click után újra bejövök ide, erre ügyelni kell!!!!
 				if (event.isMainFrame())
 				{
+
+					DOMElement elementTextSource = null;
+					do
+					{
+						elementTextSource = mBrowser.getDocument().findElement(By.name("departureAirportName" ) );
+						if( elementTextSource == null )
+							Sleep( 1000 );
+					}
+					while( elementTextSource == null );
+
 					TravelData_INPUT lTravelDataInput = null;
 					if( getBrowserState().toString().equals( "BrowserStateSearching" ))
 					{
 						lTravelDataInput = ((BrowserStateSearching)getBrowserState()).getTravelDataInput();
 					}
 
-					DOMDocument lDOMDocument = event.getBrowser().getDocument();
+					DOMDocument lDOMDocument = mBrowser.getDocument();
 					if( lTravelDataInput == null )
 						new BrowserStateReadyToSearch( lDOMDocument ).doAction( getBrowserState().getWebPageGuest());
 					else
@@ -190,11 +206,119 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 	@Override
 	public void stop()
 	{
+		mThreadStopped = true;
+		try
+		{
+			mThread.join();
+		}
+		catch( InterruptedException e )
+		{
+			e.printStackTrace();
+		}
+		System.out.println("stop()");
+	}
+
+	private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
+	{
+
+	}
+
+	private void setDOMInput( DOMDocument aDOMDocument, String aXPath, String aValue )
+	{
+		DOMElement lDOMElement = aDOMDocument.findElement(By.xpath( aXPath ));
+		DOMInputElement lDOMImputElement = (DOMInputElement)lDOMElement;
+		lDOMImputElement.setValue( aValue );
+	}
+
+	private void FillTheForm(DOMDocument aDOMDocument, TravelData_INPUT aTravelDataInput )
+	{
+		String lAirportLabel = "Budapest";
+		String lAirportLabel2 = "Brussels (CRL)";
+
+		// leaving from
+		setDOMInput( aDOMDocument, "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[1]/div[2]/div[2]/div/div[1]/input", lAirportLabel );
+		setDOMInput( aDOMDocument,"//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[2]/div[2]/div[2]/div/div[1]/input", lAirportLabel2 );
+
+		//String lAirportLabel = getAirportName( aTravelDataInput.mAirportCode_LeavingFrom ) +  " (" + aTravelDataInput.mAirportCode_LeavingFrom + ")";
+
+
+		// fly out day month year
+		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[1]/div/div[2]/div[2]/div/input[1]", "10" );
+		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[1]/div/div[2]/div[2]/div/input[2]", "03" );
+		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[1]/div/div[2]/div[2]/div/input[3]", "2016" );
+
+		// fly back day month year
+		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[2]/div/div[2]/div[2]/div/input[1]", "15" );
+		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[2]/div/div[2]/div[2]/div/input[2]", "05" );
+		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[2]/div/div[2]/div[2]/div/input[3]", "2016" );
+
+		// passengers
+	}
+
+	private void ClickTheSearchButton( DOMDocument aDOMDocument )
+	{
 
 	}
 
 	public void run()
 	{
+		try
+		{
+			System.out.println( "Thread::run" );
 
+			mThreadStopped = false;
+			while( !mThreadStopped )
+			{
+				int lSearQueueSize;
+				synchronized( mMutex )
+				{
+					lSearQueueSize = mSearchQueue.size();
+				}
+
+				if( getBrowserState() == null )
+				{
+					Sleep( 100 );
+					continue;
+				}
+
+				String lBrowserState = getBrowserState().toString();
+				if( ( lSearQueueSize == 0 && !lBrowserState.equals( "BrowserStateSearchingFinished" ) ) || lBrowserState.equals( "BrowserStateInit" ) )
+				{
+					Sleep( 100 );
+					continue;
+				}
+
+				if( lBrowserState.equals( "BrowserStateSearchingFinished" ) )
+				{
+					BrowserStateSearchingFinished lState = (BrowserStateSearchingFinished)getBrowserState();
+					TravelData_INPUT lTravelDataInput = lState.getTravelDataInput();
+					DOMDocument lDOMDocument = lState.getDOMDocument();
+
+					// The last search has been finished, collect the datas, start a new search
+					CollectDatas( lDOMDocument, lTravelDataInput );
+					new BrowserStateReadyToSearch( lDOMDocument ).doAction( this );
+				}
+				else if( lBrowserState.equals( "BrowserStateReadyToSearch" ) )
+				{
+					BrowserStateReadyToSearch lState = (BrowserStateReadyToSearch)getBrowserState();
+					TravelData_INPUT lTravelDataInput;
+					DOMDocument lDOMDocument = lState.getDOMDocument();
+
+					synchronized( mMutex )
+					{
+						lTravelDataInput = mSearchQueue.remove( 0 );
+					}
+					new BrowserStateSearching( lTravelDataInput ).doAction( this );
+
+					FillTheForm( lDOMDocument, lTravelDataInput );
+					ClickTheSearchButton( lDOMDocument );
+				}
+			}
+			System.out.println( "run()" );
+		}
+		catch( Exception e )
+		{
+			e.printStackTrace();
+		}
 	}
 }

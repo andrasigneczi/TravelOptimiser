@@ -5,7 +5,12 @@ package PageGuest;
  */
 public class FlibcoPageGuest extends WebPageGuest
 {
-	public void DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
+	public FlibcoPageGuest()
+	{
+		super("flibco");
+	}
+
+	public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate )
 	{
 	}
 

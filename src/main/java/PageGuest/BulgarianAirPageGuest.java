@@ -5,7 +5,12 @@ package PageGuest;
  */
 public class BulgarianAirPageGuest extends WebPageGuest
 {
-	public void DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
+	public BulgarianAirPageGuest()
+	{
+		super("bulgarianair");
+	}
+
+	public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate )
 	{
 	}
 

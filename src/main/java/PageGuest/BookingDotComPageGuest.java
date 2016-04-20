@@ -5,7 +5,12 @@ package PageGuest;
  */
 public class BookingDotComPageGuest extends WebPageGuest
 {
-	public void DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
+	public BookingDotComPageGuest()
+	{
+		super("booking.com");
+	}
+
+	public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate )
 	{
 	}
 

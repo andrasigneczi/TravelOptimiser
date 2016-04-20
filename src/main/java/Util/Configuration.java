@@ -33,6 +33,7 @@ public class Configuration
 		mSearchList = new ArrayList<TravelData_INPUT>();
 		mConfigValues = new Hashtable<String, String>(  );
 		mValidAirlines.add( "wizzair" );
+		mValidAirlines.add( "ryanair" );
 		mValidSearchNodes.add( "LeavingFrom" );
 		mValidSearchNodes.add( "GoingTo" );
 		mValidSearchNodes.add( "DepartureDay" );

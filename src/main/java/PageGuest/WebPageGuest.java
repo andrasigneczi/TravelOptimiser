@@ -14,6 +14,7 @@ public abstract class WebPageGuest
 	//protected TravelData_INPUT  mTravelDataInput = null;
     protected TravelData_RESULT mTravelDataResult = null;
     protected BrowserState mBrowserState = null;
+    private final String mAirline;
 
     public abstract void DoSearch( String aAirportCode_Way_From, String aAirportCode_Way_To,
                                    String aDepartureDate_Way_To, String aReturnDate_Way_Back );
@@ -21,14 +22,15 @@ public abstract class WebPageGuest
 
     public abstract void stop();
 
-    public WebPageGuest()
+    public WebPageGuest( String aAirline )
     {
+        mAirline = aAirline;
         InitAirportList();
     }
 
     private void InitAirportList()
     {
-        Scanner lScanner = new Scanner( getClass().getClassLoader().getResourceAsStream( "airports.txt" ), "UTF-8" );
+        Scanner lScanner = new Scanner(getClass().getClassLoader().getResourceAsStream("airports_" + mAirline + ".txt"), "UTF-8" );
         String lAirports = lScanner.useDelimiter( "\\A" ).next();
         lScanner.close();
 
@@ -62,4 +64,23 @@ public abstract class WebPageGuest
     {
         return mBrowserState;
     }
+
+
+    protected void Sleep( int aValue )
+    {
+        try
+        {
+            Thread.sleep( aValue );
+        }
+        catch( InterruptedException e )
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public String getAirline()
+    {
+        return mAirline;
+    }
+
 }
