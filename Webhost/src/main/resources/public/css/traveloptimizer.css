@@ -1,0 +1,15 @@
+.departurelistbutton {
+    width: 150px;
+    padding:5px;
+}
+
+.near {
+    background-color: #a5a5ff;
+}
+
+div.TO_row {
+    display: block;
+    clear: both;
+    margin-top:20px;
+    margin-bottom:20px;
+}

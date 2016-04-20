@@ -1,7 +1,6 @@
 package Util;
 
 import java.sql.*;
-import java.util.ArrayList;
 
 /**
  * Created by Andras on 13/04/2016.
@@ -54,10 +53,10 @@ public class SQLiteDataProvider implements DataProvider
 		}
 	}
 
-	public String GetData( String aDateTime, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency, DataResultComposer aDRComposer )
+	public String GetTripData( String aDateTime, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency, DataResultComposer aDRComposer )
 	{
 		String lQuery;
-		lQuery = mComposer.GetQuery( aDateTime, aAirline, aAirportFrom, aAirportTo, aCurrency);
+		lQuery = mComposer.GetTripQuery( aDateTime, aAirline, aAirportFrom, aAirportTo, aCurrency);
 
 		Statement lStmt = null;
 		try
@@ -78,5 +77,58 @@ public class SQLiteDataProvider implements DataProvider
 		}
 
 		return aDRComposer.getResult();
+	}
+
+	public String GetCollectedDepartureDateList( HtmlListFormatter aHtmlListFormatter )
+	{
+		String lQuery;
+		lQuery = mComposer.GetTripDateListQuery();
+
+		Statement lStmt = null;
+		try
+		{
+			int lID = -1;
+			lStmt = mConnection.createStatement();
+			ResultSet lResultSet = lStmt.executeQuery( lQuery );
+			while ( lResultSet.next() )
+			{
+				aHtmlListFormatter.add( lResultSet.getString( "DepartureDatetime" ));
+			}
+			lResultSet.close();
+			lStmt.close();
+		}
+		catch ( Exception e ) {
+			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			System.exit( 0 );
+		}
+		return aHtmlListFormatter.getFormattedResult();
+	}
+
+	public String GetDepartureAirportList( HtmlListFormatter aDepartureAirportListFormatter )
+	{
+		String lQuery;
+		lQuery = mComposer.GetDepartureAirportListQuery();
+
+		Statement lStmt = null;
+		try
+		{
+			int lID = -1;
+			lStmt = mConnection.createStatement();
+			ResultSet lResultSet = lStmt.executeQuery( lQuery );
+			while ( lResultSet.next() )
+			{
+				if( lResultSet.getBoolean( "OutboundTrip" ))
+					aDepartureAirportListFormatter.add( lResultSet.getString( "AirportCode_LeavingFrom" ));
+				else
+					aDepartureAirportListFormatter.add( lResultSet.getString( "AirportCode_GoingTo" ));
+			}
+			lResultSet.close();
+			lStmt.close();
+		}
+		catch ( Exception e ) {
+			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			System.exit( 0 );
+		}
+		return aDepartureAirportListFormatter.getFormattedResult();
 	}
 }

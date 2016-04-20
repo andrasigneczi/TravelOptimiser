@@ -10,7 +10,7 @@ public class SQLiteComposer implements SQLComposer
 
 	}
 
-	public String GetQuery( String aDateTime, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency )
+	public String GetTripQuery( String aDateTime, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency )
 	{
 		String lQueryTemplate =
 				"SELECT\n" +
@@ -43,5 +43,19 @@ public class SQLiteComposer implements SQLComposer
 
 		return lQueryTemplate.replace( "[DDATETIME]", aDateTime ).replace( "[AIRLINE]", aAirline )
 				.replace( "[AIRPORT_FROM]", aAirportFrom ).replace( "[AIRPORT_TO]", aAirportTo );
+	}
+
+	public String GetTripDateListQuery()
+	{
+		return "SELECT DISTINCT(DepartureDatetime) FROM TravelDataResult_PossibleTrips ORDER BY 1 ASC;";
+	}
+
+	public String GetDepartureAirportListQuery()
+	{
+		return "SELECT DISTINCT AirportCode_LeavingFrom,AirportCode_GoingTo, OutboundTrip " +
+				"FROM " +
+				"TravelDataResult TDR, TravelDataResult_PossibleTrips TDR_PT " +
+				"WHERE " +
+				"TDR.ID=TDR_PT.TravelDataResult_ID";
 	}
 }

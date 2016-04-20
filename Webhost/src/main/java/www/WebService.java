@@ -2,15 +2,17 @@ package www;
 
 import Util.*;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.stream.IntStream;
 
 /**
  * Created by Andras on 08/04/2016.
@@ -58,7 +60,7 @@ public class WebService
 
 	private String [] GetHtmlContent( String aDateTime1, String aDateTime2, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency, String aHtmlTagId, boolean aOneWay )
 	{
-		String lResult1 = SQLiteDataProvider.getInstance().GetData( aDateTime1/*2016-07-16 06:30*/, aAirline, aAirportFrom, aAirportTo, aCurrency, new HighChartDataResultComposer() );
+		String lResult1 = SQLiteDataProvider.getInstance().GetTripData( aDateTime1/*2016-07-16 06:30*/, aAirline, aAirportFrom, aAirportTo, aCurrency, new HighChartDataResultComposer() );
 		String lDate1 = IsoDatetimeToEngDate( aDateTime1 );
 		String lSeries1 = mSeriesTemplate.replace( "[SERIES.NAME]", lDate1 )
 				.replace( "[SERIES.DATA]", lResult1 );
@@ -66,7 +68,7 @@ public class WebService
 		String lJS;
 		if( !aOneWay )
 		{
-			String lResult2 = SQLiteDataProvider.getInstance().GetData( aDateTime2/*2016-07-19 08:30*/, aAirline, aAirportTo, aAirportFrom, aCurrency, new HighChartDataResultComposer() );
+			String lResult2 = SQLiteDataProvider.getInstance().GetTripData( aDateTime2/*2016-07-19 08:30*/, aAirline, aAirportTo, aAirportFrom, aCurrency, new HighChartDataResultComposer() );
 			String lDate2 = IsoDatetimeToEngDate( aDateTime2 );
 			String lSeries2 = mSeriesTemplate.replace( "[SERIES.NAME]", lDate2 )
 					.replace( "[SERIES.DATA]", lResult2 );
@@ -111,6 +113,12 @@ public class WebService
 		}
 		String  lHtml = mHtmlTemplate.replace( "[CHART_SCRIPTS]", lScriptCotent )
 				.replace( "[CHART_DIVS]", lDivContent );
+
+		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList());
+		lHtml = lHtml.replace( "[AVAILABLE_TRIPS]", lGetCollectedDepartureDateList );
+
+		String lDepartureAirportSelector = SQLiteDataProvider.getInstance().GetDepartureAirportList( new HtmlListFormatterSelect());
+		lHtml = lHtml.replace( "[DEPARTURE_AIRPORTS]", lDepartureAirportSelector );
 		return lHtml;
 	}
 
@@ -136,5 +144,11 @@ public class WebService
 		return lHtml;
 */
 		return GenHtmlContentUsingConfig();
+	}
+
+	@RequestMapping( value = "/ajaxrequest", method = { RequestMethod.POST }, params = { "id", "param" } )
+	public String action1( @RequestParam( "id" ) String aId, @RequestParam( "param" ) String aParam, HttpServletRequest httpRequest, WebRequest request )
+	{
+		return "a keres megjott, id:" + aId + ", param: " + aParam;
 	}
 }
