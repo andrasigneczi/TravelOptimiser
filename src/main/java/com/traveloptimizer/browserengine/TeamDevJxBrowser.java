@@ -1,6 +1,8 @@
 package com.traveloptimizer.browserengine;
 
 import com.teamdev.jxbrowser.chromium.Browser;
+import com.teamdev.jxbrowser.chromium.BrowserContext;
+import com.teamdev.jxbrowser.chromium.BrowserContextParams;
 
 /**
  * Created by Andras on 13/04/2016.
@@ -31,8 +33,9 @@ public class TeamDevJxBrowser
 		return mInstance;
 	}
 
-	public Browser getJxBrowser()
+	public Browser getJxBrowser( String aContext )
 	{
-		return new Browser();
+		BrowserContext lBrowserContext = new BrowserContext(new BrowserContextParams(".\\cache\\" + aContext ));
+		return new Browser(lBrowserContext);
 	}
 }
