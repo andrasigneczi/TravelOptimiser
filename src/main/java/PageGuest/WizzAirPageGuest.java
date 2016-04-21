@@ -143,7 +143,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		new BrowserStateInit().doAction( this );
 
 		//mBrowser = new Browser();
-		mBrowser = TeamDevJxBrowser.getInstance().getJxBrowser();
+		mBrowser = TeamDevJxBrowser.getInstance().getJxBrowser(getAirline());
 		BrowserView view = new BrowserView(mBrowser);
 
 		//final JTextField addressBar = new JTextField("http://www.teamdev.com/jxbrowser");
@@ -314,14 +314,8 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	private void ClickTheSearchButton( DOMDocument aDOMDocument )
 	{
 		String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
-		try
-		{
-			Thread.sleep( 1000 * Integer.parseInt( lSleep ) );
-		}
-		catch( InterruptedException e )
-		{
-			e.printStackTrace();
-		}
+		Sleep( 1000 * Integer.parseInt( lSleep ));
+
 		// click the button
 		DOMNode link = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_ButtonSubmit" ) );
 		if( link == null )

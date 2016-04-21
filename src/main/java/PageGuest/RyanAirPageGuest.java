@@ -10,12 +10,15 @@ import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
 import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
 import com.teamdev.jxbrowser.chromium.events.RenderAdapter;
 import com.teamdev.jxbrowser.chromium.events.RenderEvent;
+import com.teamdev.jxbrowser.chromium.javafx.internal.KeyModifiers;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 import com.traveloptimizer.browserengine.TeamDevJxBrowser;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -142,7 +145,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 		new BrowserStateInit().doAction( this );
 
 		//mBrowser = new Browser();
-		mBrowser = TeamDevJxBrowser.getInstance().getJxBrowser();
+		mBrowser = TeamDevJxBrowser.getInstance().getJxBrowser( getAirline());
 		BrowserView view = new BrowserView(mBrowser);
 
 		//final JTextField addressBar = new JTextField("http://www.teamdev.com/jxbrowser");
@@ -164,7 +167,8 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 //		frame.add(addressPane, BorderLayout.NORTH);
 		frame.add(view, BorderLayout.CENTER);
 		frame.setSize(1152, 864);
-		frame.setLocationRelativeTo(null);
+		frame.setLocation( 0, 0 );
+		//frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 
 		mBrowser.addLoadListener(new LoadAdapter() {
@@ -223,11 +227,41 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 
 	}
 
+	private void setDOMDivValue( DOMDocument aDOMDocument, String aXPath, String aValue )
+	{
+		DOMElement lDOMElement = aDOMDocument.findElement(By.xpath( aXPath ));
+		lDOMElement.setAttribute( "value", aValue );
+	}
+
 	private void setDOMInput( DOMDocument aDOMDocument, String aXPath, String aValue )
 	{
 		DOMElement lDOMElement = aDOMDocument.findElement(By.xpath( aXPath ));
 		DOMInputElement lDOMImputElement = (DOMInputElement)lDOMElement;
 		lDOMImputElement.setValue( aValue );
+	}
+
+	private void javaScriptSetFocus( String aXPath )
+	{
+		final String lGetElementByXPath = "document.evaluate('%s', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue";
+		mBrowser.executeJavaScript( String.format( lGetElementByXPath + ".focus();", aXPath ));
+	}
+
+	private void javaScriptSubmit( String aXPath )
+	{
+		final String lGetElementByXPath = "document.evaluate('%s', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue";
+		mBrowser.executeJavaScript( String.format( lGetElementByXPath + ".submit();", aXPath ));
+	}
+
+	private void javaSendKeys( String aXPath, int aKey )
+	{
+		final String lGetElementByXPath = "TraveDataOptimizer = document.evaluate('%s', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;TraveDataOptimizer.sendkeys(" + String.format( "%d", aKey ) + ");";
+		mBrowser.executeJavaScript( String.format( lGetElementByXPath, aXPath ));
+	}
+
+	private void javaScriptClick( String aXPath )
+	{
+		final String lGetElementByXPath = "document.evaluate('%s', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue";
+		mBrowser.executeJavaScript( String.format( lGetElementByXPath + ".click();", aXPath ));
 	}
 
 	private void FillTheForm(DOMDocument aDOMDocument, TravelData_INPUT aTravelDataInput )
@@ -236,28 +270,97 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 		String lAirportLabel2 = "Brussels (CRL)";
 
 		// leaving from
-		setDOMInput( aDOMDocument, "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[1]/div[2]/div[2]/div/div[1]/input", lAirportLabel );
-		setDOMInput( aDOMDocument,"//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[2]/div[2]/div[2]/div/div[1]/input", lAirportLabel2 );
+		//javaSendKeys( "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[1]/div[2]/div[2]/div/div[1]/input", '\t' );
+		//javaSendKeys( "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[1]/div[2]/div[2]/div/div[1]/input", 66 );
+		//javaSendKeys( "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[1]/div[2]/div[2]/div/div[1]/input", 67 );
+		//javaScriptClick( "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[1]/div[2]/div[2]/div/div[1]/input" );
+		//DOMElement lButton = aDOMDocument.findElement(By.xpath( "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[1]/div[2]/div[2]/div/div[1]/input" ));
+		//lButton.click();
+		//javaScriptSetFocus("//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[1]/div[2]/div[2]/div/div[1]/input");
+		//javaSendKeys( "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[1]/div[2]/div[2]/div/div[1]/input", 'B' );
+		//setDOMInput( aDOMDocument, "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[1]/div[2]/div[2]/div/div[1]/input", lAirportLabel );
+		//javaSendKeys( "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[1]/div[2]/div[2]/div/div[1]/input", 'B' );
+		//setDOMDivValue( aDOMDocument, "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[1]/div[2]", lAirportLabel );
 
-		//String lAirportLabel = getAirportName( aTravelDataInput.mAirportCode_LeavingFrom ) +  " (" + aTravelDataInput.mAirportCode_LeavingFrom + ")";
+		mRobot.delay( 1000 );
+		// Simulate a mouse click
+		mRobot.mouseMove( 175, 460 );
+		mRobot.mousePress(InputEvent.BUTTON1_MASK);
+		mRobot.mouseRelease(InputEvent.BUTTON1_MASK);
 
+		// Simulate a key press
+		PressCtrlA();
+		PressDelete();
+		TypeText( "Budapest\t");
 
-		// fly out day month year
-		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[1]/div/div[2]/div[2]/div/input[1]", "10" );
-		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[1]/div/div[2]/div[2]/div/input[2]", "03" );
-		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[1]/div/div[2]/div[2]/div/input[3]", "2016" );
+		mRobot.delay(500);
 
-		// fly back day month year
-		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[2]/div/div[2]/div[2]/div/input[1]", "15" );
-		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[2]/div/div[2]/div[2]/div/input[2]", "05" );
-		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[2]/div/div[2]/div[2]/div/input[3]", "2016" );
+		mRobot.mouseMove( 500, 460 );
+		mRobot.mousePress(InputEvent.BUTTON1_MASK);
+		mRobot.mouseRelease(InputEvent.BUTTON1_MASK);
 
-		// passengers
+		PressCtrlA();
+		PressDelete();
+		TypeText( "Brussels (CRL)\n");
+		mRobot.delay(1000);
+		TypeText( "01072016\t");
+		TypeText( "03072016\t");
+//
+//		mRobot.delay( 1000 );
+//		// Simulate a mouse click
+//		mRobot.mouseMove( 834, 455 );
+//		mRobot.mousePress(InputEvent.BUTTON1_MASK);
+//		mRobot.mouseRelease(InputEvent.BUTTON1_MASK);
+
+//
+//		// going to
+//		javaScriptSetFocus( "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[2]/div[2]/div[2]/div/div[1]/input" );
+//		//setDOMInput( aDOMDocument, "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[2]/div[2]/div[2]/div/div[1]/input", lAirportLabel2 );
+//		//setDOMDivValue( aDOMDocument, "//*[@id=\"search-container\"]/div/div/form/div[1]/div[2]/div/div[2]/div[2]", lAirportLabel2 );
+//
+//		// click on continue
+//		DOMElement lButton = aDOMDocument.findElement(By.xpath( "//*[@id=\"search-container\"]/div/div/form/div[3]/button[1]" ));
+//		lButton.click();
+//
+//		// waiting for the javascript
+//		Sleep( 2000 );
+//
+//		// setfocus on day field using javascript finding by xpath
+//		javaScriptSetFocus( "//*[@id=\"row-dates-pax\"]/div[1]/div/div[1]/div/div[2]/div[2]/div/input[1]" );
+//
+//		// fly out day month year
+//		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[1]/div/div[2]/div[2]/div/input[1]", "01" );
+//		javaScriptSetFocus( "//*[@id=\"row-dates-pax\"]/div[1]/div/div[1]/div/div[2]/div[2]/div/input[2]" );
+//		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[1]/div/div[2]/div[2]/div/input[2]", "07" );
+//		javaScriptSetFocus( "//*[@id=\"row-dates-pax\"]/div[1]/div/div[1]/div/div[2]/div[2]/div/input[3]" );
+//		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[1]/div/div[2]/div[2]/div/input[3]", "2016" );
+//
+//		// fly back day month year
+//		javaScriptSetFocus( "//*[@id=\"row-dates-pax\"]/div[1]/div/div[2]/div/div[2]/div[2]/div/input[1]" );
+//		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[2]/div/div[2]/div[2]/div/input[1]", "03" );
+//		javaScriptSetFocus( "//*[@id=\"row-dates-pax\"]/div[1]/div/div[2]/div/div[2]/div[2]/div/input[2]" );
+//		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[2]/div/div[2]/div[2]/div/input[2]", "07" );
+//		javaScriptSetFocus( "//*[@id=\"row-dates-pax\"]/div[1]/div/div[2]/div/div[2]/div[2]/div/input[3]" );
+//		setDOMInput( aDOMDocument,"//*[@id=\"row-dates-pax\"]/div[1]/div/div[2]/div/div[2]/div[2]/div/input[3]", "2016" );
+//
+//		//String lAirportLabel = getAirportName( aTravelDataInput.mAirportCode_LeavingFrom ) +  " (" + aTravelDataInput.mAirportCode_LeavingFrom + ")";
+//
+//		//javaScriptSubmit( "//*[@id=\"search-container\"]/div/div/form" );
+//
+//		// passengers
 	}
 
 	private void ClickTheSearchButton( DOMDocument aDOMDocument )
 	{
+		String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
+		Sleep( 1000 * Integer.parseInt( lSleep ));
 
+		DOMElement lButton = aDOMDocument.findElement(By.xpath( "//*[@id=\"search-container\"]/div/div/form/div[3]/button[2]" ));
+
+		if( lButton != null )
+		{
+			lButton.click();
+		}
 	}
 
 	public void run()
@@ -311,7 +414,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 					new BrowserStateSearching( lTravelDataInput ).doAction( this );
 
 					FillTheForm( lDOMDocument, lTravelDataInput );
-					ClickTheSearchButton( lDOMDocument );
+					//ClickTheSearchButton( lDOMDocument );
 				}
 			}
 			System.out.println( "run()" );
