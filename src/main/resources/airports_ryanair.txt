@@ -1,0 +1,192 @@
+﻿NNN Aarhus
+NNN Agadir
+NNN Alghero
+NNN Alicante
+NNN Almeria
+NNN Amsterdam
+NNN Ancona
+NNN Athens
+NNN Baden-Baden
+NNN Barcelona
+NNN Barcelona (GRO)
+NNN Barcelona (REU)
+NNN Bari
+NNN Basel
+NNN Belfast International
+NNN Bergerac
+NNN Berlin (SXF)
+NNN Beziers
+NNN Biarritz
+NNN Billund
+NNN Birmingham
+NNN Bologna
+NNN Bordeaux
+NNN Bournemouth
+NNN Bratislava
+NNN Bremen
+NNN Brest
+NNN Brindisi
+NNN Bristol
+NNN Brive
+NNN Brno
+NNN Brussels
+NNN Brussels (CRL)
+NNN Bucharest
+NNN Budapest
+NNN Bydgoszcz
+NNN Cagliari
+NNN Carcassonne
+NNN Cardiff
+NNN Castellon (Valencia)
+NNN Catania
+NNN Chania
+NNN Clermont
+NNN Cologne
+NNN Comiso
+NNN Copenhagen
+NNN Corfu
+NNN Cork
+NNN Craiova
+NNN Crotone
+NNN Cuneo
+NNN Deauville
+NNN Derry
+NNN Dinard
+NNN Dole
+NNN Dortmund
+NNN Dublin
+NNN Dusseldorf Weeze
+NNN East Midlands
+NNN Edinburgh
+NNN Eilat
+NNN Eindhoven
+NNN Faro
+NNN Fez
+NNN Figari
+NNN Frankfurt (HHN)
+NNN Fuerteventura
+NNN Gdansk
+NNN Genoa
+NNN Glasgow
+NNN Glasgow (PIK)
+NNN Gothenburg (GOT)
+NNN Gran Canaria
+NNN Grenoble
+NNN Hamburg
+NNN Haugesund
+NNN Ibiza
+NNN Jerez
+NNN Katowice
+NNN Kaunas
+NNN Kefalonia
+NNN Kerry
+NNN Knock
+NNN Kos
+NNN Krakow
+NNN La Rochelle
+NNN Lamezia
+NNN Lanzarote
+NNN Larnaca
+NNN Leeds Bradford
+NNN Leipzig
+NNN Lille
+NNN Limoges
+NNN Linz
+NNN Lisbon
+NNN Liverpool
+NNN Lodz
+NNN London (LGW)
+NNN London (LTN)
+NNN London (STN)
+NNN Lorient
+NNN Lourdes
+NNN Lublin
+NNN Maastricht
+NNN Madrid
+NNN Malaga
+NNN Mallorca
+NNN Malta
+NNN Manchester
+NNN Marrakesh
+NNN Marseille
+NNN Memmingen
+NNN Menorca
+NNN Milan Bergamo
+NNN Milan Malpensa
+NNN Montpellier
+NNN Murcia
+NNN Mykonos
+NNN Nador
+NNN Nantes
+NNN Newcastle
+NNN Newquay Cornwall
+NNN Nice
+NNN Nimes
+NNN Nuremberg
+NNN Osijek
+NNN Oslo (RYG)
+NNN Oslo (TRF)
+NNN Ostrava
+NNN Oujda
+NNN Palanga
+NNN Palermo
+NNN Paphos
+NNN Paris (BVA)
+NNN Paris Vatry
+NNN Parma
+NNN Perpignan
+NNN Perugia
+NNN Pescara
+NNN Pisa
+NNN Plovdiv
+NNN Podgorica
+NNN Poitiers
+NNN Ponta Delgada
+NNN Porto
+NNN Poznan
+NNN Prague
+NNN Pula
+NNN Rabat
+NNN Rhodes
+NNN Riga
+NNN Rijeka
+NNN Rodez
+NNN Rome (CIA)
+NNN Rome (FCO)
+NNN Rzeszow
+NNN Salzburg
+NNN Santander
+NNN Santiago
+NNN Santorini
+NNN Seville
+NNN Shannon
+NNN Smaland (VXO)
+NNN Sofia
+NNN St Etienne
+NNN Stockholm (NYO)
+NNN Stockholm (VST)
+NNN Strasbourg
+NNN Stuttgart
+NNN Szczecin
+NNN Tallinn
+NNN Tampere
+NNN Tangier
+NNN Tenerife North
+NNN Tenerife Sth
+NNN Thessaloniki
+NNN Timisoara
+NNN Toulouse
+NNN Tours Loire Valley
+NNN Trapani
+NNN Trieste
+NNN Turin
+NNN Valencia
+NNN Valladolid
+NNN Venice (TSF)
+NNN Verona
+NNN Vigo
+NNN Vilnius
+NNN Warsaw (WMI)
+NNN Wroclaw
+NNN Zadar
+NNN Zaragoza

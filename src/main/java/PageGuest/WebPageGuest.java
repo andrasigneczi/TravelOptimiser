@@ -13,22 +13,24 @@ import java.util.regex.Pattern;
 public abstract class WebPageGuest
 {
     private Hashtable<String, String> mAirports;
-	//protected TravelData_INPUT  mTravelDataInput = null;
+    //protected TravelData_INPUT  mTravelDataInput = null;
     protected TravelData_RESULT mTravelDataResult = null;
-    protected BrowserState mBrowserState = null;
+    protected BrowserState      mBrowserState     = null;
     private final String mAirline;
-    protected Robot mRobot = null;
+    protected       Robot  mRobot                    = null;
+    final protected String mGetElementByXPathPattern = "document.evaluate('%s', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue";
 
-    public abstract void DoSearch( String aAirportCode_Way_From, String aAirportCode_Way_To,
-                                   String aDepartureDate_Way_To, String aReturnDate_Way_Back );
+    public abstract void DoSearch(String aAirportCode_Way_From, String aAirportCode_Way_To,
+                                  String aDepartureDate_Way_To, String aReturnDate_Way_Back);
+
     public abstract void DoSearchFromConfig();
 
     public abstract void stop();
 
-    public WebPageGuest( String aAirline )
+    public WebPageGuest(String aAirline)
     {
         GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice screen = environment.getDefaultScreenDevice();
+        GraphicsDevice      screen      = environment.getDefaultScreenDevice();
         mAirline = aAirline;
         InitAirportList();
         try
@@ -44,32 +46,35 @@ public abstract class WebPageGuest
 
     private void InitAirportList()
     {
-        Scanner lScanner = new Scanner(getClass().getClassLoader().getResourceAsStream("airports_" + mAirline + ".txt"), "UTF-8" );
-        String lAirports = lScanner.useDelimiter( "\\A" ).next();
+        Scanner lScanner = new Scanner(
+                getClass().getClassLoader().getResourceAsStream("airports_" + mAirline + ".txt"), "UTF-8");
+        String lAirports = lScanner.useDelimiter("\\A").next();
         lScanner.close();
 
         mAirports = new Hashtable<String, String>();
-        Pattern reg = Pattern.compile( "^(.+)$", Pattern.MULTILINE );
-        Matcher m = reg.matcher( lAirports );
+        Pattern reg = Pattern.compile("^(.+)$", Pattern.MULTILINE);
+        Matcher m   = reg.matcher(lAirports);
 
-        while( m.find() )
+        while (m.find())
         {
             String lRow = m.group().toString().trim();
-            if( lRow.startsWith( "#" ) )
+            if (lRow.startsWith("#"))
+            {
                 continue;
+            }
 
-            String lAirporCode = lRow.substring( 0, 3 );
-            String lAirporName = lRow.substring( 4 );
-            mAirports.put( lAirporCode, lAirporName );
+            String lAirporCode = lRow.substring(0, 3);
+            String lAirporName = lRow.substring(4);
+            mAirports.put(lAirporCode, lAirporName);
         }
     }
 
-    public String getAirportName( String aCode )
+    public String getAirportName(String aCode)
     {
-        return mAirports.get( aCode );
+        return mAirports.get(aCode);
     }
 
-    public void setBrowserState( BrowserState aBrowserState )
+    public void setBrowserState(BrowserState aBrowserState)
     {
         mBrowserState = aBrowserState;
     }
@@ -79,14 +84,13 @@ public abstract class WebPageGuest
         return mBrowserState;
     }
 
-
-    protected void Sleep( int aValue )
+    protected void Sleep(int aValue)
     {
         try
         {
-            Thread.sleep( aValue );
+            Thread.sleep(aValue);
         }
-        catch( InterruptedException e )
+        catch (InterruptedException e)
         {
             e.printStackTrace();
         }
@@ -99,61 +103,77 @@ public abstract class WebPageGuest
 
     public void PressCtrlA()
     {
-        if( mRobot == null )
+        if (mRobot == null)
+        {
             return;
+        }
         mRobot.keyPress(KeyEvent.VK_CONTROL);
         mRobot.keyPress(KeyEvent.VK_A);
-        mRobot.keyRelease(KeyEvent.VK_A );
-        mRobot.keyRelease(KeyEvent.VK_CONTROL );
+        mRobot.keyRelease(KeyEvent.VK_A);
+        mRobot.keyRelease(KeyEvent.VK_CONTROL);
     }
 
     public void PressDelete()
     {
-        if( mRobot == null )
+        if (mRobot == null)
+        {
             return;
+        }
         mRobot.keyPress(KeyEvent.VK_DELETE);
         mRobot.keyRelease(KeyEvent.VK_DELETE);
     }
 
-    public void TypeText( String aText )
+    public void PressBackspace()
     {
-        if( mRobot == null )
-            return;
-
-        for( int i = 0; i < aText.length(); i++ )
+        if (mRobot == null)
         {
-            char lC = aText.charAt( i );
-            if( lC >= 'A' && lC <= 'Z' )
+            return;
+        }
+        mRobot.keyPress(KeyEvent.VK_BACK_SPACE);
+        mRobot.keyRelease(KeyEvent.VK_BACK_SPACE);
+    }
+
+    public void TypeText(String aText)
+    {
+        if (mRobot == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < aText.length(); i++)
+        {
+            char lC = aText.charAt(i);
+            if (lC >= 'A' && lC <= 'Z')
             {
                 mRobot.keyPress(KeyEvent.VK_SHIFT);
-                mRobot.keyPress( KeyEvent.VK_A + lC - 'A');
+                mRobot.keyPress(KeyEvent.VK_A + lC - 'A');
                 mRobot.keyRelease(KeyEvent.VK_A + lC - 'A');
             }
 
-            if(( lC >= 'a' && lC <= 'z' ))
+            if ((lC >= 'a' && lC <= 'z'))
             {
-                mRobot.keyPress( KeyEvent.VK_A + lC - 'a');
+                mRobot.keyPress(KeyEvent.VK_A + lC - 'a');
                 mRobot.keyRelease(KeyEvent.VK_A + lC - 'a');
             }
 
-            if(( lC >= '0' && lC <= '9' ))
+            if ((lC >= '0' && lC <= '9'))
             {
-                mRobot.keyPress( KeyEvent.VK_0 + lC - '0');
+                mRobot.keyPress(KeyEvent.VK_0 + lC - '0');
                 mRobot.keyRelease(KeyEvent.VK_0 + lC - '0');
             }
 
-            if( lC >= 'A' && lC <= 'Z' )
+            if (lC >= 'A' && lC <= 'Z')
             {
                 mRobot.keyRelease(KeyEvent.VK_SHIFT);
             }
 
-            if( lC == ' ' )
+            if (lC == ' ')
             {
                 mRobot.keyPress(KeyEvent.VK_SPACE);
                 mRobot.keyRelease(KeyEvent.VK_SPACE);
             }
 
-            if( lC == '(' )
+            if (lC == '(')
             {
                 mRobot.keyPress(KeyEvent.VK_SHIFT);
                 mRobot.keyPress(KeyEvent.VK_8);
@@ -161,7 +181,7 @@ public abstract class WebPageGuest
                 mRobot.keyRelease(KeyEvent.VK_SHIFT);
             }
 
-            if( lC == ')' )
+            if (lC == ')')
             {
                 mRobot.keyPress(KeyEvent.VK_SHIFT);
                 mRobot.keyPress(KeyEvent.VK_9);
@@ -169,13 +189,13 @@ public abstract class WebPageGuest
                 mRobot.keyRelease(KeyEvent.VK_SHIFT);
             }
 
-            if( lC == '\t' )
+            if (lC == '\t')
             {
                 mRobot.keyPress(KeyEvent.VK_TAB);
                 mRobot.keyRelease(KeyEvent.VK_TAB);
             }
 
-            if( lC == '\n' )
+            if (lC == '\n')
             {
                 mRobot.keyPress(KeyEvent.VK_ENTER);
                 mRobot.keyRelease(KeyEvent.VK_ENTER);
