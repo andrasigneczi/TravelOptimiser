@@ -17,6 +17,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -413,15 +415,30 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		int lBodyElementIndex = 0;
 		for( DOMElement lFlightBodyElement : lFlightsBodyElements )
 		{
-			if( lBodyElementIndex == 0 )
+			try
 			{
-				// Outbound trip
-				CollectDatas_ParseTheRows( lFlightBodyElement, true );
+				if( lBodyElementIndex == 0 )
+				{
+					// Outbound trip
+					CollectDatas_ParseTheRows( lFlightBodyElement, true );
+				}
+				else if( lBodyElementIndex == 1 )
+				{
+					// Return element
+					CollectDatas_ParseTheRows( lFlightBodyElement, false );
+				}
 			}
-			else if( lBodyElementIndex == 1 )
+			catch( Exception aException )
 			{
-				// Return element
-				CollectDatas_ParseTheRows( lFlightBodyElement, false );
+				StringWriter lStringWriter = new StringWriter();
+				PrintWriter lPrintWriter = new PrintWriter(lStringWriter);
+				aException.printStackTrace( lPrintWriter );
+
+				String lLogInformation = "Something wrong with the result parser!\n" +
+						aException.getMessage() + "\n" +
+						lStringWriter.toString() + "\n" +
+						aTravelDataInput.toString();
+				mLogger.warn( lLogInformation );
 			}
 			lBodyElementIndex++;
 		}
