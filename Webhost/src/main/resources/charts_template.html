@@ -117,9 +117,22 @@
         {
             $("#ModalWindowBody").html( data );
             $("#OpenModalButton" ).click();
+            ModalRefresh();
         }
     });
 });
+
+function ModalRefresh()
+{
+    var chart = $('#modalcontainer').highcharts();
+    $('#myModal').on('show.bs.modal', function() {
+        $('#modalcontainer').css('visibility', 'hidden');
+    });
+    $('#myModal').on('shown.bs.modal', function() {
+        $('#modalcontainer').css('visibility', 'initial');
+        chart.reflow();
+    });
+}
 
 </script>
 </body>
