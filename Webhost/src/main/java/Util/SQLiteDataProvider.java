@@ -79,10 +79,13 @@ public class SQLiteDataProvider implements DataProvider
 		return aDRComposer.getResult();
 	}
 
-	public String GetCollectedDepartureDateList( HtmlListFormatter aHtmlListFormatter )
+	public String GetCollectedDepartureDateList( HtmlListFormatter aHtmlListFormatter,
+	                                             String aSelectedDepartureAirport,
+	                                             String aSelectedArrivalAirport,
+	                                             boolean aReturnCheckboxChecked )
 	{
 		String lQuery;
-		lQuery = mComposer.GetTripDateListQuery();
+		lQuery = mComposer.GetTripDateListQuery( aSelectedDepartureAirport, aSelectedArrivalAirport, aReturnCheckboxChecked );
 
 		Statement lStmt = null;
 		try
@@ -92,7 +95,8 @@ public class SQLiteDataProvider implements DataProvider
 			ResultSet lResultSet = lStmt.executeQuery( lQuery );
 			while ( lResultSet.next() )
 			{
-				aHtmlListFormatter.add( lResultSet.getString( "DepartureDatetime" ));
+				aHtmlListFormatter.add( new String[]{lResultSet.getString( "DepartureDatetime" ),
+						lResultSet.getString( "Airline" )});
 			}
 			lResultSet.close();
 			lStmt.close();
@@ -104,10 +108,11 @@ public class SQLiteDataProvider implements DataProvider
 		return aHtmlListFormatter.getFormattedResult();
 	}
 
-	public String GetDepartureAirportList( HtmlListFormatter aDepartureAirportListFormatter )
+	public String GetDepartureAirportList( HtmlListFormatter aDepartureAirportListFormatter, String aSelectedDepartureAirport )
 	{
 		String lQuery;
 		lQuery = mComposer.GetDepartureAirportListQuery();
+		aDepartureAirportListFormatter.setSelected( aSelectedDepartureAirport );
 
 		Statement lStmt = null;
 		try
@@ -117,7 +122,10 @@ public class SQLiteDataProvider implements DataProvider
 			ResultSet lResultSet = lStmt.executeQuery( lQuery );
 			while ( lResultSet.next() )
 			{
-				if( lResultSet.getBoolean( "OutboundTrip" ))
+				//boolean lO = lResultSet.getBoolean( "OutboundTrip" );
+				//int lI = lResultSet.getInt( "OutboundTrip" );
+				String lOutboundTrip = lResultSet.getString( "OutboundTrip" );
+				if( lOutboundTrip.equals( "true" ))
 					aDepartureAirportListFormatter.add( lResultSet.getString( "AirportCode_LeavingFrom" ));
 				else
 					aDepartureAirportListFormatter.add( lResultSet.getString( "AirportCode_GoingTo" ));
@@ -130,5 +138,35 @@ public class SQLiteDataProvider implements DataProvider
 			System.exit( 0 );
 		}
 		return aDepartureAirportListFormatter.getFormattedResult();
+	}
+
+	public String GetArrivalAirportList( HtmlListFormatter aArrivalAirportListFormatter, String aSelectedDepartureAirport, String aSelectedArrivalAirport )
+	{
+		String lQuery;
+		lQuery = mComposer.GetArrivalAirportListQuery( aSelectedDepartureAirport );
+		aArrivalAirportListFormatter.setSelected( aSelectedArrivalAirport );
+
+		Statement lStmt = null;
+		try
+		{
+			int lID = -1;
+			lStmt = mConnection.createStatement();
+			ResultSet lResultSet = lStmt.executeQuery( lQuery );
+			while ( lResultSet.next() )
+			{
+				String lOutboundTrip = lResultSet.getString( "OutboundTrip" );
+				if( lOutboundTrip.equals( "true" ))
+					aArrivalAirportListFormatter.add( lResultSet.getString( "AirportCode_LeavingFrom" ));
+				else
+					aArrivalAirportListFormatter.add( lResultSet.getString( "AirportCode_GoingTo" ));
+			}
+			lResultSet.close();
+			lStmt.close();
+		}
+		catch ( Exception e ) {
+			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			System.exit( 0 );
+		}
+		return aArrivalAirportListFormatter.getFormattedResult();
 	}
 }

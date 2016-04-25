@@ -26,7 +26,23 @@ public class HighChartDataResultComposer extends DataResultComposer
 		// 176,89 lv
 		// 53 195,00 Ft
 
-		String lValue = aValue.substring( 0, aValue.length() - aCurrency.length() ).trim();
+		String lValue = "";
+		if( aCurrency.equals( "%" ))
+		{
+			int lPos = aValue.length() - 1;
+			char lActChar = aValue.charAt( lPos );
+			while( lActChar < '0' || lActChar > '9' )
+			{
+				lPos--;
+				lActChar = aValue.charAt( lPos );
+			}
+			lValue = aValue.substring( 0, lPos + 1 ).trim();
+		}
+		else
+		{
+			lValue = aValue.substring( 0, aValue.length() - aCurrency.length() ).trim();
+		}
+
 		lValue = lValue.replace( ",", "." );
 		lValue.replace( " ", "" );
 		double lDValue = Double.parseDouble( lValue );

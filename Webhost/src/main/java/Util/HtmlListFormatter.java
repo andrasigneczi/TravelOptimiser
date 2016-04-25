@@ -5,6 +5,8 @@ package Util;
  */
 public interface HtmlListFormatter
 {
-	void add( String aDepartureDate );
+	void add( String aValue );
+	void add( String[] aValues );
 	String getFormattedResult();
+	void setSelected( String aValue );
 }

@@ -25,6 +25,10 @@ public class WebService
 	private String mDivTemplate;
 	private String mSeriesTemplate;
 
+	private String mSelectedDepartureAirport = "-";
+	private String mSelectedArrivalAirport   = "-";
+	private boolean mReturnCheckboxChecked   = false;
+
 	public WebService()
 	{
 		Scanner lScanner  = new Scanner(getClass().getClassLoader().getResourceAsStream("charts_template.html" ), "UTF-8" );
@@ -114,11 +118,18 @@ public class WebService
 		String  lHtml = mHtmlTemplate.replace( "[CHART_SCRIPTS]", lScriptCotent )
 				.replace( "[CHART_DIVS]", lDivContent );
 
-		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList());
+		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList(),
+				mSelectedDepartureAirport, mSelectedArrivalAirport, mReturnCheckboxChecked );
 		lHtml = lHtml.replace( "[AVAILABLE_TRIPS]", lGetCollectedDepartureDateList );
 
-		String lDepartureAirportSelector = SQLiteDataProvider.getInstance().GetDepartureAirportList( new HtmlListFormatterSelect());
+		String lDepartureAirportSelector = SQLiteDataProvider.getInstance().GetDepartureAirportList( new HtmlListFormatterSelect( "DepartureAirportList" ),
+				mSelectedDepartureAirport);
 		lHtml = lHtml.replace( "[DEPARTURE_AIRPORTS]", lDepartureAirportSelector );
+
+		String lArrivalAirportSelector = SQLiteDataProvider.getInstance().GetArrivalAirportList( new HtmlListFormatterSelect( "ArrivalAirportList" ),
+				mSelectedDepartureAirport, mSelectedArrivalAirport);
+		lHtml = lHtml.replace( "[ARRIVAL_AIRPORTS]", lArrivalAirportSelector );
+
 		return lHtml;
 	}
 
@@ -149,6 +160,23 @@ public class WebService
 	@RequestMapping( value = "/ajaxrequest", method = { RequestMethod.POST }, params = { "id", "param" } )
 	public String action1( @RequestParam( "id" ) String aId, @RequestParam( "param" ) String aParam, HttpServletRequest httpRequest, WebRequest request )
 	{
-		return "a keres megjott, id:" + aId + ", param: " + aParam;
+		if( aId.equals( "DepartureAirportListChanged" ))
+			mSelectedDepartureAirport = aParam;
+		else if( aId.equals( "ArrivalAirportListChanged" ))
+			mSelectedArrivalAirport = aParam;
+		else if( aId.equals( "ReturnTrip" ))
+			mReturnCheckboxChecked = !aParam.equals( "0" );
+		else if( aId.equals( "DateTimeButtonPushed" ))
+		{
+			String[] lValues = aParam.split( "\\|" );
+			// String [] GetHtmlContent( String aDateTime1, String aDateTime2, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency, String aHtmlTagId, boolean aOneWay )
+			String [] lHtmlContent = GetHtmlContent( lValues[ 1 ], "", lValues[ 0 ], lValues[ 2 ], lValues[ 3 ], "%", "modalcontainer", true );
+			return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
+		}
+
+		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList(),
+				mSelectedDepartureAirport, mSelectedArrivalAirport, mReturnCheckboxChecked );
+
+		return lGetCollectedDepartureDateList;
 	}
 }

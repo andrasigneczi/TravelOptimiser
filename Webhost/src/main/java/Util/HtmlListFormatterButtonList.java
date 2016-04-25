@@ -11,12 +11,19 @@ import java.util.ArrayList;
  */
 public class HtmlListFormatterButtonList implements HtmlListFormatter
 {
-	ArrayList<String> mDepartureDates = new ArrayList<String>();
+	// String[] datetime, airportcode
+	ArrayList<String[]> mDepartureDates = new ArrayList<String[]>();
 
 	@Override
 	public void add( String aDepartureDate )
 	{
-		mDepartureDates.add( aDepartureDate );
+		throw new IllegalArgumentException( "This parameterlist is not supported by HtmlListFormatterButtonList" );
+	}
+
+	@Override
+	public void add( String[] aValues )
+	{
+		mDepartureDates.add( aValues );
 	}
 
 	@Override
@@ -30,9 +37,9 @@ public class HtmlListFormatterButtonList implements HtmlListFormatter
 
 		String lClass = "";
 		final long lFiveDays = 5 * 24 * 3600 * 1000;
-		for( String lValue : mDepartureDates )
+		for( String[] lValue : mDepartureDates )
 		{
-			LocalDateTime lDateTime = LocalDateTime.parse( lValue, lDTFormatter);
+			LocalDateTime lDateTime = LocalDateTime.parse( lValue[0], lDTFormatter);
 			// TODO: what if it is in different time zone?
 			ZonedDateTime zdt = lDateTime.atZone( ZoneId.of("Europe/Budapest"));
 			long lDepartureMiillis = zdt.toInstant().toEpochMilli();
@@ -44,8 +51,15 @@ public class HtmlListFormatterButtonList implements HtmlListFormatter
 				lClass += " near";
 			}
 
-			lReturn += "<input class='" + lClass + "' type='button' name='departuredatetime' value='" + lValue + "'/>";
+			lReturn += "<input class='" + lClass + "' type='button' name='departuredatetime' value='" + lValue[ 0 ] + "' " +
+					"onclick='TO_ActionName=\"DateTimeButtonPushed\";TO_ActionValue=\"" + lValue[ 1 ]+ "\";TO_ActionWidget=this;$(\"#ajaxform\").submit();'/>";
 		}
 		return lReturn;
+	}
+
+	@Override
+	public void setSelected( String aValue )
+	{
+
 	}
 }
