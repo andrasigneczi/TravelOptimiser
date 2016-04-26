@@ -4,8 +4,6 @@ import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.dom.By;
 import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
 import com.teamdev.jxbrowser.chromium.dom.DOMElement;
-import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
-import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 import com.traveloptimizer.browserengine.TeamDevJxBrowser;
 import org.apache.log4j.Logger;
@@ -30,6 +28,14 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
     Browser mBrowser       = null;
     Object  mMutex         = new Object();
     boolean mThreadStopped = true;
+
+    enum PageType
+    {
+        PT_UNKNOWN, PT_FIRST, PT_RESULT
+    }
+
+    ;
+    PageType mPageType = PageType.PT_UNKNOWN;
 
     public RyanAirPageGuest()
     {
@@ -71,7 +77,8 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
             if (aReturnDate.length() == 0)
             {
                 lTravelDataInput.mReturnTicket = false;
-            } else
+            }
+            else
             {
                 lTravelDataInput.mReturnTicket = true;
             }
@@ -175,47 +182,6 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         frame.setLocation(0, 0);
         //frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-
-        mBrowser.addLoadListener(new LoadAdapter()
-        {
-            @Override
-            public void onFinishLoadingFrame(FinishLoadingEvent event)
-            {
-                // A click után újra bejövök ide, erre ügyelni kell!!!!
-                if (event.isMainFrame())
-                {
-
-                    DOMElement elementTextSource = null;
-                    do
-                    {
-                        elementTextSource = mBrowser.getDocument().findElement(By.name("departureAirportName"));
-                        if (elementTextSource == null)
-                        {
-                            Sleep(1000);
-                        }
-                    }
-                    while (elementTextSource == null);
-
-                    TravelData_INPUT lTravelDataInput = null;
-                    if (getBrowserState().toString().equals("BrowserStateSearching"))
-                    {
-                        lTravelDataInput = ((BrowserStateSearching) getBrowserState()).getTravelDataInput();
-                    }
-
-                    DOMDocument lDOMDocument = mBrowser.getDocument();
-                    if (lTravelDataInput == null)
-                    {
-                        new BrowserStateReadyToSearch(lDOMDocument).doAction(getBrowserState().getWebPageGuest());
-                    } else
-                    {
-                        new BrowserStateSearchingFinished(lDOMDocument, lTravelDataInput).doAction(
-                                getBrowserState().getWebPageGuest());
-                    }
-                    System.out.println("addLoadListener()");
-                }
-            }
-        });
-
         System.out.println("InitBrowser()");
         return false;
     }
@@ -235,20 +201,174 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         System.out.println("stop()");
     }
 
+    private void PageIdentifier()
+    {
+        if (mBrowser == null || mBrowser.getDocument() == null)
+        {
+            return;
+        }
+
+        DOMElement elementTextSource = null;
+        elementTextSource = mBrowser.getDocument().findElement(By.className("flight-selector-listing"));
+        if (elementTextSource != null)
+        {
+            if (mPageType == PageType.PT_RESULT)
+            {
+                return;
+            }
+            Sleep(2000);
+            mPageType = PageType.PT_RESULT;
+        }
+        else
+        {
+            elementTextSource = mBrowser.getDocument().findElement(By.name("departureAirportName"));
+            if (elementTextSource != null)
+            {
+                if (mPageType == PageType.PT_FIRST)
+                {
+                    return;
+                }
+                mPageType = PageType.PT_FIRST;
+            }
+            else
+            {
+                mPageType = PageType.PT_UNKNOWN;
+                return;
+            }
+        }
+
+        TravelData_INPUT lTravelDataInput = null;
+        if (getBrowserState().toString().equals("BrowserStateSearching"))
+        {
+            lTravelDataInput = ((BrowserStateSearching) getBrowserState()).getTravelDataInput();
+        }
+
+        DOMDocument lDOMDocument = mBrowser.getDocument();
+        if (lTravelDataInput == null)
+        {
+            if (mPageType == PageType.PT_FIRST)
+            {
+                new BrowserStateReadyToSearch(lDOMDocument).doAction(getBrowserState().getWebPageGuest());
+            }
+        }
+        else
+        {
+            new BrowserStateSearchingFinished(lDOMDocument, lTravelDataInput).doAction(
+                    getBrowserState().getWebPageGuest());
+        }
+    }
+
     private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
     {
-        // flight out date
-        // <div class="slide ng-scope active" data-index="10" ng-class="{ 'active': activePane == (item.index || $index) }" ng-repeat="item in panes" ng-include="itemTemplate" ng-click="onCarouselItemSelect(item, (item.index || $index))" style="transform: translate(1600px, 0px) translateZ(0px);"><div class="carousel-item daily ng-scope" ng-class="{'item-not-available' : item.isNotAvailable, 'item-sold-out' : item.isSoldOut}"><div class="date ng-binding">Mon 2 May</div><div ng-hide="item.isSoldOut || item.isNotAvailable" class="fare ng-binding">€&nbsp;42.99</div><core-icon ng-show="item.isSoldOut" icon-id="empty-state-seat" class="ng-isolate-scope ng-hide"><div><svg tabindex="-1" focusable="false" role="img"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/gb/en/booking/home#empty-state-seat" ng-href="/gb/en/booking/home#empty-state-seat"></use></svg></div></core-icon><core-icon ng-show="item.isNotAvailable" icon-id="empty-state-flight" class="ng-isolate-scope ng-hide"><div><svg tabindex="-1" focusable="false" role="img"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/gb/en/booking/home#empty-state-flight" ng-href="/gb/en/booking/home#empty-state-flight"></use></svg></div></core-icon></div></div>
-        // standard fare
-        // <div class="fare" ng-click="(flight.selectionDisabled || disabledFareType === 'regular') || onFlightSelected(flight.regularFlightFareKey, 'regular', flight)" ng-class="{'selected': selectedFlight == flight.regularFlightFareKey &amp;&amp; flight.fare !== null, 'no-fares': flight.fare === null, 'disabled': disabledFareType == 'regular', 'promo': flight.fare.ADT.hasDiscount &amp;&amp; flight.fare.ADT.publishedFare !== flight.fare.ADT.amount}"><del class="published-fare ng-binding ng-hide" ng-hide="!flight.fare.ADT.hasDiscount || flight.fare.ADT.publishedFare === flight.fare.ADT.amount">€&nbsp;206.99</del><span class="price ng-binding" ng-hide="!flight.fare">€&nbsp;206.99</span><div class="icon circle blue outbound arrow-right no-seat ng-hide" ng-hide="flight.faresLeft !== 0"><core-icon icon-id="glyphs.empty-state-seat" class="ng-isolate-scope"><div><svg tabindex="-1" focusable="false" role="img"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/gb/en/booking/home#glyphs.empty-state-seat" ng-href="/gb/en/booking/home#glyphs.empty-state-seat"></use></svg></div></core-icon></div><span class="sold-out ng-scope ng-hide" ng-hide="flight.faresLeft !== 0" translate="trips.flight_list_table.soldout" translate-default="">Sold out</span> <span class="standard-fare ng-scope ng-hide" ng-hide="flight.faresLeft < 1" translate="trips.flight_list_table.seats-left" translate-values="{number: flight.faresLeft}" translate-default="">-1 seats remaining at this price</span> <span class="standard-fare" ng-hide="flight.faresLeft >= 1"></span></div>
-        // business plus fare
+        mTravelDataResult = new TravelData_RESULT();
+        mTravelDataResult.mAirline = aTravelDataInput.mAirline;
+        mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
+        mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
+        mTravelDataResult.mTravelDataInput = aTravelDataInput;
+        TravelData_RESULT.TravelData_PossibleTrips lTripOutbound = null;
+        TravelData_RESULT.TravelData_PossibleTrips lTripReturn   = null;
 
-        // flight back date
-        // <div class="slide ng-scope active" data-index="10" ng-class="{ 'active': activePane == (item.index || $index) }" ng-repeat="item in panes" ng-include="itemTemplate" ng-click="onCarouselItemSelect(item, (item.index || $index))" style="transform: translate(1600px, 0px) translateZ(0px);"><div class="carousel-item daily ng-scope" ng-class="{'item-not-available' : item.isNotAvailable, 'item-sold-out' : item.isSoldOut}"><div class="date ng-binding">Mon 2 May</div><div ng-hide="item.isSoldOut || item.isNotAvailable" class="fare ng-binding">€&nbsp;42.99</div><core-icon ng-show="item.isSoldOut" icon-id="empty-state-seat" class="ng-isolate-scope ng-hide"><div><svg tabindex="-1" focusable="false" role="img"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/gb/en/booking/home#empty-state-seat" ng-href="/gb/en/booking/home#empty-state-seat"></use></svg></div></core-icon><core-icon ng-show="item.isNotAvailable" icon-id="empty-state-flight" class="ng-isolate-scope ng-hide"><div><svg tabindex="-1" focusable="false" role="img"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/gb/en/booking/home#empty-state-flight" ng-href="/gb/en/booking/home#empty-state-flight"></use></svg></div></core-icon></div></div>
-        // flight back standard fare
-        // <div class="fare" ng-click="(flight.selectionDisabled || disabledFareType === 'regular') || onFlightSelected(flight.regularFlightFareKey, 'regular', flight)" ng-class="{'selected': selectedFlight == flight.regularFlightFareKey &amp;&amp; flight.fare !== null, 'no-fares': flight.fare === null, 'disabled': disabledFareType == 'regular', 'promo': flight.fare.ADT.hasDiscount &amp;&amp; flight.fare.ADT.publishedFare !== flight.fare.ADT.amount}"><del class="published-fare ng-binding ng-hide" ng-hide="!flight.fare.ADT.hasDiscount || flight.fare.ADT.publishedFare === flight.fare.ADT.amount">€&nbsp;42.99</del><span class="price ng-binding" ng-hide="!flight.fare">€&nbsp;42.99</span><div class="icon circle blue outbound arrow-right no-seat ng-hide" ng-hide="flight.faresLeft !== 0"><core-icon icon-id="glyphs.empty-state-seat" class="ng-isolate-scope"><div><svg tabindex="-1" focusable="false" role="img"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/gb/en/booking/home#glyphs.empty-state-seat" ng-href="/gb/en/booking/home#glyphs.empty-state-seat"></use></svg></div></core-icon></div><span class="sold-out ng-scope ng-hide" ng-hide="flight.faresLeft !== 0" translate="trips.flight_list_table.soldout" translate-default="">Sold out</span> <span class="standard-fare ng-scope" ng-hide="flight.faresLeft < 1" translate="trips.flight_list_table.seats-left" translate-values="{number: flight.faresLeft}" translate-default="">2 seats remaining at this price</span> <span class="standard-fare ng-hide" ng-hide="flight.faresLeft >= 1"></span></div>
-        // flight back business plus fare
-        // <div class="fare promo" ng-click="(flight.selectionDisabled || disabledFareType === 'business') || onFlightSelected(flight.businessFlightFareKey, 'business', flight)" ng-class="{'selected': selectedFlight == flight.businessFlightFareKey &amp;&amp; flight.businessFare !== null, 'no-fares': flight.fare === null, 'disabled': disabledFareType == 'business', 'promo': flight.businessFare.ADT.hasDiscount &amp;&amp; flight.businessFare.ADT.publishedFare !== flight.businessFare.ADT.amount}"><del class="published-fare ng-binding" ng-hide="!flight.businessFare.ADT.hasDiscount || flight.businessFare.ADT.publishedFare === flight.businessFare.ADT.amount">€&nbsp;94.99</del><span class="price ng-binding" ng-hide="!flight.businessFare">€&nbsp;74.99</span><div class="icon circle blue outbound arrow-right no-seat ng-hide" ng-hide="flight.faresLeft !== 0"><core-icon icon-id="glyphs.empty-state-seat" class="ng-isolate-scope"><div><svg tabindex="-1" focusable="false" role="img"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/gb/en/booking/home#glyphs.empty-state-seat" ng-href="/gb/en/booking/home#glyphs.empty-state-seat"></use></svg></div></core-icon></div><span class="sold-out ng-scope ng-hide" ng-hide="flight.faresLeft !== 0" translate="trips.flight_list_table.soldout" translate-default="">Sold out</span> <span class="business-fare" ng-hide="flight.faresLeft === 0"></span></div>
+        java.util.List<DOMElement> lFlightsBodyElements = document.findElements(By.className("slide ng-scope active"));
+
+        int lCellIndex = 0;
+        for (DOMElement lFlightBodyElement : lFlightsBodyElements)
+        {
+            // TODO: change the date formats, fare formats to wizzair format
+            if (lCellIndex == 0)
+            {
+                lTripOutbound = new TravelData_RESULT.TravelData_PossibleTrips();
+                lTripOutbound.mOutboundTrip = true;
+
+                // date
+                java.util.List<DOMElement> lDate1 = lFlightBodyElement.findElements(By.className("date ng-binding"));
+                lTripOutbound.mDepartureDatetime = ((DOMElement) lDate1.get(0)).getInnerText(); // Only the date
+                lTripOutbound.mArrivalDatetime = lTripOutbound.mDepartureDatetime;
+
+                // price
+                java.util.List<DOMElement> lPrice1 = lFlightBodyElement.findElements(By.className("fare ng-binding"));
+                lTripOutbound.mPrices_BasicFare_Normal = ((DOMElement) lPrice1.get(0)).getInnerText();
+                lCellIndex++;
+            }
+            else
+            {
+                if (lCellIndex == 1)
+                {
+                    lTripReturn = new TravelData_RESULT.TravelData_PossibleTrips();
+                    lTripReturn.mOutboundTrip = false;
+                    // date
+                    java.util.List<DOMElement> lDate1 = lFlightBodyElement.findElements(
+                            By.className("date ng-binding"));
+                    lTripReturn.mDepartureDatetime = ((DOMElement) lDate1.get(0)).getInnerText();  // Only the date
+                    lTripReturn.mArrivalDatetime = lTripReturn.mDepartureDatetime;
+
+                    // price
+                    java.util.List<DOMElement> lPrice1 = lFlightBodyElement.findElements(
+                            By.className("fare ng-binding"));
+                    lTripReturn.mPrices_BasicFare_Normal = ((DOMElement) lPrice1.get(0)).getInnerText();
+                    //lTrip.mPrices_PlusFare_Normal;
+                    lCellIndex++;
+                }
+            }
+        }
+
+        java.util.List<DOMElement> lFlightBasic = document.findElements(By.className("flight-basic"));
+        lCellIndex = 0;
+        for (DOMElement lFlightBasicElement : lFlightBasic)
+        {
+            java.util.List<DOMElement> lTimes = lFlightBasicElement.findElements(By.className("time ng-binding"));
+            for (DOMElement lTimeElement : lTimes)
+            {
+                String lTime = lTimeElement.getInnerText();
+                switch (lCellIndex)
+                {
+                    case 0: // outbound departure time
+                        lTripOutbound.mDepartureDatetime += " " + lTime;
+                        break;
+                    case 1: // outbound arrival time
+                        lTripOutbound.mArrivalDatetime += " " + lTime;
+                        break;
+                    case 2: // return departure time
+                        lTripReturn.mDepartureDatetime += " " + lTime;
+                        break;
+                    case 3: // return arrival time
+                        lTripReturn.mArrivalDatetime += " " + lTime;
+                        break;
+                }
+                lCellIndex++;
+            }
+        }
+
+        java.util.List<DOMElement> lPrices = document.findElements(By.className("price ng-binding"));
+        lCellIndex = 0;
+        for (DOMElement lPriceElement : lPrices)
+        {
+            String lPrice = lPriceElement.getInnerText();
+            switch (lCellIndex)
+            {
+                case 0: // outbound normal price
+                    if (!lTripOutbound.mPrices_BasicFare_Normal.equals(lPrice))
+                    {
+                        mLogger.warn("Something wrong with the outbound basic fare price collection");
+                    }
+                    break;
+                case 1: // outbound business price
+                    lTripOutbound.mPrices_PlusFare_Normal = lPrice;
+                    break;
+                case 2: // return norml price
+                    if (!lTripReturn.mPrices_BasicFare_Normal.equals(lPrice))
+                    {
+                        mLogger.warn("Something wrong with the return basic fare price collection");
+                    }
+                    break;
+                case 3: // return business price
+                    lTripReturn.mPrices_PlusFare_Normal = lPrice;
+                    break;
+            }
+            lCellIndex++;
+        }
+        mTravelDataResult.mTrips.add(lTripOutbound);
+        mTravelDataResult.mTrips.add(lTripReturn);
+        // ResultQueue.getInstance().push( mTravelDataResult );
     }
 
     private void FillTheForm(DOMDocument aDOMDocument, TravelData_INPUT aTravelDataInput)
@@ -357,6 +477,9 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 
     public void run()
     {
+        // the JxBrowser's loadlistener doesn't work with the ryanair page
+        // so, I have to observ the result.
+
         try
         {
             System.out.println("Thread::run");
@@ -364,6 +487,8 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
             mThreadStopped = false;
             while (!mThreadStopped)
             {
+                PageIdentifier();
+
                 int lSearQueueSize;
                 synchronized (mMutex)
                 {
@@ -392,8 +517,13 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 
                     // The last search has been finished, collect the datas, start a new search
                     CollectDatas(lDOMDocument, lTravelDataInput);
+                    mPageType = PageType.PT_UNKNOWN;
+                    new BrowserStateInit().doAction(this);
+                    //mBrowser.loadURL("http://www.ryanair.com");
+                    Sleep(5000);
                     //new BrowserStateReadyToSearch(lDOMDocument).doAction(this);
-                } else
+                }
+                else
                 {
                     if (lBrowserState.equals("BrowserStateReadyToSearch"))
                     {
@@ -408,7 +538,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
                         new BrowserStateSearching(lTravelDataInput).doAction(this);
 
                         FillTheForm(lDOMDocument, lTravelDataInput);
-                        //ClickTheSearchButton( lDOMDocument );
+                        ClickTheSearchButton(lDOMDocument);
                     }
                 }
             }
