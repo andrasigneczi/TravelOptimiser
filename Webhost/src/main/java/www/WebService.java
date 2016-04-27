@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Scanner;
 
 /**
@@ -20,10 +22,10 @@ import java.util.Scanner;
 @RestController
 public class WebService
 {
-	private String mHtmlTemplate;
-	private String mJsTemplate;
-	private String mDivTemplate;
-	private String mSeriesTemplate;
+	private final String mHtmlTemplate;
+	private final String mJsTemplate;
+	private final String mDivTemplate;
+	private final String mSeriesTemplate;
 
 	private String mSelectedDepartureAirport = "-";
 	private String mSelectedArrivalAirport   = "-";
@@ -64,22 +66,38 @@ public class WebService
 
 	private String [] GetHtmlContent( String aDateTime1, String aDateTime2, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency, String aHtmlTagId, boolean aOneWay )
 	{
-		String lResult1 = SQLiteDataProvider.getInstance().GetTripData( aDateTime1/*2016-07-16 06:30*/, aAirline, aAirportFrom, aAirportTo, aCurrency, new HighChartDataResultComposer() );
+		HighChartDataResultComposer lHighChartDataResultComposerOutbound = new HighChartDataResultComposer();
+		Hashtable<String,String> lResult1 = SQLiteDataProvider.getInstance().GetTripData( aDateTime1/*2016-07-16 06:30*/, aAirline, aAirportFrom, aAirportTo, aCurrency, lHighChartDataResultComposerOutbound );
 		String lDate1 = IsoDatetimeToEngDate( aDateTime1 );
 		String lSeries1 = mSeriesTemplate.replace( "[SERIES.NAME]", lDate1 )
-				.replace( "[SERIES.DATA]", lResult1 );
+				.replace( "[SERIES.DATA]", lResult1.get( "Result" ) );
+
+		String lAirportFrom = aAirportFrom;
+		if( aAirportFrom.equals( "-" ))
+			lAirportFrom = lResult1.get( "AirportCode_LeavingFrom" );
+
+		String lAirportTo = aAirportTo;
+		if( aAirportTo.equals( "-" ))
+			lAirportTo = lResult1.get( "AirportCode_GoingTo" );
 
 		String lJS;
 		if( !aOneWay )
 		{
-			String lResult2 = SQLiteDataProvider.getInstance().GetTripData( aDateTime2/*2016-07-19 08:30*/, aAirline, aAirportTo, aAirportFrom, aCurrency, new HighChartDataResultComposer() );
+			HighChartDataResultComposer lHighChartDataResultComposerReturn = new HighChartDataResultComposer();
+			Hashtable<String,String> lResult2 = SQLiteDataProvider.getInstance().GetTripData( aDateTime2/*2016-07-19 08:30*/, aAirline, aAirportTo, aAirportFrom, aCurrency, lHighChartDataResultComposerReturn );
 			String lDate2 = IsoDatetimeToEngDate( aDateTime2 );
 			String lSeries2 = mSeriesTemplate.replace( "[SERIES.NAME]", lDate2 )
-					.replace( "[SERIES.DATA]", lResult2 );
+					.replace( "[SERIES.DATA]", lResult2.get( "Result" ) );
 
-			lJS = mJsTemplate.replace( "[TITLE]", lDate1 + " - " + lDate2 + " " + aAirportFrom + " - " + aAirportTo )
+			HashSet<String> lFoundCurrency = lHighChartDataResultComposerReturn.getFoundCurrency();
+			String lCurrency = aCurrency;
+			if( aCurrency.equals( "%" ) && !lFoundCurrency.isEmpty())
+				lCurrency = lFoundCurrency.iterator().next();
+
+
+			lJS = mJsTemplate.replace( "[TITLE]", lDate1 + " - " + lDate2 + " " + lAirportFrom + " - " + lAirportTo )
 					.replace( "[SUBTITLE]", aAirline )
-					.replace( "[DEVIZA]", aCurrency )
+					.replace( "[DEVIZA]", lCurrency )
 					.replace( "[SERIES]", lSeries1 + ",\n" + lSeries2 )
 					.replace( "[CONTAINER]", aHtmlTagId );
 			String lDiv = mDivTemplate.replace( "[CONTAINER]", aHtmlTagId );
@@ -87,9 +105,14 @@ public class WebService
 		}
 		else
 		{
-			lJS = mJsTemplate.replace( "[TITLE]", lDate1 + " " + aAirportFrom + " - " + aAirportTo )
+			HashSet<String> lFoundCurrency = lHighChartDataResultComposerOutbound.getFoundCurrency();
+			String lCurrency = aCurrency;
+			if( aCurrency.equals( "%" ) && !lFoundCurrency.isEmpty())
+				lCurrency = lFoundCurrency.iterator().next();
+
+			lJS = mJsTemplate.replace( "[TITLE]", lDate1 + " " + lAirportFrom + " - " + lAirportTo )
 					.replace( "[SUBTITLE]", aAirline )
-					.replace( "[DEVIZA]", aCurrency )
+					.replace( "[DEVIZA]", lCurrency )
 					.replace( "[SERIES]", lSeries1 )
 					.replace( "[CONTAINER]", aHtmlTagId );
 		}

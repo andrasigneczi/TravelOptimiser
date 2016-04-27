@@ -1,21 +1,28 @@
 package Util;
 
+import org.apache.log4j.Logger;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Created by Andras on 13/04/2016.
  */
 public class HighChartDataResultComposer extends DataResultComposer
 {
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger(HighChartDataResultComposer.class);
+
 	//private String mResult = new String();
 	// if 3 or more value one by one are the same in the list, only the first one and the last one will be displayed
 	private ArrayList<Double> mValues;
 	private ArrayList<String> mDates;
+	private HashSet<String> mFoundCurrency;
 
 	public HighChartDataResultComposer()
 	{
 		mValues = new ArrayList<>( );
 		mDates = new ArrayList<>( );
+		mFoundCurrency = new HashSet<>( );
 	}
 
 	@Override
@@ -27,21 +34,20 @@ public class HighChartDataResultComposer extends DataResultComposer
 		// 53 195,00 Ft
 
 		String lValue = "";
-		if( aCurrency.equals( "%" ))
+		int lPos = aValue.length() - 1;
+		char lActChar = aValue.charAt( lPos );
+		while( lActChar < '0' || lActChar > '9' )
 		{
-			int lPos = aValue.length() - 1;
-			char lActChar = aValue.charAt( lPos );
-			while( lActChar < '0' || lActChar > '9' )
-			{
-				lPos--;
-				lActChar = aValue.charAt( lPos );
-			}
-			lValue = aValue.substring( 0, lPos + 1 ).trim();
+			lPos--;
+			lActChar = aValue.charAt( lPos );
 		}
-		else
-		{
-			lValue = aValue.substring( 0, aValue.length() - aCurrency.length() ).trim();
-		}
+		lValue = aValue.substring( 0, lPos + 1 ).trim();
+		String lCurrency = aValue.substring( lPos + 1 ).trim();
+
+		if( !aCurrency.equals( "%" )&& !aCurrency.equals( lCurrency ))
+			mLogger.warn( "Illegal currency (" + lCurrency + ") in chart. Expected currency is " + aCurrency );
+
+		mFoundCurrency.add( lCurrency );
 
 		lValue = lValue.replace( ",", "." );
 		lValue.replace( " ", "" );
@@ -78,6 +84,14 @@ public class HighChartDataResultComposer extends DataResultComposer
 				lResult += ",\n";
 			lResult += "[Date.parse('" + mDates.get( i ) + "'), " + mValues.get( i ) + "]";
 		}
+
+		if( mFoundCurrency.size() > 1 )
+			mLogger.warn( "More different currency in the chart!" );
 		return lResult;
+	}
+
+	public HashSet<String> getFoundCurrency()
+	{
+		return mFoundCurrency;
 	}
 }

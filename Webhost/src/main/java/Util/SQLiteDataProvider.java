@@ -1,12 +1,17 @@
 package Util;
 
+import org.apache.log4j.Logger;
+
 import java.sql.*;
+import java.util.Hashtable;
 
 /**
  * Created by Andras on 13/04/2016.
  */
 public class SQLiteDataProvider implements DataProvider
 {
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger(HighChartDataResultComposer.class);
+
 	private static SQLiteDataProvider mInstance = null;
 	private Connection mConnection = null;
 	private SQLiteComposer mComposer = null;
@@ -53,10 +58,15 @@ public class SQLiteDataProvider implements DataProvider
 		}
 	}
 
-	public String GetTripData( String aDateTime, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency, DataResultComposer aDRComposer )
+	public Hashtable<String,String> GetTripData( String aDateTime, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency, DataResultComposer aDRComposer )
 	{
+		Hashtable<String,String> lReturnData = new Hashtable<String,String>();
 		String lQuery;
 		lQuery = mComposer.GetTripQuery( aDateTime, aAirline, aAirportFrom, aAirportTo, aCurrency);
+
+		String lAirportCode_LeavingFrom = "";
+		String lAirportCode_GoingTo = "";
+		String lAirline = "";
 
 		Statement lStmt = null;
 		try
@@ -66,6 +76,21 @@ public class SQLiteDataProvider implements DataProvider
 			ResultSet lResultSet = lStmt.executeQuery( lQuery );
 			while ( lResultSet.next() )
 			{
+				if( lAirportCode_LeavingFrom.length() == 0 )
+					lAirportCode_LeavingFrom = lResultSet.getString( "AirportCode_LeavingFrom" );
+				else if( !lAirportCode_LeavingFrom.equals( lResultSet.getString( "AirportCode_LeavingFrom" ) ))
+					mLogger.warn( "'AirportCode_LeavingFrom' inconsistency?!" );
+
+				if( lAirportCode_GoingTo.length() == 0 )
+					lAirportCode_GoingTo = lResultSet.getString( "AirportCode_GoingTo" );
+				else if( !lAirportCode_GoingTo.equals( lResultSet.getString( "AirportCode_GoingTo" ) ))
+					mLogger.warn( "'AirportCode_GoingTo' inconsistency?!" );
+
+				if( lAirline.length() == 0 )
+					lAirline = lResultSet.getString( "Airline" );
+				else if( !lAirline.equals( lResultSet.getString( "Airline" )))
+					mLogger.warn( "'Airline' inconsistency?!" );
+
 				aDRComposer.add( lResultSet.getString( "SearchDatetime" ), lResultSet.getString( "Prices_BasicFare_Discount"), aCurrency);
 			}
 			lResultSet.close();
@@ -76,7 +101,12 @@ public class SQLiteDataProvider implements DataProvider
 			System.exit( 0 );
 		}
 
-		return aDRComposer.getResult();
+		lReturnData.put( "Result", aDRComposer.getResult());
+		lReturnData.put( "Airline", lAirline );
+		lReturnData.put( "AirportCode_LeavingFrom", lAirportCode_LeavingFrom );
+		lReturnData.put( "AirportCode_GoingTo", lAirportCode_GoingTo );
+
+		return lReturnData;
 	}
 
 	public String GetCollectedDepartureDateList( HtmlListFormatter aHtmlListFormatter,
