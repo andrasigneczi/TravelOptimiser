@@ -1,6 +1,7 @@
 package PageGuest;
 
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.Hashtable;
 import java.util.Scanner;
@@ -101,6 +102,13 @@ public abstract class WebPageGuest
         return mAirline;
     }
 
+    public void MouseLeftClick( int aX, int aY)
+    {
+        mRobot.mouseMove(aX, aY);
+        mRobot.mousePress(InputEvent.BUTTON1_MASK);
+        mRobot.mouseRelease(InputEvent.BUTTON1_MASK);
+    }
+
     public void PressCtrlA()
     {
         if (mRobot == null)
@@ -111,6 +119,18 @@ public abstract class WebPageGuest
         mRobot.keyPress(KeyEvent.VK_A);
         mRobot.keyRelease(KeyEvent.VK_A);
         mRobot.keyRelease(KeyEvent.VK_CONTROL);
+    }
+
+    public void PressShiftTab()
+    {
+        if (mRobot == null)
+        {
+            return;
+        }
+        mRobot.keyPress(KeyEvent.VK_SHIFT);
+        mRobot.keyPress(KeyEvent.VK_TAB);
+        mRobot.keyRelease(KeyEvent.VK_TAB);
+        mRobot.keyRelease(KeyEvent.VK_SHIFT);
     }
 
     public void PressDelete()
