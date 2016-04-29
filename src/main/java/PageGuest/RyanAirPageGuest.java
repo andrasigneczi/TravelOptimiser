@@ -1,16 +1,18 @@
 package PageGuest;
 
+import Util.CurrencyHelper;
+import Util.DatetimeHelper;
 import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.dom.By;
 import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
 import com.teamdev.jxbrowser.chromium.dom.DOMElement;
+import com.teamdev.jxbrowser.chromium.dom.DOMNodeAtPoint;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 import com.traveloptimizer.browserengine.TeamDevJxBrowser;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.InputEvent;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -178,7 +180,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 //		frame.add(addressPane, BorderLayout.NORTH);
         frame.add(view, BorderLayout.CENTER);
-        frame.setSize(1152, 864);
+        frame.setSize(1152, 1000);
         frame.setLocation(0, 0);
         //frame.setLocationRelativeTo(null);
         frame.setVisible(true);
@@ -260,6 +262,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 
     private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
     {
+        // TODO: the departure/arrival datetime's year must be filled
         mTravelDataResult = new TravelData_RESULT();
         mTravelDataResult.mAirline = aTravelDataInput.mAirline;
         mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
@@ -273,7 +276,6 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         int lCellIndex = 0;
         for (DOMElement lFlightBodyElement : lFlightsBodyElements)
         {
-            // TODO: change the date formats, fare formats to wizzair format
             if (lCellIndex == 0)
             {
                 lTripOutbound = new TravelData_RESULT.TravelData_PossibleTrips();
@@ -366,99 +368,117 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
             }
             lCellIndex++;
         }
+
+        lTripOutbound.mArrivalDatetime = DatetimeHelper.ConvertFromRyanairFormat(lTripOutbound.mArrivalDatetime);
+        lTripOutbound.mDepartureDatetime = DatetimeHelper.ConvertFromRyanairFormat(lTripOutbound.mDepartureDatetime);
+        lTripReturn.mArrivalDatetime = DatetimeHelper.ConvertFromRyanairFormat(lTripReturn.mArrivalDatetime);
+        lTripReturn.mDepartureDatetime = DatetimeHelper.ConvertFromRyanairFormat(lTripReturn.mDepartureDatetime);
+
+        lTripOutbound.mPrices_BasicFare_Normal = CurrencyHelper.ConvertFromRyanairFormat(
+                lTripOutbound.mPrices_BasicFare_Normal);
+        lTripOutbound.mPrices_PlusFare_Normal = CurrencyHelper.ConvertFromRyanairFormat(
+                lTripOutbound.mPrices_PlusFare_Normal);
+        lTripReturn.mPrices_BasicFare_Normal = CurrencyHelper.ConvertFromRyanairFormat(
+                lTripReturn.mPrices_BasicFare_Normal);
+        lTripReturn.mPrices_PlusFare_Normal = CurrencyHelper.ConvertFromRyanairFormat(
+                lTripReturn.mPrices_PlusFare_Normal);
+
         mTravelDataResult.mTrips.add(lTripOutbound);
         mTravelDataResult.mTrips.add(lTripReturn);
         // ResultQueue.getInstance().push( mTravelDataResult );
     }
 
+    private void ClickDateOnTheCalendar( int aDay, int aStartX, int aStartY )
+    {
+        String lDay = String.valueOf( aDay );
+        for( int lY = 0; lY < 7; lY++ )
+        {
+            for( int lX = 0; lX < 7; lX++ )
+            {
+                DOMNodeAtPoint lNodeAtPoint   = mBrowser.getNodeAtPoint(aStartX + lX * 44, aStartY + lY * 41);
+                DOMElement     lElement       = (DOMElement) lNodeAtPoint.getNode();
+                if( lElement != null )
+                {
+                    try
+                    {
+                        if( lDay.equals( lElement.getInnerText()))
+                        {
+                            // The robot and the JxBrowser's positioning is different, we have to correct it.
+                            MouseLeftClick( aStartX + lX * 44 + 15, aStartY + lY * 41 + 32 );
+                            return;
+                        }
+                    }
+                    catch ( Exception e )
+                    {
+                        mLogger.error( "Something wrong on the ryanair's calendar");
+                    }
+                }
+            }
+        }
+    }
+
+    private void ClickDateOnTheLeftCalendar( int iDay )
+    {
+        ClickDateOnTheCalendar( iDay, 192, 636 );
+    }
+
+    private void ClickDateOnTheRightCalendar( int iDay )
+    {
+        ClickDateOnTheCalendar( iDay, 192 + 390, 636 );
+    }
+
     private void FillTheForm(DOMDocument aDOMDocument, TravelData_INPUT aTravelDataInput)
     {
-        String lAirportLabel  = "Budapest";
-        String lAirportLabel2 = "Brussels (CRL)";
+        // 2016 Majus 31, Dublin - 2017 Januar 4, Faro
 
-        mRobot.delay(1000);
+        //String lAirportLabel  = "Budapest";
+        //String lAirportLabel2 = "Brussels (CRL)";
+        String lAirportLabel  = "Dublin\n";
+        String lAirportLabel2 = "Faro\n";
+
+        mRobot.delay(3000);
         // click into the leaving from field
-        mRobot.mouseMove(175, 460);
-        mRobot.mousePress(InputEvent.BUTTON1_MASK);
-        mRobot.mouseRelease(InputEvent.BUTTON1_MASK);
+        MouseLeftClick(175, 460);
 
         // fill the leaving from field
         PressCtrlA();
         PressDelete();
-        TypeText("Budapest\t");
+        TypeText(lAirportLabel);
 
         mRobot.delay(500);
 
         // click into the going to field
-        mRobot.mouseMove(500, 460);
-        mRobot.mousePress(InputEvent.BUTTON1_MASK);
-        mRobot.mouseRelease(InputEvent.BUTTON1_MASK);
+        MouseLeftClick(500, 460);
 
         // fill the going to field
         PressCtrlA();
         PressDelete();
-        TypeText("Brussels (CRL)\n");
+        TypeText(lAirportLabel2);
 
         mRobot.delay(1000);
 
-        // fill departure day field
-        PressCtrlA();
-        PressBackspace();
-        TypeText("1");
+        // read the left calendar header
+        DOMNodeAtPoint lNodeAtPoint   = mBrowser.getNodeAtPoint(222, 550);
+        DOMElement     lElement       = (DOMElement) lNodeAtPoint.getNode();
+        String         lLeftMonthYear = lElement.getInnerText();
 
-        // go to the departure month field
-        mRobot.delay(500);
-        TypeText("\t");
-        mRobot.delay(500);
+        // read the right calendar header
+        lNodeAtPoint = mBrowser.getNodeAtPoint(600, 550);
+        lElement = (DOMElement) lNodeAtPoint.getNode();
+        String lRightMonthYear = lElement.getInnerText();
 
-        // fill departure month field
-        PressBackspace();
-        PressBackspace();
-        TypeText("7");
+        // page right on calendar
+        MouseLeftClick(910, 710);
 
-        // go to the departure year field
-        mRobot.delay(500);
-        TypeText("\t");
-        mRobot.delay(500);
+        mRobot.delay(1000);
+        ClickDateOnTheLeftCalendar( 1 );
+        mRobot.delay(1000);
+        ClickDateOnTheRightCalendar( 10 );
+        mRobot.delay(10000);
 
-        // fill departure year
-        PressBackspace();
-        PressBackspace();
-        PressBackspace();
-        PressBackspace();
-        TypeText("2016");
-
-        // go to the return day field
-        mRobot.delay(500);
-        TypeText("\t");
-        mRobot.delay(500);
-
-        // fill the return day field
-        PressCtrlA();
-        PressBackspace();
-        TypeText("3");
-
-        // go to the return month field
-        mRobot.delay(500);
-        TypeText("\t");
-        mRobot.delay(500);
-
-        // fill the return month field
-        PressBackspace();
-        PressBackspace();
-        TypeText("7");
-
-        // go to the return year field
-        mRobot.delay(500);
-        TypeText("\t");
-        mRobot.delay(500);
-
-        // fill the return year field
-        PressBackspace();
-        PressBackspace();
-        PressBackspace();
-        PressBackspace();
-        TypeText("2016");
+        // page left on calendar
+        //MouseLeftClick(154, 710);
+        return;
 
         // passengers
         // one way / return ticket
@@ -470,9 +490,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         Sleep(1000 * Integer.parseInt(lSleep));
 
         // click the Let's go (search) button
-        mRobot.mouseMove(834, 513);
-        mRobot.mousePress(InputEvent.BUTTON1_MASK);
-        mRobot.mouseRelease(InputEvent.BUTTON1_MASK);
+        MouseLeftClick(834, 513);
     }
 
     public void run()
