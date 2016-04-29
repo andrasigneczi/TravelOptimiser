@@ -1,4 +1,4 @@
-package Root;
+package HelloWorld;
 
 import java.io.File;
 import java.io.FileInputStream;

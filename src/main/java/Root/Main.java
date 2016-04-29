@@ -21,12 +21,12 @@ public class Main
             //MozillaHelloWorld.Starter();
             //SQLiteAgent lSQLiteAgent2 = new SQLiteAgent();
             //lSQLiteAgent2.InitializeDatabase();
-            //Root.SQLiteHelloWorld.Test7();
-            //Root.XmlHelloWorld.Test();
+            //HelloWorld.SQLiteHelloWorld.Test7();
+            //HelloWorld.XmlHelloWorld.Test();
             //System.exit(0);
 
-            //Root.JxBrowserHelloWorld.HelloWorld();
-	        //Root.JxBrowserHelloWorld.FlashSample();
+            //HelloWorld.JxBrowserHelloWorld.HelloWorld();
+	        //HelloWorld.JxBrowserHelloWorld.FlashSample();
 
             // Initialize the configuration
             Util.Configuration lConfiguration = Util.Configuration.getInstance();
@@ -72,12 +72,12 @@ public class Main
             e.printStackTrace();
         }
 /*
-        Root.SQLiteHelloWorld.Test1( new String[0] );
-        Root.SQLiteHelloWorld.Test2( new String[0] );
-        Root.SQLiteHelloWorld.Test3( new String[0] );
-        Root.SQLiteHelloWorld.Test4( new String[0] );
-        Root.SQLiteHelloWorld.Test5( new String[0] );
-        Root.SQLiteHelloWorld.Test6( new String[0] );
+        HelloWorld.SQLiteHelloWorld.Test1( new String[0] );
+        HelloWorld.SQLiteHelloWorld.Test2( new String[0] );
+        HelloWorld.SQLiteHelloWorld.Test3( new String[0] );
+        HelloWorld.SQLiteHelloWorld.Test4( new String[0] );
+        HelloWorld.SQLiteHelloWorld.Test5( new String[0] );
+        HelloWorld.SQLiteHelloWorld.Test6( new String[0] );
 
         runMe( "hello" );
 */

@@ -1,4 +1,4 @@
-package Root;
+package HelloWorld;
 /*
 import org.mozilla.xpcom.IAppFileLocProvider;
 
