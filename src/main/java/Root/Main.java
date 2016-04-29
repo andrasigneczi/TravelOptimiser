@@ -34,6 +34,7 @@ public class Main
             WebPageGuest lGuest = WebPageGuestFactory.Create( "WizzAir" );
             lGuest.DoSearchFromConfig();
 /*
+            lGuest.DoSearch( "CRL", "BUD", "2016.04.29.", "2016.05.02." );
             lGuest.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
             lGuest.DoSearch( "SOF", "HHN", "2016.08.06.", "2016.08.09." );
             lGuest.DoSearch( "CRL", "BUD", "2016.07.08.", "2016.07.11." );

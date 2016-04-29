@@ -267,6 +267,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	private void FillTheForm(DOMDocument aDOMDocument, TravelData_INPUT aTravelDataInput )
 	{
+		mLogger.debug( "FillTheForm: " + aTravelDataInput.toString() );
 		//DOMElement element = document.findElement( By.xpath("//textarea"));
 		//DOMTextAreaElement textArea = (DOMTextAreaElement) element;
 
@@ -380,6 +381,14 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 						// TODO: separate the prices; currency handling
 						java.util.List<DOMNode> lChildren = lCell.getChildren();
 						lTrip.mPrices_BasicFare_Normal = ((DOMElement)lChildren.get(0)).getInnerText();
+						if( lTrip.mPrices_BasicFare_Normal.equals( "Elfogyott" ) &&
+								lTrip.mDepartureDatetime.length() == 0 &&
+								lTrip.mArrivalDatetime.length() == 0 )
+						{
+							lTrip = null;
+							// the trip is invalid, the company out of tickets
+							break;
+						}
 						lTrip.mPrices_BasicFare_Discount = ((DOMElement)lChildren.get(1)).getInnerText();
 					}
 					else if( lCellIndex == 2 )
@@ -395,7 +404,8 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 					}
 					lCellIndex++;
 				}
-				mTravelDataResult.mTrips.add( lTrip );
+				if( lTrip != null )
+					mTravelDataResult.mTrips.add( lTrip );
 			}
 			lRowElementIndex++;
 		}
