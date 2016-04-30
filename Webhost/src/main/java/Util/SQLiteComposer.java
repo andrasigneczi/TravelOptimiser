@@ -63,10 +63,13 @@ public class SQLiteComposer implements SQLComposer
 	                                    String aSelectedArrivalAirport,
 	                                    boolean aReturnCheckboxChecked )
 	{
-		String lQueryTemlate =
+		final String lQueryTemlate =
 				"SELECT\n" +
 				"DISTINCT Airline,\n" +
-				"\tDepartureDatetime \n" +
+				"\tDepartureDatetime, \n" +
+				"\tAirportCode_LeavingFrom, \n" +
+				"\tAirportCode_GoingTo, \n" +
+				"\tOutboundTrip \n" +
 				"FROM\n" +
 				"\tTravelDataResult TDR, TravelDataResult_PossibleTrips TDR_PT\n" +
 				"WHERE\n" +
@@ -82,31 +85,35 @@ public class SQLiteComposer implements SQLComposer
 				"\t))\n" +
 				"ORDER BY DepartureDatetime ASC, OutboundTrip DESC, SearchDatetime ASC;\n";
 
+		String lReturnValue = lQueryTemlate;
+		if( aReturnCheckboxChecked )
+		{
 
+		}
 
 		if( aSelectedDepartureAirport.length() > 1 && aSelectedArrivalAirport.length() > 1 )
 		{
-			String lReturnValue = lQueryTemlate.replace( "[DEPARTURE_AIRPORT]", aSelectedDepartureAirport )
+			lReturnValue = lReturnValue.replace( "[DEPARTURE_AIRPORT]", aSelectedDepartureAirport )
 					.replace( "[ARRIVAL_AIRPORT]", aSelectedArrivalAirport );
 			System.out.println( lReturnValue );
 			return lReturnValue;
 		}
 		else if( aSelectedDepartureAirport.length() > 1 )
 		{
-			String lReturnValue = lQueryTemlate.replace( "[DEPARTURE_AIRPORT]", aSelectedDepartureAirport )
+			lReturnValue = lReturnValue.replace( "[DEPARTURE_AIRPORT]", aSelectedDepartureAirport )
 					.replace( "[ARRIVAL_AIRPORT]", "%" );
 			System.out.println( lReturnValue );
 			return lReturnValue;
 		}
 		else if( aSelectedArrivalAirport.length() > 1 )
 		{
-			String lReturnValue = lQueryTemlate.replace( "[DEPARTURE_AIRPORT]", "%" )
+			lReturnValue = lReturnValue.replace( "[DEPARTURE_AIRPORT]", "%" )
 					.replace( "[ARRIVAL_AIRPORT]", aSelectedArrivalAirport );
 			System.out.println( lReturnValue );
 			return lReturnValue;
 		}
 
-		String lReturnValue = lQueryTemlate.replace( "[DEPARTURE_AIRPORT]", "%" )
+		lReturnValue = lReturnValue.replace( "[DEPARTURE_AIRPORT]", "%" )
 				.replace( "[ARRIVAL_AIRPORT]", "%" );
 		System.out.println( lReturnValue );
 		return lReturnValue;

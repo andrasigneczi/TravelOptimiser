@@ -18,10 +18,13 @@ public class SQLiteDataProvider implements DataProvider
 
 	private SQLiteDataProvider()
 	{
-		try {
+		try
+		{
 			Class.forName("org.sqlite.JDBC");
 			mConnection = DriverManager.getConnection("jdbc:sqlite:test.db");
-		} catch ( Exception e ) {
+		}
+		catch ( Exception e )
+		{
 			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
 			System.exit( 0 );
 		}
@@ -58,6 +61,16 @@ public class SQLiteDataProvider implements DataProvider
 		}
 	}
 
+	/**
+	 *
+	 * @param aDateTime
+	 * @param aAirline
+	 * @param aAirportFrom
+	 * @param aAirportTo
+	 * @param aCurrency
+	 * @param aDRComposer
+	 * @return
+	 */
 	public Hashtable<String,String> GetTripData( String aDateTime, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency, DataResultComposer aDRComposer )
 	{
 		Hashtable<String,String> lReturnData = new Hashtable<String,String>();
@@ -96,7 +109,8 @@ public class SQLiteDataProvider implements DataProvider
 			lResultSet.close();
 			lStmt.close();
 		}
-		catch ( Exception e ) {
+		catch ( Exception e )
+		{
 			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
 			System.exit( 0 );
 		}
@@ -109,6 +123,14 @@ public class SQLiteDataProvider implements DataProvider
 		return lReturnData;
 	}
 
+	/**
+	 *
+	 * @param aHtmlListFormatter
+	 * @param aSelectedDepartureAirport
+	 * @param aSelectedArrivalAirport
+	 * @param aReturnCheckboxChecked
+	 * @return
+	 */
 	public String GetCollectedDepartureDateList( HtmlListFormatter aHtmlListFormatter,
 	                                             String aSelectedDepartureAirport,
 	                                             String aSelectedArrivalAirport,
@@ -125,19 +147,32 @@ public class SQLiteDataProvider implements DataProvider
 			ResultSet lResultSet = lStmt.executeQuery( lQuery );
 			while ( lResultSet.next() )
 			{
-				aHtmlListFormatter.add( new String[]{lResultSet.getString( "DepartureDatetime" ),
-						lResultSet.getString( "Airline" )});
+				aHtmlListFormatter.add(
+						new String[]{
+								lResultSet.getString( "DepartureDatetime" ),
+								lResultSet.getString( "Airline" ),
+								lResultSet.getString( "AirportCode_LeavingFrom" ),
+								lResultSet.getString( "AirportCode_GoingTo" ),
+								lResultSet.getString( "OutboundTrip" )
+						});
 			}
 			lResultSet.close();
 			lStmt.close();
 		}
-		catch ( Exception e ) {
+		catch ( Exception e )
+		{
 			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
 			System.exit( 0 );
 		}
 		return aHtmlListFormatter.getFormattedResult();
 	}
 
+	/**
+	 *
+	 * @param aDepartureAirportListFormatter
+	 * @param aSelectedDepartureAirport
+	 * @return
+	 */
 	public String GetDepartureAirportList( HtmlListFormatter aDepartureAirportListFormatter, String aSelectedDepartureAirport )
 	{
 		String lQuery;
@@ -163,13 +198,21 @@ public class SQLiteDataProvider implements DataProvider
 			lResultSet.close();
 			lStmt.close();
 		}
-		catch ( Exception e ) {
+		catch ( Exception e )
+		{
 			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
 			System.exit( 0 );
 		}
 		return aDepartureAirportListFormatter.getFormattedResult();
 	}
 
+	/**
+	 *
+	 * @param aArrivalAirportListFormatter
+	 * @param aSelectedDepartureAirport
+	 * @param aSelectedArrivalAirport
+	 * @return
+	 */
 	public String GetArrivalAirportList( HtmlListFormatter aArrivalAirportListFormatter, String aSelectedDepartureAirport, String aSelectedArrivalAirport )
 	{
 		String lQuery;
@@ -193,7 +236,8 @@ public class SQLiteDataProvider implements DataProvider
 			lResultSet.close();
 			lStmt.close();
 		}
-		catch ( Exception e ) {
+		catch ( Exception e )
+		{
 			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
 			System.exit( 0 );
 		}

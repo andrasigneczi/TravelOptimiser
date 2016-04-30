@@ -30,6 +30,7 @@ public class WebService
 	private String mSelectedDepartureAirport = "-";
 	private String mSelectedArrivalAirport   = "-";
 	private boolean mReturnCheckboxChecked   = false;
+	private ToggledButton mToggledButton = null;
 
 	public WebService()
 	{
@@ -64,7 +65,8 @@ public class WebService
 				lLocalDateTime.getMonthValue(), lLocalDateTime.getYear(), lLocalDateTime.getHour(), lLocalDateTime.getMinute() );
 	}
 
-	private String [] GetHtmlContent( String aDateTime1, String aDateTime2, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency, String aHtmlTagId, boolean aOneWay )
+	private String [] GetHtmlContent( final String aDateTime1, final String aDateTime2, final String aAirline, final String aAirportFrom,
+	                                  final String aAirportTo, final String aCurrency, final String aHtmlTagId, final boolean aOneWay )
 	{
 		HighChartDataResultComposer lHighChartDataResultComposerOutbound = new HighChartDataResultComposer();
 		Hashtable<String,String> lResult1 = SQLiteDataProvider.getInstance().GetTripData( aDateTime1/*2016-07-16 06:30*/, aAirline, aAirportFrom, aAirportTo, aCurrency, lHighChartDataResultComposerOutbound );
@@ -187,17 +189,51 @@ public class WebService
 			mSelectedDepartureAirport = aParam;
 		else if( aId.equals( "ArrivalAirportListChanged" ))
 			mSelectedArrivalAirport = aParam;
-		else if( aId.equals( "ReturnTrip" ))
-			mReturnCheckboxChecked = !aParam.equals( "0" );
+		else if( aId.equals( "ReturnTripChanged" ))
+		{
+			mReturnCheckboxChecked = !aParam.equals( "false" );
+			mToggledButton = null;
+			if( mReturnCheckboxChecked )
+				return "";
+		}
 		else if( aId.equals( "DateTimeButtonPushed" ))
 		{
 			String[] lValues = aParam.split( "\\|" );
-			// String [] GetHtmlContent( String aDateTime1, String aDateTime2, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency, String aHtmlTagId, boolean aOneWay )
-			String [] lHtmlContent = GetHtmlContent( lValues[ 1 ], "", lValues[ 0 ], lValues[ 2 ], lValues[ 3 ], "%", "modalcontainer", true );
-			return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
+			// lValues = airline, leavingfrom, goingto, datetime
+			if( mReturnCheckboxChecked )
+			{
+				if( mToggledButton != null )//if( a button already pushed )
+				{
+					if( mToggledButton.equals( new ToggledButton( lValues[ 3 ], lValues[ 0 ], lValues[ 1 ], lValues[ 2 ] )))
+					{ // if the toggled button was pushed again
+						mToggledButton = null;
+					}
+					else
+					{
+						//  with the second button we have a return trip, display it
+
+					}
+				}
+				else
+				{
+					//  this is the first button, toggle it!
+					mToggledButton = new ToggledButton( lValues[ 3 ], lValues[ 0 ], lValues[ 1 ], lValues[ 2 ] );
+					String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList( mToggledButton ),
+							lValues[ 1 ], lValues[ 2 ], mReturnCheckboxChecked );
+					return lGetCollectedDepartureDateList;
+				}
+				// recolor or filter the buttons
+			}
+			else
+			{
+				String[] lHtmlContent = GetHtmlContent( lValues[ 3 ], "", lValues[ 0 ],
+						//mSelectedDepartureAirport, mSelectedArrivalAirport, "%", "modalcontainer", true );
+						lValues[ 1 ], lValues[ 2 ], "%", "modalcontainer", true );
+				return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
+			}
 		}
 
-		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList(),
+		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList( mToggledButton ),
 				mSelectedDepartureAirport, mSelectedArrivalAirport, mReturnCheckboxChecked );
 
 		return lGetCollectedDepartureDateList;
