@@ -53,6 +53,7 @@ public class HighChartDataResultComposer extends DataResultComposer
 		lValue.replace( " ", "" );
 		double lDValue = Double.parseDouble( lValue );
 
+		aDate = aDate.replace( " ", "T" );
 		if( mValues.size() < 2 )
 		{
 			mDates.add( aDate );
