@@ -18,6 +18,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+import static Util.DatetimeHelper.CreateRyanairCalendarHeader;
+
 /**
  * Created by Andras on 15/03/2016.
  */
@@ -276,7 +278,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         int lCellIndex = 0;
         for (DOMElement lFlightBodyElement : lFlightsBodyElements)
         {
-            if (lCellIndex == 0)
+            if( lCellIndex == 0 )
             {
                 lTripOutbound = new TravelData_RESULT.TravelData_PossibleTrips();
                 lTripOutbound.mOutboundTrip = true;
@@ -287,29 +289,26 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
                 lTripOutbound.mArrivalDatetime = lTripOutbound.mDepartureDatetime;
 
                 // price
-                java.util.List<DOMElement> lPrice1 = lFlightBodyElement.findElements(By.className("fare ng-binding"));
-                lTripOutbound.mPrices_BasicFare_Normal = ((DOMElement) lPrice1.get(0)).getInnerText();
+//                java.util.List<DOMElement> lPrice1 = lFlightBodyElement.findElements(By.className("fare ng-binding"));
+//                lTripOutbound.mPrices_BasicFare_Normal = ((DOMElement) lPrice1.get(0)).getInnerText();
                 lCellIndex++;
             }
-            else
+            else if( lCellIndex == 1 )
             {
-                if (lCellIndex == 1)
-                {
-                    lTripReturn = new TravelData_RESULT.TravelData_PossibleTrips();
-                    lTripReturn.mOutboundTrip = false;
-                    // date
-                    java.util.List<DOMElement> lDate1 = lFlightBodyElement.findElements(
-                            By.className("date ng-binding"));
-                    lTripReturn.mDepartureDatetime = ((DOMElement) lDate1.get(0)).getInnerText();  // Only the date
-                    lTripReturn.mArrivalDatetime = lTripReturn.mDepartureDatetime;
+                lTripReturn = new TravelData_RESULT.TravelData_PossibleTrips();
+                lTripReturn.mOutboundTrip = false;
+                // date
+                java.util.List<DOMElement> lDate1 = lFlightBodyElement.findElements(
+                        By.className("date ng-binding"));
+                lTripReturn.mDepartureDatetime = ((DOMElement) lDate1.get(0)).getInnerText();  // Only the date
+                lTripReturn.mArrivalDatetime = lTripReturn.mDepartureDatetime;
 
-                    // price
-                    java.util.List<DOMElement> lPrice1 = lFlightBodyElement.findElements(
-                            By.className("fare ng-binding"));
-                    lTripReturn.mPrices_BasicFare_Normal = ((DOMElement) lPrice1.get(0)).getInnerText();
-                    //lTrip.mPrices_PlusFare_Normal;
-                    lCellIndex++;
-                }
+                // price
+//                java.util.List<DOMElement> lPrice1 = lFlightBodyElement.findElements(
+//                        By.className("fare ng-binding"));
+//                lTripReturn.mPrices_BasicFare_Normal = ((DOMElement) lPrice1.get(0)).getInnerText();
+                //lTrip.mPrices_PlusFare_Normal;
+                lCellIndex++;
             }
         }
 
@@ -321,6 +320,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
             for (DOMElement lTimeElement : lTimes)
             {
                 String lTime = lTimeElement.getInnerText();
+                // TODO: fix this process, because it's good only in case of 1 result trip
                 switch (lCellIndex)
                 {
                     case 0: // outbound departure time
@@ -345,22 +345,17 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         for (DOMElement lPriceElement : lPrices)
         {
             String lPrice = lPriceElement.getInnerText();
+            // TODO: fix this process, because it's good only in case of 1 result trip
             switch (lCellIndex)
             {
                 case 0: // outbound normal price
-                    if (!lTripOutbound.mPrices_BasicFare_Normal.equals(lPrice))
-                    {
-                        mLogger.warn("Something wrong with the outbound basic fare price collection");
-                    }
+                    lTripOutbound.mPrices_BasicFare_Normal = lPrice;
                     break;
                 case 1: // outbound business price
                     lTripOutbound.mPrices_PlusFare_Normal = lPrice;
                     break;
                 case 2: // return norml price
-                    if (!lTripReturn.mPrices_BasicFare_Normal.equals(lPrice))
-                    {
-                        mLogger.warn("Something wrong with the return basic fare price collection");
-                    }
+                    lTripReturn.mPrices_BasicFare_Normal = lPrice;
                     break;
                 case 3: // return business price
                     lTripReturn.mPrices_PlusFare_Normal = lPrice;
@@ -388,53 +383,100 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         // ResultQueue.getInstance().push( mTravelDataResult );
     }
 
-    private void ClickDateOnTheCalendar( int aDay, int aStartX, int aStartY )
+    private void ClickDateOnTheCalendar(int aDay, int aStartX, int aStartY)
     {
-        String lDay = String.valueOf( aDay );
-        for( int lY = 0; lY < 7; lY++ )
+        String lDay = String.valueOf(aDay);
+        for (int lY = 0; lY < 7; lY++)
         {
-            for( int lX = 0; lX < 7; lX++ )
+            for (int lX = 0; lX < 7; lX++)
             {
-                DOMNodeAtPoint lNodeAtPoint   = mBrowser.getNodeAtPoint(aStartX + lX * 44, aStartY + lY * 41);
-                DOMElement     lElement       = (DOMElement) lNodeAtPoint.getNode();
-                if( lElement != null )
+                DOMNodeAtPoint lNodeAtPoint = mBrowser.getNodeAtPoint(aStartX + lX * 44, aStartY + lY * 41);
+                DOMElement     lElement     = (DOMElement) lNodeAtPoint.getNode();
+                if (lElement != null)
                 {
                     try
                     {
-                        if( lDay.equals( lElement.getInnerText()))
+                        if (lDay.equals(lElement.getInnerText()))
                         {
                             // The robot and the JxBrowser's positioning is different, we have to correct it.
-                            MouseLeftClick( aStartX + lX * 44 + 15, aStartY + lY * 41 + 32 );
+                            MouseLeftClick(aStartX + lX * 44 + 15, aStartY + lY * 41 + 32);
                             return;
                         }
                     }
-                    catch ( Exception e )
+                    catch (Exception e)
                     {
-                        mLogger.error( "Something wrong on the ryanair's calendar");
+                        mLogger.error("Something wrong on the ryanair's calendar");
                     }
                 }
             }
         }
     }
 
-    private void ClickDateOnTheLeftCalendar( int iDay )
+    private void ClickDateOnTheLeftCalendar(int iDay)
     {
-        ClickDateOnTheCalendar( iDay, 192, 636 );
+        ClickDateOnTheCalendar(iDay, 192, 636);
     }
 
-    private void ClickDateOnTheRightCalendar( int iDay )
+    private void ClickDateOnTheRightCalendar(int iDay)
     {
-        ClickDateOnTheCalendar( iDay, 192 + 390, 636 );
+        ClickDateOnTheCalendar(iDay, 192 + 390, 636);
+    }
+
+    private void SelectTheDateOnTheCalendars( String aDateTime )
+    {
+        String lCalendarHeaderLeaving = DatetimeHelper.CreateRyanairCalendarHeader( aDateTime );
+        int lDay = DatetimeHelper.GetDayOfMonth( aDateTime );
+
+        while( true )
+        {
+            mRobot.delay(1000);
+
+            // read the left calendar header
+            DOMNodeAtPoint lNodeAtPoint   = mBrowser.getNodeAtPoint(222, 550);
+            DOMElement     lElement       = (DOMElement) lNodeAtPoint.getNode();
+            String         lLeftMonthYear = lElement.getInnerText();
+
+            // read the right calendar header
+            lNodeAtPoint = mBrowser.getNodeAtPoint(600, 550);
+            lElement = (DOMElement) lNodeAtPoint.getNode();
+            String lRightMonthYear = lElement.getInnerText();
+
+            System.out.println( "lCalendarHeaderLeaving: " + lCalendarHeaderLeaving + "\nlLeftMonthYear: " +
+                                        lLeftMonthYear + "\nlRightMonthYear: " + lRightMonthYear );
+            int lLeftCompare = DatetimeHelper.CompareRyanairCalendarHeaders(lCalendarHeaderLeaving,
+                                                                            lLeftMonthYear );
+            if (lLeftCompare == -1)
+            { // page on the left calendar
+                MouseLeftClick(154, 710);
+            }
+            else if (lLeftCompare == 0)
+            { // click on the left calendar's day number
+                ClickDateOnTheLeftCalendar( lDay );
+                mRobot.delay(1000);
+                break;
+            }
+            else if (lLeftCompare == 1)
+            {
+                int lRightCompare = DatetimeHelper.CompareRyanairCalendarHeaders(lCalendarHeaderLeaving,
+                                                                                 lRightMonthYear );
+                if (lRightCompare == 1)
+                { // page on the right calendar
+                    MouseLeftClick(910, 710);
+                }
+                else if (lRightCompare == 0)
+                { // click on the right calendar's day number
+                    ClickDateOnTheRightCalendar( lDay );
+                    mRobot.delay(1000);
+                    break;
+                }
+            }
+        }
     }
 
     private void FillTheForm(DOMDocument aDOMDocument, TravelData_INPUT aTravelDataInput)
     {
-        // 2016 Majus 31, Dublin - 2017 Januar 4, Faro
-
-        //String lAirportLabel  = "Budapest";
-        //String lAirportLabel2 = "Brussels (CRL)";
-        String lAirportLabel  = "Dublin\n";
-        String lAirportLabel2 = "Faro\n";
+        String lAirportLabel  = aTravelDataInput.mAirportCode_LeavingFrom + "\n";
+        String lAirportLabel2 = aTravelDataInput.mAirportCode_GoingTo + "\n";
 
         mRobot.delay(3000);
         // click into the leaving from field
@@ -455,30 +497,10 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         PressDelete();
         TypeText(lAirportLabel2);
 
-        mRobot.delay(1000);
+        SelectTheDateOnTheCalendars( aTravelDataInput.mDepartureDay );
+        SelectTheDateOnTheCalendars( aTravelDataInput.mReturnDay );
 
-        // read the left calendar header
-        DOMNodeAtPoint lNodeAtPoint   = mBrowser.getNodeAtPoint(222, 550);
-        DOMElement     lElement       = (DOMElement) lNodeAtPoint.getNode();
-        String         lLeftMonthYear = lElement.getInnerText();
-
-        // read the right calendar header
-        lNodeAtPoint = mBrowser.getNodeAtPoint(600, 550);
-        lElement = (DOMElement) lNodeAtPoint.getNode();
-        String lRightMonthYear = lElement.getInnerText();
-
-        // page right on calendar
-        MouseLeftClick(910, 710);
-
-        mRobot.delay(1000);
-        ClickDateOnTheLeftCalendar( 1 );
-        mRobot.delay(1000);
-        ClickDateOnTheRightCalendar( 10 );
         mRobot.delay(10000);
-
-        // page left on calendar
-        //MouseLeftClick(154, 710);
-        return;
 
         // passengers
         // one way / return ticket
@@ -541,23 +563,20 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
                     Sleep(5000);
                     //new BrowserStateReadyToSearch(lDOMDocument).doAction(this);
                 }
-                else
+                else if (lBrowserState.equals("BrowserStateReadyToSearch"))
                 {
-                    if (lBrowserState.equals("BrowserStateReadyToSearch"))
+                    BrowserStateReadyToSearch lState       = (BrowserStateReadyToSearch) getBrowserState();
+                    TravelData_INPUT          lTravelDataInput;
+                    DOMDocument               lDOMDocument = lState.getDOMDocument();
+
+                    synchronized (mMutex)
                     {
-                        BrowserStateReadyToSearch lState       = (BrowserStateReadyToSearch) getBrowserState();
-                        TravelData_INPUT          lTravelDataInput;
-                        DOMDocument               lDOMDocument = lState.getDOMDocument();
-
-                        synchronized (mMutex)
-                        {
-                            lTravelDataInput = mSearchQueue.remove(0);
-                        }
-                        new BrowserStateSearching(lTravelDataInput).doAction(this);
-
-                        FillTheForm(lDOMDocument, lTravelDataInput);
-                        ClickTheSearchButton(lDOMDocument);
+                        lTravelDataInput = mSearchQueue.remove(0);
                     }
+                    new BrowserStateSearching(lTravelDataInput).doAction(this);
+
+                    FillTheForm(lDOMDocument, lTravelDataInput);
+                    ClickTheSearchButton(lDOMDocument);
                 }
             }
             System.out.println("run()");

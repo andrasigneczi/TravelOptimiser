@@ -14,7 +14,7 @@ public class Main
 {
     private static org.apache.log4j.Logger log = Logger.getLogger(Main.class);
 
-    public static void main(String [] argv)
+    public static void main(String[] argv)
     {
         try
         {
@@ -26,19 +26,16 @@ public class Main
             //System.exit(0);
 
             //Root.JxBrowserHelloWorld.HelloWorld();
-	        //Root.JxBrowserHelloWorld.FlashSample();
+            //Root.JxBrowserHelloWorld.FlashSample();
 
             // Initialize the configuration
             Util.Configuration lConfiguration = Util.Configuration.getInstance();
 
             //WebPageGuest lGuest = WebPageGuestFactory.Create( "WizzAir" );
             WebPageGuest lGuest = WebPageGuestFactory.Create( "RyanAir" );
-            lGuest.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
-            Thread.sleep( 100000 );
-            lGuest.stop();
-            System.exit( -1 );
+            lGuest.DoSearch( "Dublin", "Faro", "2016.07.31.", "2017.01.04." );
 
-            lGuest.DoSearchFromConfig();
+            //lGuest.DoSearchFromConfig();
 /*
             lGuest.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
             lGuest.DoSearch( "SOF", "HHN", "2016.08.06.", "2016.08.09." );
@@ -46,28 +43,28 @@ public class Main
             lGuest.DoSearch( "CRL", "BUD", "2016.07.22.", "2016.07.25." );
             lGuest.DoSearch( "BUD", "CRL", "2016.07.11.", "" );
 */
-            FileWriterAgent lFWA = new FileWriterAgent( "database.html" );
-            SQLiteAgent lSQLiteAgent = new SQLiteAgent();
-            lSQLiteAgent.InitializeDatabase();
-            lFWA.setNextAgent( lSQLiteAgent );
+            FileWriterAgent lFWA         = new FileWriterAgent("database.html");
+            //SQLiteAgent     lSQLiteAgent = new SQLiteAgent();
+            //lSQLiteAgent.InitializeDatabase();
+            //lFWA.setNextAgent(lSQLiteAgent);
 
             int i = 60;
             while( i > 0 )
             {
                 TravelData_RESULT lResult = ResultQueue.getInstance().pop();
-                if( lResult != null )
+                if (lResult != null)
                 {
-                    lFWA.Archive( lResult );
+                    lFWA.Archive(lResult);
                     i = 60;
                     continue;
                 }
-                Thread.sleep( 1000 );
+                Thread.sleep(1000);
                 i--;
             }
             lGuest.stop();
-            System.exit( -1 );
+            System.exit(-1);
         }
-        catch( Exception e )
+        catch (Exception e)
         {
             e.printStackTrace();
         }
