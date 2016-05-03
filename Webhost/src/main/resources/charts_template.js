@@ -13,7 +13,7 @@
                 type: 'datetime',
                 dateTimeLabelFormats: {
                     day: '%e. %b',
-                    month: '%b. \'%y',
+                    month: '%b. \'%Y',
                     year: '%Y'
                 },
                 title: {

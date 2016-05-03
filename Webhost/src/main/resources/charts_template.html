@@ -97,15 +97,8 @@
     }
     else if( TO_ActionName == 'DateTimeButtonPushed' )
     {
-        //var lS1 = document.getElementById( 'DepartureAirportList' );
-        //var lS2 = document.getElementById( 'ArrivalAirportList' );
-        //var lSelected1 = lS1.options[lS1.selectedIndex].value;
-        //var lSelected2 = lS2.options[lS2.selectedIndex].value;
-        //lParam = TO_ActionValue + '|' + TO_ActionWidget.value + '|' + lSelected1 + '|' + lSelected2;
-
-        //       airline                 datetime, leavingFrom, goingTo
+        //       airline                 datetime, leavingFrom, goingTo, outbound
         lParam = TO_ActionValue + '|' + TO_ActionWidget.value
-        //alert( lParam );
     }
     else if( TO_ActionName == 'ReturnTripChanged' )
     {
@@ -129,7 +122,7 @@
         {
             if( $('#ReturnTrip').is( ':checked' ) == false )
             {
-                 $("[data-toggle='buttonlist-tooltip']").tooltip('hide');
+                $("[data-toggle='buttonlist-tooltip']").tooltip('hide');
                 $("#ModalWindowBody").html( data );
                 $("#OpenModalButton" ).click();
                 ModalRefresh();
@@ -137,8 +130,19 @@
             }
             else
             {
-                $("#AvailableTrips").html( data );
-                $('[data-toggle="buttonlist-tooltip"]').tooltip();
+                if( data.indexOf( 'DateTimeButtonPushed' ) != -1 )
+                {
+                    $("#AvailableTrips").html( data );
+                    $('[data-toggle="buttonlist-tooltip"]').tooltip();
+                }
+                else
+                {
+                    $("[data-toggle='buttonlist-tooltip']").tooltip('hide');
+                    $("#ModalWindowBody").html( data );
+                    $("#OpenModalButton" ).click();
+                    ModalRefresh();
+                    TO_ActionWidget.className = TO_ActionWidget.className.replace( "active", "");
+                }
             }
         }
         else if( TO_ActionName == 'ReturnTripChanged' )

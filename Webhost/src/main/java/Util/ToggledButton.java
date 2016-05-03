@@ -5,24 +5,50 @@ package Util;
  */
 public class ToggledButton
 {
-	public ToggledButton( String aDatetime, String aAirline, String aLeavingFrom, String aGoingTo )
+	public ToggledButton( String aDatetime, String aAirline, String aLeavingFrom, String aGoingTo, boolean aOutbound )
 	{
 		mDatetime    = aDatetime;
 		mAirline     = aAirline;
 		mLeavingFrom = aLeavingFrom;
 		mGoingTo     = aGoingTo;
+		mOutbound    = aOutbound;
 	}
 
 	public boolean equals( ToggledButton aToggledButton )
 	{
 		if( mAirline.equals( aToggledButton.getAirline()) &&
-				mDatetime.equals( aToggledButton.getDatetime()) &&
-				mLeavingFrom.equals( aToggledButton.getLeavingFrom() ) &&
-				mGoingTo.equals( aToggledButton.getGoingTo() ))
+				mDatetime.equals( aToggledButton.getDatetime()))
 		{
-			return true;
+			if( mOutbound == aToggledButton.mOutbound )
+			{
+				if( mLeavingFrom.equals( aToggledButton.getLeavingFrom() ) &&
+						mGoingTo.equals( aToggledButton.getGoingTo() ) )
+					return true;
+			}
+			else
+			{
+				if( mLeavingFrom.equals( aToggledButton.getGoingTo() ) &&
+						mGoingTo.equals( aToggledButton.getLeavingFrom() ) )
+				return true;
+			}
 		}
 		return false;
+	}
+
+	public String getOutboundDepartureAirport()
+	{
+		if( getOutbound())
+			return mLeavingFrom;
+		else
+			return mGoingTo;
+	}
+
+	public String getOutboundArrivalAirport()
+	{
+		if( getOutbound())
+			return mGoingTo;
+		else
+			return mLeavingFrom;
 	}
 
 	public String getDatetime()
@@ -65,8 +91,19 @@ public class ToggledButton
 		this.mGoingTo = aGoingTo;
 	}
 
+	public boolean getOutbound()
+	{
+		return mOutbound;
+	}
+
+	public void setOutbound( boolean mOutbound )
+	{
+		this.mOutbound = mOutbound;
+	}
+
 	private String mDatetime;
 	private String mAirline;
 	private String mLeavingFrom;
 	private String mGoingTo;
+	private boolean mOutbound;
 }

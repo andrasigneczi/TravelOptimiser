@@ -17,3 +17,8 @@ div.TO_row {
 .modal-xxl {
     width: 1200px;
 }
+
+/* active pushbutton */
+input.btn-default.active {
+    background-color: #caa5a5;
+}

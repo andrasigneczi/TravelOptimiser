@@ -45,6 +45,15 @@ public class HtmlListFormatterButtonList implements HtmlListFormatter
 		LocalDateTime lNow = LocalDateTime.now();
 
 		long lCurrentMillis = System.currentTimeMillis();
+		long lToggleDepartureMiillis = -1;
+
+		if( mToggledButton != null )
+		{
+			LocalDateTime lToggleDateTime = LocalDateTime.parse( mToggledButton.getDatetime(), lDTFormatter);
+			// TODO: what if it is in different time zone?
+			ZonedDateTime lTDT = lToggleDateTime.atZone( ZoneId.of("Europe/Budapest"));
+			lToggleDepartureMiillis = lTDT.toInstant().toEpochMilli();
+		}
 
 		String lClass = "";
 		final long lFiveDays = 5 * 24 * 3600 * 1000;
@@ -54,6 +63,7 @@ public class HtmlListFormatterButtonList implements HtmlListFormatter
 			// TODO: what if it is in different time zone?
 			ZonedDateTime zdt = lDateTime.atZone( ZoneId.of("Europe/Budapest"));
 			long lDepartureMiillis = zdt.toInstant().toEpochMilli();
+
 			lClass = "departurelistbutton";
 
 			if( lCurrentMillis + lFiveDays > lDepartureMiillis
@@ -61,6 +71,11 @@ public class HtmlListFormatterButtonList implements HtmlListFormatter
 			{
 				lClass += " near";
 			}
+
+			ToggledButton lTB = new ToggledButton(
+					lValue[ 0 ], lValue[ 1 ],
+					lValue[ 2 ], lValue[ 3 ],
+					Boolean.parseBoolean( lValue[ 4 ] ) );
 
 			if( mToggledButton != null )
 			{
@@ -70,29 +85,27 @@ public class HtmlListFormatterButtonList implements HtmlListFormatter
 					valamint az indulás dátum és időpont legalább 1 órával a megnyomott
 					gomb érkezési dátum és időpontja után van. A többi gomb legyen inaktív.
 				 */
-				// css: active
-				if( mToggledButton.equals( new ToggledButton( lValue[ 0 ], lValue[ 1 ], lValue[ 2 ], lValue[ 3 ] ) ))
+
+				if( mToggledButton.equals( lTB ))
 				{
 					lClass += " active";
 				}
+				else
+				{
+					if( lToggleDepartureMiillis > lDepartureMiillis )
+						continue;
+
+					if( !mToggledButton.getOutboundArrivalAirport().equals( lTB.getOutboundDepartureAirport()))
+						continue;
+				}
 			}
 
-			if( lValue[ 4 ].equals( "true" ))
-			{
-				lReturn += "<input data-toggle='buttonlist-tooltip' class='btn btn-default " + lClass + "' type='button' name='departuredatetime' value='" + lValue[ 0 ] + "' " +
-						"onclick='TO_ActionName=\"DateTimeButtonPushed\";TO_ActionValue=\"" + lValue[ 1 ] +
-						"|" + lValue[ 2 ] + "|" + lValue[ 3 ] +
-						"\";TO_ActionWidget=this;$(\"#ajaxform\").submit();'" +
-						" title='" + lValue[ 1 ] + ", " + lValue[ 2 ] + "," + lValue[ 3 ] + "'/>";
-			}
-			else
-			{
-				lReturn += "<input data-toggle='buttonlist-tooltip' class='btn btn-default " + lClass + "' type='button' name='departuredatetime' value='" + lValue[ 0 ] + "' " +
-						"onclick='TO_ActionName=\"DateTimeButtonPushed\";TO_ActionValue=\"" + lValue[ 1 ]+
-						"|" + lValue[ 3 ] + "|" + lValue[ 2 ] +
-						"\";TO_ActionWidget=this;$(\"#ajaxform\").submit();'" +
-						" title='" + lValue[ 1 ] + ", " + lValue[ 3 ] + "," + lValue[ 2 ] + "'/>";
-			}
+			lReturn += "<input data-toggle='buttonlist-tooltip' class='btn btn-default " + lClass + "' type='button' name='departuredatetime' " +
+					"value='" + lValue[ 0 ] + "' " +
+					"onclick='TO_ActionName=\"DateTimeButtonPushed\";TO_ActionValue=\"" + lValue[ 1 ] +
+					"|" + lValue[ 2 ] + "|" + lValue[ 3 ] + "|" + lValue[ 4 ] +
+					"\";TO_ActionWidget=this;$(\"#ajaxform\").submit();'" +
+					" title='" + lTB.getAirline() + ", " + lTB.getOutboundDepartureAirport() + "," + lTB.getOutboundArrivalAirport() + "'/>";
 		}
 		return lReturn;
 	}

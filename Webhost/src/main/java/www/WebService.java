@@ -65,6 +65,18 @@ public class WebService
 				lLocalDateTime.getMonthValue(), lLocalDateTime.getYear(), lLocalDateTime.getHour(), lLocalDateTime.getMinute() );
 	}
 
+	/**
+	 *
+	 * @param aDateTime1      first trip's departure day
+	 * @param aDateTime2      return trip's departure day
+	 * @param aAirline        airline
+	 * @param aAirportFrom    departure airport
+	 * @param aAirportTo      arrival airport
+	 * @param aCurrency       currency of the tickets' price
+	 * @param aHtmlTagId      a string for the modal window
+	 * @param aOneWay         one way or return ticket
+	 * @return String [], first element the div of the chart, second element the javascript of the chart
+	 */
 	private String [] GetHtmlContent( final String aDateTime1, final String aDateTime2, final String aAirline, final String aAirportFrom,
 	                                  final String aAirportTo, final String aCurrency, final String aHtmlTagId, final boolean aOneWay )
 	{
@@ -199,36 +211,44 @@ public class WebService
 		else if( aId.equals( "DateTimeButtonPushed" ))
 		{
 			String[] lValues = aParam.split( "\\|" );
-			// lValues = airline, leavingfrom, goingto, datetime
+			// lValues = airline, leavingfrom, goingto, outbound, datetime
+			ToggledButton lTB = new ToggledButton(
+					lValues[ 4 ], lValues[ 0 ],
+					lValues[ 1 ], lValues[ 2 ],
+					Boolean.parseBoolean( lValues[ 3 ] ));
+
 			if( mReturnCheckboxChecked )
 			{
 				if( mToggledButton != null )//if( a button already pushed )
 				{
-					if( mToggledButton.equals( new ToggledButton( lValues[ 3 ], lValues[ 0 ], lValues[ 1 ], lValues[ 2 ] )))
+					if( mToggledButton.equals( lTB ))
 					{ // if the toggled button was pushed again
 						mToggledButton = null;
 					}
 					else
 					{
 						//  with the second button we have a return trip, display it
-
+						String[] lHtmlContent = GetHtmlContent( mToggledButton.getDatetime(), lTB.getDatetime(), lTB.getAirline(),
+								mToggledButton.getOutboundDepartureAirport(), mToggledButton.getOutboundArrivalAirport(),
+								"%", "modalcontainer", false );
+						return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
 					}
 				}
 				else
 				{
 					//  this is the first button, toggle it!
-					mToggledButton = new ToggledButton( lValues[ 3 ], lValues[ 0 ], lValues[ 1 ], lValues[ 2 ] );
+					mToggledButton = lTB;
 					String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList( mToggledButton ),
-							lValues[ 1 ], lValues[ 2 ], mReturnCheckboxChecked );
+							lTB.getOutboundDepartureAirport(), lTB.getOutboundArrivalAirport(), mReturnCheckboxChecked );
 					return lGetCollectedDepartureDateList;
 				}
 				// recolor or filter the buttons
 			}
 			else
 			{
-				String[] lHtmlContent = GetHtmlContent( lValues[ 3 ], "", lValues[ 0 ],
-						//mSelectedDepartureAirport, mSelectedArrivalAirport, "%", "modalcontainer", true );
-						lValues[ 1 ], lValues[ 2 ], "%", "modalcontainer", true );
+				String[] lHtmlContent = GetHtmlContent( lTB.getDatetime(), "", lTB.getAirline(),
+						lTB.getOutboundDepartureAirport(), lTB.getOutboundArrivalAirport(),
+						"%", "modalcontainer", true );
 				return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
 			}
 		}

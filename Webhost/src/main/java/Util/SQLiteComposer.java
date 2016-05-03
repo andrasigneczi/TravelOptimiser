@@ -88,7 +88,8 @@ public class SQLiteComposer implements SQLComposer
 		String lReturnValue = lQueryTemlate;
 		if( aReturnCheckboxChecked )
 		{
-
+			lReturnValue = lReturnValue.replace( "\t\tAND TDR_PT.OutboundTrip='false'\n", "" );
+			lReturnValue = lReturnValue.replace( "\t\tAND TDR_PT.OutboundTrip='true'\n", "" );
 		}
 
 		if( aSelectedDepartureAirport.length() > 1 && aSelectedArrivalAirport.length() > 1 )
