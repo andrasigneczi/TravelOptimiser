@@ -14,25 +14,46 @@ public class ToggledButton
 		mOutbound    = aOutbound;
 	}
 
-	public boolean equals( ToggledButton aToggledButton )
+	@Override
+	public boolean equals( Object aObject )
 	{
-		if( mAirline.equals( aToggledButton.getAirline()) &&
-				mDatetime.equals( aToggledButton.getDatetime()))
+		boolean lSame = false;
+
+		if( aObject != null && aObject instanceof ToggledButton )
 		{
-			if( mOutbound == aToggledButton.mOutbound )
+			ToggledButton aToggledButton = (ToggledButton)aObject;
+			if( mAirline.equals( aToggledButton.getAirline() ) &&
+					mDatetime.equals( aToggledButton.getDatetime() ) )
 			{
-				if( mLeavingFrom.equals( aToggledButton.getLeavingFrom() ) &&
-						mGoingTo.equals( aToggledButton.getGoingTo() ) )
-					return true;
-			}
-			else
-			{
-				if( mLeavingFrom.equals( aToggledButton.getGoingTo() ) &&
-						mGoingTo.equals( aToggledButton.getLeavingFrom() ) )
-				return true;
+				if( mOutbound == aToggledButton.mOutbound )
+				{
+					if( mLeavingFrom.equals( aToggledButton.getLeavingFrom() ) &&
+							mGoingTo.equals( aToggledButton.getGoingTo() ) )
+						lSame = true;
+				}
+				else
+				{
+					if( mLeavingFrom.equals( aToggledButton.getGoingTo() ) &&
+							mGoingTo.equals( aToggledButton.getLeavingFrom() ) )
+						lSame = true;
+				}
 			}
 		}
-		return false;
+		return lSame;
+	}
+
+	@Override
+	public String toString()
+	{
+		return getAirline() + "|" +
+				getDatetime() + "|" +
+				getOutboundDepartureAirport() + "|" +
+				getOutboundArrivalAirport();
+	}
+
+	@Override
+	public int hashCode() {
+		return toString().hashCode();
 	}
 
 	public String getOutboundDepartureAirport()

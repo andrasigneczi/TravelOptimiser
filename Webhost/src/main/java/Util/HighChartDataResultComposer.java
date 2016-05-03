@@ -50,8 +50,13 @@ public class HighChartDataResultComposer extends DataResultComposer
 		mFoundCurrency.add( lCurrency );
 
 		lValue = lValue.replace( ",", "." );
-		lValue.replace( " ", "" );
-		double lDValue = Double.parseDouble( lValue );
+		//lValue = lValue.replace( " ", "" );
+		StringBuffer lBuffer = new StringBuffer();
+		for( int i = 0; i < lValue.length(); i++ )
+			if(( lValue.charAt( i ) >= '0' && lValue.charAt( i ) <= '9') ||
+				lValue.charAt( i ) == '.' )
+				lBuffer.append( lValue.charAt( i ));
+		double lDValue = Double.parseDouble( lBuffer.toString() );
 
 		aDate = aDate.replace( " ", "T" );
 		if( mValues.size() < 2 )
