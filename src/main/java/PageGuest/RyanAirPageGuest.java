@@ -18,8 +18,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
-import static Util.DatetimeHelper.CreateRyanairCalendarHeader;
-
 /**
  * Created by Andras on 15/03/2016.
  */
@@ -262,6 +260,67 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         }
     }
 
+    private ArrayList<TravelData_RESULT.TravelData_PossibleTrips> CollectDatas_Trips( DOMElement lFlightResultBlock, TravelData_RESULT.TravelData_PossibleTrips aTrip )
+    {
+        java.util.List<DOMElement> lFlightBasic = lFlightResultBlock.findElements(By.className("flight-basic"));
+        int lCellIndex = 0;
+        TravelData_RESULT.TravelData_PossibleTrips lTrip = null;
+        ArrayList<TravelData_RESULT.TravelData_PossibleTrips> lTrips = new ArrayList<TravelData_RESULT.TravelData_PossibleTrips>();
+
+        for (DOMElement lFlightBasicElement : lFlightBasic)
+        {
+            java.util.List<DOMElement> lTimes = lFlightBasicElement.findElements(By.className("time ng-binding"));
+            for (DOMElement lTimeElement : lTimes)
+            {
+                String lTime = lTimeElement.getInnerText();
+                switch (lCellIndex % 2)
+                {
+                    case 0: // outbound departure time
+                        lTrip = (TravelData_RESULT.TravelData_PossibleTrips)aTrip.clone();
+                        lTrip.mDepartureDatetime += " " + lTime;
+                        break;
+                    case 1: // outbound arrival time
+                        lTrip.mArrivalDatetime += " " + lTime;
+                        lTrips.add( lTrip );
+                        break;
+                }
+                lCellIndex++;
+            }
+        }
+
+        java.util.List<DOMElement> lPrices = lFlightResultBlock.findElements(By.className("price ng-binding"));
+        lCellIndex = 0;
+        for (DOMElement lPriceElement : lPrices)
+        {
+            String lPrice = lPriceElement.getInnerText();
+            // TODO: fix this process, because it's good only in case of 1 result trip
+            switch (lCellIndex % 2)
+            {
+                case 0: // outbound normal price
+                    lTrip = lTrips.get( lCellIndex / 2 );
+                    lTrip.mPrices_BasicFare_Normal = lPrice;
+                    break;
+                case 1: // outbound business price
+                    lTrip.mPrices_PlusFare_Normal = lPrice;
+                    break;
+            }
+            lCellIndex++;
+        }
+        return lTrips;
+    }
+
+    private void ConvertToWizzairFormatAndStore( ArrayList<TravelData_RESULT.TravelData_PossibleTrips> aTrips )
+    {
+        for( TravelData_RESULT.TravelData_PossibleTrips lTrip : aTrips )
+        {
+            lTrip.mArrivalDatetime = DatetimeHelper.ConvertFromRyanairFormat(lTrip.mArrivalDatetime);
+            lTrip.mDepartureDatetime = DatetimeHelper.ConvertFromRyanairFormat(lTrip.mDepartureDatetime);
+            lTrip.mPrices_BasicFare_Normal = CurrencyHelper.ConvertFromRyanairFormat(lTrip.mPrices_BasicFare_Normal);
+            lTrip.mPrices_PlusFare_Normal = CurrencyHelper.ConvertFromRyanairFormat(lTrip.mPrices_PlusFare_Normal);
+            mTravelDataResult.mTrips.add(lTrip);
+        }
+    }
+
     private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
     {
         // TODO: the departure/arrival datetime's year must be filled
@@ -278,7 +337,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         int lCellIndex = 0;
         for (DOMElement lFlightBodyElement : lFlightsBodyElements)
         {
-            if( lCellIndex == 0 )
+            if (lCellIndex == 0)
             {
                 lTripOutbound = new TravelData_RESULT.TravelData_PossibleTrips();
                 lTripOutbound.mOutboundTrip = true;
@@ -293,7 +352,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 //                lTripOutbound.mPrices_BasicFare_Normal = ((DOMElement) lPrice1.get(0)).getInnerText();
                 lCellIndex++;
             }
-            else if( lCellIndex == 1 )
+            else if (lCellIndex == 1)
             {
                 lTripReturn = new TravelData_RESULT.TravelData_PossibleTrips();
                 lTripReturn.mOutboundTrip = false;
@@ -312,75 +371,16 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
             }
         }
 
-        java.util.List<DOMElement> lFlightBasic = document.findElements(By.className("flight-basic"));
-        lCellIndex = 0;
-        for (DOMElement lFlightBasicElement : lFlightBasic)
-        {
-            java.util.List<DOMElement> lTimes = lFlightBasicElement.findElements(By.className("time ng-binding"));
-            for (DOMElement lTimeElement : lTimes)
-            {
-                String lTime = lTimeElement.getInnerText();
-                // TODO: fix this process, because it's good only in case of 1 result trip
-                switch (lCellIndex)
-                {
-                    case 0: // outbound departure time
-                        lTripOutbound.mDepartureDatetime += " " + lTime;
-                        break;
-                    case 1: // outbound arrival time
-                        lTripOutbound.mArrivalDatetime += " " + lTime;
-                        break;
-                    case 2: // return departure time
-                        lTripReturn.mDepartureDatetime += " " + lTime;
-                        break;
-                    case 3: // return arrival time
-                        lTripReturn.mArrivalDatetime += " " + lTime;
-                        break;
-                }
-                lCellIndex++;
-            }
-        }
 
-        java.util.List<DOMElement> lPrices = document.findElements(By.className("price ng-binding"));
-        lCellIndex = 0;
-        for (DOMElement lPriceElement : lPrices)
-        {
-            String lPrice = lPriceElement.getInnerText();
-            // TODO: fix this process, because it's good only in case of 1 result trip
-            switch (lCellIndex)
-            {
-                case 0: // outbound normal price
-                    lTripOutbound.mPrices_BasicFare_Normal = lPrice;
-                    break;
-                case 1: // outbound business price
-                    lTripOutbound.mPrices_PlusFare_Normal = lPrice;
-                    break;
-                case 2: // return norml price
-                    lTripReturn.mPrices_BasicFare_Normal = lPrice;
-                    break;
-                case 3: // return business price
-                    lTripReturn.mPrices_PlusFare_Normal = lPrice;
-                    break;
-            }
-            lCellIndex++;
-        }
+        DOMElement lFlightOutbound = document.findElement(By.id( "outbound" ));
+        DOMElement lFlightInbound = document.findElement(By.id( "inbound" ));
 
-        lTripOutbound.mArrivalDatetime = DatetimeHelper.ConvertFromRyanairFormat(lTripOutbound.mArrivalDatetime);
-        lTripOutbound.mDepartureDatetime = DatetimeHelper.ConvertFromRyanairFormat(lTripOutbound.mDepartureDatetime);
-        lTripReturn.mArrivalDatetime = DatetimeHelper.ConvertFromRyanairFormat(lTripReturn.mArrivalDatetime);
-        lTripReturn.mDepartureDatetime = DatetimeHelper.ConvertFromRyanairFormat(lTripReturn.mDepartureDatetime);
+        ArrayList<TravelData_RESULT.TravelData_PossibleTrips> lOutboundTrips = CollectDatas_Trips( lFlightOutbound, lTripOutbound );
+        ArrayList<TravelData_RESULT.TravelData_PossibleTrips> lInboundTrips = CollectDatas_Trips( lFlightInbound, lTripReturn );
 
-        lTripOutbound.mPrices_BasicFare_Normal = CurrencyHelper.ConvertFromRyanairFormat(
-                lTripOutbound.mPrices_BasicFare_Normal);
-        lTripOutbound.mPrices_PlusFare_Normal = CurrencyHelper.ConvertFromRyanairFormat(
-                lTripOutbound.mPrices_PlusFare_Normal);
-        lTripReturn.mPrices_BasicFare_Normal = CurrencyHelper.ConvertFromRyanairFormat(
-                lTripReturn.mPrices_BasicFare_Normal);
-        lTripReturn.mPrices_PlusFare_Normal = CurrencyHelper.ConvertFromRyanairFormat(
-                lTripReturn.mPrices_PlusFare_Normal);
-
-        mTravelDataResult.mTrips.add(lTripOutbound);
-        mTravelDataResult.mTrips.add(lTripReturn);
-        // ResultQueue.getInstance().push( mTravelDataResult );
+        ConvertToWizzairFormatAndStore( lOutboundTrips );
+        ConvertToWizzairFormatAndStore( lInboundTrips );
+        ResultQueue.getInstance().push( mTravelDataResult );
     }
 
     private void ClickDateOnTheCalendar(int aDay, int aStartX, int aStartY)
@@ -422,12 +422,12 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         ClickDateOnTheCalendar(iDay, 192 + 390, 636);
     }
 
-    private void SelectTheDateOnTheCalendars( String aDateTime )
+    private void SelectTheDateOnTheCalendars(String aDateTime)
     {
-        String lCalendarHeaderLeaving = DatetimeHelper.CreateRyanairCalendarHeader( aDateTime );
-        int lDay = DatetimeHelper.GetDayOfMonth( aDateTime );
+        String lCalendarHeaderLeaving = DatetimeHelper.CreateRyanairCalendarHeader(aDateTime);
+        int    lDay                   = DatetimeHelper.GetDayOfMonth(aDateTime);
 
-        while( true )
+        while (true)
         {
             mRobot.delay(1000);
 
@@ -441,31 +441,31 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
             lElement = (DOMElement) lNodeAtPoint.getNode();
             String lRightMonthYear = lElement.getInnerText();
 
-            System.out.println( "lCalendarHeaderLeaving: " + lCalendarHeaderLeaving + "\nlLeftMonthYear: " +
-                                        lLeftMonthYear + "\nlRightMonthYear: " + lRightMonthYear );
+            System.out.println("lCalendarHeaderLeaving: " + lCalendarHeaderLeaving + "\nlLeftMonthYear: " +
+                                       lLeftMonthYear + "\nlRightMonthYear: " + lRightMonthYear);
             int lLeftCompare = DatetimeHelper.CompareRyanairCalendarHeaders(lCalendarHeaderLeaving,
-                                                                            lLeftMonthYear );
+                                                                            lLeftMonthYear);
             if (lLeftCompare == -1)
             { // page on the left calendar
                 MouseLeftClick(154, 710);
             }
             else if (lLeftCompare == 0)
             { // click on the left calendar's day number
-                ClickDateOnTheLeftCalendar( lDay );
+                ClickDateOnTheLeftCalendar(lDay);
                 mRobot.delay(1000);
                 break;
             }
             else if (lLeftCompare == 1)
             {
                 int lRightCompare = DatetimeHelper.CompareRyanairCalendarHeaders(lCalendarHeaderLeaving,
-                                                                                 lRightMonthYear );
+                                                                                 lRightMonthYear);
                 if (lRightCompare == 1)
                 { // page on the right calendar
                     MouseLeftClick(910, 710);
                 }
                 else if (lRightCompare == 0)
                 { // click on the right calendar's day number
-                    ClickDateOnTheRightCalendar( lDay );
+                    ClickDateOnTheRightCalendar(lDay);
                     mRobot.delay(1000);
                     break;
                 }
@@ -497,10 +497,10 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         PressDelete();
         TypeText(lAirportLabel2);
 
-        SelectTheDateOnTheCalendars( aTravelDataInput.mDepartureDay );
-        SelectTheDateOnTheCalendars( aTravelDataInput.mReturnDay );
+        SelectTheDateOnTheCalendars(aTravelDataInput.mDepartureDay);
+        SelectTheDateOnTheCalendars(aTravelDataInput.mReturnDay);
 
-        mRobot.delay(10000);
+        //mRobot.delay(1000);
 
         // passengers
         // one way / return ticket
@@ -559,9 +559,9 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
                     CollectDatas(lDOMDocument, lTravelDataInput);
                     mPageType = PageType.PT_UNKNOWN;
                     new BrowserStateInit().doAction(this);
-                    //mBrowser.loadURL("http://www.ryanair.com");
+                    mBrowser.loadURL("http://www.ryanair.com");
                     Sleep(5000);
-                    //new BrowserStateReadyToSearch(lDOMDocument).doAction(this);
+                    new BrowserStateReadyToSearch(lDOMDocument).doAction(this);
                 }
                 else if (lBrowserState.equals("BrowserStateReadyToSearch"))
                 {

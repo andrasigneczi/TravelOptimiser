@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class TravelData_RESULT
 {
-	public static class TravelData_PossibleTrips
+	public static class TravelData_PossibleTrips implements Cloneable
 	{
 		public String mDepartureDatetime;    // 2016.03.25 17:10
 		public String mArrivalDatetime;      // 2016.03.25 22:10
@@ -13,6 +13,20 @@ public class TravelData_RESULT
 		public String mPrices_PlusFare_Normal;
 		public String mPrices_PlusFare_Discount;
 		public boolean mOutboundTrip;
+
+		@Override
+		public Object clone()
+		{
+			try
+			{
+				return super.clone();
+			}
+			catch (CloneNotSupportedException e)
+			{
+				e.printStackTrace();
+			}
+			return null;
+		}
 	}
 
 	public TravelData_RESULT()

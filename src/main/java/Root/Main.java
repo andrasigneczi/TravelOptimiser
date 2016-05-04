@@ -36,26 +36,26 @@ public class Main
             lGuest.DoSearch( "Dublin", "Faro", "2016.07.31.", "2017.01.04." );
 
             //lGuest.DoSearchFromConfig();
-/*
-            lGuest.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
+
+/*            lGuest.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
             lGuest.DoSearch( "SOF", "HHN", "2016.08.06.", "2016.08.09." );
             lGuest.DoSearch( "CRL", "BUD", "2016.07.08.", "2016.07.11." );
             lGuest.DoSearch( "CRL", "BUD", "2016.07.22.", "2016.07.25." );
             lGuest.DoSearch( "BUD", "CRL", "2016.07.11.", "" );
 */
             FileWriterAgent lFWA         = new FileWriterAgent("database.html");
-            //SQLiteAgent     lSQLiteAgent = new SQLiteAgent();
-            //lSQLiteAgent.InitializeDatabase();
-            //lFWA.setNextAgent(lSQLiteAgent);
+            SQLiteAgent     lSQLiteAgent = new SQLiteAgent();
+            lSQLiteAgent.InitializeDatabase();
+            lFWA.setNextAgent(lSQLiteAgent);
 
-            int i = 60;
+            int i = 40;
             while( i > 0 )
             {
                 TravelData_RESULT lResult = ResultQueue.getInstance().pop();
                 if (lResult != null)
                 {
                     lFWA.Archive(lResult);
-                    i = 60;
+                    i = 40;
                     continue;
                 }
                 Thread.sleep(1000);
