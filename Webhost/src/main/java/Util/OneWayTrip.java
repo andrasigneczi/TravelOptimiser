@@ -3,9 +3,9 @@ package Util;
 /**
  * Created by Andras on 28/04/2016.
  */
-public class ToggledButton
+public class OneWayTrip
 {
-	public ToggledButton( String aDatetime, String aAirline, String aLeavingFrom, String aGoingTo, boolean aOutbound )
+	public OneWayTrip( String aDatetime, String aAirline, String aLeavingFrom, String aGoingTo, boolean aOutbound )
 	{
 		mDatetime    = aDatetime;
 		mAirline     = aAirline;
@@ -19,9 +19,9 @@ public class ToggledButton
 	{
 		boolean lSame = false;
 
-		if( aObject != null && aObject instanceof ToggledButton )
+		if( aObject != null && aObject instanceof OneWayTrip )
 		{
-			ToggledButton aToggledButton = (ToggledButton)aObject;
+			OneWayTrip aToggledButton = (OneWayTrip)aObject;
 			if( mAirline.equals( aToggledButton.getAirline() ) &&
 					mDatetime.equals( aToggledButton.getDatetime() ) )
 			{

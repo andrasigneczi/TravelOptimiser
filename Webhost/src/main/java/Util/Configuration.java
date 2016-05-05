@@ -42,6 +42,7 @@ public class Configuration
 		mValidSearchNodes.add( "NearbyAirports" );
 		mValidSearchNodes.add( "ReturnTicket" );
 		mValidSearchNodes.add( "Currency" );
+		mValidSearchNodes.add( "BoughtTicket" );
 		ParseConfigurationFile();
 	}
 

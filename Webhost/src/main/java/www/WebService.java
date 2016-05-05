@@ -30,7 +30,7 @@ public class WebService
 	private String mSelectedDepartureAirport = "-";
 	private String mSelectedArrivalAirport   = "-";
 	private boolean mReturnCheckboxChecked   = false;
-	private ToggledButton mToggledButton = null;
+	private OneWayTrip mToggledButton = null;
 
 	public WebService()
 	{
@@ -77,8 +77,11 @@ public class WebService
 	 * @param aOneWay         one way or return ticket
 	 * @return String [], first element the div of the chart, second element the javascript of the chart
 	 */
-	private String [] GetHtmlContent( final String aDateTime1, final String aDateTime2, final String aAirline, final String aAirportFrom,
-	                                  final String aAirportTo, final String aCurrency, final String aHtmlTagId, final boolean aOneWay )
+	private String [] GetHtmlContent( final String aDateTime1, final String aDateTime2,
+	                                  final String aAirline, final String aAirportFrom,
+	                                  final String aAirportTo, final String aCurrency,
+	                                  final String aHtmlTagId, final boolean aOneWay,
+	                                  final ArrayList<TravelData_INPUT.BoughtTicket> aBoughtTickets )
 	{
 		HighChartDataResultComposer lHighChartDataResultComposerOutbound = new HighChartDataResultComposer();
 		Hashtable<String,String> lResult1 = SQLiteDataProvider.getInstance().GetTripData( aDateTime1/*2016-07-16 06:30*/, aAirline, aAirportFrom, aAirportTo, aCurrency, lHighChartDataResultComposerOutbound );
@@ -93,6 +96,19 @@ public class WebService
 		String lAirportTo = aAirportTo;
 		if( aAirportTo.equals( "-" ))
 			lAirportTo = lResult1.get( "AirportCode_GoingTo" );
+
+		if( aBoughtTickets != null )
+		{
+			for( TravelData_INPUT.BoughtTicket lTicket : aBoughtTickets )
+			{
+				HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
+				lHCDRCExtra.add( lTicket.mDatetime, lTicket.mPrice, "%" );
+				String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", lTicket.mName )
+						.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() );
+				lSeries1 += ",\n" + lSeries;
+			}
+
+		}
 
 		String lJS;
 		if( !aOneWay )
@@ -148,7 +164,7 @@ public class WebService
 			lTDI.mReturnTicket = ( lTDI.mReturnDatetime.length() != 0 );
 			String[] lContent = GetHtmlContent( lTDI.mDepartureDatetime, lTDI.mReturnDatetime, lTDI.mAirline,
 					lTDI.mAirportCode_LeavingFrom, lTDI.mAirportCode_GoingTo,
-					lTDI.mCurrency, "container" + lContainerIndex++, !lTDI.mReturnTicket );
+					lTDI.mCurrency, "container" + lContainerIndex++, !lTDI.mReturnTicket, lTDI.mBoughtTickets );
 			lScriptCotent += lContent[ 1 ];
 			lDivContent += lContent[ 0 ];
 		}
@@ -212,7 +228,7 @@ public class WebService
 		{
 			String[] lValues = aParam.split( "\\|" );
 			// lValues = airline, leavingfrom, goingto, outbound, datetime
-			ToggledButton lTB = new ToggledButton(
+			OneWayTrip lTB = new OneWayTrip(
 					lValues[ 4 ], lValues[ 0 ],
 					lValues[ 1 ], lValues[ 2 ],
 					Boolean.parseBoolean( lValues[ 3 ] ));
@@ -230,7 +246,7 @@ public class WebService
 						//  with the second button we have a return trip, display it
 						String[] lHtmlContent = GetHtmlContent( mToggledButton.getDatetime(), lTB.getDatetime(), lTB.getAirline(),
 								mToggledButton.getOutboundDepartureAirport(), mToggledButton.getOutboundArrivalAirport(),
-								"%", "modalcontainer", false );
+								"%", "modalcontainer", false, null );
 						return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
 					}
 				}
@@ -248,7 +264,7 @@ public class WebService
 			{
 				String[] lHtmlContent = GetHtmlContent( lTB.getDatetime(), "", lTB.getAirline(),
 						lTB.getOutboundDepartureAirport(), lTB.getOutboundArrivalAirport(),
-						"%", "modalcontainer", true );
+						"%", "modalcontainer", true, null );
 				return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
 			}
 		}

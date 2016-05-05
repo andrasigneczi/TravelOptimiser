@@ -12,21 +12,21 @@ import java.util.HashSet;
  */
 public class HtmlListFormatterButtonList implements HtmlListFormatter
 {
-	ToggledButton mToggledButton = null;
+	OneWayTrip mToggledButton = null;
 	// String[] datetime, airline, AirportCode_LeavingFrom, AirportCode_GoingTo, OutboundTrip
 	//ArrayList<String[]> mDepartureDates = new ArrayList<String[]>();
-	ArrayList<ToggledButton> mDepartureDates = new ArrayList<>();
+	ArrayList<OneWayTrip> mDepartureDates = new ArrayList<>();
 
 			// The database can define a trip two different ways because of the outboundtrip flag,
 	// so I have to make the frips unique here.
-	HashSet<ToggledButton> mTrips = new HashSet<>();
+	HashSet<OneWayTrip> mTrips = new HashSet<>();
 
 	public HtmlListFormatterButtonList()
 	{
 		super();
 	}
 
-	public HtmlListFormatterButtonList( ToggledButton aToggledButton )
+	public HtmlListFormatterButtonList( OneWayTrip aToggledButton )
 	{
 		mToggledButton = aToggledButton;
 	}
@@ -40,7 +40,7 @@ public class HtmlListFormatterButtonList implements HtmlListFormatter
 	@Override
 	public void add( String[] aValues )
 	{
-		ToggledButton lTB = new ToggledButton(
+		OneWayTrip lTB = new OneWayTrip(
 				aValues[ 0 ], aValues[ 1 ],
 				aValues[ 2 ], aValues[ 3 ],
 				Boolean.parseBoolean( aValues[ 4 ] ) );
@@ -72,7 +72,7 @@ public class HtmlListFormatterButtonList implements HtmlListFormatter
 
 		String lClass = "";
 		final long lFiveDays = 5 * 24 * 3600 * 1000;
-		for( ToggledButton lTB : mDepartureDates )
+		for( OneWayTrip lTB : mDepartureDates )
 		{
 			LocalDateTime lDateTime = LocalDateTime.parse( lTB.getDatetime(), lDTFormatter);
 			// TODO: what if it is in different time zone?

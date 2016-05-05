@@ -10,6 +10,12 @@
                 text: '[SUBTITLE]'
             },
             xAxis: {
+               crosshair: {
+                    width: 1,
+                    color: 'blue',
+                    snap: false,
+                    zIndex: -1
+                },
                 type: 'datetime',
                 dateTimeLabelFormats: {
                     day: '%e. %b',
@@ -21,9 +27,15 @@
                 }
             },
             yAxis: {
-                title: {
-                    text: 'Price ([DEVIZA])'
+               crosshair: {
+                    width: 1,
+                    color: 'blue',
+                    snap: false,
+                    zIndex: -1
                 },
+                title: {
+                        text: 'Price ([DEVIZA])'
+                    },
                 min: 0
             },
             tooltip: {
