@@ -482,7 +482,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         mInsets = mFrame.getInsets();
 
         // click into the leaving from field
-        MouseLeftClick(210, 560);
+        MouseLeftClick(210, 450);
 
         // fill the leaving from field
         PressCtrlA();
