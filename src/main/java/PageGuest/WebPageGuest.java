@@ -13,12 +13,13 @@ import java.util.regex.Pattern;
  */
 public abstract class WebPageGuest
 {
-    private Hashtable<String, String> mAirports;
-    //protected TravelData_INPUT  mTravelDataInput = null;
-    protected TravelData_RESULT mTravelDataResult = null;
-    protected BrowserState      mBrowserState     = null;
+    private   Hashtable<String, String> mAirports;
+    protected TravelData_RESULT         mTravelDataResult = null;
+    protected BrowserState              mBrowserState     = null;
+    protected Robot                     mRobot            = null;
     private final String mAirline;
-    protected       Robot  mRobot                    = null;
+    protected Insets mInsets;
+
     final protected String mGetElementByXPathPattern = "document.evaluate('%s', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue";
 
     public abstract void DoSearch(String aAirportCode_Way_From, String aAirportCode_Way_To,
@@ -43,6 +44,7 @@ public abstract class WebPageGuest
         {
             e.printStackTrace();
         }
+        mInsets = new Insets(0, 0, 0, 0);
     }
 
     private void InitAirportList()
@@ -102,9 +104,14 @@ public abstract class WebPageGuest
         return mAirline;
     }
 
+    public void MouseMove( int aX, int aY)
+    {
+        mRobot.mouseMove( aX + mInsets.left, aY + mInsets.top );
+    }
+
     public void MouseLeftClick( int aX, int aY)
     {
-        mRobot.mouseMove(aX, aY);
+        mRobot.mouseMove(aX + mInsets.left, aY + mInsets.top);
         mRobot.mousePress(InputEvent.BUTTON1_MASK);
         mRobot.mouseRelease(InputEvent.BUTTON1_MASK);
     }

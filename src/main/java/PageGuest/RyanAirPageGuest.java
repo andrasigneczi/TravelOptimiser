@@ -30,6 +30,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
     Browser mBrowser       = null;
     Object  mMutex         = new Object();
     boolean mThreadStopped = true;
+    JFrame mFrame = null;
 
     enum PageType
     {
@@ -176,14 +177,14 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 //		addressPane.add(new JLabel(" URL: "), BorderLayout.WEST);
 //		addressPane.add(addressBar, BorderLayout.CENTER);
 
-        JFrame frame = new JFrame("Travel Optimizer");
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        mFrame = new JFrame("Travel Optimizer");
+        mFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 //		frame.add(addressPane, BorderLayout.NORTH);
-        frame.add(view, BorderLayout.CENTER);
-        frame.setSize(1152, 1000);
-        frame.setLocation(0, 0);
+        mFrame.add(view, BorderLayout.CENTER);
+        mFrame.setSize(1152, 1000);
+        mFrame.setLocation(0, 0);
         //frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        mFrame.setVisible(true);
         System.out.println("InitBrowser()");
         return false;
     }
@@ -293,7 +294,6 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         for (DOMElement lPriceElement : lPrices)
         {
             String lPrice = lPriceElement.getInnerText();
-            // TODO: fix this process, because it's good only in case of 1 result trip
             switch (lCellIndex % 2)
             {
                 case 0: // outbound normal price
@@ -323,7 +323,6 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 
     private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
     {
-        // TODO: the departure/arrival datetime's year must be filled
         mTravelDataResult = new TravelData_RESULT();
         mTravelDataResult.mAirline = aTravelDataInput.mAirline;
         mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
@@ -399,7 +398,8 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
                         if (lDay.equals(lElement.getInnerText()))
                         {
                             // The robot and the JxBrowser's positioning is different, we have to correct it.
-                            MouseLeftClick(aStartX + lX * 44 + 15, aStartY + lY * 41 + 32);
+                            MouseLeftClick(aStartX + lX * 44 -4, aStartY + lY * 41 - 6 );
+                            //mRobot.mouseMove( aStartX + lX * 44 + 5, aStartY + lY * 41 + 32 );
                             return;
                         }
                     }
@@ -414,12 +414,12 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 
     private void ClickDateOnTheLeftCalendar(int iDay)
     {
-        ClickDateOnTheCalendar(iDay, 192, 636);
+        ClickDateOnTheCalendar(iDay, 212, 661);
     }
 
     private void ClickDateOnTheRightCalendar(int iDay)
     {
-        ClickDateOnTheCalendar(iDay, 192 + 390, 636);
+        ClickDateOnTheCalendar(iDay, 212 + 390, 661);
     }
 
     private void SelectTheDateOnTheCalendars(String aDateTime)
@@ -432,12 +432,12 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
             mRobot.delay(1000);
 
             // read the left calendar header
-            DOMNodeAtPoint lNodeAtPoint   = mBrowser.getNodeAtPoint(222, 550);
+            DOMNodeAtPoint lNodeAtPoint   = mBrowser.getNodeAtPoint(222, 560);
             DOMElement     lElement       = (DOMElement) lNodeAtPoint.getNode();
             String         lLeftMonthYear = lElement.getInnerText();
 
             // read the right calendar header
-            lNodeAtPoint = mBrowser.getNodeAtPoint(600, 550);
+            lNodeAtPoint = mBrowser.getNodeAtPoint(600, 560);
             lElement = (DOMElement) lNodeAtPoint.getNode();
             String lRightMonthYear = lElement.getInnerText();
 
@@ -447,7 +447,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
                                                                             lLeftMonthYear);
             if (lLeftCompare == -1)
             { // page on the left calendar
-                MouseLeftClick(154, 710);
+                MouseLeftClick(154, 695);
             }
             else if (lLeftCompare == 0)
             { // click on the left calendar's day number
@@ -461,7 +461,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
                                                                                  lRightMonthYear);
                 if (lRightCompare == 1)
                 { // page on the right calendar
-                    MouseLeftClick(910, 710);
+                    MouseLeftClick(910, 695);
                 }
                 else if (lRightCompare == 0)
                 { // click on the right calendar's day number
@@ -478,19 +478,23 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         String lAirportLabel  = aTravelDataInput.mAirportCode_LeavingFrom + "\n";
         String lAirportLabel2 = aTravelDataInput.mAirportCode_GoingTo + "\n";
 
-        mRobot.delay(3000);
+        Sleep(4000);
+        mInsets = mFrame.getInsets();
+
         // click into the leaving from field
-        MouseLeftClick(175, 460);
+        MouseLeftClick(210, 560);
 
         // fill the leaving from field
+        PressCtrlA();
+        Sleep(1000);
         PressCtrlA();
         PressDelete();
         TypeText(lAirportLabel);
 
-        mRobot.delay(500);
+        Sleep(500);
 
         // click into the going to field
-        MouseLeftClick(500, 460);
+        MouseLeftClick(530, 450);
 
         // fill the going to field
         PressCtrlA();
@@ -512,7 +516,7 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         Sleep(1000 * Integer.parseInt(lSleep));
 
         // click the Let's go (search) button
-        MouseLeftClick(834, 513);
+        MouseLeftClick(834, 500);
     }
 
     public void run()

@@ -7,6 +7,9 @@ import Storage.FileWriterAgent;
 import Storage.SQLiteAgent;
 import org.apache.log4j.Logger;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 /**
  * Created by andras.igneczi on 10/03/2016.
  */
@@ -23,6 +26,9 @@ public class Main
             //lSQLiteAgent2.InitializeDatabase();
             //HelloWorld.SQLiteHelloWorld.Test7();
             //HelloWorld.XmlHelloWorld.Test();
+            //HelloWorld.JxBrowserHelloWorld.HelloWorld();
+            //Thread.sleep(5000);
+            //TestDatetimeParser();
             //System.exit(0);
 
             //HelloWorld.JxBrowserHelloWorld.HelloWorld();
@@ -48,14 +54,14 @@ public class Main
             lSQLiteAgent.InitializeDatabase();
             lFWA.setNextAgent(lSQLiteAgent);
 
-            int i = 40;
+            int i = 60;
             while( i > 0 )
             {
                 TravelData_RESULT lResult = ResultQueue.getInstance().pop();
                 if (lResult != null)
                 {
                     lFWA.Archive(lResult);
-                    i = 40;
+                    i = 60;
                     continue;
                 }
                 Thread.sleep(1000);
@@ -111,5 +117,13 @@ public class Main
         log.warn("This is warn : " + parameter);
         log.error("This is error : " + parameter);
         log.fatal("This is fatal : " + parameter);
+    }
+
+    private static void TestDatetimeParser()
+    {
+        String lDatetime = "2016-07-31T10:05:00";
+        DateTimeFormatter lFormatterWizzair = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        LocalDateTime lLocalDateTime = LocalDateTime.parse(lDatetime, lFormatterWizzair);
+        return;
     }
 }

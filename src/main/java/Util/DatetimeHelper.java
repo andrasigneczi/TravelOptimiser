@@ -34,7 +34,7 @@ public class DatetimeHelper
         lDatetime = lDatetime.substring( 4 );
         String [] lTime = lDatetime.split( ":" );
 
-        return String.format( "%04d-%02d-%02d'T'%02d:%02d:00", 2016, lMonth + 1, lDay, Integer.parseInt( lTime[ 0 ]), Integer.parseInt( lTime[ 1 ]) );
+        return String.format( "%04d-%02d-%02dT%02d:%02d:00", 2016, lMonth + 1, lDay, Integer.parseInt( lTime[ 0 ]), Integer.parseInt( lTime[ 1 ]) );
     }
 
     /**
