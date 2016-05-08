@@ -1,5 +1,6 @@
 package Storage;
 
+import PageGuest.TravelDataResultComposer;
 import PageGuest.TravelData_RESULT;
 
 import java.io.File;
@@ -30,7 +31,7 @@ public class FileWriterAgent extends ArchiverAgent
 	@Override
 	protected void WriteData( TravelData_RESULT aResult )
 	{
-		TravelDataResultComposer_HTML lComposer = new TravelDataResultComposer_HTML( aResult );
+		TravelDataResultComposer_HTML lComposer = (TravelDataResultComposer_HTML)TravelDataResultComposer.Create( aResult, "html" );
 		try
 		{
 			String lTableBodyAndClosingTags = lComposer.toFormattedString() + lComposer.getClosingTags();

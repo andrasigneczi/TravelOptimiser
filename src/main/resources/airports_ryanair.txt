@@ -1,18 +1,18 @@
-﻿NNN Aarhus
-NNN Agadir
-NNN Alghero
-NNN Alicante
-NNN Almeria
-NNN Amsterdam
-NNN Ancona
-NNN Athens
-NNN Baden-Baden
-NNN Barcelona
-NNN Barcelona (GRO)
-NNN Barcelona (REU)
-NNN Bari
-NNN Basel
-NNN Belfast International
+﻿AAR Aarhus
+AGA Agadir
+AHO Alghero
+ALC Alicante
+LEI Almeria
+AMS Amsterdam
+AOI Ancona
+ATH Athens
+FKB Baden-Baden
+BCN Barcelona
+GRO Barcelona (GRO)
+REU Barcelona (REU)
+BRI Bari
+BSL Basel
+BFS Belfast International
 NNN Bergerac
 NNN Berlin (SXF)
 NNN Beziers

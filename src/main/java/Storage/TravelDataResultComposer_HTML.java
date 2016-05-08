@@ -18,6 +18,7 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 {
 	private DateTimeFormatter mFormatterWizzair;
 	private String [] mMonthNames;
+
 	public TravelDataResultComposer_HTML(  TravelData_RESULT aResult )
 	{
 		super( aResult );
@@ -111,8 +112,7 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 	{
 		LocalDateTime lLocalDateTime = LocalDateTime.parse(aValue, mFormatterWizzair);
 
-		// TODO: why must I add 1 more hour to get the right time?
-		lLocalDateTime = lLocalDateTime.plusHours( 1 );
+		lLocalDateTime = DateTimeCorrection( lLocalDateTime );
 
 		// Unfortunatelly the month won't be get in short format
 		DateTimeFormatter lNewFormat = DateTimeFormatter.ofPattern( "E, dd (M) H:mm" );

@@ -1,5 +1,6 @@
 package Storage;
 
+import PageGuest.TravelDataResultComposer;
 import PageGuest.TravelData_RESULT;
 
 import java.sql.*;
@@ -99,7 +100,7 @@ public class SQLiteAgent extends ArchiverAgent
 
 	protected void WriteData( TravelData_RESULT aResult )
 	{
-		mComposer = new TravelDataResultComposer_LiteSQL( aResult );
+		mComposer = (TravelDataResultComposer_LiteSQL)TravelDataResultComposer.Create( aResult, "litesql" );
 		mResult = aResult;
 
 		int lSearchId = GetSearchId();

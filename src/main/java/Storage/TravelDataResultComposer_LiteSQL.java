@@ -23,8 +23,7 @@ public class TravelDataResultComposer_LiteSQL extends TravelDataResultComposer
 	{
 		LocalDateTime lLocalDateTime = LocalDateTime.parse(aValue, mFormatterWizzair);
 
-		// TODO: why must I add 1 more hour to get the right time?
-		lLocalDateTime = lLocalDateTime.plusHours( 1 );
+		lLocalDateTime = DateTimeCorrection( lLocalDateTime );
 
 		DateTimeFormatter lNewFormat = DateTimeFormatter.ofPattern( "yyyy-MM-dd HH:mm" );
 
