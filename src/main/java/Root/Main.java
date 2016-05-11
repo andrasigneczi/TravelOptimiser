@@ -7,12 +7,15 @@ import Storage.FileWriterAgent;
 import Storage.SQLiteAgent;
 import org.apache.log4j.Logger;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 /**
  * Created by andras.igneczi on 10/03/2016.
  */
 public class Main
 {
-    private static org.apache.log4j.Logger log = Logger.getLogger(Main.class);
+    private static org.apache.log4j.Logger mLogger = Logger.getLogger(Main.class);
 
     public static void main(String [] argv)
     {
@@ -64,7 +67,10 @@ public class Main
         }
         catch( Exception e )
         {
-            e.printStackTrace();
+            StringWriter lStringWriter = new StringWriter();
+            PrintWriter lPrintWriter = new PrintWriter(lStringWriter);
+            e.printStackTrace( lPrintWriter );
+            mLogger.error( "Unhandled exception: " + lStringWriter.toString() );
         }
 /*
         Root.SQLiteHelloWorld.Test1( new String[0] );
@@ -104,10 +110,10 @@ public class Main
 
     private static void runMe(String parameter)
     {
-        log.debug("This is debug : " + parameter);
-        log.info("This is info : " + parameter);
-        log.warn("This is warn : " + parameter);
-        log.error("This is error : " + parameter);
-        log.fatal("This is fatal : " + parameter);
+        mLogger.debug("This is debug : " + parameter);
+        mLogger.info("This is info : " + parameter);
+        mLogger.warn("This is warn : " + parameter);
+        mLogger.error("This is error : " + parameter);
+        mLogger.fatal("This is fatal : " + parameter);
     }
 }
