@@ -13,34 +13,34 @@ REU Barcelona (REU)
 BRI Bari
 BSL Basel
 BFS Belfast International
-NNN Bergerac
-NNN Berlin (SXF)
-NNN Beziers
-NNN Biarritz
-NNN Billund
-NNN Birmingham
-NNN Bologna
-NNN Bordeaux
-NNN Bournemouth
-NNN Bratislava
-NNN Bremen
-NNN Brest
-NNN Brindisi
-NNN Bristol
-NNN Brive
-NNN Brno
-NNN Brussels
-NNN Brussels (CRL)
-NNN Bucharest
-NNN Budapest
-NNN Bydgoszcz
-NNN Cagliari
-NNN Carcassonne
-NNN Cardiff
-NNN Castellon (Valencia)
-NNN Catania
-NNN Chania
-NNN Clermont
+EGC Bergerac
+SXF Berlin (SXF)
+BZR Beziers
+BIQ Biarritz
+BLL Billund
+BHX Birmingham
+BLQ Bologna
+BOD Bordeaux
+BOH Bournemouth
+BTS Bratislava
+BRE Bremen
+BES Brest
+BDS Brindisi
+BRS Bristol
+BVE Brive
+BRQ Brno
+BRU Brussels
+CRL Brussels (CRL)
+OTP Bucharest
+BUD Budapest
+BZG Bydgoszcz
+CAG Cagliari
+CCF Carcassonne
+CWL Cardiff
+VLC Castellon (Valencia)
+CTA Catania
+CHQ Chania
+CFE Clermont
 NNN Cologne
 NNN Comiso
 NNN Copenhagen
