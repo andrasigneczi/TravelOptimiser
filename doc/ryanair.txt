@@ -1,0 +1,2 @@
+JSON url:
+Chrom, F12, Network page, XHR page

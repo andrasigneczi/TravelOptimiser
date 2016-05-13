@@ -7,6 +7,8 @@ import Storage.FileWriterAgent;
 import Storage.SQLiteAgent;
 import org.apache.log4j.Logger;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -15,7 +17,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class Main
 {
-    private static org.apache.log4j.Logger log = Logger.getLogger(Main.class);
+    private static org.apache.log4j.Logger mLogger = Logger.getLogger(Main.class);
 
     public static void main(String[] argv)
     {
@@ -26,8 +28,10 @@ public class Main
             //lSQLiteAgent2.InitializeDatabase();
             //HelloWorld.SQLiteHelloWorld.Test7();
             //HelloWorld.XmlHelloWorld.Test();
-            //HelloWorld.JxBrowserHelloWorld.HelloWorld();
-            //Thread.sleep(5000);
+//            HelloWorld.JxBrowserHelloWorld.HelloWorld();
+//            Thread.sleep(50000);
+//            Thread.sleep(50000);
+//            Thread.sleep(50000);
             //TestDatetimeParser();
             //System.exit(0);
 
@@ -37,42 +41,49 @@ public class Main
             // Initialize the configuration
             Util.Configuration lConfiguration = Util.Configuration.getInstance();
 
-            //WebPageGuest lGuest = WebPageGuestFactory.Create( "WizzAir" );
-            WebPageGuest lGuest = WebPageGuestFactory.Create( "RyanAir" );
-            lGuest.DoSearch( "Dublin", "Faro", "2016.07.31.", "2017.01.04." );
+//            WebPageGuest lGuestW = WebPageGuestFactory.Create( "WizzAir" );
+            WebPageGuest lGuestR = WebPageGuestFactory.Create( "RyanAir" );
+//            lGuestW.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
+            lGuestR.DoSearch( "Dublin", "Faro", "2016.07.31.", "2017.01.04." );
+//            lGuestR.DoSearch( "Frankfurt (HHN)", "Thessaloniki", "2016.09.03.", "2016.09.06." );
 
             //lGuest.DoSearchFromConfig();
 
-/*            lGuest.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
-            lGuest.DoSearch( "SOF", "HHN", "2016.08.06.", "2016.08.09." );
-            lGuest.DoSearch( "CRL", "BUD", "2016.07.08.", "2016.07.11." );
-            lGuest.DoSearch( "CRL", "BUD", "2016.07.22.", "2016.07.25." );
-            lGuest.DoSearch( "BUD", "CRL", "2016.07.11.", "" );
-*/
+
+//            lGuest.DoSearch( "SOF", "HHN", "2016.08.06.", "2016.08.09." );
+//            lGuest.DoSearch( "CRL", "BUD", "2016.07.08.", "2016.07.11." );
+//            lGuest.DoSearch( "CRL", "BUD", "2016.07.22.", "2016.07.25." );
+//            lGuest.DoSearch( "BUD", "CRL", "2016.07.11.", "" );
+
             FileWriterAgent lFWA         = new FileWriterAgent("database.html");
             SQLiteAgent     lSQLiteAgent = new SQLiteAgent();
             lSQLiteAgent.InitializeDatabase();
             lFWA.setNextAgent(lSQLiteAgent);
 
-            int i = 60;
+            final int WaitBeforeStop = 5 * 60;
+            int i = WaitBeforeStop;
             while( i > 0 )
             {
                 TravelData_RESULT lResult = ResultQueue.getInstance().pop();
                 if (lResult != null)
                 {
                     lFWA.Archive(lResult);
-                    i = 60;
+                    i = WaitBeforeStop;
                     continue;
                 }
                 Thread.sleep(1000);
                 i--;
             }
-            lGuest.stop();
+ //           lGuestW.stop();
+            lGuestR.stop();
             System.exit(-1);
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            StringWriter lStringWriter = new StringWriter();
+            PrintWriter lPrintWriter = new PrintWriter(lStringWriter);
+            e.printStackTrace( lPrintWriter );
+            mLogger.error( "Unhandled exception: " + lStringWriter.toString() );
         }
 /*
         HelloWorld.SQLiteHelloWorld.Test1( new String[0] );
@@ -112,11 +123,11 @@ public class Main
 
     private static void runMe(String parameter)
     {
-        log.debug("This is debug : " + parameter);
-        log.info("This is info : " + parameter);
-        log.warn("This is warn : " + parameter);
-        log.error("This is error : " + parameter);
-        log.fatal("This is fatal : " + parameter);
+        mLogger.debug("This is debug : " + parameter);
+        mLogger.info("This is info : " + parameter);
+        mLogger.warn("This is warn : " + parameter);
+        mLogger.error("This is error : " + parameter);
+        mLogger.fatal("This is fatal : " + parameter);
     }
 
     private static void TestDatetimeParser()

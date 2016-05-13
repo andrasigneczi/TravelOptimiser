@@ -160,7 +160,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 //		addressPane.add(new JLabel(" URL: "), BorderLayout.WEST);
 //		addressPane.add(addressBar, BorderLayout.CENTER);
 
-		JFrame frame = new JFrame("Travel Optimizer");
+		JFrame frame = new JFrame("Travel Optimizer - " + getAirline());
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 //		frame.add(addressPane, BorderLayout.NORTH);
 		frame.add(view, BorderLayout.CENTER);
