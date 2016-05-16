@@ -55,7 +55,7 @@ public class Main
             lSQLiteAgent.InitializeDatabase();
             lFWA.setNextAgent(lSQLiteAgent);
 
-            final int WaitBeforeStop = 5 * 60;
+            final int WaitBeforeStop = 30;
             int i = WaitBeforeStop;
             while( i > 0 )
             {

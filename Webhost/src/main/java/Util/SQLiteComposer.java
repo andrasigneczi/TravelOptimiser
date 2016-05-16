@@ -42,7 +42,8 @@ public class SQLiteComposer implements SQLComposer
 				"[CURRENCY]" +
 				"ORDER BY DepartureDatetime ASC, OutboundTrip DESC, SearchDatetime ASC;\n";
 
-		String lCurrencyString = "AND Prices_BasicFare_Discount LIKE '% " + aCurrency + "'\n";
+		String lCurrencyString = "AND ( Prices_BasicFare_Discount LIKE '% " + aCurrency + "' OR " +
+				"Prices_BasicFare_Normal LIKE '% " + aCurrency + "')\n";
 		if( aCurrency.equals( "%" ))
 			lCurrencyString = "";
 
