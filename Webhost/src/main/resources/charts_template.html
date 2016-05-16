@@ -8,12 +8,179 @@
     <script src="/js/highcharts/jquery-1.12.0/jquery.min.js"></script>
     <script src="/js/highcharts/highcharts-4.2.3.js"></script>
     <script src="/js/highcharts/exporting-4.2.3.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script src="/js/bootstrap/bootstrap.min.js"></script>
+    <link href="/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="/js/bootstrap/bootstrap-toggle.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="/css/traveloptimizer.css" title="Style">
 </head>
 <body>
+<script>
+    var TO_ActionName   = null;
+    var TO_ActionValue  = null;
+    var TO_ActionWidget = null;
+</script>
+
+<div class="TO_row">
+    <label>Select departure airport: </label>
+    [DEPARTURE_AIRPORTS]
+    <span></span>
+    <input type="button" name="switchtheairports" value="<=>" />
+    <span></span>
+    <label>Select arrival airport: </label>
+    [ARRIVAL_AIRPORTS]
+    <br/>
+    <!--<input type="checkbox" name="ReturnTrip" id="ReturnTrip" value="1"-->
+           <!--onchange="TO_ActionName=this.name + 'Changed';TO_ActionWidget=this;$('#ajaxform').submit();"/>-->
+    <input type="checkbox" name="ReturnTrip" id="ReturnTrip" data-toggle="toggle" data-size="mini"/>
+    <label> Return trip: </label>
+</div>
+
+<div class="TO_row" id="AvailableTrips">
+[AVAILABLE_TRIPS]
+</div>
+
 [CHART_DIVS]
 
 <script lang="JavaScript">
     [CHART_SCRIPTS]
+</script>
+
+<form action="/ajaxrequest" id="ajaxform" method="POST">
+</form>
+
+<!-- the result of the search will be rendered inside this div -->
+<div id="ajaxresult"></div>
+
+<!-- Trigger the modal with a button -->
+<button id="OpenModalButton" type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" style="visibility:hidden">Open Modal</button>
+
+<!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-xxl">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Price chart</h4>
+            </div>
+            <div class="modal-body" id="ModalWindowBody">
+                <p>Some text in the modal.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script language="JavaScript">
+    // Attach a submit handler to the form
+    $( "#ajaxform" ).submit(function( event ) {
+
+    // Stop form from submitting normally
+    event.preventDefault();
+
+    // Get some values from elements on the page:
+    var $form = $( this )
+
+    var lParam = null;
+    if( TO_ActionName == 'DepartureAirportListChanged' ||
+        TO_ActionName == 'ArrivalAirportListChanged')
+    {
+        lParam = TO_ActionWidget.options[TO_ActionWidget.selectedIndex].value;
+    }
+    else if( TO_ActionName == 'DateTimeButtonPushed' )
+    {
+        //       airline                 datetime, leavingFrom, goingTo, outbound
+        lParam = TO_ActionValue + '|' + TO_ActionWidget.value
+    }
+    else if( TO_ActionName == 'ReturnTripChanged' )
+    {
+        lParam = TO_ActionWidget.checked;
+    }
+
+    lURL = $form.attr( "action" );
+
+    // Send the data using post
+    var posting = $.post( lURL, { id: TO_ActionName, param: lParam } );
+
+    // Put the results in a div
+    posting.done(function( data ) {
+        if( TO_ActionName == 'DepartureAirportListChanged' ||
+            TO_ActionName == 'ArrivalAirportListChanged')
+        {
+            $("#AvailableTrips").html( data );
+            $('[data-toggle="buttonlist-tooltip"]').tooltip();
+        }
+        else if( TO_ActionName == 'DateTimeButtonPushed' )
+        {
+            if( $('#ReturnTrip').is( ':checked' ) == false )
+            {
+                $("[data-toggle='buttonlist-tooltip']").tooltip('hide');
+                $("#ModalWindowBody").html( data );
+                $("#OpenModalButton" ).click();
+                ModalRefresh();
+                TO_ActionWidget.className = TO_ActionWidget.className.replace( "active", "");
+            }
+            else
+            {
+                if( data.indexOf( 'DateTimeButtonPushed' ) != -1 )
+                {
+                    $("#AvailableTrips").html( data );
+                    $('[data-toggle="buttonlist-tooltip"]').tooltip();
+                }
+                else
+                {
+                    $("[data-toggle='buttonlist-tooltip']").tooltip('hide');
+                    $("#ModalWindowBody").html( data );
+                    $("#OpenModalButton" ).click();
+                    ModalRefresh();
+                    TO_ActionWidget.className = TO_ActionWidget.className.replace( "active", "");
+                }
+            }
+        }
+        else if( TO_ActionName == 'ReturnTripChanged' )
+        {
+            if( $('#ReturnTrip').is( ':checked' ) == false )
+            {
+                $("#AvailableTrips").html( data );
+                $('[data-toggle="buttonlist-tooltip"]').tooltip();
+            }
+        }
+    });
+});
+
+function ModalRefresh()
+{
+    var chart = $('#modalcontainer').highcharts();
+    $('#myModal').on('show.bs.modal', function() {
+        $('#modalcontainer').css('visibility', 'hidden');
+    });
+    $('#myModal').on('shown.bs.modal', function() {
+        $('#modalcontainer').css('visibility', 'initial');
+        chart.reflow();
+    });
+}
+
+$(function() {
+    $('#ReturnTrip').change(function() {
+      //$('#console-event').html('Toggle: ' + $(this).prop('checked'))
+      TO_ActionName=this.name + 'Changed';
+      TO_ActionWidget=this;
+      $('#ajaxform').submit();
+    })
+})
+
+$(document).ready(function(){
+    $('[data-toggle="buttonlist-tooltip"]').tooltip();
+});
+
 </script>
 </body>
 </html>

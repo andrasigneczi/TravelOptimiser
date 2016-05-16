@@ -67,7 +67,8 @@ public class MozillaHelloWorld  implements nsIWebProgressListener,nsIWeakReferen
 		range[0] = new GREVersionRange("1.8.0", true, "1.9", false);
 
 		try {
-			grePath = Mozilla.getGREPathWithProperties(range, null);
+			//grePath = Mozilla.getGREPathWithProperties(range, null);
+			grePath = new File( "c:\\Users\\Andras\\IdeaProjects\\TravelOptimizer\\lib\\xulrunner");
 			mozilla.initialize(grePath);
 			//File lF1 = new File( "c:\\Users\\Andras\\IdeaProjects\\TravelOptimizer\\mozilla\\xulrunner-sdk\\bin" );
 			//File lF2 = new File("c:\\Users\\Andras\\IdeaProjects\\TravelOptimizer\\mozilla\\profile" );
@@ -77,9 +78,9 @@ public class MozillaHelloWorld  implements nsIWebProgressListener,nsIWeakReferen
 			mozilla.initEmbedding(grePath, grePath, locProvider);
 		}
 
-		catch (FileNotFoundException e) {
-			System.out.println("Error: FileNotFoundException");
-		}
+		//catch (FileNotFoundException e) {
+		//	System.out.println("Error: FileNotFoundException");
+		//}
 		catch (XPCOMException e) {
 			System.out.println("Error: XPCOMException");
 		}

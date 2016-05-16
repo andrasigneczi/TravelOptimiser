@@ -1,5 +1,7 @@
 package Util;
 
+import java.util.ArrayList;
+
 /**
  * Created by Andras on 15/03/2016.
  */
@@ -8,13 +10,64 @@ public class TravelData_INPUT implements Cloneable
 	public String  mAirline;
 	public String  mAirportCode_LeavingFrom;   // SOF
 	public String  mAirportCode_GoingTo;       // HHN
-	public String  mDepartureDay;              // 2016.03.25 17:10
-	public String  mReturnDay         = "";    // 2016.03.27 17:10
-	public String  mAdultNumber       = "1";
-	public String  mChildNumber       = "0";
-	public String  mInfantNumber      = "0";
-	public boolean mNearbyAirports    = false;
-	public boolean mReturnTicket      = false;
+	public String  mDepartureDatetime;         // 2016.03.25 17:10
+	public String  mReturnDatetime        = "";    // 2016.03.27 17:10
+	public String  mAdultNumber           = "1";
+	public String  mChildNumber           = "0";
+	public String  mInfantNumber          = "0";
+	public boolean mNearbyAirports        = false;
+	public boolean mReturnTicket          = false;
+	public String  mCurrency              = "";
+
+	static public class BoughtTicket implements Cloneable
+	{
+		public String mName;
+		public String mDatetime;
+		public String mPrice;
+
+		public boolean set( String aName, String aValue )
+		{
+			boolean lReturnValue = false;
+			setvalues:
+			{
+				if( aName.equals( "Name" ) )
+				{
+					mName = aValue;
+					lReturnValue = true;
+					break setvalues;
+				}
+				else if( aName.equals( "Datetime" ) )
+				{
+					mDatetime = aValue;
+					lReturnValue = true;
+					break setvalues;
+				}
+				else if( aName.equals( "Price" ) )
+				{
+					mPrice = aValue;
+					lReturnValue = true;
+					break setvalues;
+				}
+			}
+			return lReturnValue;
+		}
+		@Override
+		public Object clone() throws CloneNotSupportedException
+		{
+			return super.clone();
+		}
+	}
+
+	public ArrayList<BoughtTicket> mBoughtTickets = null;
+
+	@Override
+	public Object clone() throws CloneNotSupportedException
+	{
+		TravelData_INPUT lRet = (TravelData_INPUT)super.clone();
+		if( this.mBoughtTickets != null )
+			lRet.mBoughtTickets = new ArrayList<>( this.mBoughtTickets );
+		return lRet;
+	}
 
 	public boolean set( String aName, String aValue )
 	{
@@ -42,16 +95,16 @@ public class TravelData_INPUT implements Cloneable
 				break setvalues;
 			}
 
-			if( aName.equals( "DepartureDay" ) )
+			if( aName.equals( "DepartureDatetime" ) )
 			{
-				mDepartureDay = aValue;
+				mDepartureDatetime = aValue;
 				lReturnValue = true;
 				break setvalues;
 			}
 
-			if( aName.equals( "ReturnDay" ) )
+			if( aName.equals( "ReturnDatetime" ) )
 			{
-				mReturnDay = aValue;
+				mReturnDatetime = aValue;
 				lReturnValue = true;
 				break setvalues;
 			}
@@ -90,13 +143,23 @@ public class TravelData_INPUT implements Cloneable
 				lReturnValue = true;
 				break setvalues;
 			}
+
+			if( aName.equals( "Currency" ) )
+			{
+				mCurrency = aValue;
+				lReturnValue = true;
+				break setvalues;
+			}
 		}
 		return lReturnValue;
 	}
 
-	@Override
-	public Object clone() throws CloneNotSupportedException
+	public void add( BoughtTicket aTicket )
 	{
-		return super.clone();
+		if( mBoughtTickets == null )
+		{
+			mBoughtTickets = new ArrayList<>();
+		}
+		mBoughtTickets.add( aTicket );
 	}
 }

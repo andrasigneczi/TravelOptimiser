@@ -40,6 +40,19 @@ public class ConfigurationHandler extends DefaultHandler
 			mCurrentTravelDataInput = new TravelData_INPUT();
 			mCurrentTravelDataInput.mAirline = qName;
 		}
+		else if( mCurrentTravelDataInput != null && mConfiguration.getValidSearchNodes().contains( qName ) )
+		{
+			if( qName.equals( "BoughtTicket" ))
+			{
+				TravelData_INPUT.BoughtTicket lBoughtTicket = new TravelData_INPUT.BoughtTicket();
+
+				for( int i = 0; i < attributes.getLength(); i++ )
+				{
+					lBoughtTicket.set( attributes.getLocalName( i ), attributes.getValue( i ));
+				}
+				mCurrentTravelDataInput.add( lBoughtTicket );
+			}
+		}
 	}
 
 	public void endElement(String uri, String localName,

@@ -34,13 +34,15 @@ public class Configuration
 		mValidAirlines.add( "wizzair" );
 		mValidSearchNodes.add( "LeavingFrom" );
 		mValidSearchNodes.add( "GoingTo" );
-		mValidSearchNodes.add( "DepartureDay" );
-		mValidSearchNodes.add( "ReturnDay" );
+		mValidSearchNodes.add( "DepartureDatetime" );
+		mValidSearchNodes.add( "ReturnDatetime" );
 		mValidSearchNodes.add( "AdultNumber" );
 		mValidSearchNodes.add( "ChildNumber" );
 		mValidSearchNodes.add( "InfantNumber" );
 		mValidSearchNodes.add( "NearbyAirports" );
 		mValidSearchNodes.add( "ReturnTicket" );
+		mValidSearchNodes.add( "Currency" );
+		mValidSearchNodes.add( "BoughtTicket" );
 		ParseConfigurationFile();
 	}
 

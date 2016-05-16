@@ -99,4 +99,21 @@ public class TravelData_INPUT implements Cloneable
 	{
 		return super.clone();
 	}
+
+	@Override
+	public String toString()
+	{
+		String lReturn = "";
+		lReturn += "Airline: " + mAirline + "\n";
+		lReturn += "AirportCode_LeavingFrom: " + mAirportCode_LeavingFrom  + "\n";
+		lReturn += "AirportCode_GoingTo: " + mAirportCode_GoingTo + "\n";
+		lReturn += "DepartureDay: " + mDepartureDay + "\n";
+		lReturn += "ReturnDay: " + mReturnDay + "\n";
+		lReturn += "AdultNumber: " + mAdultNumber + "\n";
+		lReturn += "ChildNumber: " + mChildNumber + "\n";
+		lReturn += "InfantNumber: " + mInfantNumber + "\n";
+		lReturn += "NearbyAirports: " + mNearbyAirports + "\n";
+		lReturn += "ReturnTicket: " + mReturnTicket + "\n";
+		return lReturn;
+	}
 }

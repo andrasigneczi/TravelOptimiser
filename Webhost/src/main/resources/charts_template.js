@@ -10,10 +10,16 @@
                 text: '[SUBTITLE]'
             },
             xAxis: {
+               crosshair: {
+                    width: 1,
+                    color: 'blue',
+                    snap: false,
+                    zIndex: -1
+                },
                 type: 'datetime',
                 dateTimeLabelFormats: {
                     day: '%e. %b',
-                    month: '%b. \'%y',
+                    month: '%b. \'%Y',
                     year: '%Y'
                 },
                 title: {
@@ -21,14 +27,20 @@
                 }
             },
             yAxis: {
-                title: {
-                    text: 'Price ([DEVIZA])'
+               crosshair: {
+                    width: 1,
+                    color: 'blue',
+                    snap: false,
+                    zIndex: -1
                 },
+                title: {
+                        text: 'Price ([DEVIZA])'
+                    },
                 min: 0
             },
             tooltip: {
                 headerFormat: '<b>{series.name}</b><br>',
-                pointFormat: '{point.x:%e. %b}: {point.y:.2f} [DEVIZA]'
+                pointFormat: '{point.x:%e. %b, %H:%M}: {point.y:.2f} [DEVIZA]'
             },
 
             plotOptions: {

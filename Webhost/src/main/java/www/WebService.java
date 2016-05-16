@@ -1,19 +1,20 @@
 package www;
 
-import Util.DataProvider;
-import Util.DataResultComposer;
-import Util.HighChartDataResultComposer;
-import Util.SQLiteDataProvider;
+import Util.*;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Scanner;
-import java.util.stream.IntStream;
 
 /**
  * Created by Andras on 08/04/2016.
@@ -21,10 +22,15 @@ import java.util.stream.IntStream;
 @RestController
 public class WebService
 {
-	private String mHtmlTemplate;
-	private String mJsTemplate;
-	private String mDivTemplate;
-	private String mSeriesTemplate;
+	private final String mHtmlTemplate;
+	private final String mJsTemplate;
+	private final String mDivTemplate;
+	private final String mSeriesTemplate;
+
+	private String mSelectedDepartureAirport = "-";
+	private String mSelectedArrivalAirport   = "-";
+	private boolean mReturnCheckboxChecked   = false;
+	private OneWayTrip mToggledButton = null;
 
 	public WebService()
 	{
@@ -59,24 +65,69 @@ public class WebService
 				lLocalDateTime.getMonthValue(), lLocalDateTime.getYear(), lLocalDateTime.getHour(), lLocalDateTime.getMinute() );
 	}
 
-	private String [] GetHtmlContent( String aDateTime1, String aDateTime2, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency, String aHtmlTagId, boolean aOneWay )
+	/**
+	 *
+	 * @param aDateTime1      first trip's departure day
+	 * @param aDateTime2      return trip's departure day
+	 * @param aAirline        airline
+	 * @param aAirportFrom    departure airport
+	 * @param aAirportTo      arrival airport
+	 * @param aCurrency       currency of the tickets' price
+	 * @param aHtmlTagId      a string for the modal window
+	 * @param aOneWay         one way or return ticket
+	 * @return String [], first element the div of the chart, second element the javascript of the chart
+	 */
+	private String [] GetHtmlContent( final String aDateTime1, final String aDateTime2,
+	                                  final String aAirline, final String aAirportFrom,
+	                                  final String aAirportTo, final String aCurrency,
+	                                  final String aHtmlTagId, final boolean aOneWay,
+	                                  final ArrayList<TravelData_INPUT.BoughtTicket> aBoughtTickets )
 	{
-		String lResult1 = SQLiteDataProvider.getInstance().GetData( aDateTime1/*2016-07-16 06:30*/, aAirline, aAirportFrom, aAirportTo, aCurrency, new HighChartDataResultComposer() );
+		HighChartDataResultComposer lHighChartDataResultComposerOutbound = new HighChartDataResultComposer();
+		Hashtable<String,String> lResult1 = SQLiteDataProvider.getInstance().GetTripData( aDateTime1/*2016-07-16 06:30*/, aAirline, aAirportFrom, aAirportTo, aCurrency, lHighChartDataResultComposerOutbound );
 		String lDate1 = IsoDatetimeToEngDate( aDateTime1 );
 		String lSeries1 = mSeriesTemplate.replace( "[SERIES.NAME]", lDate1 )
-				.replace( "[SERIES.DATA]", lResult1 );
+				.replace( "[SERIES.DATA]", lResult1.get( "Result" ) );
+
+		String lAirportFrom = aAirportFrom;
+		if( aAirportFrom.equals( "-" ))
+			lAirportFrom = lResult1.get( "AirportCode_LeavingFrom" );
+
+		String lAirportTo = aAirportTo;
+		if( aAirportTo.equals( "-" ))
+			lAirportTo = lResult1.get( "AirportCode_GoingTo" );
+
+		if( aBoughtTickets != null )
+		{
+			for( TravelData_INPUT.BoughtTicket lTicket : aBoughtTickets )
+			{
+				HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
+				lHCDRCExtra.add( lTicket.mDatetime, lTicket.mPrice, "%" );
+				String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", lTicket.mName )
+						.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() );
+				lSeries1 += ",\n" + lSeries;
+			}
+
+		}
 
 		String lJS;
 		if( !aOneWay )
 		{
-			String lResult2 = SQLiteDataProvider.getInstance().GetData( aDateTime2/*2016-07-19 08:30*/, aAirline, aAirportTo, aAirportFrom, aCurrency, new HighChartDataResultComposer() );
+			HighChartDataResultComposer lHighChartDataResultComposerReturn = new HighChartDataResultComposer();
+			Hashtable<String,String> lResult2 = SQLiteDataProvider.getInstance().GetTripData( aDateTime2/*2016-07-19 08:30*/, aAirline, aAirportTo, aAirportFrom, aCurrency, lHighChartDataResultComposerReturn );
 			String lDate2 = IsoDatetimeToEngDate( aDateTime2 );
 			String lSeries2 = mSeriesTemplate.replace( "[SERIES.NAME]", lDate2 )
-					.replace( "[SERIES.DATA]", lResult2 );
+					.replace( "[SERIES.DATA]", lResult2.get( "Result" ) );
 
-			lJS = mJsTemplate.replace( "[TITLE]", lDate1 + " - " + lDate2 + " " + aAirportFrom + " - " + aAirportTo )
+			HashSet<String> lFoundCurrency = lHighChartDataResultComposerReturn.getFoundCurrency();
+			String lCurrency = aCurrency;
+			if( aCurrency.equals( "%" ) && !lFoundCurrency.isEmpty())
+				lCurrency = lFoundCurrency.iterator().next();
+
+
+			lJS = mJsTemplate.replace( "[TITLE]", lDate1 + " - " + lDate2 + " " + lAirportFrom + " - " + lAirportTo )
 					.replace( "[SUBTITLE]", aAirline )
-					.replace( "[DEVIZA]", aCurrency )
+					.replace( "[DEVIZA]", lCurrency )
 					.replace( "[SERIES]", lSeries1 + ",\n" + lSeries2 )
 					.replace( "[CONTAINER]", aHtmlTagId );
 			String lDiv = mDivTemplate.replace( "[CONTAINER]", aHtmlTagId );
@@ -84,14 +135,55 @@ public class WebService
 		}
 		else
 		{
-			lJS = mJsTemplate.replace( "[TITLE]", lDate1 + " " + aAirportFrom + " - " + aAirportTo )
+			HashSet<String> lFoundCurrency = lHighChartDataResultComposerOutbound.getFoundCurrency();
+			String lCurrency = aCurrency;
+			if( aCurrency.equals( "%" ) && !lFoundCurrency.isEmpty())
+				lCurrency = lFoundCurrency.iterator().next();
+
+			lJS = mJsTemplate.replace( "[TITLE]", lDate1 + " " + lAirportFrom + " - " + lAirportTo )
 					.replace( "[SUBTITLE]", aAirline )
-					.replace( "[DEVIZA]", aCurrency )
+					.replace( "[DEVIZA]", lCurrency )
 					.replace( "[SERIES]", lSeries1 )
 					.replace( "[CONTAINER]", aHtmlTagId );
 		}
 		String lDiv = mDivTemplate.replace( "[CONTAINER]", aHtmlTagId );
 		return new String[] { lDiv, lJS };
+	}
+
+	private String GenHtmlContentUsingConfig()
+	{
+		ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
+		String lScriptCotent = "";
+		String lDivContent = "";
+		int lContainerIndex = 0;
+		for( TravelData_INPUT lTDI : lSearchList )
+		{
+			if( !lTDI.mAirline.equals( "wizzair" ))
+				continue;
+
+			lTDI.mReturnTicket = ( lTDI.mReturnDatetime.length() != 0 );
+			String[] lContent = GetHtmlContent( lTDI.mDepartureDatetime, lTDI.mReturnDatetime, lTDI.mAirline,
+					lTDI.mAirportCode_LeavingFrom, lTDI.mAirportCode_GoingTo,
+					lTDI.mCurrency, "container" + lContainerIndex++, !lTDI.mReturnTicket, lTDI.mBoughtTickets );
+			lScriptCotent += lContent[ 1 ];
+			lDivContent += lContent[ 0 ];
+		}
+		String  lHtml = mHtmlTemplate.replace( "[CHART_SCRIPTS]", lScriptCotent )
+				.replace( "[CHART_DIVS]", lDivContent );
+
+		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList(),
+				mSelectedDepartureAirport, mSelectedArrivalAirport, mReturnCheckboxChecked );
+		lHtml = lHtml.replace( "[AVAILABLE_TRIPS]", lGetCollectedDepartureDateList );
+
+		String lDepartureAirportSelector = SQLiteDataProvider.getInstance().GetDepartureAirportList( new HtmlListFormatterSelect( "DepartureAirportList" ),
+				mSelectedDepartureAirport);
+		lHtml = lHtml.replace( "[DEPARTURE_AIRPORTS]", lDepartureAirportSelector );
+
+		String lArrivalAirportSelector = SQLiteDataProvider.getInstance().GetArrivalAirportList( new HtmlListFormatterSelect( "ArrivalAirportList" ),
+				mSelectedDepartureAirport, mSelectedArrivalAirport);
+		lHtml = lHtml.replace( "[ARRIVAL_AIRPORTS]", lArrivalAirportSelector );
+
+		return lHtml;
 	}
 
 	@RequestMapping( "/" )
@@ -107,24 +199,6 @@ public class WebService
 		[SERIES2.DATA] [Date.UTC(1970, 10, 9), 0.4], ...
 		 */
 /*
-		String lResult1 = SQLiteDataProvider.getInstance().GetData( "2016-07-16 %", "wizzair", "SOF", "HHN", "lv", new HighChartDataResultComposer() );
-		String lResult2 = SQLiteDataProvider.getInstance().GetData( "2016-07-19 %", "wizzair", "HHN", "SOF", "lv", new HighChartDataResultComposer() );
-
-		String lJS = lJsTemplate.replace( "[TITLE]", "16.07.2016 - 19.07.2016 SOF - HHN" )
-								.replace( "[SUBTITLE]", "wizzair" )
-								.replace( "[DEVIZA]", "lv" )
-								.replace( "[SERIES1.NAME]", "16.07.2016" )
-								.replace( "[SERIES2.NAME]", "19.07.2016" )
-								.replace( "[SERIES1.DATA]", lResult1 )
-								.replace( "[SERIES2.DATA]", lResult2 )
-								.replace( "[CONTAINER]", "container1" );
-		String lDiv = lDivTemplate.replace( "[CONTAINER]", "container1" );
-
-		//SQLiteDataProvider.getInstance().ConnectionClose();
-
-		String  lHtml = lHtmlTemplate.replace( "[CHART_SCRIPTS]", lJS )
-				.replace( "[CHART_DIVS]", lDiv );
-*/
 		String [] lContent1 = GetHtmlContent( "2016-07-16 06:30", "2016-07-19 08:30", "wizzair", "SOF", "HHN", "lv", "container1", false );
 		String [] lContent2 = GetHtmlContent( "2016-08-06 06:30", "2016-08-09 08:30", "wizzair", "SOF", "HHN", "lv", "container2", false );
 		String [] lContent3 = GetHtmlContent( "2016-04-15 20:45", "", "wizzair", "CRL", "BUD", "€", "container3", true );
@@ -132,5 +206,72 @@ public class WebService
 		String  lHtml = mHtmlTemplate.replace( "[CHART_SCRIPTS]", lContent1[ 1 ] + lContent2[ 1 ] + lContent3[ 1 ] )
 				.replace( "[CHART_DIVS]", lContent1[ 0 ] + lContent2[ 0 ] + lContent3[ 0 ] );
 		return lHtml;
+*/
+		return GenHtmlContentUsingConfig();
+	}
+
+	@RequestMapping( value = "/ajaxrequest", method = { RequestMethod.POST }, params = { "id", "param" } )
+	public String action1( @RequestParam( "id" ) String aId, @RequestParam( "param" ) String aParam, HttpServletRequest httpRequest, WebRequest request )
+	{
+		if( aId.equals( "DepartureAirportListChanged" ))
+			mSelectedDepartureAirport = aParam;
+		else if( aId.equals( "ArrivalAirportListChanged" ))
+			mSelectedArrivalAirport = aParam;
+		else if( aId.equals( "ReturnTripChanged" ))
+		{
+			mReturnCheckboxChecked = !aParam.equals( "false" );
+			mToggledButton = null;
+			if( mReturnCheckboxChecked )
+				return "";
+		}
+		else if( aId.equals( "DateTimeButtonPushed" ))
+		{
+			String[] lValues = aParam.split( "\\|" );
+			// lValues = airline, leavingfrom, goingto, outbound, datetime
+			OneWayTrip lTB = new OneWayTrip(
+					lValues[ 4 ], lValues[ 0 ],
+					lValues[ 1 ], lValues[ 2 ],
+					Boolean.parseBoolean( lValues[ 3 ] ));
+
+			if( mReturnCheckboxChecked )
+			{
+				if( mToggledButton != null )//if( a button already pushed )
+				{
+					if( mToggledButton.equals( lTB ))
+					{ // if the toggled button was pushed again
+						mToggledButton = null;
+					}
+					else
+					{
+						//  with the second button we have a return trip, display it
+						String[] lHtmlContent = GetHtmlContent( mToggledButton.getDatetime(), lTB.getDatetime(), lTB.getAirline(),
+								mToggledButton.getOutboundDepartureAirport(), mToggledButton.getOutboundArrivalAirport(),
+								"%", "modalcontainer", false, null );
+						return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
+					}
+				}
+				else
+				{
+					//  this is the first button, toggle it!
+					mToggledButton = lTB;
+					String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList( mToggledButton ),
+							lTB.getOutboundDepartureAirport(), lTB.getOutboundArrivalAirport(), mReturnCheckboxChecked );
+					return lGetCollectedDepartureDateList;
+				}
+				// recolor or filter the buttons
+			}
+			else
+			{
+				String[] lHtmlContent = GetHtmlContent( lTB.getDatetime(), "", lTB.getAirline(),
+						lTB.getOutboundDepartureAirport(), lTB.getOutboundArrivalAirport(),
+						"%", "modalcontainer", true, null );
+				return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
+			}
+		}
+
+		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList( mToggledButton ),
+				mSelectedDepartureAirport, mSelectedArrivalAirport, mReturnCheckboxChecked );
+
+		return lGetCollectedDepartureDateList;
 	}
 }
