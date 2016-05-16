@@ -2,9 +2,9 @@ package Root;
 
 import PageGuest.ResultQueue;
 import PageGuest.TravelData_RESULT;
-import PageGuest.WebPageGuest;
 import Storage.FileWriterAgent;
 import Storage.SQLiteAgent;
+import Util.CurrencyHelper;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -38,13 +38,15 @@ public class Main
             //HelloWorld.JxBrowserHelloWorld.HelloWorld();
 	        //HelloWorld.JxBrowserHelloWorld.FlashSample();
 
+            CurrencyHelper.Init();
             // Initialize the configuration
             Util.Configuration lConfiguration = Util.Configuration.getInstance();
 
 //            WebPageGuest lGuestW = WebPageGuestFactory.Create( "WizzAir" );
-            WebPageGuest lGuestR = WebPageGuestFactory.Create( "RyanAir" );
+            PageGuest.PageGuest lGuestR = PageGuestFactory.Create( "RyanAir" );
 //            lGuestW.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
-            lGuestR.DoSearch( "Dublin", "Faro", "2016.07.31.", "2017.01.04." );
+            //lGuestR.DoSearch( "Dublin", "Faro", "2016.07.31.", "2017.01.04." );
+            lGuestR.DoSearch( "DUB", "FAO", "2016.07.31.", "2017.01.04." );
 //            lGuestR.DoSearch( "Frankfurt (HHN)", "Thessaloniki", "2016.09.03.", "2016.09.06." );
 
             //lGuest.DoSearchFromConfig();

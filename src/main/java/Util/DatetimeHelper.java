@@ -1,5 +1,8 @@
 package Util;
 
+import PageGuest.WizzAirPageGuest;
+import org.apache.log4j.Logger;
+
 public class DatetimeHelper
 {
     // wizzair format, this format the required: "yyyy-MM-dd'T'HH:mm:ss"
@@ -7,6 +10,7 @@ public class DatetimeHelper
     private static final String [] mMonthShortNames = new String[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
     private static final String [] mDayNames = new String[] { "Mon", "Tue", "Wen", "Thu", "Fri", "Sat", "Sun" };
     private static final String [] lMonthNames = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+    private static org.apache.log4j.Logger mLogger = Logger.getLogger( DatetimeHelper.class);
 
 
     public static String ConvertFromRyanairFormat( String aDatetime )
@@ -102,5 +106,16 @@ public class DatetimeHelper
             return -1;
 
         return 0;
+    }
+
+    public static String ConvertFromRyanairJSONStoredFormat( String aDatetime )
+    {
+        // 2017-01-04T17:25:00.000
+        if( aDatetime.length() != 23 )
+        {
+            mLogger.warn( "Something wrong with the ryanair date time format: " + aDatetime );
+            return aDatetime;
+        }
+        return aDatetime.substring( 0, aDatetime.length() - 4 );
     }
 }

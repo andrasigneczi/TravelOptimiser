@@ -5,9 +5,9 @@ import PageGuest.*;
 /**
  * Created by Andras on 15/03/2016.
  */
-public class WebPageGuestFactory
+public class PageGuestFactory
 {
-	public static WebPageGuest Create( String PageType )
+	public static PageGuest Create( String PageType )
 	{
 		if( PageType.equalsIgnoreCase( "wizzair" ))
 		{

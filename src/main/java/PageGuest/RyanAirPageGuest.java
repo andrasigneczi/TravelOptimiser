@@ -10,35 +10,44 @@ import com.teamdev.jxbrowser.chromium.dom.DOMNodeAtPoint;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 import com.traveloptimizer.browserengine.TeamDevJxBrowser;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+import static Util.CurrencyHelper.ConvertFrom3Digits;
+
 /**
  * Created by Andras on 15/03/2016.
  */
-public class RyanAirPageGuest extends WebPageGuest implements Runnable
+public class RyanAirPageGuest extends PageGuest implements Runnable
 {
     private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuest.class);
 
     ArrayList<TravelData_INPUT> mSearchQueue;
     Thread                      mThread;
-    Browser mBrowser       = null;
     Object  mMutex         = new Object();
     boolean mThreadStopped = true;
-    JFrame mFrame = null;
 
-    enum PageType
+    public enum FareType
     {
-        PT_UNKNOWN, PT_FIRST, PT_RESULT
-    }
+        Normal,
+        Business
+    };
 
-    ;
-    PageType mPageType = PageType.PT_UNKNOWN;
 
     public RyanAirPageGuest()
     {
@@ -61,12 +70,6 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
 
         synchronized (mMutex)
         {
-            if (mBrowser == null)
-            {
-                InitBrowser();
-                mBrowser.loadURL("http://www.ryanair.com");
-            }
-
             TravelData_INPUT lTravelDataInput = new TravelData_INPUT();
             lTravelDataInput.mAirline = getAirline();
             lTravelDataInput.mAirportCode_LeavingFrom = aFrom;
@@ -95,12 +98,6 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
     {
         synchronized (mMutex)
         {
-            if (mBrowser == null)
-            {
-                InitBrowser();
-                mBrowser.loadURL("http://www.ryanair.com");
-            }
-
             ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
             for (TravelData_INPUT lTDI : lSearchList)
             {
@@ -155,41 +152,6 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         return false;
     }
 
-    private boolean InitBrowser()
-    {
-        new BrowserStateInit().doAction(this);
-
-        //mBrowser = new Browser();
-        mBrowser = TeamDevJxBrowser.getInstance().getJxBrowser(getAirline());
-        BrowserView view = new BrowserView(mBrowser);
-
-        //final JTextField addressBar = new JTextField("http://www.teamdev.com/jxbrowser");
-        //final JTextField addressBar = new JTextField("http://www.momondo.com");
-//		final JTextField addressBar = new JTextField("http://www.wizzair.com");
-//		addressBar.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				mBrowser.loadURL(addressBar.getText());
-//			}
-//		});
-
-//		JPanel addressPane = new JPanel(new BorderLayout());
-//		addressPane.add(new JLabel(" URL: "), BorderLayout.WEST);
-//		addressPane.add(addressBar, BorderLayout.CENTER);
-
-        mFrame = new JFrame("Travel Optimizer");
-        mFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-//		frame.add(addressPane, BorderLayout.NORTH);
-        mFrame.add(view, BorderLayout.CENTER);
-        mFrame.setSize(1152, 1000);
-        mFrame.setLocation(0, 0);
-        //frame.setLocationRelativeTo(null);
-        mFrame.setVisible(true);
-        System.out.println("InitBrowser()");
-        return false;
-    }
-
-    @Override
     public void stop()
     {
         mThreadStopped = true;
@@ -204,350 +166,258 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
         System.out.println("stop()");
     }
 
-    private void PageIdentifier()
-    {
-        if (mBrowser == null || mBrowser.getDocument() == null)
-        {
-            return;
-        }
+//    private ArrayList<TravelData_RESULT.TravelData_PossibleTrips> CollectDatas_Trips( DOMElement lFlightResultBlock, TravelData_RESULT.TravelData_PossibleTrips aTrip )
+//    {
+//        java.util.List<DOMElement> lFlightBasic = lFlightResultBlock.findElements(By.className("flight-basic"));
+//        int lCellIndex = 0;
+//        TravelData_RESULT.TravelData_PossibleTrips lTrip = null;
+//        ArrayList<TravelData_RESULT.TravelData_PossibleTrips> lTrips = new ArrayList<TravelData_RESULT.TravelData_PossibleTrips>();
+//
+//        for (DOMElement lFlightBasicElement : lFlightBasic)
+//        {
+//            java.util.List<DOMElement> lTimes = lFlightBasicElement.findElements(By.className("time"));
+//            if( lTimes.size() == 0 )
+//                lTimes = lFlightBasicElement.findElements(By.className("time ng-binding"));
+//
+//            if( lTimes.size() == 0 )
+//                mLogger.warn( "There is no available 'times'! Is something wrong?" );
+//
+//            for (DOMElement lTimeElement : lTimes)
+//            {
+//                String lTime = lTimeElement.getInnerText();
+//                switch (lCellIndex % 2)
+//                {
+//                    case 0: // outbound departure time
+//                        lTrip = (TravelData_RESULT.TravelData_PossibleTrips)aTrip.clone();
+//                        lTrip.mDepartureDatetime += " " + lTime;
+//                        break;
+//                    case 1: // outbound arrival time
+//                        lTrip.mArrivalDatetime += " " + lTime;
+//                        lTrips.add( lTrip );
+//                        break;
+//                }
+//                lCellIndex++;
+//            }
+//        }
+//
+//        java.util.List<DOMElement> lPrices = lFlightResultBlock.findElements(By.className("price"));
+//        if( lPrices.size() == 0 )
+//            lPrices = lFlightResultBlock.findElements(By.className("price ng-binding"));
+//
+//        if( lPrices.size() == 0 )
+//            mLogger.warn( "There is no available 'price'! Is something wrong?" );
+//
+//        lCellIndex = 0;
+//        for (DOMElement lPriceElement : lPrices)
+//        {
+//            String lPrice = lPriceElement.getInnerText();
+//            switch (lCellIndex % 2)
+//            {
+//                case 0: // outbound normal price
+//                    lTrip = lTrips.get( lCellIndex / 2 );
+//                    lTrip.mPrices_BasicFare_Normal = lPrice;
+//                    break;
+//                case 1: // outbound business price
+//                    lTrip.mPrices_PlusFare_Normal = lPrice;
+//                    break;
+//            }
+//            lCellIndex++;
+//        }
+//        return lTrips;
+//    }
 
-        DOMElement elementTextSource = null;
-        elementTextSource = mBrowser.getDocument().findElement(By.className("flight-selector-listing"));
-        if (elementTextSource != null)
+//    private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
+//    {
+//        mTravelDataResult = new TravelData_RESULT();
+//        mTravelDataResult.mAirline = aTravelDataInput.mAirline;
+//        mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
+//        mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
+//        mTravelDataResult.mTravelDataInput = aTravelDataInput;
+//        TravelData_RESULT.TravelData_PossibleTrips lTripOutbound = null;
+//        TravelData_RESULT.TravelData_PossibleTrips lTripReturn   = null;
+//
+//        java.util.List<DOMElement> lFlightsBodyElements = document.findElements(By.className("slide active"));
+//        if( lFlightsBodyElements.size() == 0 )
+//            lFlightsBodyElements = document.findElements(By.className("slide ng-scope active"));
+//        if( lFlightsBodyElements.size() == 0 )
+//            mLogger.warn( "There is no available 'slide active'! Is something wrong?" );
+//
+//        int lCellIndex = 0;
+//        for (DOMElement lFlightBodyElement : lFlightsBodyElements)
+//        {
+//            if (lCellIndex == 0)
+//            {
+//                lTripOutbound = new TravelData_RESULT.TravelData_PossibleTrips();
+//                lTripOutbound.mOutboundTrip = true;
+//
+//                // date
+//                java.util.List<DOMElement> lDate1 = lFlightBodyElement.findElements(By.className("date"));
+//                if( lDate1.size() == 0 )
+//                    lDate1 = lFlightBodyElement.findElements(By.className("date ng-binding"));
+//                if( lDate1.size() == 0 )
+//                    mLogger.warn( "There is no available 'date'! Is something wrong?" );
+//
+//                lTripOutbound.mDepartureDatetime = ((DOMElement) lDate1.get(0)).getInnerText(); // Only the date
+//                lTripOutbound.mArrivalDatetime = lTripOutbound.mDepartureDatetime;
+//
+//                // price
+////                java.util.List<DOMElement> lPrice1 = lFlightBodyElement.findElements(By.className("fare ng-binding"));
+////                lTripOutbound.mPrices_BasicFare_Normal = ((DOMElement) lPrice1.get(0)).getInnerText();
+//                lCellIndex++;
+//            }
+//            else if (lCellIndex == 1)
+//            {
+//                lTripReturn = new TravelData_RESULT.TravelData_PossibleTrips();
+//                lTripReturn.mOutboundTrip = false;
+//                // date
+//                java.util.List<DOMElement> lDate1 = lFlightBodyElement.findElements(By.className("date"));
+//                if( lDate1.size() == 0 )
+//                    lDate1 = lFlightBodyElement.findElements(By.className("date ng-binding"));
+//                if( lDate1.size() == 0 )
+//                    mLogger.warn( "There is no available 'date'! Is something wrong?" );
+//                lTripReturn.mDepartureDatetime = ((DOMElement) lDate1.get(0)).getInnerText();  // Only the date
+//                lTripReturn.mArrivalDatetime = lTripReturn.mDepartureDatetime;
+//
+//                // price
+////                java.util.List<DOMElement> lPrice1 = lFlightBodyElement.findElements(
+////                        By.className("fare ng-binding"));
+////                lTripReturn.mPrices_BasicFare_Normal = ((DOMElement) lPrice1.get(0)).getInnerText();
+//                //lTrip.mPrices_PlusFare_Normal;
+//                lCellIndex++;
+//            }
+//        }
+//
+//
+//        DOMElement lFlightOutbound = document.findElement(By.id( "outbound" ));
+//        DOMElement lFlightInbound = document.findElement(By.id( "inbound" ));
+//
+//        ArrayList<TravelData_RESULT.TravelData_PossibleTrips> lOutboundTrips = CollectDatas_Trips( lFlightOutbound, lTripOutbound );
+//        ArrayList<TravelData_RESULT.TravelData_PossibleTrips> lInboundTrips = CollectDatas_Trips( lFlightInbound, lTripReturn );
+//
+//        ConvertToWizzairFormatAndStore( lOutboundTrips );
+//        ConvertToWizzairFormatAndStore( lInboundTrips );
+//        ResultQueue.getInstance().push( mTravelDataResult );
+//    }
+
+    private void ConvertToWizzairFormatAndStore( TravelData_RESULT.TravelData_PossibleTrips aTrip )
+    {
+        aTrip.mArrivalDatetime = DatetimeHelper.ConvertFromRyanairJSONStoredFormat(aTrip.mArrivalDatetime);
+        aTrip.mDepartureDatetime = DatetimeHelper.ConvertFromRyanairJSONStoredFormat(aTrip.mDepartureDatetime);
+        mTravelDataResult.mTrips.add(aTrip);
+    }
+
+    private static void ParseFares( JSONObject aFares, FareType aFareType,
+                                      TravelData_RESULT.TravelData_PossibleTrips aTripClone,
+                                      String aCurrency)
+    {
+        JSONArray lFares = aFares.getJSONArray( "fares" );
+        for( int lFareIndex = 0; lFareIndex < lFares.length(); lFareIndex++ )
         {
-            if (mPageType == PageType.PT_RESULT)
+            JSONObject lFare = lFares.getJSONObject(lFareIndex);
+            double lAmount = lFare.getDouble( "amount" );
+            double lPublishedFare = lFare.getDouble( "publishedFare" );
+            boolean lHasDiccount = lFare.getBoolean( "hasDiscount" );
+            if( aFareType == FareType.Normal )
             {
-                return;
-            }
-            Sleep(2000);
-            mPageType = PageType.PT_RESULT;
-        }
-        else
-        {
-            elementTextSource = mBrowser.getDocument().findElement(By.name("departureAirportName"));
-            if (elementTextSource != null)
-            {
-                if (mPageType == PageType.PT_FIRST)
-                {
-                    return;
-                }
-                mPageType = PageType.PT_FIRST;
+                if( lHasDiccount )
+                    aTripClone.mPrices_BasicFare_Discount = String.valueOf( lPublishedFare ) + " " + aCurrency;
+                else
+                    aTripClone.mPrices_BasicFare_Normal = String.valueOf( lPublishedFare ) + " " + aCurrency;
             }
             else
             {
-                mPageType = PageType.PT_UNKNOWN;
-                return;
+                if( lHasDiccount )
+                    aTripClone.mPrices_PlusFare_Discount = String.valueOf( lPublishedFare ) + " " + aCurrency;
+                else
+                    aTripClone.mPrices_PlusFare_Normal = String.valueOf( lPublishedFare ) + " " + aCurrency;
             }
-        }
-
-        TravelData_INPUT lTravelDataInput = null;
-        if (getBrowserState().toString().equals("BrowserStateSearching"))
-        {
-            lTravelDataInput = ((BrowserStateSearching) getBrowserState()).getTravelDataInput();
-        }
-
-        DOMDocument lDOMDocument = mBrowser.getDocument();
-        if (lTravelDataInput == null)
-        {
-            if (mPageType == PageType.PT_FIRST)
-            {
-                new BrowserStateReadyToSearch(lDOMDocument).doAction(getBrowserState().getWebPageGuest());
-            }
-        }
-        else
-        {
-            new BrowserStateSearchingFinished(lDOMDocument, lTravelDataInput).doAction(
-                    getBrowserState().getWebPageGuest());
         }
     }
 
-    private ArrayList<TravelData_RESULT.TravelData_PossibleTrips> CollectDatas_Trips( DOMElement lFlightResultBlock, TravelData_RESULT.TravelData_PossibleTrips aTrip )
+    private void ParseTrip( JSONObject aTrip, String aCurrency )
     {
-        java.util.List<DOMElement> lFlightBasic = lFlightResultBlock.findElements(By.className("flight-basic"));
-        int lCellIndex = 0;
-        TravelData_RESULT.TravelData_PossibleTrips lTrip = null;
-        ArrayList<TravelData_RESULT.TravelData_PossibleTrips> lTrips = new ArrayList<TravelData_RESULT.TravelData_PossibleTrips>();
+        TravelData_RESULT.TravelData_PossibleTrips lTDRTrip = new TravelData_RESULT.TravelData_PossibleTrips();
+        lTDRTrip.mOutboundTrip = true;
 
-        for (DOMElement lFlightBasicElement : lFlightBasic)
+        String lOrigin = aTrip.getString( "origin" );
+        String lDestination = aTrip.getString( "destination" );
+
+        if( lOrigin.equals( mTravelDataResult.mAirportCode_GoingTo ))
         {
-            java.util.List<DOMElement> lTimes = lFlightBasicElement.findElements(By.className("time"));
-            if( lTimes.size() == 0 )
-                lTimes = lFlightBasicElement.findElements(By.className("time ng-binding"));
-
-            if( lTimes.size() == 0 )
-                mLogger.warn( "There is no available 'times'! Is something wrong?" );
-
-            for (DOMElement lTimeElement : lTimes)
-            {
-                String lTime = lTimeElement.getInnerText();
-                switch (lCellIndex % 2)
-                {
-                    case 0: // outbound departure time
-                        lTrip = (TravelData_RESULT.TravelData_PossibleTrips)aTrip.clone();
-                        lTrip.mDepartureDatetime += " " + lTime;
-                        break;
-                    case 1: // outbound arrival time
-                        lTrip.mArrivalDatetime += " " + lTime;
-                        lTrips.add( lTrip );
-                        break;
-                }
-                lCellIndex++;
-            }
+            lTDRTrip.mOutboundTrip = false;
         }
 
-        java.util.List<DOMElement> lPrices = lFlightResultBlock.findElements(By.className("price"));
-        if( lPrices.size() == 0 )
-            lPrices = lFlightResultBlock.findElements(By.className("price ng-binding"));
-
-        if( lPrices.size() == 0 )
-            mLogger.warn( "There is no available 'price'! Is something wrong?" );
-
-        lCellIndex = 0;
-        for (DOMElement lPriceElement : lPrices)
+        JSONArray lDates = aTrip.getJSONArray( "dates" );
+        for( int lDateIndex = 0; lDateIndex < lDates.length(); lDateIndex++ )
         {
-            String lPrice = lPriceElement.getInnerText();
-            switch (lCellIndex % 2)
+            JSONObject lDate = lDates.getJSONObject( lDateIndex );
+            // the time caontains the date below
+            //String lDateOut = lDate.getString( "dateOut" );
+            //lTDRTrip.mDepartureDatetime = lDateOut;
+            //lTDRTrip.mArrivalDatetime   = lDateOut;
+
+            JSONArray lFlights = lDate.getJSONArray( "flights" );
+            for( int lFlightIndex = 0; lFlightIndex < lFlights.length(); lFlightIndex++ )
             {
-                case 0: // outbound normal price
-                    lTrip = lTrips.get( lCellIndex / 2 );
-                    lTrip.mPrices_BasicFare_Normal = lPrice;
-                    break;
-                case 1: // outbound business price
-                    lTrip.mPrices_PlusFare_Normal = lPrice;
-                    break;
-            }
-            lCellIndex++;
-        }
-        return lTrips;
-    }
+                TravelData_RESULT.TravelData_PossibleTrips lTripClone = (TravelData_RESULT.TravelData_PossibleTrips)lTDRTrip.clone();
 
-    private void ConvertToWizzairFormatAndStore( ArrayList<TravelData_RESULT.TravelData_PossibleTrips> aTrips )
-    {
-        for( TravelData_RESULT.TravelData_PossibleTrips lTrip : aTrips )
-        {
-            lTrip.mArrivalDatetime = DatetimeHelper.ConvertFromRyanairFormat(lTrip.mArrivalDatetime);
-            lTrip.mDepartureDatetime = DatetimeHelper.ConvertFromRyanairFormat(lTrip.mDepartureDatetime);
-            lTrip.mPrices_BasicFare_Normal = CurrencyHelper.ConvertFromRyanairFormat(lTrip.mPrices_BasicFare_Normal);
-            lTrip.mPrices_PlusFare_Normal = CurrencyHelper.ConvertFromRyanairFormat(lTrip.mPrices_PlusFare_Normal);
-            mTravelDataResult.mTrips.add(lTrip);
+                JSONObject lFlight = lFlights.getJSONObject( lFlightIndex );
+                JSONArray lTime = lFlight.getJSONArray( "time" );
+                lTripClone.mDepartureDatetime = lTime.getString( 0 );
+                lTripClone.mArrivalDatetime   = lTime.getString( 1 );
+
+                JSONObject lRegularFare  = lFlight.getJSONObject( "regularFare" );
+                JSONObject lBusinessFare = lFlight.getJSONObject( "regularFare" );
+
+                ParseFares( lRegularFare, FareType.Normal, lTripClone, aCurrency );
+                ParseFares( lBusinessFare, FareType.Business, lTripClone, aCurrency );
+                ConvertToWizzairFormatAndStore( lTripClone );
+            }
         }
     }
 
-    private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
+    private void FillTheForm( TravelData_INPUT aTravelDataInput ) throws URISyntaxException, IOException
     {
+        //String lUrl = "https://desktopapps.ryanair.com/en-gb/availability?ADT=1&CHD=0&DateIn=2016-07-31&" +
+        //        "DateOut=2017-01-04&Destination=FAO&FlexDaysIn=6&FlexDaysOut=6&INF=0&Origin=DUB&RoundTrip=true&TEEN=0";
+        String lUrl = "https://desktopapps.ryanair.com/en-gb/availability?ADT="
+                + aTravelDataInput.mAdultNumber
+                + "&CHD=" + aTravelDataInput.mChildNumber
+                + "&DateIn=" + aTravelDataInput.mDepartureDay
+                + "&DateOut=" + aTravelDataInput.mReturnDay
+                + "&Destination=" + aTravelDataInput.mAirportCode_GoingTo
+                + "&FlexDaysIn=6&FlexDaysOut=6&INF=" + aTravelDataInput.mInfantNumber
+                + "&Origin=" + aTravelDataInput.mAirportCode_LeavingFrom
+                + "&RoundTrip=" + ( aTravelDataInput.mReturnTicket ? "true" : "false" )
+                + "&TEEN=0";
+
+//        String lTestJsonString = "\n" +
+  //              "{\"currency\":\"EUR\",\"currPrecision\":2,\"trips\":[{\"origin\":\"DUB\",\"destination\":\"FAO\",\"dates\":[{\"dateOut\":\"2017-01-04T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7032\",\"time\":[\"2017-01-04T17:25:00.000\",\"2017-01-04T20:25:00.000\"],\"timeUTC\":[\"2017-01-04T17:25:00.000Z\",\"2017-01-04T20:25:00.000Z\"],\"duration\":\"03:00\",\"faresLeft\":-1,\"flightKey\":\"FR~7032~ ~~DUB~01/04/2017 17:25~FAO~01/04/2017 20:25~\",\"infantsLeft\":18,\"regularFare\":{\"fareKey\":\"0~W~~WZ14LOW~BO14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":50.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":50.9900}]},\"businessFare\":{\"fareKey\":\"0~W~~W14LBUS~BS14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":124.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":124.9900}]}}]},{\"dateOut\":\"2017-01-05T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7032\",\"time\":[\"2017-01-05T06:25:00.000\",\"2017-01-05T09:25:00.000\"],\"timeUTC\":[\"2017-01-05T06:25:00.000Z\",\"2017-01-05T09:25:00.000Z\"],\"duration\":\"03:00\",\"faresLeft\":-1,\"flightKey\":\"FR~7032~ ~~DUB~01/05/2017 06:25~FAO~01/05/2017 09:25~\",\"infantsLeft\":18,\"regularFare\":{\"fareKey\":\"0~W~~WZ14LOW~BO14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":50.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":50.9900}]},\"businessFare\":{\"fareKey\":\"0~W~~W14LBUS~BS14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":124.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":124.9900}]}}]},{\"dateOut\":\"2017-01-06T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7032\",\"time\":[\"2017-01-06T17:25:00.000\",\"2017-01-06T20:25:00.000\"],\"timeUTC\":[\"2017-01-06T17:25:00.000Z\",\"2017-01-06T20:25:00.000Z\"],\"duration\":\"03:00\",\"faresLeft\":-1,\"flightKey\":\"FR~7032~ ~~DUB~01/06/2017 17:25~FAO~01/06/2017 20:25~\",\"infantsLeft\":18,\"regularFare\":{\"fareKey\":\"0~W~~WZ14LOW~BO14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":50.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":50.9900}]},\"businessFare\":{\"fareKey\":\"0~W~~W14LBUS~BS14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":124.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":124.9900}]}}]},{\"dateOut\":\"2017-01-07T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7032\",\"time\":[\"2017-01-07T06:25:00.000\",\"2017-01-07T09:25:00.000\"],\"timeUTC\":[\"2017-01-07T06:25:00.000Z\",\"2017-01-07T09:25:00.000Z\"],\"duration\":\"03:00\",\"faresLeft\":-1,\"flightKey\":\"FR~7032~ ~~DUB~01/07/2017 06:25~FAO~01/07/2017 09:25~\",\"infantsLeft\":18,\"regularFare\":{\"fareKey\":\"0~W~~WZ14LOW~BO14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":50.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":50.9900}]},\"businessFare\":{\"fareKey\":\"0~W~~W14LBUS~BS14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":124.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":124.9900}]}}]},{\"dateOut\":\"2017-01-08T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7032\",\"time\":[\"2017-01-08T17:25:00.000\",\"2017-01-08T20:25:00.000\"],\"timeUTC\":[\"2017-01-08T17:25:00.000Z\",\"2017-01-08T20:25:00.000Z\"],\"duration\":\"03:00\",\"faresLeft\":-1,\"flightKey\":\"FR~7032~ ~~DUB~01/08/2017 17:25~FAO~01/08/2017 20:25~\",\"infantsLeft\":18,\"regularFare\":{\"fareKey\":\"0~W~~WZ14LOW~BO14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":50.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":50.9900}]},\"businessFare\":{\"fareKey\":\"0~W~~W14LBUS~BS14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":124.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":124.9900}]}}]},{\"dateOut\":\"2017-01-09T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7032\",\"time\":[\"2017-01-09T17:25:00.000\",\"2017-01-09T20:25:00.000\"],\"timeUTC\":[\"2017-01-09T17:25:00.000Z\",\"2017-01-09T20:25:00.000Z\"],\"duration\":\"03:00\",\"faresLeft\":-1,\"flightKey\":\"FR~7032~ ~~DUB~01/09/2017 17:25~FAO~01/09/2017 20:25~\",\"infantsLeft\":18,\"regularFare\":{\"fareKey\":\"0~W~~WZ14LOW~BO14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":50.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":50.9900}]},\"businessFare\":{\"fareKey\":\"0~W~~W14LBUS~BS14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":124.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":124.9900}]}}]},{\"dateOut\":\"2017-01-10T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7032\",\"time\":[\"2017-01-10T06:25:00.000\",\"2017-01-10T09:25:00.000\"],\"timeUTC\":[\"2017-01-10T06:25:00.000Z\",\"2017-01-10T09:25:00.000Z\"],\"duration\":\"03:00\",\"faresLeft\":-1,\"flightKey\":\"FR~7032~ ~~DUB~01/10/2017 06:25~FAO~01/10/2017 09:25~\",\"infantsLeft\":18,\"regularFare\":{\"fareKey\":\"0~W~~WZ14LOW~BO14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":50.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":50.9900}]},\"businessFare\":{\"fareKey\":\"0~W~~W14LBUS~BS14~~1~X\",\"fareClass\":\"W\",\"fares\":[{\"type\":\"ADT\",\"amount\":124.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":124.9900}]}}]}]},{\"origin\":\"FAO\",\"destination\":\"DUB\",\"dates\":[{\"dateOut\":\"2016-07-31T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7031\",\"time\":[\"2016-07-31T06:45:00.000\",\"2016-07-31T09:40:00.000\"],\"timeUTC\":[\"2016-07-31T05:45:00.000Z\",\"2016-07-31T08:40:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":-1,\"flightKey\":\"FR~7031~ ~~FAO~07/31/2016 06:45~DUB~07/31/2016 09:40~\",\"infantsLeft\":16,\"regularFare\":{\"fareKey\":\"0~K~~K14HIGH~BO14~~1~X\",\"fareClass\":\"K\",\"fares\":[{\"type\":\"ADT\",\"amount\":133.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":133.9900}]},\"businessFare\":{\"fareKey\":\"0~K~~K14HBUS~BS14~~1~X\",\"fareClass\":\"K\",\"fares\":[{\"type\":\"ADT\",\"amount\":219.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":219.9900}]}},{\"flightNumber\":\"FR 7035\",\"time\":[\"2016-07-31T09:45:00.000\",\"2016-07-31T12:40:00.000\"],\"timeUTC\":[\"2016-07-31T08:45:00.000Z\",\"2016-07-31T11:40:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":5,\"flightKey\":\"FR~7035~ ~~FAO~07/31/2016 09:45~DUB~07/31/2016 12:40~\",\"infantsLeft\":16,\"regularFare\":{\"fareKey\":\"0~K~~K14HIGH~BO14~~1~X\",\"fareClass\":\"K\",\"fares\":[{\"type\":\"ADT\",\"amount\":133.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":133.9900}]},\"businessFare\":{\"fareKey\":\"0~K~~K14HBUS~BS14~~1~X\",\"fareClass\":\"K\",\"fares\":[{\"type\":\"ADT\",\"amount\":219.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":219.9900}]}},{\"flightNumber\":\"FR 7033\",\"time\":[\"2016-07-31T16:55:00.000\",\"2016-07-31T19:50:00.000\"],\"timeUTC\":[\"2016-07-31T15:55:00.000Z\",\"2016-07-31T18:50:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":-1,\"flightKey\":\"FR~7033~ ~~FAO~07/31/2016 16:55~DUB~07/31/2016 19:50~\",\"infantsLeft\":18,\"regularFare\":{\"fareKey\":\"0~L~~L14HIGH~BO14~~1~X\",\"fareClass\":\"L\",\"fares\":[{\"type\":\"ADT\",\"amount\":180.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":180.9900}]},\"businessFare\":{\"fareKey\":\"0~L~~L14HBUS~BS14~~1~X\",\"fareClass\":\"L\",\"fares\":[{\"type\":\"ADT\",\"amount\":269.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":269.9900}]}}]},{\"dateOut\":\"2016-08-01T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7035\",\"time\":[\"2016-08-01T09:45:00.000\",\"2016-08-01T12:40:00.000\"],\"timeUTC\":[\"2016-08-01T08:45:00.000Z\",\"2016-08-01T11:40:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":-1,\"flightKey\":\"FR~7035~ ~~FAO~08/01/2016 09:45~DUB~08/01/2016 12:40~\",\"infantsLeft\":15,\"regularFare\":{\"fareKey\":\"0~L~~L14HIGH~BO14~~1~X\",\"fareClass\":\"L\",\"fares\":[{\"type\":\"ADT\",\"amount\":180.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":180.9900}]},\"businessFare\":{\"fareKey\":\"0~L~~L14HBUS~BS14~~1~X\",\"fareClass\":\"L\",\"fares\":[{\"type\":\"ADT\",\"amount\":269.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":269.9900}]}},{\"flightNumber\":\"FR 7033\",\"time\":[\"2016-08-01T16:55:00.000\",\"2016-08-01T19:50:00.000\"],\"timeUTC\":[\"2016-08-01T15:55:00.000Z\",\"2016-08-01T18:50:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":2,\"flightKey\":\"FR~7033~ ~~FAO~08/01/2016 16:55~DUB~08/01/2016 19:50~\",\"infantsLeft\":16,\"regularFare\":{\"fareKey\":\"0~B~~B14HIGH~BO14~~1~X\",\"fareClass\":\"B\",\"fares\":[{\"type\":\"ADT\",\"amount\":240.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":240.9900}]},\"businessFare\":{\"fareKey\":\"0~B~~B14HBUS~BS14~~1~X\",\"fareClass\":\"B\",\"fares\":[{\"type\":\"ADT\",\"amount\":334.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":334.9900}]}}]},{\"dateOut\":\"2016-08-02T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7035\",\"time\":[\"2016-08-02T09:45:00.000\",\"2016-08-02T12:40:00.000\"],\"timeUTC\":[\"2016-08-02T08:45:00.000Z\",\"2016-08-02T11:40:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":-1,\"flightKey\":\"FR~7035~ ~~FAO~08/02/2016 09:45~DUB~08/02/2016 12:40~\",\"infantsLeft\":16,\"regularFare\":{\"fareKey\":\"0~E~~E14HIGH~BO14~~1~X\",\"fareClass\":\"E\",\"fares\":[{\"type\":\"ADT\",\"amount\":155.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":155.9900}]},\"businessFare\":{\"fareKey\":\"0~E~~E14HBUS~BS14~~1~X\",\"fareClass\":\"E\",\"fares\":[{\"type\":\"ADT\",\"amount\":239.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":239.9900}]}},{\"flightNumber\":\"FR 7033\",\"time\":[\"2016-08-02T16:55:00.000\",\"2016-08-02T19:50:00.000\"],\"timeUTC\":[\"2016-08-02T15:55:00.000Z\",\"2016-08-02T18:50:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":4,\"flightKey\":\"FR~7033~ ~~FAO~08/02/2016 16:55~DUB~08/02/2016 19:50~\",\"infantsLeft\":18,\"regularFare\":{\"fareKey\":\"0~L~~L14HIGH~BO14~~1~X\",\"fareClass\":\"L\",\"fares\":[{\"type\":\"ADT\",\"amount\":180.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":180.9900}]},\"businessFare\":{\"fareKey\":\"0~L~~L14HBUS~BS14~~1~X\",\"fareClass\":\"L\",\"fares\":[{\"type\":\"ADT\",\"amount\":269.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":269.9900}]}}]},{\"dateOut\":\"2016-08-03T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7035\",\"time\":[\"2016-08-03T09:45:00.000\",\"2016-08-03T12:40:00.000\"],\"timeUTC\":[\"2016-08-03T08:45:00.000Z\",\"2016-08-03T11:40:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":-1,\"flightKey\":\"FR~7035~ ~~FAO~08/03/2016 09:45~DUB~08/03/2016 12:40~\",\"infantsLeft\":15,\"regularFare\":{\"fareKey\":\"0~F~~F14HIGH~BO14~~1~X\",\"fareClass\":\"F\",\"fares\":[{\"type\":\"ADT\",\"amount\":209.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":209.9900}]},\"businessFare\":{\"fareKey\":\"0~F~~F14HBUS~BS14~~1~X\",\"fareClass\":\"F\",\"fares\":[{\"type\":\"ADT\",\"amount\":299.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":299.9900}]}},{\"flightNumber\":\"FR 7033\",\"time\":[\"2016-08-03T16:55:00.000\",\"2016-08-03T19:50:00.000\"],\"timeUTC\":[\"2016-08-03T15:55:00.000Z\",\"2016-08-03T18:50:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":1,\"flightKey\":\"FR~7033~ ~~FAO~08/03/2016 16:55~DUB~08/03/2016 19:50~\",\"infantsLeft\":18,\"regularFare\":{\"fareKey\":\"0~F~~F14HIGH~BO14~~1~X\",\"fareClass\":\"F\",\"fares\":[{\"type\":\"ADT\",\"amount\":209.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":209.9900}]},\"businessFare\":{\"fareKey\":\"0~F~~F14HBUS~BS14~~1~X\",\"fareClass\":\"F\",\"fares\":[{\"type\":\"ADT\",\"amount\":299.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":299.9900}]}}]},{\"dateOut\":\"2016-08-04T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7035\",\"time\":[\"2016-08-04T09:45:00.000\",\"2016-08-04T12:40:00.000\"],\"timeUTC\":[\"2016-08-04T08:45:00.000Z\",\"2016-08-04T11:40:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":1,\"flightKey\":\"FR~7035~ ~~FAO~08/04/2016 09:45~DUB~08/04/2016 12:40~\",\"infantsLeft\":17,\"regularFare\":{\"fareKey\":\"0~E~~E14HIGH~BO14~~1~X\",\"fareClass\":\"E\",\"fares\":[{\"type\":\"ADT\",\"amount\":155.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":155.9900}]},\"businessFare\":{\"fareKey\":\"0~E~~E14HBUS~BS14~~1~X\",\"fareClass\":\"E\",\"fares\":[{\"type\":\"ADT\",\"amount\":239.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":239.9900}]}},{\"flightNumber\":\"FR 7033\",\"time\":[\"2016-08-04T16:55:00.000\",\"2016-08-04T19:50:00.000\"],\"timeUTC\":[\"2016-08-04T15:55:00.000Z\",\"2016-08-04T18:50:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":3,\"flightKey\":\"FR~7033~ ~~FAO~08/04/2016 16:55~DUB~08/04/2016 19:50~\",\"infantsLeft\":14,\"regularFare\":{\"fareKey\":\"0~L~~L14HIGH~BO14~~1~X\",\"fareClass\":\"L\",\"fares\":[{\"type\":\"ADT\",\"amount\":180.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":180.9900}]},\"businessFare\":{\"fareKey\":\"0~L~~L14HBUS~BS14~~1~X\",\"fareClass\":\"L\",\"fares\":[{\"type\":\"ADT\",\"amount\":269.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":269.9900}]}}]},{\"dateOut\":\"2016-08-05T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7035\",\"time\":[\"2016-08-05T09:45:00.000\",\"2016-08-05T12:40:00.000\"],\"timeUTC\":[\"2016-08-05T08:45:00.000Z\",\"2016-08-05T11:40:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":-1,\"flightKey\":\"FR~7035~ ~~FAO~08/05/2016 09:45~DUB~08/05/2016 12:40~\",\"infantsLeft\":16,\"regularFare\":{\"fareKey\":\"0~F~~F14HIGH~BO14~~1~X\",\"fareClass\":\"F\",\"fares\":[{\"type\":\"ADT\",\"amount\":209.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":209.9900}]},\"businessFare\":{\"fareKey\":\"0~F~~F14HBUS~BS14~~1~X\",\"fareClass\":\"F\",\"fares\":[{\"type\":\"ADT\",\"amount\":299.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":299.9900}]}},{\"flightNumber\":\"FR 7033\",\"time\":[\"2016-08-05T16:55:00.000\",\"2016-08-05T19:50:00.000\"],\"timeUTC\":[\"2016-08-05T15:55:00.000Z\",\"2016-08-05T18:50:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":-1,\"flightKey\":\"FR~7033~ ~~FAO~08/05/2016 16:55~DUB~08/05/2016 19:50~\",\"infantsLeft\":12,\"regularFare\":{\"fareKey\":\"0~L~~L14HIGH~BO14~~1~X\",\"fareClass\":\"L\",\"fares\":[{\"type\":\"ADT\",\"amount\":180.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":180.9900}]},\"businessFare\":{\"fareKey\":\"0~L~~L14HBUS~BS14~~1~X\",\"fareClass\":\"L\",\"fares\":[{\"type\":\"ADT\",\"amount\":269.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":269.9900}]}}]},{\"dateOut\":\"2016-08-06T00:00:00.000\",\"flights\":[{\"flightNumber\":\"FR 7031\",\"time\":[\"2016-08-06T06:25:00.000\",\"2016-08-06T09:20:00.000\"],\"timeUTC\":[\"2016-08-06T05:25:00.000Z\",\"2016-08-06T08:20:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":5,\"flightKey\":\"FR~7031~ ~~FAO~08/06/2016 06:25~DUB~08/06/2016 09:20~\",\"infantsLeft\":17,\"regularFare\":{\"fareKey\":\"0~E~~E14HIGH~BO14~~1~X\",\"fareClass\":\"E\",\"fares\":[{\"type\":\"ADT\",\"amount\":155.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":155.9900}]},\"businessFare\":{\"fareKey\":\"0~E~~E14HBUS~BS14~~1~X\",\"fareClass\":\"E\",\"fares\":[{\"type\":\"ADT\",\"amount\":239.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":239.9900}]}},{\"flightNumber\":\"FR 7035\",\"time\":[\"2016-08-06T09:45:00.000\",\"2016-08-06T12:40:00.000\"],\"timeUTC\":[\"2016-08-06T08:45:00.000Z\",\"2016-08-06T11:40:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":1,\"flightKey\":\"FR~7035~ ~~FAO~08/06/2016 09:45~DUB~08/06/2016 12:40~\",\"infantsLeft\":17,\"regularFare\":{\"fareKey\":\"0~L~~L14HIGH~BO14~~1~X\",\"fareClass\":\"L\",\"fares\":[{\"type\":\"ADT\",\"amount\":180.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":180.9900}]},\"businessFare\":{\"fareKey\":\"0~L~~L14HBUS~BS14~~1~X\",\"fareClass\":\"L\",\"fares\":[{\"type\":\"ADT\",\"amount\":269.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":269.9900}]}},{\"flightNumber\":\"FR 7033\",\"time\":[\"2016-08-06T16:55:00.000\",\"2016-08-06T19:50:00.000\"],\"timeUTC\":[\"2016-08-06T15:55:00.000Z\",\"2016-08-06T18:50:00.000Z\"],\"duration\":\"02:55\",\"faresLeft\":3,\"flightKey\":\"FR~7033~ ~~FAO~08/06/2016 16:55~DUB~08/06/2016 19:50~\",\"infantsLeft\":18,\"regularFare\":{\"fareKey\":\"0~F~~F14HIGH~BO14~~1~X\",\"fareClass\":\"F\",\"fares\":[{\"type\":\"ADT\",\"amount\":209.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":209.9900}]},\"businessFare\":{\"fareKey\":\"0~F~~F14HBUS~BS14~~1~X\",\"fareClass\":\"F\",\"fares\":[{\"type\":\"ADT\",\"amount\":299.9900,\"count\":1,\"hasDiscount\":false,\"publishedFare\":299.9900}]}}]}]}],\"serverTimeUTC\":\"2016-05-13T13:37:25.500Z\"}";
+
+        URI lURI = null;
+        JSONTokener lTokener = null;
+		lURI = new URI( lUrl );
+		lTokener = new JSONTokener( lURI.toURL().openStream());
+        //lTokener = new JSONTokener(new ByteArrayInputStream( lTestJsonString.getBytes() ));
+        JSONObject root = new JSONObject( lTokener );
+        String lCurrency = ConvertFrom3Digits( root.getString( "currency" ));
+        JSONArray lTrips = root.getJSONArray( "trips" );
+
         mTravelDataResult = new TravelData_RESULT();
         mTravelDataResult.mAirline = aTravelDataInput.mAirline;
         mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
         mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
         mTravelDataResult.mTravelDataInput = aTravelDataInput;
-        TravelData_RESULT.TravelData_PossibleTrips lTripOutbound = null;
-        TravelData_RESULT.TravelData_PossibleTrips lTripReturn   = null;
 
-        java.util.List<DOMElement> lFlightsBodyElements = document.findElements(By.className("slide active"));
-        if( lFlightsBodyElements.size() == 0 )
-            lFlightsBodyElements = document.findElements(By.className("slide ng-scope active"));
-        if( lFlightsBodyElements.size() == 0 )
-            mLogger.warn( "There is no available 'slide active'! Is something wrong?" );
-
-        int lCellIndex = 0;
-        for (DOMElement lFlightBodyElement : lFlightsBodyElements)
+        for( int lTripIndex = 0; lTripIndex < lTrips.length(); lTripIndex++ )
         {
-            if (lCellIndex == 0)
-            {
-                lTripOutbound = new TravelData_RESULT.TravelData_PossibleTrips();
-                lTripOutbound.mOutboundTrip = true;
-
-                // date
-                java.util.List<DOMElement> lDate1 = lFlightBodyElement.findElements(By.className("date"));
-                if( lDate1.size() == 0 )
-                    lDate1 = lFlightBodyElement.findElements(By.className("date ng-binding"));
-                if( lDate1.size() == 0 )
-                    mLogger.warn( "There is no available 'date'! Is something wrong?" );
-
-                lTripOutbound.mDepartureDatetime = ((DOMElement) lDate1.get(0)).getInnerText(); // Only the date
-                lTripOutbound.mArrivalDatetime = lTripOutbound.mDepartureDatetime;
-
-                // price
-//                java.util.List<DOMElement> lPrice1 = lFlightBodyElement.findElements(By.className("fare ng-binding"));
-//                lTripOutbound.mPrices_BasicFare_Normal = ((DOMElement) lPrice1.get(0)).getInnerText();
-                lCellIndex++;
-            }
-            else if (lCellIndex == 1)
-            {
-                lTripReturn = new TravelData_RESULT.TravelData_PossibleTrips();
-                lTripReturn.mOutboundTrip = false;
-                // date
-                java.util.List<DOMElement> lDate1 = lFlightBodyElement.findElements(By.className("date"));
-                if( lDate1.size() == 0 )
-                    lDate1 = lFlightBodyElement.findElements(By.className("date ng-binding"));
-                if( lDate1.size() == 0 )
-                    mLogger.warn( "There is no available 'date'! Is something wrong?" );
-                lTripReturn.mDepartureDatetime = ((DOMElement) lDate1.get(0)).getInnerText();  // Only the date
-                lTripReturn.mArrivalDatetime = lTripReturn.mDepartureDatetime;
-
-                // price
-//                java.util.List<DOMElement> lPrice1 = lFlightBodyElement.findElements(
-//                        By.className("fare ng-binding"));
-//                lTripReturn.mPrices_BasicFare_Normal = ((DOMElement) lPrice1.get(0)).getInnerText();
-                //lTrip.mPrices_PlusFare_Normal;
-                lCellIndex++;
-            }
+            ParseTrip( lTrips.getJSONObject( lTripIndex ), lCurrency );
         }
-
-
-        DOMElement lFlightOutbound = document.findElement(By.id( "outbound" ));
-        DOMElement lFlightInbound = document.findElement(By.id( "inbound" ));
-
-        ArrayList<TravelData_RESULT.TravelData_PossibleTrips> lOutboundTrips = CollectDatas_Trips( lFlightOutbound, lTripOutbound );
-        ArrayList<TravelData_RESULT.TravelData_PossibleTrips> lInboundTrips = CollectDatas_Trips( lFlightInbound, lTripReturn );
-
-        ConvertToWizzairFormatAndStore( lOutboundTrips );
-        ConvertToWizzairFormatAndStore( lInboundTrips );
         ResultQueue.getInstance().push( mTravelDataResult );
-    }
-
-    private void ClickDateOnTheCalendar(int aDay, int aStartX, int aStartY)
-    {
-        String lDay = String.valueOf(aDay);
-        for (int lY = 0; lY < 7; lY++)
-        {
-            for (int lX = 0; lX < 7; lX++)
-            {
-                DOMNodeAtPoint lNodeAtPoint = mBrowser.getNodeAtPoint(aStartX + lX * 44, aStartY + lY * 41);
-                DOMElement     lElement     = (DOMElement) lNodeAtPoint.getNode();
-                if (lElement != null)
-                {
-                    try
-                    {
-                        if (lDay.equals(lElement.getInnerText()))
-                        {
-                            // The robot and the JxBrowser's positioning is different, we have to correct it.
-                            MouseLeftClick(aStartX + lX * 44 -4, aStartY + lY * 41 - 6 );
-                            //mRobot.mouseMove( aStartX + lX * 44 + 5, aStartY + lY * 41 + 32 );
-                            return;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        mLogger.error("Something wrong on the ryanair's calendar");
-                    }
-                }
-            }
-        }
-    }
-
-    private void ClickDateOnTheLeftCalendar(int iDay)
-    {
-        ClickDateOnTheCalendar(iDay, 212, 661);
-    }
-
-    private void ClickDateOnTheRightCalendar(int iDay)
-    {
-        ClickDateOnTheCalendar(iDay, 212 + 390, 661);
-    }
-
-    private void SelectTheDateOnTheCalendars(String aDateTime)
-    {
-        String lCalendarHeaderLeaving = DatetimeHelper.CreateRyanairCalendarHeader(aDateTime);
-        int    lDay                   = DatetimeHelper.GetDayOfMonth(aDateTime);
-
-        while (true)
-        {
-            mRobot.delay(1000);
-
-            // read the left calendar header
-            DOMNodeAtPoint lNodeAtPoint   = mBrowser.getNodeAtPoint(222, 560);
-            DOMElement     lElement       = (DOMElement) lNodeAtPoint.getNode();
-            String         lLeftMonthYear = lElement.getInnerText();
-
-            // read the right calendar header
-            lNodeAtPoint = mBrowser.getNodeAtPoint(600, 560);
-            lElement = (DOMElement) lNodeAtPoint.getNode();
-            String lRightMonthYear = lElement.getInnerText();
-
-            System.out.println("lCalendarHeaderLeaving: " + lCalendarHeaderLeaving + "\nlLeftMonthYear: " +
-                                       lLeftMonthYear + "\nlRightMonthYear: " + lRightMonthYear);
-            int lLeftCompare = DatetimeHelper.CompareRyanairCalendarHeaders(lCalendarHeaderLeaving,
-                                                                            lLeftMonthYear);
-            if (lLeftCompare == -1)
-            { // page on the left calendar
-                MouseLeftClick(154, 695);
-            }
-            else if (lLeftCompare == 0)
-            { // click on the left calendar's day number
-                ClickDateOnTheLeftCalendar(lDay);
-                mRobot.delay(1000);
-                break;
-            }
-            else if (lLeftCompare == 1)
-            {
-                int lRightCompare = DatetimeHelper.CompareRyanairCalendarHeaders(lCalendarHeaderLeaving,
-                                                                                 lRightMonthYear);
-                if (lRightCompare == 1)
-                { // page on the right calendar
-                    MouseLeftClick(910, 695);
-                }
-                else if (lRightCompare == 0)
-                { // click on the right calendar's day number
-                    ClickDateOnTheRightCalendar(lDay);
-                    mRobot.delay(1000);
-                    break;
-                }
-            }
-        }
-    }
-
-    private void FillTheForm(DOMDocument aDOMDocument, TravelData_INPUT aTravelDataInput)
-    {
-        String lAirportLabel  = aTravelDataInput.mAirportCode_LeavingFrom + "\n";
-        String lAirportLabel2 = aTravelDataInput.mAirportCode_GoingTo + "\n";
-
-        Sleep(4000);
-        mInsets = mFrame.getInsets();
-
-        // click into the leaving from field
-        MouseLeftClick(210, 450);
-
-        // fill the leaving from field
-        PressCtrlA();
-        Sleep(1000);
-        PressCtrlA();
-        PressDelete();
-        TypeText(lAirportLabel);
-
-        Sleep(500);
-
-        // click into the going to field
-        MouseLeftClick(530, 450);
-
-        // fill the going to field
-        PressCtrlA();
-        PressDelete();
-        TypeText(lAirportLabel2);
-
-        SelectTheDateOnTheCalendars(aTravelDataInput.mDepartureDay);
-        SelectTheDateOnTheCalendars(aTravelDataInput.mReturnDay);
-
-        //mRobot.delay(1000);
-
-        // passengers
-        // one way / return ticket
-    }
-
-    private void ClickTheSearchButton(DOMDocument aDOMDocument)
-    {
-        String lSleep = Util.Configuration.getInstance().getValue("/configuration/global/DelayBeforeClick", "3");
-        Sleep(1000 * Integer.parseInt(lSleep));
-
-        // click the Let's go (search) button
-        MouseLeftClick(834, 500);
     }
 
     public void run()
     {
-        // the JxBrowser's loadlistener doesn't work with the ryanair page
-        // so, I have to observ the result.
-
         try
         {
             System.out.println("Thread::run");
@@ -555,63 +425,47 @@ public class RyanAirPageGuest extends WebPageGuest implements Runnable
             mThreadStopped = false;
             while (!mThreadStopped)
             {
-                PageIdentifier();
-
                 int lSearQueueSize;
                 synchronized (mMutex)
                 {
                     lSearQueueSize = mSearchQueue.size();
                 }
 
-                if (getBrowserState() == null)
+                if ( lSearQueueSize == 0 )
                 {
                     Sleep(100);
                     continue;
                 }
 
-                String lBrowserState = getBrowserState().toString();
-                if ((lSearQueueSize == 0 && !lBrowserState.equals(
-                        "BrowserStateSearchingFinished")) || lBrowserState.equals("BrowserStateInit"))
+                TravelData_INPUT lTravelDataInput = null;
+                synchronized (mMutex)
                 {
-                    Sleep(100);
-                    continue;
+                    lTravelDataInput = mSearchQueue.remove(0);
                 }
 
-                if (lBrowserState.equals("BrowserStateSearchingFinished"))
+                try
                 {
-                    BrowserStateSearchingFinished lState           = (BrowserStateSearchingFinished) getBrowserState();
-                    TravelData_INPUT              lTravelDataInput = lState.getTravelDataInput();
-                    DOMDocument                   lDOMDocument     = lState.getDOMDocument();
-
-                    // The last search has been finished, collect the datas, start a new search
-                    CollectDatas(lDOMDocument, lTravelDataInput);
-                    mPageType = PageType.PT_UNKNOWN;
-                    new BrowserStateInit().doAction(this);
-                    mBrowser.loadURL("http://www.ryanair.com");
-                    Sleep(5000);
-                    new BrowserStateReadyToSearch(lDOMDocument).doAction(this);
+                    FillTheForm( lTravelDataInput );
                 }
-                else if (lBrowserState.equals("BrowserStateReadyToSearch"))
+                catch( URISyntaxException e )
                 {
-                    BrowserStateReadyToSearch lState       = (BrowserStateReadyToSearch) getBrowserState();
-                    TravelData_INPUT          lTravelDataInput;
-                    DOMDocument               lDOMDocument = lState.getDOMDocument();
-
-                    synchronized (mMutex)
-                    {
-                        lTravelDataInput = mSearchQueue.remove(0);
-                    }
-                    new BrowserStateSearching(lTravelDataInput).doAction(this);
-
-                    FillTheForm(lDOMDocument, lTravelDataInput);
-                    ClickTheSearchButton(lDOMDocument);
                 }
+                catch( IOException e )
+                {
+
+                }
+
+                String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
+                Sleep( 1000 * Integer.parseInt( lSleep ));
             }
             System.out.println("run()");
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            StringWriter lStringWriter = new StringWriter();
+            PrintWriter lPrintWriter = new PrintWriter(lStringWriter);
+            e.printStackTrace( lPrintWriter );
+            mLogger.error( "Exception in Ryanair.run: " + lStringWriter.toString() );
         }
     }
 }
