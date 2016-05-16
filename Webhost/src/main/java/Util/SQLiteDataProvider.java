@@ -104,7 +104,11 @@ public class SQLiteDataProvider implements DataProvider
 				else if( !lAirline.equals( lResultSet.getString( "Airline" )))
 					mLogger.warn( "'Airline' inconsistency?!" );
 
-				aDRComposer.add( lResultSet.getString( "SearchDatetime" ), lResultSet.getString( "Prices_BasicFare_Discount"), aCurrency);
+				String lPrice = lResultSet.getString( "Prices_BasicFare_Discount");
+				if( lPrice.length() == 0 )
+					lPrice = lResultSet.getString( "Prices_BasicFare_Normal");
+
+				aDRComposer.add( lResultSet.getString( "SearchDatetime" ), lPrice, aCurrency);
 			}
 			lResultSet.close();
 			lStmt.close();

@@ -21,6 +21,7 @@ public class SQLiteComposer implements SQLComposer
 				"\tDepartureDatetime,\n" +
 				"\tArrivalDatetime,\n" +
 				"\tPrices_BasicFare_Discount,\n" +
+				"\tPrices_BasicFare_Normal,\n" +
 				"\tSearchDatetime,\n" +
 				"\tSearch_ID\n" +
 				"FROM\n" +

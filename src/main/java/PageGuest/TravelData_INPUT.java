@@ -14,7 +14,7 @@ public class TravelData_INPUT implements Cloneable
 	public String  mChildNumber       = "0";
 	public String  mInfantNumber      = "0";
 	public boolean mNearbyAirports    = false;
-	public boolean mReturnTicket      = false;
+	public boolean mReturnTicket      = true;
 
 	public boolean set( String aName, String aValue )
 	{

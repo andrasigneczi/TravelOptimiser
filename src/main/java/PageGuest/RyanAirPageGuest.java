@@ -102,9 +102,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
             for (TravelData_INPUT lTDI : lSearchList)
             {
                 if (!lTDI.mAirline.equals(getAirline()))
-                {
                     continue;
-                }
 
                 if (!ValidateDate(lTDI.mDepartureDay, lTDI.mReturnDay))
                 {
@@ -114,9 +112,8 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
                 }
 
                 if (lTDI.mReturnDay.length() == 0)
-                {
                     lTDI.mReturnTicket = false;
-                }
+
                 mSearchQueue.add(lTDI);
             }
         }
@@ -320,14 +317,14 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
             if( aFareType == FareType.Normal )
             {
                 if( lHasDiccount )
-                    aTripClone.mPrices_BasicFare_Discount = String.valueOf( lPublishedFare ) + " " + aCurrency;
+                    aTripClone.mPrices_BasicFare_Discount = String.valueOf( lAmount ) + " " + aCurrency;
                 else
                     aTripClone.mPrices_BasicFare_Normal = String.valueOf( lPublishedFare ) + " " + aCurrency;
             }
             else
             {
                 if( lHasDiccount )
-                    aTripClone.mPrices_PlusFare_Discount = String.valueOf( lPublishedFare ) + " " + aCurrency;
+                    aTripClone.mPrices_PlusFare_Discount = String.valueOf( lAmount ) + " " + aCurrency;
                 else
                     aTripClone.mPrices_PlusFare_Normal = String.valueOf( lPublishedFare ) + " " + aCurrency;
             }
@@ -367,13 +364,19 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
                 lTripClone.mArrivalDatetime   = lTime.getString( 1 );
 
                 JSONObject lRegularFare  = lFlight.getJSONObject( "regularFare" );
-                JSONObject lBusinessFare = lFlight.getJSONObject( "regularFare" );
+                JSONObject lBusinessFare = lFlight.getJSONObject( "businessFare" );
 
                 ParseFares( lRegularFare, FareType.Normal, lTripClone, aCurrency );
                 ParseFares( lBusinessFare, FareType.Business, lTripClone, aCurrency );
                 ConvertToWizzairFormatAndStore( lTripClone );
             }
         }
+    }
+
+    private String FormatDate( String aDate )
+    {
+        String[] lParts = aDate.split("\\.", 0 );
+        return String.format( "%s-%s-%s", lParts[ 0 ], lParts[ 1 ], lParts[ 2 ] );
     }
 
     private void FillTheForm( TravelData_INPUT aTravelDataInput ) throws URISyntaxException, IOException
@@ -383,8 +386,8 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         String lUrl = "https://desktopapps.ryanair.com/en-gb/availability?ADT="
                 + aTravelDataInput.mAdultNumber
                 + "&CHD=" + aTravelDataInput.mChildNumber
-                + "&DateIn=" + aTravelDataInput.mDepartureDay
-                + "&DateOut=" + aTravelDataInput.mReturnDay
+                + "&DateIn=" + FormatDate( aTravelDataInput.mReturnDay )
+                + "&DateOut=" + FormatDate( aTravelDataInput.mDepartureDay )
                 + "&Destination=" + aTravelDataInput.mAirportCode_GoingTo
                 + "&FlexDaysIn=6&FlexDaysOut=6&INF=" + aTravelDataInput.mInfantNumber
                 + "&Origin=" + aTravelDataInput.mAirportCode_LeavingFrom

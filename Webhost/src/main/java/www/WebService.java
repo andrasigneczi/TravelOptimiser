@@ -158,7 +158,7 @@ public class WebService
 		int lContainerIndex = 0;
 		for( TravelData_INPUT lTDI : lSearchList )
 		{
-			if( !lTDI.mAirline.equals( "wizzair" ))
+			if( !lTDI.mAirline.equals( "wizzair" ) && !lTDI.mAirline.equals( "ryanair" ))
 				continue;
 
 			lTDI.mReturnTicket = ( lTDI.mReturnDatetime.length() != 0 );

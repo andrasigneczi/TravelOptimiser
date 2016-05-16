@@ -2,6 +2,7 @@ package Root;
 
 import PageGuest.ResultQueue;
 import PageGuest.TravelData_RESULT;
+import PageGuest.WebPageGuest;
 import Storage.FileWriterAgent;
 import Storage.SQLiteAgent;
 import Util.CurrencyHelper;
@@ -42,14 +43,15 @@ public class Main
             // Initialize the configuration
             Util.Configuration lConfiguration = Util.Configuration.getInstance();
 
-//            WebPageGuest lGuestW = WebPageGuestFactory.Create( "WizzAir" );
+            PageGuest.PageGuest lGuestW = PageGuestFactory.Create( "WizzAir" );
             PageGuest.PageGuest lGuestR = PageGuestFactory.Create( "RyanAir" );
 //            lGuestW.DoSearch( "SOF", "HHN", "2016.07.02.", "2016.07.05." );
             //lGuestR.DoSearch( "Dublin", "Faro", "2016.07.31.", "2017.01.04." );
-            lGuestR.DoSearch( "DUB", "FAO", "2016.07.31.", "2017.01.04." );
+            //lGuestR.DoSearch( "DUB", "FAO", "2016.07.31.", "2017.01.04." );
 //            lGuestR.DoSearch( "Frankfurt (HHN)", "Thessaloniki", "2016.09.03.", "2016.09.06." );
 
-            //lGuest.DoSearchFromConfig();
+            lGuestW.DoSearchFromConfig();
+            lGuestR.DoSearchFromConfig();
 
 
 //            lGuest.DoSearch( "SOF", "HHN", "2016.08.06.", "2016.08.09." );
@@ -76,7 +78,7 @@ public class Main
                 Thread.sleep(1000);
                 i--;
             }
- //           lGuestW.stop();
+            lGuestW.stop();
             lGuestR.stop();
             System.exit(-1);
         }
