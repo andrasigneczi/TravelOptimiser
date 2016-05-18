@@ -130,18 +130,52 @@ public class HighChartDataResultComposer extends DataResultComposer
 		return mFoundCurrency;
 	}
 
+	private class SummarizeNode
+	{
+		private double mValue;
+		private int mAddCount;
+
+		public double getValue()
+		{
+			return mValue;
+		}
+
+		public int getAddCount()
+		{
+			return mAddCount;
+		}
+
+		public SummarizeNode( double aValue )
+		{
+			mValue = aValue;
+			mAddCount = 0;
+		}
+
+		public void add( double aValue )
+		{
+			mValue += aValue;
+			mAddCount++;
+		}
+	}
+
+	/**
+	 * This function generate the char values of two charts. It ignores those points of charts
+	 * which date axis is different.
+	 * @param lComposer
+	 * @return
+	 */
 	public String Summarize( HighChartDataResultComposer lComposer )
 	{
-		Hashtable<String,Double> lDatesHash = new Hashtable<>();
+		// Collect points of the recent chart into a hashtable
+		Hashtable<String,SummarizeNode> lDatesHash = new Hashtable<>();
 		for( int i = 0; i < mUnfilteredDates.size(); i++ )
-			lDatesHash.put( mUnfilteredDates.get( i ), mUnfilteredValues.get( i ));
+			lDatesHash.put( mUnfilteredDates.get( i ), new SummarizeNode( mUnfilteredValues.get( i )));
 
+		// add values of those points from tha parameter chart, which date is equal
 		for( int i = 0; i < lComposer.mUnfilteredDates.size(); i++ )
 		{
 			if( lDatesHash.containsKey( lComposer.mUnfilteredDates.get( i )))
-				lDatesHash.replace( lComposer.mUnfilteredDates.get( i ), lComposer.mUnfilteredValues.get( i ) + lDatesHash.get( lComposer.mUnfilteredDates.get( i ) ));
-			else
-				lDatesHash.put( lComposer.mUnfilteredDates.get( i ), lComposer.mUnfilteredValues.get( i ));
+				lDatesHash.get( lComposer.mUnfilteredDates.get( i )).add( lComposer.mUnfilteredValues.get( i ));
 		}
 
 		ArrayList<Double> lValuesList = new ArrayList<Double>();
@@ -150,7 +184,10 @@ public class HighChartDataResultComposer extends DataResultComposer
 		SortedSet<String> keys = new TreeSet<String>(lDatesHash.keySet());
 		for (String key : keys)
 		{
-			addDates( lDatesList, lValuesList, key, lDatesHash.get( key ));
+			// ignore those points, which has single value, wasn't summarize with an other one
+			if( lDatesHash.get( key ).getAddCount() != 1 )
+				continue;
+			addDates( lDatesList, lValuesList, key, lDatesHash.get( key ).getValue());
 		}
 
 		String lResult = "";
