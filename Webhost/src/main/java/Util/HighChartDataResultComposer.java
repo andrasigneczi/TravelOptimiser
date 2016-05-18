@@ -2,8 +2,7 @@ package Util;
 
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * Created by Andras on 13/04/2016.
@@ -16,12 +15,16 @@ public class HighChartDataResultComposer extends DataResultComposer
 	// if 3 or more value one by one are the same in the list, only the first one and the last one will be displayed
 	private ArrayList<Double> mValues;
 	private ArrayList<String> mDates;
+	private ArrayList<Double> mUnfilteredValues;
+	private ArrayList<String> mUnfilteredDates;
 	private HashSet<String> mFoundCurrency;
 
 	public HighChartDataResultComposer()
 	{
 		mValues = new ArrayList<>( );
 		mDates = new ArrayList<>( );
+		mUnfilteredValues = new ArrayList<>( );
+		mUnfilteredDates = new ArrayList<>( );
 		mFoundCurrency = new HashSet<>( );
 	}
 
@@ -59,23 +62,49 @@ public class HighChartDataResultComposer extends DataResultComposer
 		double lDValue = Double.parseDouble( lBuffer.toString() );
 
 		aDate = aDate.replace( " ", "T" );
-		if( mValues.size() < 2 )
+		mUnfilteredDates.add( aDate );
+		mUnfilteredValues.add( lDValue );
+//		if( mValues.size() < 2 )
+//		{
+//			mDates.add( aDate );
+//			mValues.add( lDValue );
+//		}
+//		else
+//		{
+//			if( mValues.get( mValues.size() - 2 ).doubleValue() == mValues.get( mValues.size() - 1 ).doubleValue()
+//					&& mValues.get( mValues.size() - 1 ).doubleValue() == lDValue )
+//			{
+//				mDates.set( mValues.size() - 1, aDate );
+//				mValues.set( mValues.size() - 1, lDValue );
+//			}
+//			else
+//			{
+//				mDates.add( aDate );
+//				mValues.add( lDValue );
+//			}
+//		}
+		addDates( mDates, mValues, aDate, lDValue );
+	}
+
+	private void addDates( ArrayList<String> aDatesArray, ArrayList<Double> aValuesArray, String aDate, Double aValue )
+	{
+		if( aValuesArray.size() < 2 )
 		{
-			mDates.add( aDate );
-			mValues.add( lDValue );
+			aDatesArray.add( aDate );
+			aValuesArray.add( aValue );
 		}
 		else
 		{
-			if( mValues.get( mValues.size() - 2 ).doubleValue() == mValues.get( mValues.size() - 1 ).doubleValue()
-					&& mValues.get( mValues.size() - 1 ).doubleValue() == lDValue )
+			if( aValuesArray.get( aValuesArray.size() - 2 ).doubleValue() == aValuesArray.get( aValuesArray.size() - 1 ).doubleValue()
+					&& aValuesArray.get( aValuesArray.size() - 1 ).doubleValue() == aValue )
 			{
-				mDates.set( mValues.size() - 1, aDate );
-				mValues.set( mValues.size() - 1, lDValue );
+				aDatesArray.set( aValuesArray.size() - 1, aDate );
+				aValuesArray.set( aValuesArray.size() - 1, aValue );
 			}
 			else
 			{
-				mDates.add( aDate );
-				mValues.add( lDValue );
+				aDatesArray.add( aDate );
+				aValuesArray.add( aValue );
 			}
 		}
 	}
@@ -99,5 +128,39 @@ public class HighChartDataResultComposer extends DataResultComposer
 	public HashSet<String> getFoundCurrency()
 	{
 		return mFoundCurrency;
+	}
+
+	public String Summarize( HighChartDataResultComposer lComposer )
+	{
+		Hashtable<String,Double> lDatesHash = new Hashtable<>();
+		for( int i = 0; i < mUnfilteredDates.size(); i++ )
+			lDatesHash.put( mUnfilteredDates.get( i ), mUnfilteredValues.get( i ));
+
+		for( int i = 0; i < lComposer.mUnfilteredDates.size(); i++ )
+		{
+			if( lDatesHash.containsKey( lComposer.mUnfilteredDates.get( i )))
+				lDatesHash.replace( lComposer.mUnfilteredDates.get( i ), lComposer.mUnfilteredValues.get( i ) + lDatesHash.get( lComposer.mUnfilteredDates.get( i ) ));
+			else
+				lDatesHash.put( lComposer.mUnfilteredDates.get( i ), lComposer.mUnfilteredValues.get( i ));
+		}
+
+		ArrayList<Double> lValuesList = new ArrayList<Double>();
+		ArrayList<String> lDatesList  = new ArrayList<String>();
+
+		SortedSet<String> keys = new TreeSet<String>(lDatesHash.keySet());
+		for (String key : keys)
+		{
+			addDates( lDatesList, lValuesList, key, lDatesHash.get( key ));
+		}
+
+		String lResult = "";
+		for( int i = 0; i < lValuesList.size(); i++ )
+		{
+			if( lResult.length() > 0 )
+				lResult += ",\n";
+			lResult += "[Date.parse('" + lDatesList.get( i ) + "'), " + lValuesList.get( i ) + "]";
+		}
+
+		return lResult;
 	}
 }

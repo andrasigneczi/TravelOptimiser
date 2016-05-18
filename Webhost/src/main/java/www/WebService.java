@@ -124,11 +124,14 @@ public class WebService
 			if( aCurrency.equals( "%" ) && !lFoundCurrency.isEmpty())
 				lCurrency = lFoundCurrency.iterator().next();
 
+			String lSumResult = lHighChartDataResultComposerOutbound.Summarize( lHighChartDataResultComposerReturn );
+			String lSeries3 = mSeriesTemplate.replace( "[SERIES.NAME]", "Sum" )
+					.replace( "[SERIES.DATA]", lSumResult );
 
 			lJS = mJsTemplate.replace( "[TITLE]", lDate1 + " - " + lDate2 + " " + lAirportFrom + " - " + lAirportTo )
 					.replace( "[SUBTITLE]", aAirline )
 					.replace( "[DEVIZA]", lCurrency )
-					.replace( "[SERIES]", lSeries1 + ",\n" + lSeries2 )
+					.replace( "[SERIES]", lSeries1 + ",\n" + lSeries2 + ",\n" + lSeries3 )
 					.replace( "[CONTAINER]", aHtmlTagId );
 			String lDiv = mDivTemplate.replace( "[CONTAINER]", aHtmlTagId );
 			return new String[] { lDiv, lJS };
