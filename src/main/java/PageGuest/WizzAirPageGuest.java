@@ -31,11 +31,9 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 {
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuest.class);
 
-	ArrayList<TravelData_INPUT> mSearchQueue;
-	Thread  mThread;
-	Browser mBrowser = null;
-	Object  mMutex = new Object();
-	boolean mThreadStopped = true;
+	private Thread  mThread;
+	private Browser mBrowser = null;
+	private boolean mThreadStopped = true;
 
 	public WizzAirPageGuest()
 	{
@@ -521,6 +519,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			e.printStackTrace();
 		}
 		System.out.println("stop()");
-		mBrowser.dispose();
+		if( mBrowser != null )
+			mBrowser.dispose();
 	}
 }

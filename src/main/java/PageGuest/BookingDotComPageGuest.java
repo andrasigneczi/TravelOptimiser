@@ -14,6 +14,12 @@ public class BookingDotComPageGuest extends WebPageGuest
 	{
 	}
 
+	public void DoSearchByAirportName( String aAirportName_Way_From, String aAirportName_Way_To,
+	                                   String aDepartureDate_Way_To, String aReturnDate_Way_Back )
+	{
+
+	}
+
 	public void DoSearchFromConfig()
 	{
 

@@ -37,10 +37,8 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
 {
     private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuest.class);
 
-    ArrayList<TravelData_INPUT> mSearchQueue;
-    Thread                      mThread;
-    Object  mMutex         = new Object();
-    boolean mThreadStopped = true;
+    private Thread                      mThread;
+    private boolean mThreadStopped = true;
 
     public enum FareType
     {
@@ -162,139 +160,6 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         }
         System.out.println("stop()");
     }
-
-//    private ArrayList<TravelData_RESULT.TravelData_PossibleTrips> CollectDatas_Trips( DOMElement lFlightResultBlock, TravelData_RESULT.TravelData_PossibleTrips aTrip )
-//    {
-//        java.util.List<DOMElement> lFlightBasic = lFlightResultBlock.findElements(By.className("flight-basic"));
-//        int lCellIndex = 0;
-//        TravelData_RESULT.TravelData_PossibleTrips lTrip = null;
-//        ArrayList<TravelData_RESULT.TravelData_PossibleTrips> lTrips = new ArrayList<TravelData_RESULT.TravelData_PossibleTrips>();
-//
-//        for (DOMElement lFlightBasicElement : lFlightBasic)
-//        {
-//            java.util.List<DOMElement> lTimes = lFlightBasicElement.findElements(By.className("time"));
-//            if( lTimes.size() == 0 )
-//                lTimes = lFlightBasicElement.findElements(By.className("time ng-binding"));
-//
-//            if( lTimes.size() == 0 )
-//                mLogger.warn( "There is no available 'times'! Is something wrong?" );
-//
-//            for (DOMElement lTimeElement : lTimes)
-//            {
-//                String lTime = lTimeElement.getInnerText();
-//                switch (lCellIndex % 2)
-//                {
-//                    case 0: // outbound departure time
-//                        lTrip = (TravelData_RESULT.TravelData_PossibleTrips)aTrip.clone();
-//                        lTrip.mDepartureDatetime += " " + lTime;
-//                        break;
-//                    case 1: // outbound arrival time
-//                        lTrip.mArrivalDatetime += " " + lTime;
-//                        lTrips.add( lTrip );
-//                        break;
-//                }
-//                lCellIndex++;
-//            }
-//        }
-//
-//        java.util.List<DOMElement> lPrices = lFlightResultBlock.findElements(By.className("price"));
-//        if( lPrices.size() == 0 )
-//            lPrices = lFlightResultBlock.findElements(By.className("price ng-binding"));
-//
-//        if( lPrices.size() == 0 )
-//            mLogger.warn( "There is no available 'price'! Is something wrong?" );
-//
-//        lCellIndex = 0;
-//        for (DOMElement lPriceElement : lPrices)
-//        {
-//            String lPrice = lPriceElement.getInnerText();
-//            switch (lCellIndex % 2)
-//            {
-//                case 0: // outbound normal price
-//                    lTrip = lTrips.get( lCellIndex / 2 );
-//                    lTrip.mPrices_BasicFare_Normal = lPrice;
-//                    break;
-//                case 1: // outbound business price
-//                    lTrip.mPrices_PlusFare_Normal = lPrice;
-//                    break;
-//            }
-//            lCellIndex++;
-//        }
-//        return lTrips;
-//    }
-
-//    private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
-//    {
-//        mTravelDataResult = new TravelData_RESULT();
-//        mTravelDataResult.mAirline = aTravelDataInput.mAirline;
-//        mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
-//        mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
-//        mTravelDataResult.mTravelDataInput = aTravelDataInput;
-//        TravelData_RESULT.TravelData_PossibleTrips lTripOutbound = null;
-//        TravelData_RESULT.TravelData_PossibleTrips lTripReturn   = null;
-//
-//        java.util.List<DOMElement> lFlightsBodyElements = document.findElements(By.className("slide active"));
-//        if( lFlightsBodyElements.size() == 0 )
-//            lFlightsBodyElements = document.findElements(By.className("slide ng-scope active"));
-//        if( lFlightsBodyElements.size() == 0 )
-//            mLogger.warn( "There is no available 'slide active'! Is something wrong?" );
-//
-//        int lCellIndex = 0;
-//        for (DOMElement lFlightBodyElement : lFlightsBodyElements)
-//        {
-//            if (lCellIndex == 0)
-//            {
-//                lTripOutbound = new TravelData_RESULT.TravelData_PossibleTrips();
-//                lTripOutbound.mOutboundTrip = true;
-//
-//                // date
-//                java.util.List<DOMElement> lDate1 = lFlightBodyElement.findElements(By.className("date"));
-//                if( lDate1.size() == 0 )
-//                    lDate1 = lFlightBodyElement.findElements(By.className("date ng-binding"));
-//                if( lDate1.size() == 0 )
-//                    mLogger.warn( "There is no available 'date'! Is something wrong?" );
-//
-//                lTripOutbound.mDepartureDatetime = ((DOMElement) lDate1.get(0)).getInnerText(); // Only the date
-//                lTripOutbound.mArrivalDatetime = lTripOutbound.mDepartureDatetime;
-//
-//                // price
-////                java.util.List<DOMElement> lPrice1 = lFlightBodyElement.findElements(By.className("fare ng-binding"));
-////                lTripOutbound.mPrices_BasicFare_Normal = ((DOMElement) lPrice1.get(0)).getInnerText();
-//                lCellIndex++;
-//            }
-//            else if (lCellIndex == 1)
-//            {
-//                lTripReturn = new TravelData_RESULT.TravelData_PossibleTrips();
-//                lTripReturn.mOutboundTrip = false;
-//                // date
-//                java.util.List<DOMElement> lDate1 = lFlightBodyElement.findElements(By.className("date"));
-//                if( lDate1.size() == 0 )
-//                    lDate1 = lFlightBodyElement.findElements(By.className("date ng-binding"));
-//                if( lDate1.size() == 0 )
-//                    mLogger.warn( "There is no available 'date'! Is something wrong?" );
-//                lTripReturn.mDepartureDatetime = ((DOMElement) lDate1.get(0)).getInnerText();  // Only the date
-//                lTripReturn.mArrivalDatetime = lTripReturn.mDepartureDatetime;
-//
-//                // price
-////                java.util.List<DOMElement> lPrice1 = lFlightBodyElement.findElements(
-////                        By.className("fare ng-binding"));
-////                lTripReturn.mPrices_BasicFare_Normal = ((DOMElement) lPrice1.get(0)).getInnerText();
-//                //lTrip.mPrices_PlusFare_Normal;
-//                lCellIndex++;
-//            }
-//        }
-//
-//
-//        DOMElement lFlightOutbound = document.findElement(By.id( "outbound" ));
-//        DOMElement lFlightInbound = document.findElement(By.id( "inbound" ));
-//
-//        ArrayList<TravelData_RESULT.TravelData_PossibleTrips> lOutboundTrips = CollectDatas_Trips( lFlightOutbound, lTripOutbound );
-//        ArrayList<TravelData_RESULT.TravelData_PossibleTrips> lInboundTrips = CollectDatas_Trips( lFlightInbound, lTripReturn );
-//
-//        ConvertToWizzairFormatAndStore( lOutboundTrips );
-//        ConvertToWizzairFormatAndStore( lInboundTrips );
-//        ResultQueue.getInstance().push( mTravelDataResult );
-//    }
 
     private void ConvertToWizzairFormatAndStore( TravelData_RESULT.TravelData_PossibleTrips aTrip )
     {
