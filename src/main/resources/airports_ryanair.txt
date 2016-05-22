@@ -41,60 +41,60 @@ VLC Castellon (Valencia)
 CTA Catania
 CHQ Chania
 CFE Clermont
-NNN Cologne
-NNN Comiso
-NNN Copenhagen
-NNN Corfu
-NNN Cork
-NNN Craiova
-NNN Crotone
-NNN Cuneo
-NNN Deauville
-NNN Derry
-NNN Dinard
-NNN Dole
-NNN Dortmund
-NNN Dublin
-NNN Dusseldorf Weeze
-NNN East Midlands
-NNN Edinburgh
-NNN Eilat
-NNN Eindhoven
-NNN Faro
-NNN Fez
-NNN Figari
-NNN Frankfurt (HHN)
-NNN Fuerteventura
-NNN Gdansk
-NNN Genoa
-NNN Glasgow
-NNN Glasgow (PIK)
-NNN Gothenburg (GOT)
-NNN Gran Canaria
-NNN Grenoble
-NNN Hamburg
-NNN Haugesund
-NNN Ibiza
-NNN Jerez
-NNN Katowice
-NNN Kaunas
-NNN Kefalonia
-NNN Kerry
-NNN Knock
-NNN Kos
-NNN Krakow
-NNN La Rochelle
-NNN Lamezia
-NNN Lanzarote
-NNN Larnaca
-NNN Leeds Bradford
-NNN Leipzig
-NNN Lille
-NNN Limoges
-NNN Linz
-NNN Lisbon
-NNN Liverpool
-NNN Lodz
+CGN Cologne
+CIY Comiso
+CPH Copenhagen
+CFU Corfu
+ORK Cork
+CRA Craiova
+CRV Crotone
+CUF Cuneo
+DOL Deauville
+LDY Derry
+DNR Dinard
+DLE Dole
+DTM Dortmund
+DUB Dublin
+NRN Dusseldorf Weeze
+EMA East Midlands
+EDI Edinburgh
+ETH Eilat
+EIN Eindhoven
+FAO Faro
+FEZ Fez
+FSC Figari
+HHN Frankfurt (HHN)
+FUE Fuerteventura
+GDN Gdansk
+GOA Genoa
+GLA Glasgow
+PIK Glasgow (PIK)
+GOT Gothenburg (GOT)
+LPA Gran Canaria
+GNB Grenoble
+HAM Hamburg
+HAU Haugesund
+IBZ Ibiza
+XRY Jerez
+KTW Katowice
+KUN Kaunas
+EFL Kefalonia
+KIR Kerry
+NOC Knock
+KGS Kos
+KRK Krakow
+LRH La Rochelle
+SUF Lamezia
+ACE Lanzarote
+LCA Larnaca
+LBA Leeds Bradford
+LEJ Leipzig
+LIL Lille
+LIG Limoges
+LNZ Linz
+LIS Lisbon
+LPL Liverpool
+LCJ Lodz
 LGW London (LGW)
 LTN London (LTN)
 STN London (STN)
