@@ -112,32 +112,6 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		}
 	}
 
-	private boolean ValidateDate( String aDepartureDay, String aReturnDay )
-	{
-		try
-		{
-			DateTimeFormatter lFormatter = DateTimeFormatter.ofPattern( "yyyy.MM.dd." );
-			LocalDate lDepartureDay = LocalDate.parse( aDepartureDay, lFormatter );
-			if( LocalDate.now().isAfter( lDepartureDay ) )
-			{
-				return false;
-			}
-
-			if( aDepartureDay.length() == 0 )
-				return true;
-
-			LocalDate lReturnDay = LocalDate.parse( aReturnDay, lFormatter );
-			if( lReturnDay.isBefore( lDepartureDay ) )
-				return false;
-			return true;
-		}
-		catch( Exception e )
-		{
-			e.printStackTrace();
-		}
-		return false;
-	}
-
 	private boolean InitBrowser()
 	{
 		new BrowserStateInit().doAction( this );

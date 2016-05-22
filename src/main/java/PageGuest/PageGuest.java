@@ -2,6 +2,8 @@ package PageGuest;
 
 import org.apache.log4j.Logger;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -139,5 +141,31 @@ public abstract class PageGuest
 				return null;
 			return mSearchQueue.remove(0);
 		}
+	}
+
+	protected boolean ValidateDate( String aDepartureDay, String aReturnDay )
+	{
+		try
+		{
+			DateTimeFormatter lFormatter = DateTimeFormatter.ofPattern( "yyyy.MM.dd." );
+			LocalDate lDepartureDay = LocalDate.parse( aDepartureDay, lFormatter );
+			if( LocalDate.now().isAfter( lDepartureDay ) )
+			{
+				return false;
+			}
+
+			if( aDepartureDay.length() == 0 )
+				return true;
+
+			LocalDate lReturnDay = LocalDate.parse( aReturnDay, lFormatter );
+			if( lReturnDay.isBefore( lDepartureDay ) )
+				return false;
+			return true;
+		}
+		catch( Exception e )
+		{
+			e.printStackTrace();
+		}
+		return false;
 	}
 }
