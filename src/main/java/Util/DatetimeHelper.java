@@ -3,6 +3,13 @@ package Util;
 import PageGuest.WizzAirPageGuest;
 import org.apache.log4j.Logger;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class DatetimeHelper
 {
     // wizzair format, this format the required: "yyyy-MM-dd'T'HH:mm:ss"
@@ -117,5 +124,44 @@ public class DatetimeHelper
             return aDatetime;
         }
         return aDatetime.substring( 0, aDatetime.length() - 4 );
+    }
+
+    public static LocalDateTime WizzAirDatetimeCorrection( LocalDateTime aLocalDateTime )
+    {
+        // TODO: why must I add 1 more hour to get the right time?
+
+        ZonedDateTime lZDT = aLocalDateTime.atZone( ZoneId.of( "Europe/Budapest" ));
+        ZoneOffset lZO = lZDT.getOffset();
+        String lZId = lZO.getId();
+
+        Pattern reg = Pattern.compile( "(\\+|-)(\\d{2})\\:(\\d{2})" );
+        Matcher m = reg.matcher( lZId );
+
+        if( m.find() )
+        {
+            String lPrefix = m.group(1).toString().trim();
+            String lHours = m.group(2).toString().trim();
+            String lMinutes = m.group(3).toString().trim();
+
+            if( lHours.charAt( 0 ) == '0' )
+                lHours = lHours.substring( 1 );
+            int lIHours = Integer.parseInt( lHours );
+            if( lMinutes.charAt( 0 ) == '0' )
+                lMinutes = lMinutes.substring( 1 );
+            int lIMinutes = Integer.parseInt( lMinutes );
+
+            if( lPrefix.equals( "+" ))
+            {
+                aLocalDateTime = aLocalDateTime.plusHours( lIHours - 1 );
+                aLocalDateTime = aLocalDateTime.plusMinutes( lIMinutes );
+            }
+            else
+            {
+                aLocalDateTime = aLocalDateTime.minusHours( lIHours - 1 );
+                aLocalDateTime = aLocalDateTime.minusMinutes( lIMinutes );
+            }
+        }
+
+        return aLocalDateTime;
     }
 }

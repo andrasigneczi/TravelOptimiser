@@ -1,6 +1,7 @@
 package Storage;
 
 import PageGuest.TravelData_RESULT;
+import Util.DatetimeHelper;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +18,6 @@ public class TravelDataResultComposer_Wizzair_LiteSQL extends TravelDataResultCo
 	@Override
 	public LocalDateTime DateTimeCorrection( LocalDateTime aLocalDateTime )
 	{
-		// TODO: why must I add 1 more hour to get the right time?
-		return aLocalDateTime.plusHours( 1 );
+		return DatetimeHelper.WizzAirDatetimeCorrection( aLocalDateTime );
 	}
 }
