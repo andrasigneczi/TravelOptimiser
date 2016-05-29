@@ -51,6 +51,7 @@ public class TravelData_INPUT implements Cloneable
 			}
 			return lReturnValue;
 		}
+
 		@Override
 		public Object clone() throws CloneNotSupportedException
 		{
@@ -60,12 +61,64 @@ public class TravelData_INPUT implements Cloneable
 
 	public ArrayList<BoughtTicket> mBoughtTickets = null;
 
+	static public class Discount implements Cloneable
+	{
+		public String mName;
+		public String mBeginning;
+		public String mEnding;
+		public String mPercentage;
+
+		public boolean set( String aName, String aValue )
+		{
+			boolean lReturnValue = false;
+			setvalues:
+			{
+				if( aName.equals( "Name" ) )
+				{
+					mName = aValue;
+					lReturnValue = true;
+					break setvalues;
+				}
+				else if( aName.equals( "Beginning" ) )
+				{
+					mBeginning = aValue;
+					lReturnValue = true;
+					break setvalues;
+				}
+				else if( aName.equals( "Ending" ) )
+				{
+					mEnding = aValue;
+					lReturnValue = true;
+					break setvalues;
+				}
+				else if( aName.equals( "Percentage" ) )
+				{
+					mPercentage = aValue;
+					lReturnValue = true;
+					break setvalues;
+				}
+			}
+			return lReturnValue;
+		}
+
+		@Override
+		public Object clone() throws CloneNotSupportedException
+		{
+			return super.clone();
+		}
+	}
+
+	public ArrayList<Discount> mDiscounts = null;
+
+
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
 		TravelData_INPUT lRet = (TravelData_INPUT)super.clone();
 		if( this.mBoughtTickets != null )
 			lRet.mBoughtTickets = new ArrayList<>( this.mBoughtTickets );
+		if( this.mDiscounts != null )
+			lRet.mDiscounts = new ArrayList<>( this.mDiscounts );
 		return lRet;
 	}
 
@@ -161,5 +214,14 @@ public class TravelData_INPUT implements Cloneable
 			mBoughtTickets = new ArrayList<>();
 		}
 		mBoughtTickets.add( aTicket );
+	}
+
+	public void add( Discount aDiscount )
+	{
+		if( mDiscounts == null )
+		{
+			mDiscounts = new ArrayList<>();
+		}
+		mDiscounts.add( aDiscount );
 	}
 }

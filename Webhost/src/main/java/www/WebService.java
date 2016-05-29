@@ -81,7 +81,8 @@ public class WebService
 	                                  final String aAirline, final String aAirportFrom,
 	                                  final String aAirportTo, final String aCurrency,
 	                                  final String aHtmlTagId, final boolean aOneWay,
-	                                  final ArrayList<TravelData_INPUT.BoughtTicket> aBoughtTickets )
+	                                  final ArrayList<TravelData_INPUT.BoughtTicket> aBoughtTickets,
+	                                  final ArrayList<TravelData_INPUT.Discount> aDiscounts )
 	{
 		HighChartDataResultComposer lHighChartDataResultComposerOutbound = new HighChartDataResultComposer();
 		Hashtable<String,String> lResult1 = SQLiteDataProvider.getInstance().GetTripData( aDateTime1/*2016-07-16 06:30*/, aAirline, aAirportFrom, aAirportTo, aCurrency, lHighChartDataResultComposerOutbound );
@@ -104,6 +105,23 @@ public class WebService
 				HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
 				lHCDRCExtra.add( lTicket.mDatetime, lTicket.mPrice, "%" );
 				String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", lTicket.mName )
+						.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() );
+				lSeries1 += ",\n" + lSeries;
+			}
+
+		}
+
+		if( aDiscounts != null )
+		{
+			for( TravelData_INPUT.Discount lDiscount : aDiscounts )
+			{
+				HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
+				lHCDRCExtra.add( lDiscount.mBeginning, "1", "%" );
+				lHCDRCExtra.add( lDiscount.mEnding, "1", "%" );
+				lHCDRCExtra.add( lDiscount.mEnding, "100", "%" );
+				lHCDRCExtra.add( lDiscount.mBeginning, "100", "%" );
+				lHCDRCExtra.add( lDiscount.mBeginning, "1", "%" );
+				String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", lDiscount.mName )
 						.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() );
 				lSeries1 += ",\n" + lSeries;
 			}
@@ -167,7 +185,8 @@ public class WebService
 			lTDI.mReturnTicket = ( lTDI.mReturnDatetime.length() != 0 );
 			String[] lContent = GetHtmlContent( lTDI.mDepartureDatetime, lTDI.mReturnDatetime, lTDI.mAirline,
 					lTDI.mAirportCode_LeavingFrom, lTDI.mAirportCode_GoingTo,
-					lTDI.mCurrency, "container" + lContainerIndex++, !lTDI.mReturnTicket, lTDI.mBoughtTickets );
+					lTDI.mCurrency, "container" + lContainerIndex++, !lTDI.mReturnTicket,
+					lTDI.mBoughtTickets, lTDI.mDiscounts );
 			lScriptCotent += lContent[ 1 ];
 			lDivContent += lContent[ 0 ];
 		}
@@ -249,7 +268,7 @@ public class WebService
 						//  with the second button we have a return trip, display it
 						String[] lHtmlContent = GetHtmlContent( mToggledButton.getDatetime(), lTB.getDatetime(), lTB.getAirline(),
 								mToggledButton.getOutboundDepartureAirport(), mToggledButton.getOutboundArrivalAirport(),
-								"%", "modalcontainer", false, null );
+								"%", "modalcontainer", false, null, null );
 						return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
 					}
 				}
@@ -267,7 +286,7 @@ public class WebService
 			{
 				String[] lHtmlContent = GetHtmlContent( lTB.getDatetime(), "", lTB.getAirline(),
 						lTB.getOutboundDepartureAirport(), lTB.getOutboundArrivalAirport(),
-						"%", "modalcontainer", true, null );
+						"%", "modalcontainer", true, null, null );
 				return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
 			}
 		}

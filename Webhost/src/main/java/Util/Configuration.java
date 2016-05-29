@@ -44,6 +44,7 @@ public class Configuration
 		mValidSearchNodes.add( "ReturnTicket" );
 		mValidSearchNodes.add( "Currency" );
 		mValidSearchNodes.add( "BoughtTicket" );
+		mValidSearchNodes.add( "Discount" );
 		ParseConfigurationFile();
 	}
 

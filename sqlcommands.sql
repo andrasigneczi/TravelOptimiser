@@ -273,3 +273,49 @@ WHERE
 		AND TDR_PT.OutboundTrip='false'
 	))
 ORDER BY DepartureDatetime ASC, OutboundTrip DESC, SearchDatetime ASC;
+
+select
+	datetime( DepartureDatetime, '-1 hour' ) as DepartureDatetime, datetime( ArrivalDatetime, '-1 hour' ) as ArrivalDatetime
+from
+	TravelDataResult_PossibleTrips TDRT, TravelDataResult TDR
+where
+	TDRT.DepartureDatetime > '2016-10-29 00:00:00'
+	and TDR.Airline='wizzair'
+	and TDR.ID=TDRT.TravelDataResult_ID
+order by DepartureDatetime
+
+update TravelDataResult_PossibleTrips
+set DepartureDatetime=datetime( DepartureDatetime, '-1 hour' ), ArrivalDatetime=datetime( ArrivalDatetime, '-1 hour' )
+where
+	DepartureDatetime > '2016-10-29 00:00:00'
+	and TravelDataResult_ID in (
+select
+	ID
+from
+	TravelDataResult
+where
+	Airline='wizzair'
+)
+
+select
+	strftime( '%Y-%m-%d %H:%M', DepartureDatetime, '-1 hour' ) as DepartureDatetime, strftime( '%Y-%m-%d %H:%M', ArrivalDatetime, '-1 hour' ) as ArrivalDatetime
+from
+	TravelDataResult_PossibleTrips TDRT, TravelDataResult TDR
+where
+	TDRT.DepartureDatetime > '2016-10-29 00:00:00'
+	and TDR.Airline='wizzair'
+	and TDR.ID=TDRT.TravelDataResult_ID
+order by DepartureDatetime
+
+update TravelDataResult_PossibleTrips
+set DepartureDatetime=strftime( '%Y-%m-%d %H:%M', DepartureDatetime, '-1 hour' ), ArrivalDatetime=strftime( '%Y-%m-%d %H:%M', ArrivalDatetime, '-1 hour' )
+where
+	DepartureDatetime > '2016-10-29 00:00:00'
+	and TravelDataResult_ID in (
+select
+	ID
+from
+	TravelDataResult
+where
+	Airline='wizzair'
+)

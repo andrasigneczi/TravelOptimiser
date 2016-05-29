@@ -10,7 +10,7 @@ import java.util.Hashtable;
  */
 public class SQLiteDataProvider implements DataProvider
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger(HighChartDataResultComposer.class);
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger(SQLiteDataProvider.class);
 
 	private static SQLiteDataProvider mInstance = null;
 	private Connection mConnection = null;

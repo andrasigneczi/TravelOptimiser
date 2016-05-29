@@ -52,6 +52,15 @@ public class ConfigurationHandler extends DefaultHandler
 				}
 				mCurrentTravelDataInput.add( lBoughtTicket );
 			}
+			else if( qName.equals( "Discount" ))
+			{
+				TravelData_INPUT.Discount lDiscount = new TravelData_INPUT.Discount();
+				for( int i = 0; i < attributes.getLength(); i++ )
+				{
+					lDiscount.set( attributes.getLocalName( i ), attributes.getValue( i ));
+				}
+				mCurrentTravelDataInput.add( lDiscount );
+			}
 		}
 	}
 

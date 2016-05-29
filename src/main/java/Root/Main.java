@@ -34,7 +34,9 @@ public class Main
 //            Thread.sleep(50000);
 //            Thread.sleep(50000);
             //TestDatetimeParser();
-            //System.exit(0);
+//            mLogger.trace( "trace teszt" );
+//            mLogger.error( "debug teszt" );
+//            System.exit(0);
 
             //HelloWorld.JxBrowserHelloWorld.HelloWorld();
 	        //HelloWorld.JxBrowserHelloWorld.FlashSample();

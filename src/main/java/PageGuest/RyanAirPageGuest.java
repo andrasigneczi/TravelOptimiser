@@ -35,7 +35,7 @@ import static Util.CurrencyHelper.ConvertFrom3Digits;
  */
 public class RyanAirPageGuest extends PageGuest implements Runnable
 {
-    private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuest.class);
+    private static org.apache.log4j.Logger mLogger = Logger.getLogger(RyanAirPageGuest.class);
 
     private Thread                      mThread;
     private boolean mThreadStopped = true;
