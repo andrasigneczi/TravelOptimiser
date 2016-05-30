@@ -45,6 +45,7 @@ public class WebService
 		mDivTemplate = "<div id=\"[CONTAINER]\" style=\"min-width: 310px; height: 400px; margin: 0 auto\"></div>";
 		mSeriesTemplate = "{\n" +
 				"                name: '[SERIES.NAME]',\n" +
+				"                type: '[TYPE.NAME]',\n" +
 				"                data: [\n" +
 				"                [SERIES.DATA]\n" +
 				"                ]\n" +
@@ -88,6 +89,7 @@ public class WebService
 		Hashtable<String,String> lResult1 = SQLiteDataProvider.getInstance().GetTripData( aDateTime1/*2016-07-16 06:30*/, aAirline, aAirportFrom, aAirportTo, aCurrency, lHighChartDataResultComposerOutbound );
 		String lDate1 = IsoDatetimeToEngDate( aDateTime1 );
 		String lSeries1 = mSeriesTemplate.replace( "[SERIES.NAME]", lDate1 )
+				.replace( "[TYPE.NAME]", "line" )
 				.replace( "[SERIES.DATA]", lResult1.get( "Result" ) );
 
 		String lAirportFrom = aAirportFrom;
@@ -105,6 +107,7 @@ public class WebService
 				HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
 				lHCDRCExtra.add( lTicket.mDatetime, lTicket.mPrice, "%" );
 				String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", lTicket.mName )
+						.replace( "[TYPE.NAME]", "line" )
 						.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() );
 				lSeries1 += ",\n" + lSeries;
 			}
@@ -116,12 +119,10 @@ public class WebService
 			for( TravelData_INPUT.Discount lDiscount : aDiscounts )
 			{
 				HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
-				lHCDRCExtra.add( lDiscount.mBeginning, "1", "%" );
-				lHCDRCExtra.add( lDiscount.mEnding, "1", "%" );
-				lHCDRCExtra.add( lDiscount.mEnding, "100", "%" );
 				lHCDRCExtra.add( lDiscount.mBeginning, "100", "%" );
-				lHCDRCExtra.add( lDiscount.mBeginning, "1", "%" );
+				lHCDRCExtra.add( lDiscount.mEnding, "100", "%" );
 				String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", lDiscount.mName )
+						.replace( "[TYPE.NAME]", "area" )
 						.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() );
 				lSeries1 += ",\n" + lSeries;
 			}
@@ -135,6 +136,7 @@ public class WebService
 			Hashtable<String,String> lResult2 = SQLiteDataProvider.getInstance().GetTripData( aDateTime2/*2016-07-19 08:30*/, aAirline, aAirportTo, aAirportFrom, aCurrency, lHighChartDataResultComposerReturn );
 			String lDate2 = IsoDatetimeToEngDate( aDateTime2 );
 			String lSeries2 = mSeriesTemplate.replace( "[SERIES.NAME]", lDate2 )
+					.replace( "[TYPE.NAME]", "line" )
 					.replace( "[SERIES.DATA]", lResult2.get( "Result" ) );
 
 			HashSet<String> lFoundCurrency = lHighChartDataResultComposerReturn.getFoundCurrency();
@@ -144,6 +146,7 @@ public class WebService
 
 			String lSumResult = lHighChartDataResultComposerOutbound.Summarize( lHighChartDataResultComposerReturn );
 			String lSeries3 = mSeriesTemplate.replace( "[SERIES.NAME]", "Sum" )
+					.replace( "[TYPE.NAME]", "line" )
 					.replace( "[SERIES.DATA]", lSumResult );
 
 			lJS = mJsTemplate.replace( "[TITLE]", lDate1 + " - " + lDate2 + " " + lAirportFrom + " - " + lAirportTo )

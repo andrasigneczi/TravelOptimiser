@@ -1,8 +1,5 @@
     $(function () {
         $('#[CONTAINER]').highcharts({
-            chart: {
-                type: 'line'
-            },
             title: {
                 text: '[TITLE]'
             },
