@@ -130,7 +130,7 @@ public class ChartBuilder
 			HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
 			lHCDRCExtra.add( lDiscount.mBeginning, "100", "%" );
 			lHCDRCExtra.add( lDiscount.mEnding, "100", "%" );
-			lSeries = ",\n" + mSeriesTemplate.replace( "[SERIES.NAME]", lDiscount.mName )
+			lSeries += ",\n" + mSeriesTemplate.replace( "[SERIES.NAME]", lDiscount.mName )
 					.replace( "[TYPE.NAME]", "area" )
 					.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() );
 		}
@@ -147,7 +147,7 @@ public class ChartBuilder
 		{
 			HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
 			lHCDRCExtra.add( lTicket.mDatetime, lTicket.mPrice, "%" );
-			lSeries = ",\n" + mSeriesTemplate.replace( "[SERIES.NAME]", lTicket.mName )
+			lSeries += ",\n" + mSeriesTemplate.replace( "[SERIES.NAME]", lTicket.mName )
 					.replace( "[TYPE.NAME]", "line" )
 					.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() );
 		}
