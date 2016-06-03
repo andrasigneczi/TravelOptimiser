@@ -17,7 +17,8 @@ public class HighChartDataResultComposer extends DataResultComposer
 	private ArrayList<String> mDates;
 	private ArrayList<Double> mUnfilteredValues;
 	private ArrayList<String> mUnfilteredDates;
-	private HashSet<String> mFoundCurrency;
+	private HashSet<String>   mFoundCurrency;
+	private double            mMaxValue = Double.MIN_VALUE;
 
 	public HighChartDataResultComposer()
 	{
@@ -117,6 +118,8 @@ public class HighChartDataResultComposer extends DataResultComposer
 		{
 			if( lResult.length() > 0 )
 				lResult += ",\n";
+			if( mValues.get( i ) > mMaxValue )
+				mMaxValue = mValues.get( i );
 			lResult += "[Date.parse('" + mDates.get( i ) + "'), " + mValues.get( i ) + "]";
 		}
 
@@ -195,9 +198,16 @@ public class HighChartDataResultComposer extends DataResultComposer
 		{
 			if( lResult.length() > 0 )
 				lResult += ",\n";
+			if( lValuesList.get( i ) > mMaxValue )
+				mMaxValue = lValuesList.get( i );
 			lResult += "[Date.parse('" + lDatesList.get( i ) + "'), " + lValuesList.get( i ) + "]";
 		}
 
 		return lResult;
+	}
+
+	public double getMaxValue()
+	{
+		return mMaxValue;
 	}
 }

@@ -33,17 +33,13 @@ public class ChartBuilder
 	private Hashtable<String,String> mResult2;
 	private HighChartDataResultComposer mHighChartDataResultComposerOutbound;
 	private HighChartDataResultComposer mHighChartDataResultComposerReturn;
-
-	private class InputParameters
-	{
-		public TravelData_INPUT mTDI       = null;
-		public String mHtmlTagId           = null;
-		public String mSeries1             = null;
-		public String mAirportFrom         = null;
-		public String mAirportTo           = null;
-		public String mBoughtTicketsSeries = null;
-		public String mDiscountSeries      = null;
-	}
+	private String mHtmlTagId           = null;
+	private String mSeries1             = null;
+	private String mAirportFrom         = null;
+	private String mAirportTo           = null;
+	private String mBoughtTicketsSeries = null;
+	private String mDiscountSeries      = null;
+	private TravelData_INPUT mTDI       = null;
 
 	public ChartBuilder()
 	{
@@ -125,11 +121,14 @@ public class ChartBuilder
 			return "";
 
 		String lSeries = "";
+		String lHeight = "100";
+		if( mHighChartDataResultComposerOutbound != null )
+			lHeight = String.valueOf( mHighChartDataResultComposerOutbound.getMaxValue() );
 		for( TravelData_INPUT.Discount lDiscount : aDiscounts )
 		{
 			HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
-			lHCDRCExtra.add( lDiscount.mBeginning, "100", "%" );
-			lHCDRCExtra.add( lDiscount.mEnding, "100", "%" );
+			lHCDRCExtra.add( lDiscount.mBeginning, lHeight, "%" );
+			lHCDRCExtra.add( lDiscount.mEnding, lHeight, "%" );
 			lSeries += ",\n" + mSeriesTemplate.replace( "[SERIES.NAME]", lDiscount.mName )
 					.replace( "[TYPE.NAME]", "area" )
 					.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() );
@@ -169,17 +168,17 @@ public class ChartBuilder
 		return lSeries;
 	}
 
-	private String GetSeries2(final InputParameters aIParams )
+	private String GetSeries2()
 	{
 		mHighChartDataResultComposerReturn = new HighChartDataResultComposer();
 		mResult2 = SQLiteDataProvider.getInstance()
-				.GetTripData( aIParams.mTDI.mReturnDatetime,
-						aIParams.mTDI.mAirline,
-						aIParams.mTDI.mAirportCode_GoingTo,
-						aIParams.mTDI.mAirportCode_LeavingFrom,
-						aIParams.mTDI.mCurrency,
+				.GetTripData( mTDI.mReturnDatetime,
+						mTDI.mAirline,
+						mTDI.mAirportCode_GoingTo,
+						mTDI.mAirportCode_LeavingFrom,
+						mTDI.mCurrency,
 						mHighChartDataResultComposerReturn );
-		mDate2 = IsoDatetimeToEngDate( aIParams.mTDI.mReturnDatetime );
+		mDate2 = IsoDatetimeToEngDate( mTDI.mReturnDatetime );
 		String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", mDate2 )
 				.replace( "[TYPE.NAME]", "line" )
 				.replace( "[SERIES.DATA]", mResult2.get( "Result" ) );
@@ -205,37 +204,40 @@ public class ChartBuilder
 		return lJS;
 	}
 
-	private String[] GetReturnTripHtmlContent( final InputParameters aIParams )
+	private String[] GetReturnTripHtmlContent()
 	{
-		String lSeries2 = GetSeries2( aIParams );
+		String lSeries2 = GetSeries2();
 
 		HashSet<String> lFoundCurrency = mHighChartDataResultComposerReturn.getFoundCurrency();
-		String lCurrency = aIParams.mTDI.mCurrency;
+		String lCurrency = mTDI.mCurrency;
 		if( lCurrency.equals( "%" ) && !lFoundCurrency.isEmpty())
 			lCurrency = lFoundCurrency.iterator().next();
 
 		String lSeries3 = GetSeries3();
+		mDiscountSeries = GetDiscountSeries( mTDI.mDiscounts );
 
-		String lTitle = mDate1 + " - " + mDate2 + " " + aIParams.mAirportFrom + " - " + aIParams.mAirportTo;
-		String lSeries = aIParams.mSeries1 + ",\n" + lSeries2 + ",\n" + lSeries3 + aIParams.mBoughtTicketsSeries + aIParams.mDiscountSeries;
+		String lTitle = mDate1 + " - " + mDate2 + " " + mAirportFrom + " - " + mAirportTo;
+		String lSeries = mSeries1 + ",\n" + lSeries2 + ",\n" + lSeries3 + mBoughtTicketsSeries + mDiscountSeries;
 
-		String lJS = GetTripJS( lTitle, aIParams.mTDI.mAirline, lCurrency, lSeries, aIParams.mHtmlTagId );
-		String lDiv = mDivTemplate.replace( "[CONTAINER]", aIParams.mHtmlTagId );
+		String lJS = GetTripJS( lTitle, mTDI.mAirline, lCurrency, lSeries, mHtmlTagId );
+		String lDiv = mDivTemplate.replace( "[CONTAINER]", mHtmlTagId );
 		return new String[] { lDiv, lJS };
 	}
 
-	private String[] GetOneWayHtmlContent( final InputParameters aIParams )
+	private String[] GetOneWayHtmlContent()
 	{
 		HashSet<String> lFoundCurrency = mHighChartDataResultComposerOutbound.getFoundCurrency();
-		String lCurrency = aIParams.mTDI.mCurrency;
+		String lCurrency = mTDI.mCurrency;
 		if( lCurrency.equals( "%" ) && !lFoundCurrency.isEmpty())
 			lCurrency = lFoundCurrency.iterator().next();
 
-		String lTitle = mDate1 + " " + aIParams.mAirportFrom + " - " + aIParams.mAirportTo;
-		String lSeriesSum = aIParams.mSeries1 + aIParams.mBoughtTicketsSeries + aIParams.mDiscountSeries;
+		mDiscountSeries = GetDiscountSeries( mTDI.mDiscounts );
 
-		String lJS = GetTripJS(lTitle, aIParams.mTDI.mAirline, lCurrency, lSeriesSum, aIParams.mHtmlTagId );
-		String lDiv = mDivTemplate.replace( "[CONTAINER]", aIParams.mHtmlTagId );
+		String lTitle = mDate1 + " " + mAirportFrom + " - " + mAirportTo;
+		String lSeriesSum = mSeries1 + mBoughtTicketsSeries + mDiscountSeries;
+
+		String lJS = GetTripJS(lTitle, mTDI.mAirline, lCurrency, lSeriesSum, mHtmlTagId );
+		String lDiv = mDivTemplate.replace( "[CONTAINER]", mHtmlTagId );
 		return new String[] { lDiv, lJS };
 	}
 
@@ -258,35 +260,33 @@ public class ChartBuilder
 	                                  final ArrayList<TravelData_INPUT.BoughtTicket> aBoughtTickets,
 	                                  final ArrayList<TravelData_INPUT.Discount> aDiscounts )
 	{
-		InputParameters lIParams = new InputParameters();
-		lIParams.mTDI = new TravelData_INPUT();
-		lIParams.mTDI.mDepartureDatetime       = aDateTime1;
-		lIParams.mTDI.mReturnDatetime          = aDateTime2;
-		lIParams.mTDI.mAirline                 = aAirline;
-		lIParams.mTDI.mAirportCode_LeavingFrom = aAirportFrom;
-		lIParams.mTDI.mAirportCode_GoingTo     = aAirportTo;
-		lIParams.mTDI.mCurrency                = aCurrency;
-		lIParams.mTDI.mBoughtTickets           = aBoughtTickets;
-		lIParams.mTDI.mDiscounts               = aDiscounts;
-		lIParams.mHtmlTagId                    = aHtmlTagId;
+		mTDI = new TravelData_INPUT();
+		mTDI.mDepartureDatetime       = aDateTime1;
+		mTDI.mReturnDatetime          = aDateTime2;
+		mTDI.mAirline                 = aAirline;
+		mTDI.mAirportCode_LeavingFrom = aAirportFrom;
+		mTDI.mAirportCode_GoingTo     = aAirportTo;
+		mTDI.mCurrency                = aCurrency;
+		mTDI.mBoughtTickets           = aBoughtTickets;
+		mTDI.mDiscounts               = aDiscounts;
+		mHtmlTagId                    = aHtmlTagId;
 
-		lIParams.mSeries1 = GetSeries1( aDateTime1, aAirline, aAirportFrom, aAirportTo, aCurrency );
+		mSeries1 = GetSeries1( aDateTime1, aAirline, aAirportFrom, aAirportTo, aCurrency );
 
-		lIParams.mAirportFrom = aAirportFrom;
+		mAirportFrom = aAirportFrom;
 		if( aAirportFrom.equals( "-" ))
-			lIParams.mAirportFrom = mResult1.get( "AirportCode_LeavingFrom" );
+			mAirportFrom = mResult1.get( "AirportCode_LeavingFrom" );
 
-		lIParams.mAirportTo = aAirportTo;
+		mAirportTo = aAirportTo;
 		if( aAirportTo.equals( "-" ))
-			lIParams.mAirportTo = mResult1.get( "AirportCode_GoingTo" );
+			mAirportTo = mResult1.get( "AirportCode_GoingTo" );
 
-		lIParams.mBoughtTicketsSeries = GetBoughtTicketsSeries( aBoughtTickets );
-		lIParams.mDiscountSeries = GetDiscountSeries( aDiscounts );
+		mBoughtTicketsSeries = GetBoughtTicketsSeries( aBoughtTickets );
 
 		if( aOneWay )
-			return GetOneWayHtmlContent( lIParams );
+			return GetOneWayHtmlContent();
 
-		return GetReturnTripHtmlContent( lIParams );
+		return GetReturnTripHtmlContent();
 	}
 
 	public String GenerateHtmlContentUsingConfig()
