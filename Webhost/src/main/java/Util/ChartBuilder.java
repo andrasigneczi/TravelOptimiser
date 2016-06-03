@@ -16,10 +16,10 @@ import java.util.Scanner;
  */
 public class ChartBuilder
 {
-	private final String mHtmlTemplate;
-	private final String mJsTemplate;
-	private final String mDivTemplate;
-	private final String mSeriesTemplate;
+	private final static String mHtmlTemplate = InitHtmlTemplate();
+	private final static String mJsTemplate = InitJsTemplate();
+	private final static String mDivTemplate = InitDivTemplate();
+	private final static String mSeriesTemplate = InitSeriesTemplate();
 
 	private String mSelectedDepartureAirport = "-";
 	private String mSelectedArrivalAirport   = "-";
@@ -41,24 +41,40 @@ public class ChartBuilder
 	private String mDiscountSeries      = null;
 	private TravelData_INPUT mTDI       = null;
 
-	public ChartBuilder()
+	private static String InitHtmlTemplate()
 	{
-		Scanner lScanner  = new Scanner(getClass().getClassLoader().getResourceAsStream("charts_template.html" ), "UTF-8" );
-		mHtmlTemplate = lScanner.useDelimiter( "\\A" ).next();
+		Scanner lScanner  = new Scanner(ChartBuilder.class.getClassLoader().getResourceAsStream("charts_template.html" ), "UTF-8" );
+		String lHtmlTemplate = lScanner.useDelimiter( "\\A" ).next();
 		lScanner.close();
+		return lHtmlTemplate;
+	}
 
-		lScanner  = new Scanner(getClass().getClassLoader().getResourceAsStream("charts_template.js" ), "UTF-8" );
-		mJsTemplate = lScanner.useDelimiter( "\\A" ).next();
+	private static String InitJsTemplate()
+	{
+		Scanner lScanner  = new Scanner(ChartBuilder.class.getClassLoader().getResourceAsStream("charts_template.js" ), "UTF-8" );
+		String lJsTemplate = lScanner.useDelimiter( "\\A" ).next();
 		lScanner.close();
+		return lJsTemplate;
+	}
 
-		mDivTemplate = "<div id=\"[CONTAINER]\" style=\"min-width: 310px; height: 400px; margin: 0 auto\"></div>";
-		mSeriesTemplate = "{\n" +
+	private static String InitDivTemplate()
+	{
+		return "<div id=\"[CONTAINER]\" style=\"min-width: 310px; height: 400px; margin: 0 auto\"></div>";
+	}
+
+	private static String InitSeriesTemplate()
+	{
+		return "{\n" +
 				"                name: '[SERIES.NAME]',\n" +
 				"                type: '[TYPE.NAME]',\n" +
 				"                data: [\n" +
 				"                [SERIES.DATA]\n" +
 				"                ]\n" +
 				"            }";
+	}
+
+	public ChartBuilder()
+	{
 	}
 
 	public String getSelectedDepartureAirport()
@@ -101,7 +117,7 @@ public class ChartBuilder
 		this.mToggledButton = aToggledButton;
 	}
 
-	private String IsoDatetimeToEngDate( String aDateTime )
+	private static String IsoDatetimeToEngDate( String aDateTime )
 	{
 		//String lDate = aDateTime.substring( 0, 10 );
 		/*
@@ -122,8 +138,10 @@ public class ChartBuilder
 
 		String lSeries = "";
 		String lHeight = "100";
+
 		if( mHighChartDataResultComposerOutbound != null )
 			lHeight = String.valueOf( mHighChartDataResultComposerOutbound.getMaxValue() );
+
 		for( TravelData_INPUT.Discount lDiscount : aDiscounts )
 		{
 			HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
@@ -153,15 +171,13 @@ public class ChartBuilder
 		return lSeries;
 	}
 
-	private String GetSeries1( final String aDateTime1, final String aAirline,
-	                           final String aAirportFrom, final String aAirportTo,
-	                           final String aCurrency)
+	private String GetSeries1()
 	{
-
 		mHighChartDataResultComposerOutbound = new HighChartDataResultComposer();
-		mResult1 = SQLiteDataProvider.getInstance().GetTripData( aDateTime1/*2016-07-16 06:30*/, aAirline,
-				aAirportFrom, aAirportTo, aCurrency, mHighChartDataResultComposerOutbound );
-		mDate1 = IsoDatetimeToEngDate( aDateTime1 );
+		mResult1 = SQLiteDataProvider.getInstance().GetTripData( mTDI.mDepartureDatetime /*2016-07-16 06:30*/,
+				mTDI.mAirline, mTDI.mAirportCode_LeavingFrom, mTDI.mAirportCode_GoingTo,
+				mTDI.mCurrency, mHighChartDataResultComposerOutbound );
+		mDate1 = IsoDatetimeToEngDate( mTDI.mDepartureDatetime );
 		String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", mDate1 )
 				.replace( "[TYPE.NAME]", "line" )
 				.replace( "[SERIES.DATA]", mResult1.get( "Result" ) );
@@ -271,7 +287,7 @@ public class ChartBuilder
 		mTDI.mDiscounts               = aDiscounts;
 		mHtmlTagId                    = aHtmlTagId;
 
-		mSeries1 = GetSeries1( aDateTime1, aAirline, aAirportFrom, aAirportTo, aCurrency );
+		mSeries1 = GetSeries1();
 
 		mAirportFrom = aAirportFrom;
 		if( aAirportFrom.equals( "-" ))
@@ -289,7 +305,7 @@ public class ChartBuilder
 		return GetReturnTripHtmlContent();
 	}
 
-	public String GenerateHtmlContentUsingConfig()
+	private String[] GenerateDivAndScriptContents()
 	{
 		ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
 		String lScriptCotent = "";
@@ -308,25 +324,74 @@ public class ChartBuilder
 			lScriptCotent += lContent[ 1 ];
 			lDivContent += lContent[ 0 ];
 		}
-		String  lHtml = mHtmlTemplate.replace( "[CHART_SCRIPTS]", lScriptCotent )
+		return new String[] { lScriptCotent, lDivContent };
+	}
+
+	public String GenerateHtmlContentUsingConfig()
+	{
+		String[] lContents = GenerateDivAndScriptContents();
+		String lScriptCotent = lContents[ 0 ];
+		String lDivContent = lContents[ 1 ];
+
+		String lHtml = mHtmlTemplate.replace( "[CHART_SCRIPTS]", lScriptCotent )
 				.replace( "[CHART_DIVS]", lDivContent );
 
-		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList(),
+		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance()
+				.GetCollectedDepartureDateList( new HtmlListFormatterButtonList(),
 				mSelectedDepartureAirport, mSelectedArrivalAirport, mReturnCheckboxChecked );
 		lHtml = lHtml.replace( "[AVAILABLE_TRIPS]", lGetCollectedDepartureDateList );
 
-		String lDepartureAirportSelector = SQLiteDataProvider.getInstance().GetDepartureAirportList( new HtmlListFormatterSelect( "DepartureAirportList" ),
+		String lDepartureAirportSelector = SQLiteDataProvider.getInstance()
+				.GetDepartureAirportList( new HtmlListFormatterSelect( "DepartureAirportList" ),
 				mSelectedDepartureAirport);
 		lHtml = lHtml.replace( "[DEPARTURE_AIRPORTS]", lDepartureAirportSelector );
 
-		String lArrivalAirportSelector = SQLiteDataProvider.getInstance().GetArrivalAirportList( new HtmlListFormatterSelect( "ArrivalAirportList" ),
+		String lArrivalAirportSelector = SQLiteDataProvider.getInstance()
+				.GetArrivalAirportList( new HtmlListFormatterSelect( "ArrivalAirportList" ),
 				mSelectedDepartureAirport, mSelectedArrivalAirport);
 		lHtml = lHtml.replace( "[ARRIVAL_AIRPORTS]", lArrivalAirportSelector );
 
 		return lHtml;
 	}
 
-	public String DateTimeButtonPushed( String aParam )
+	private String DBP_ReturnCheckboxChecked( final OneWayTrip aTB )
+	{
+		if( mToggledButton != null )//if( a button already pushed )
+		{
+			if( mToggledButton.equals( aTB ))
+			{ // if the toggled button was pushed again
+				mToggledButton = null;
+			}
+			else
+			{
+				//  with the second button we have a return trip, display it
+				String[] lHtmlContent = GetHtmlContent( mToggledButton.getDatetime(), aTB.getDatetime(), aTB.getAirline(),
+						mToggledButton.getOutboundDepartureAirport(), mToggledButton.getOutboundArrivalAirport(),
+						"%", "modalcontainer", false, null, null );
+				return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
+			}
+		}
+		else
+		{
+			//  this is the first button, toggle it!
+			mToggledButton = aTB;
+			String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList( mToggledButton ),
+					aTB.getOutboundDepartureAirport(), aTB.getOutboundArrivalAirport(), mReturnCheckboxChecked );
+			return lGetCollectedDepartureDateList;
+		}
+		// recolor or filter the buttons
+		return null;
+	}
+
+	private String DBP_ReturnCheckboxNotChecked( final OneWayTrip aTB )
+	{
+		String[] lHtmlContent = GetHtmlContent( aTB.getDatetime(), "", aTB.getAirline(),
+				aTB.getOutboundDepartureAirport(), aTB.getOutboundArrivalAirport(),
+				"%", "modalcontainer", true, null, null );
+		return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
+	}
+
+	public String DateTimeButtonPushed( final String aParam )
 	{
 		String[] lValues = aParam.split( "\\|" );
 		// lValues = airline, leavingfrom, goingto, outbound, datetime
@@ -336,39 +401,8 @@ public class ChartBuilder
 				Boolean.parseBoolean( lValues[ 3 ] ));
 
 		if( mReturnCheckboxChecked )
-		{
-			if( mToggledButton != null )//if( a button already pushed )
-			{
-				if( mToggledButton.equals( lTB ))
-				{ // if the toggled button was pushed again
-					mToggledButton = null;
-				}
-				else
-				{
-					//  with the second button we have a return trip, display it
-					String[] lHtmlContent = GetHtmlContent( mToggledButton.getDatetime(), lTB.getDatetime(), lTB.getAirline(),
-							mToggledButton.getOutboundDepartureAirport(), mToggledButton.getOutboundArrivalAirport(),
-							"%", "modalcontainer", false, null, null );
-					return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
-				}
-			}
-			else
-			{
-				//  this is the first button, toggle it!
-				mToggledButton = lTB;
-				String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList( mToggledButton ),
-						lTB.getOutboundDepartureAirport(), lTB.getOutboundArrivalAirport(), mReturnCheckboxChecked );
-				return lGetCollectedDepartureDateList;
-			}
-			// recolor or filter the buttons
-		}
-		else
-		{
-			String[] lHtmlContent = GetHtmlContent( lTB.getDatetime(), "", lTB.getAirline(),
-					lTB.getOutboundDepartureAirport(), lTB.getOutboundArrivalAirport(),
-					"%", "modalcontainer", true, null, null );
-			return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
-		}
-		return null;
+			return DBP_ReturnCheckboxChecked( lTB );
+
+		return DBP_ReturnCheckboxNotChecked( lTB );
 	}
 }
