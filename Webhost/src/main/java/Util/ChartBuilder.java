@@ -16,10 +16,16 @@ import java.util.Scanner;
  */
 public class ChartBuilder
 {
-	private final static String mHtmlTemplate = InitHtmlTemplate();
-	private final static String mJsTemplate = InitJsTemplate();
-	private final static String mDivTemplate = InitDivTemplate();
+	private final static String mHtmlTemplate   = InitHtmlTemplate();
+	private final static String mJsTemplate     = InitJsTemplate();
+	private final static String mDivTemplate    = InitDivTemplate();
 	private final static String mSeriesTemplate = InitSeriesTemplate();
+
+	private final static String DISCOUNT_COLOR      = "#a0a3ee";
+	private final static String BOUGHT_TICKET_COLOR = "#e510e8";
+	private final static String SERIES1_COLOR       = "#7cb5ec";
+	private final static String SERIES2_COLOR       = "#434348";
+	private final static String SERIES3_COLOR       = "#90ed7d";
 
 	private String mSelectedDepartureAirport = "-";
 	private String mSelectedArrivalAirport   = "-";
@@ -67,6 +73,8 @@ public class ChartBuilder
 		return "{\n" +
 				"                name: '[SERIES.NAME]',\n" +
 				"                type: '[TYPE.NAME]',\n" +
+				"                color: '[COLOR]',\n" +
+				"                marker: { radius: [RADIUS] },\n" +
 				"                data: [\n" +
 				"                [SERIES.DATA]\n" +
 				"                ]\n" +
@@ -147,9 +155,11 @@ public class ChartBuilder
 			HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
 			lHCDRCExtra.add( lDiscount.mBeginning, lHeight, "%" );
 			lHCDRCExtra.add( lDiscount.mEnding, lHeight, "%" );
-			lSeries += ",\n" + mSeriesTemplate.replace( "[SERIES.NAME]", lDiscount.mName )
+			lSeries += mSeriesTemplate.replace( "[SERIES.NAME]", lDiscount.mName )
 					.replace( "[TYPE.NAME]", "area" )
-					.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() );
+					.replace( "[COLOR]", DISCOUNT_COLOR )
+					.replace( "[RADIUS]", "1" )
+					.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() ) + ",\n";
 		}
 		return lSeries;
 	}
@@ -166,6 +176,8 @@ public class ChartBuilder
 			lHCDRCExtra.add( lTicket.mDatetime, lTicket.mPrice, "%" );
 			lSeries += ",\n" + mSeriesTemplate.replace( "[SERIES.NAME]", lTicket.mName )
 					.replace( "[TYPE.NAME]", "line" )
+					.replace( "[COLOR]", BOUGHT_TICKET_COLOR )
+					.replace( "[RADIUS]", "4" )
 					.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() );
 		}
 		return lSeries;
@@ -180,6 +192,8 @@ public class ChartBuilder
 		mDate1 = IsoDatetimeToEngDate( mTDI.mDepartureDatetime );
 		String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", mDate1 )
 				.replace( "[TYPE.NAME]", "line" )
+				.replace( "[COLOR]", SERIES1_COLOR )
+				.replace( "[RADIUS]", "4" )
 				.replace( "[SERIES.DATA]", mResult1.get( "Result" ) );
 		return lSeries;
 	}
@@ -197,6 +211,8 @@ public class ChartBuilder
 		mDate2 = IsoDatetimeToEngDate( mTDI.mReturnDatetime );
 		String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", mDate2 )
 				.replace( "[TYPE.NAME]", "line" )
+				.replace( "[COLOR]", SERIES2_COLOR )
+				.replace( "[RADIUS]", "4" )
 				.replace( "[SERIES.DATA]", mResult2.get( "Result" ) );
 		return lSeries;
 	}
@@ -206,6 +222,8 @@ public class ChartBuilder
 		String lSumResult = mHighChartDataResultComposerOutbound.Summarize( mHighChartDataResultComposerReturn );
 		String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", "Sum" )
 				.replace( "[TYPE.NAME]", "line" )
+				.replace( "[COLOR]", SERIES3_COLOR )
+				.replace( "[RADIUS]", "4" )
 				.replace( "[SERIES.DATA]", lSumResult );
 		return lSeries;
 	}
@@ -233,7 +251,7 @@ public class ChartBuilder
 		mDiscountSeries = GetDiscountSeries( mTDI.mDiscounts );
 
 		String lTitle = mDate1 + " - " + mDate2 + " " + mAirportFrom + " - " + mAirportTo;
-		String lSeries = mSeries1 + ",\n" + lSeries2 + ",\n" + lSeries3 + mBoughtTicketsSeries + mDiscountSeries;
+		String lSeries = mDiscountSeries + mSeries1 + ",\n" + lSeries2 + ",\n" + lSeries3 + mBoughtTicketsSeries;
 
 		String lJS = GetTripJS( lTitle, mTDI.mAirline, lCurrency, lSeries, mHtmlTagId );
 		String lDiv = mDivTemplate.replace( "[CONTAINER]", mHtmlTagId );
@@ -250,7 +268,7 @@ public class ChartBuilder
 		mDiscountSeries = GetDiscountSeries( mTDI.mDiscounts );
 
 		String lTitle = mDate1 + " " + mAirportFrom + " - " + mAirportTo;
-		String lSeriesSum = mSeries1 + mBoughtTicketsSeries + mDiscountSeries;
+		String lSeriesSum = mDiscountSeries + mSeries1 + mBoughtTicketsSeries;
 
 		String lJS = GetTripJS(lTitle, mTDI.mAirline, lCurrency, lSeriesSum, mHtmlTagId );
 		String lDiv = mDivTemplate.replace( "[CONTAINER]", mHtmlTagId );
