@@ -26,6 +26,7 @@ public class ChartBuilder
 	private final static String SERIES1_COLOR       = "#7cb5ec";
 	private final static String SERIES2_COLOR       = "#434348";
 	private final static String SERIES3_COLOR       = "#90ed7d";
+	private final static String PLOT_RADIUS         = "3";
 
 	private String mSelectedDepartureAirport = "-";
 	private String mSelectedArrivalAirport   = "-";
@@ -177,7 +178,7 @@ public class ChartBuilder
 			lSeries += ",\n" + mSeriesTemplate.replace( "[SERIES.NAME]", lTicket.mName )
 					.replace( "[TYPE.NAME]", "line" )
 					.replace( "[COLOR]", BOUGHT_TICKET_COLOR )
-					.replace( "[RADIUS]", "4" )
+					.replace( "[RADIUS]", "6" )
 					.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() );
 		}
 		return lSeries;
@@ -193,7 +194,7 @@ public class ChartBuilder
 		String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", mDate1 )
 				.replace( "[TYPE.NAME]", "line" )
 				.replace( "[COLOR]", SERIES1_COLOR )
-				.replace( "[RADIUS]", "4" )
+				.replace( "[RADIUS]", PLOT_RADIUS )
 				.replace( "[SERIES.DATA]", mResult1.get( "Result" ) );
 		return lSeries;
 	}
@@ -212,7 +213,7 @@ public class ChartBuilder
 		String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", mDate2 )
 				.replace( "[TYPE.NAME]", "line" )
 				.replace( "[COLOR]", SERIES2_COLOR )
-				.replace( "[RADIUS]", "4" )
+				.replace( "[RADIUS]", PLOT_RADIUS )
 				.replace( "[SERIES.DATA]", mResult2.get( "Result" ) );
 		return lSeries;
 	}
@@ -223,7 +224,7 @@ public class ChartBuilder
 		String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", "Sum" )
 				.replace( "[TYPE.NAME]", "line" )
 				.replace( "[COLOR]", SERIES3_COLOR )
-				.replace( "[RADIUS]", "4" )
+				.replace( "[RADIUS]", PLOT_RADIUS )
 				.replace( "[SERIES.DATA]", lSumResult );
 		return lSeries;
 	}
