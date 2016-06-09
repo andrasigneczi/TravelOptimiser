@@ -154,7 +154,7 @@ public abstract class PageGuest
 				return false;
 			}
 
-			if( aDepartureDay.length() == 0 )
+			if( aReturnDay.length() == 0 )
 				return true;
 
 			LocalDate lReturnDay = LocalDate.parse( aReturnDay, lFormatter );
