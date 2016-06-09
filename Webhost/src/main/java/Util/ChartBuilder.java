@@ -28,16 +28,18 @@ public class ChartBuilder
 	private final static String SERIES3_COLOR       = "#90ed7d";
 	private final static String PLOT_RADIUS         = "3";
 
-	private String mSelectedDepartureAirport = "-";
-	private String mSelectedArrivalAirport   = "-";
-	private boolean mReturnCheckboxChecked   = false;
-	private OneWayTrip mToggledButton = null;
+	private String     mSelectedDepartureAirport = "-";
+	private String     mSelectedArrivalAirport   = "-";
+	private boolean    mReturnCheckboxChecked    = false;
+	private OneWayTrip mToggledButton            = null;
+	private String     mOutboundDate             = "";
+	private String     mInboundDate              = "";
 
-	// local variables for builder
+	// class members for builder
 	private String mDate1;
 	private String mDate2;
-	private Hashtable<String,String> mResult1;
-	private Hashtable<String,String> mResult2;
+	private Hashtable<String,String>    mResult1;
+	private Hashtable<String,String>    mResult2;
 	private HighChartDataResultComposer mHighChartDataResultComposerOutbound;
 	private HighChartDataResultComposer mHighChartDataResultComposerReturn;
 	private String mHtmlTagId           = null;
@@ -124,6 +126,26 @@ public class ChartBuilder
 	public void setToggledButton( OneWayTrip aToggledButton )
 	{
 		this.mToggledButton = aToggledButton;
+	}
+
+	public String getOutboundDate()
+	{
+		return mOutboundDate;
+	}
+
+	public void setOutboundDate( String mOutboundDate )
+	{
+		this.mOutboundDate = mOutboundDate;
+	}
+
+	public String getInboundDate()
+	{
+		return mInboundDate;
+	}
+
+	public void setInboundDate( String mInboundDate )
+	{
+		this.mInboundDate = mInboundDate;
 	}
 
 	private static String IsoDatetimeToEngDate( String aDateTime )
@@ -357,7 +379,8 @@ public class ChartBuilder
 
 		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance()
 				.GetCollectedDepartureDateList( new HtmlListFormatterButtonList(),
-				mSelectedDepartureAirport, mSelectedArrivalAirport, mReturnCheckboxChecked );
+				mSelectedDepartureAirport, mSelectedArrivalAirport, mReturnCheckboxChecked,
+						mOutboundDate, mInboundDate );
 		lHtml = lHtml.replace( "[AVAILABLE_TRIPS]", lGetCollectedDepartureDateList );
 
 		String lDepartureAirportSelector = SQLiteDataProvider.getInstance()
@@ -395,7 +418,8 @@ public class ChartBuilder
 			//  this is the first button, toggle it!
 			mToggledButton = aTB;
 			String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance().GetCollectedDepartureDateList( new HtmlListFormatterButtonList( mToggledButton ),
-					aTB.getOutboundDepartureAirport(), aTB.getOutboundArrivalAirport(), mReturnCheckboxChecked );
+					aTB.getOutboundDepartureAirport(), aTB.getOutboundArrivalAirport(), mReturnCheckboxChecked,
+					mOutboundDate, mInboundDate );
 			return lGetCollectedDepartureDateList;
 		}
 		// recolor or filter the buttons

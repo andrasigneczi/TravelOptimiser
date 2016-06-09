@@ -63,7 +63,9 @@ public class SQLiteComposer implements SQLComposer
 
 	public String GetTripDateListQuery( String aSelectedDepartureAirport,
 	                                    String aSelectedArrivalAirport,
-	                                    boolean aReturnCheckboxChecked )
+	                                    boolean aReturnCheckboxChecked,
+	                                    String  aOutboundDate,
+	                                    String  aInboundDate )
 	{
 		final String lQueryTemlate =
 				"SELECT\n" +
@@ -80,10 +82,12 @@ public class SQLiteComposer implements SQLComposer
 				"\t\tTDR.AirportCode_LeavingFrom LIKE '[DEPARTURE_AIRPORT]'\n" +
 				"\t\tAND TDR.AirportCode_GoingTo LIKE '[ARRIVAL_AIRPORT]'\n" +
 				"\t\tAND TDR_PT.OutboundTrip='true'\n" +
+				"\t\t[OUTBOUND_DATE]\n" +
 				"\t) OR (\n" +
 				"\t\tTDR.AirportCode_LeavingFrom LIKE '[ARRIVAL_AIRPORT]'\n" +
 				"\t\tAND TDR.AirportCode_GoingTo LIKE '[DEPARTURE_AIRPORT]'\n" +
 				"\t\tAND TDR_PT.OutboundTrip='false'\n" +
+				"\t\t[INBOUND_DATE]\n" +
 				"\t))\n" +
 				"ORDER BY DepartureDatetime ASC, OutboundTrip DESC, SearchDatetime ASC;\n";
 
@@ -93,6 +97,20 @@ public class SQLiteComposer implements SQLComposer
 			lReturnValue = lReturnValue.replace( "\t\tAND TDR_PT.OutboundTrip='false'\n", "" );
 			lReturnValue = lReturnValue.replace( "\t\tAND TDR_PT.OutboundTrip='true'\n", "" );
 		}
+
+		if( aInboundDate.length() > 0 && aOutboundDate.length() > 0 )
+		{
+			lReturnValue = lReturnValue.replace( "[OUTBOUND_DATE]", "AND DepartureDatetime LIKE '" + aOutboundDate + "%'" );
+			lReturnValue = lReturnValue.replace( "[INBOUND_DATE]",  "AND DepartureDatetime LIKE '" + aInboundDate  + "%'" );
+		}
+		else if( aOutboundDate.length() > 0 )
+		{
+			lReturnValue = lReturnValue.replace( "[OUTBOUND_DATE]", "AND DepartureDatetime LIKE '" + aOutboundDate + "%'" );
+			lReturnValue = lReturnValue.replace( "[INBOUND_DATE]",  "AND DepartureDatetime LIKE '" + aOutboundDate + "%'" );
+		}
+
+		lReturnValue = lReturnValue.replace( "[OUTBOUND_DATE]", "" );
+		lReturnValue = lReturnValue.replace( "[INBOUND_DATE]", "" );
 
 		if( aSelectedDepartureAirport.length() > 1 && aSelectedArrivalAirport.length() > 1 )
 		{
@@ -118,6 +136,7 @@ public class SQLiteComposer implements SQLComposer
 
 		lReturnValue = lReturnValue.replace( "[DEPARTURE_AIRPORT]", "%" )
 				.replace( "[ARRIVAL_AIRPORT]", "%" );
+
 		System.out.println( lReturnValue );
 		return lReturnValue;
 	}

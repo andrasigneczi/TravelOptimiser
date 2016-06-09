@@ -79,11 +79,15 @@ public class WebService
 			if( lReturnValue != null )
 				return lReturnValue;
 		}
+		else if( aId.equals( "OutboundDateChanged" ))
+			mBuilder.setOutboundDate( aParam );
+		else if( aId.equals( "InboundDateChanged" ))
+			mBuilder.setInboundDate( aParam );
 
 		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance()
 				.GetCollectedDepartureDateList( new HtmlListFormatterButtonList( mBuilder.getToggledButton() ),
 						mBuilder.getSelectedDepartureAirport(), mBuilder.getSelectedArrivalAirport(),
-						mBuilder.isReturnCheckboxChecked() );
+						mBuilder.isReturnCheckboxChecked(), mBuilder.getOutboundDate(), mBuilder.getInboundDate() );
 
 		return lGetCollectedDepartureDateList;
 	}

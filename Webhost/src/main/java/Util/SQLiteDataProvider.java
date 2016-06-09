@@ -136,12 +136,15 @@ public class SQLiteDataProvider implements DataProvider
 	 * @return
 	 */
 	public String GetCollectedDepartureDateList( HtmlListFormatter aHtmlListFormatter,
-	                                             String aSelectedDepartureAirport,
-	                                             String aSelectedArrivalAirport,
-	                                             boolean aReturnCheckboxChecked )
+	                                             String  aSelectedDepartureAirport,
+	                                             String  aSelectedArrivalAirport,
+	                                             boolean aReturnCheckboxChecked,
+	                                             String  aOutboundDate,
+	                                             String  aInboundDate )
 	{
 		String lQuery;
-		lQuery = mComposer.GetTripDateListQuery( aSelectedDepartureAirport, aSelectedArrivalAirport, aReturnCheckboxChecked );
+		lQuery = mComposer.GetTripDateListQuery( aSelectedDepartureAirport, aSelectedArrivalAirport,
+				aReturnCheckboxChecked, aOutboundDate, aInboundDate );
 
 		Statement lStmt = null;
 		try

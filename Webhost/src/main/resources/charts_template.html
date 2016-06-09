@@ -15,6 +15,8 @@
     <link href="/css/bootstrap-toggle.min.css" rel="stylesheet">
     <script src="/js/bootstrap/bootstrap-toggle.min.js"></script>
 
+    <link id="bsdp-css" href="/css/bootstrap-datepicker.min.css" rel="stylesheet">
+    <script src="/js/bootstrap/bootstrap-datepicker.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/css/traveloptimizer.css" title="Style">
 </head>
 <body>
@@ -36,7 +38,19 @@
     <!--<input type="checkbox" name="ReturnTrip" id="ReturnTrip" value="1"-->
            <!--onchange="TO_ActionName=this.name + 'Changed';TO_ActionWidget=this;$('#ajaxform').submit();"/>-->
     <input type="checkbox" name="ReturnTrip" id="ReturnTrip" data-toggle="toggle" data-size="mini"/>
-    <label> Return trip: </label>
+    <label> Return trip</label><br/>
+    <br/>
+
+    <div id="sandbox-container">
+        <div id="outbound-date-parent">
+            <label>Outbound date</label>
+            <div id="outbound-date"></div>
+        </div>
+        <div id="inbound-date-parent">
+            <label>Inbound date</label>
+            <div id="inbound-date"></div>
+        </div>
+    </div>
 </div>
 
 <div class="TO_row" id="AvailableTrips">
@@ -79,63 +93,67 @@
     </div>
 </div>
 
+
 <script language="JavaScript">
+    $('#sandbox-container div#outbound-date').datepicker({
+        autoclose: true,
+        todayHighlight: true,
+        //datesDisabled: ['06/06/2016', '06/21/2016'],
+        toggleActive: true
+    });
+
+    $('#sandbox-container div#inbound-date').datepicker({
+        autoclose: true,
+        todayHighlight: true,
+        //datesDisabled: ['06/06/2016', '06/21/2016'],
+        toggleActive: true
+    });
+
     // Attach a submit handler to the form
     $( "#ajaxform" ).submit(function( event ) {
 
-    // Stop form from submitting normally
-    event.preventDefault();
+        // Stop form from submitting normally
+        event.preventDefault();
 
-    // Get some values from elements on the page:
-    var $form = $( this )
+        // Get some values from elements on the page:
+        var $form = $( this )
 
-    var lParam = null;
-    if( TO_ActionName == 'DepartureAirportListChanged' ||
-        TO_ActionName == 'ArrivalAirportListChanged')
-    {
-        lParam = TO_ActionWidget.options[TO_ActionWidget.selectedIndex].value;
-    }
-    else if( TO_ActionName == 'DateTimeButtonPushed' )
-    {
-        //       airline                 datetime, leavingFrom, goingTo, outbound
-        lParam = TO_ActionValue + '|' + TO_ActionWidget.value
-    }
-    else if( TO_ActionName == 'ReturnTripChanged' )
-    {
-        lParam = TO_ActionWidget.checked;
-    }
-
-    lURL = $form.attr( "action" );
-
-    // Send the data using post
-    var posting = $.post( lURL, { id: TO_ActionName, param: lParam } );
-
-    // Put the results in a div
-    posting.done(function( data ) {
+        var lParam = null;
         if( TO_ActionName == 'DepartureAirportListChanged' ||
             TO_ActionName == 'ArrivalAirportListChanged')
         {
-            $("#AvailableTrips").html( data );
-            $('[data-toggle="buttonlist-tooltip"]').tooltip();
+            lParam = TO_ActionWidget.options[TO_ActionWidget.selectedIndex].value;
         }
         else if( TO_ActionName == 'DateTimeButtonPushed' )
         {
-            if( $('#ReturnTrip').is( ':checked' ) == false )
+            //       airline                 datetime, leavingFrom, goingTo, outbound
+            lParam = TO_ActionValue + '|' + TO_ActionWidget.value
+        }
+        else if( TO_ActionName == 'ReturnTripChanged' )
+        {
+            lParam = TO_ActionWidget.checked;
+        }
+        else if( TO_ActionName == 'OutboundDateChanged' || TO_ActionName == 'InboundDateChanged' )
+        {
+            lParam = TO_ActionValue;
+        }
+
+        lURL = $form.attr( "action" );
+
+        // Send the data using post
+        var posting = $.post( lURL, { id: TO_ActionName, param: lParam } );
+
+        // Put the results in a div
+        posting.done(function( data ) {
+            if( TO_ActionName == 'DepartureAirportListChanged' ||
+                TO_ActionName == 'ArrivalAirportListChanged')
             {
-                $("[data-toggle='buttonlist-tooltip']").tooltip('hide');
-                $("#ModalWindowBody").html( data );
-                $("#OpenModalButton" ).click();
-                ModalRefresh();
-                TO_ActionWidget.className = TO_ActionWidget.className.replace( "active", "");
+                $("#AvailableTrips").html( data );
+                $('[data-toggle="buttonlist-tooltip"]').tooltip();
             }
-            else
+            else if( TO_ActionName == 'DateTimeButtonPushed' )
             {
-                if( data.indexOf( 'DateTimeButtonPushed' ) != -1 )
-                {
-                    $("#AvailableTrips").html( data );
-                    $('[data-toggle="buttonlist-tooltip"]').tooltip();
-                }
-                else
+                if( $('#ReturnTrip').is( ':checked' ) == false )
                 {
                     $("[data-toggle='buttonlist-tooltip']").tooltip('hide');
                     $("#ModalWindowBody").html( data );
@@ -143,43 +161,80 @@
                     ModalRefresh();
                     TO_ActionWidget.className = TO_ActionWidget.className.replace( "active", "");
                 }
+                else
+                {
+                    if( data.indexOf( 'DateTimeButtonPushed' ) != -1 )
+                    {
+                        $("#AvailableTrips").html( data );
+                        $('[data-toggle="buttonlist-tooltip"]').tooltip();
+                    }
+                    else
+                    {
+                        $("[data-toggle='buttonlist-tooltip']").tooltip('hide');
+                        $("#ModalWindowBody").html( data );
+                        $("#OpenModalButton" ).click();
+                        ModalRefresh();
+                        TO_ActionWidget.className = TO_ActionWidget.className.replace( "active", "");
+                    }
+                }
             }
-        }
-        else if( TO_ActionName == 'ReturnTripChanged' )
-        {
-            if( $('#ReturnTrip').is( ':checked' ) == false )
+            else if( TO_ActionName == 'ReturnTripChanged' )
+            {
+                if( $('#ReturnTrip').is( ':checked' ) == false )
+                {
+                    $("#AvailableTrips").html( data );
+                    $('[data-toggle="buttonlist-tooltip"]').tooltip();
+                }
+            }
+            else if( TO_ActionName == 'OutboundDateChanged' ||
+                TO_ActionName == 'InboundDateChanged')
             {
                 $("#AvailableTrips").html( data );
                 $('[data-toggle="buttonlist-tooltip"]').tooltip();
             }
-        }
+        });
     });
-});
 
-function ModalRefresh()
-{
-    var chart = $('#modalcontainer').highcharts();
-    $('#myModal').on('show.bs.modal', function() {
-        $('#modalcontainer').css('visibility', 'hidden');
-    });
-    $('#myModal').on('shown.bs.modal', function() {
-        $('#modalcontainer').css('visibility', 'initial');
-        chart.reflow();
-    });
-}
+    function ModalRefresh()
+    {
+        var chart = $('#modalcontainer').highcharts();
+        $('#myModal').on('show.bs.modal', function() {
+            $('#modalcontainer').css('visibility', 'hidden');
+        });
+        $('#myModal').on('shown.bs.modal', function() {
+            $('#modalcontainer').css('visibility', 'initial');
+            chart.reflow();
+        });
+    }
 
-$(function() {
-    $('#ReturnTrip').change(function() {
-      //$('#console-event').html('Toggle: ' + $(this).prop('checked'))
-      TO_ActionName=this.name + 'Changed';
-      TO_ActionWidget=this;
-      $('#ajaxform').submit();
+    $(function() {
+        $('#ReturnTrip').change(function() {
+          //$('#console-event').html('Toggle: ' + $(this).prop('checked'))
+          TO_ActionName=this.name + 'Changed';
+          TO_ActionWidget=this;
+          $('#ajaxform').submit();
+        })
     })
-})
 
-$(document).ready(function(){
-    $('[data-toggle="buttonlist-tooltip"]').tooltip();
-});
+    $(document).ready(function(){
+        $('[data-toggle="buttonlist-tooltip"]').tooltip();
+    });
+
+    $('#sandbox-container div#outbound-date').datepicker()
+    .on( 'changeDate', function( e ) {
+        TO_ActionName="OutboundDateChanged";
+        TO_ActionValue=e.format('yyyy-mm-dd');
+        //TO_ActionWidget
+        $("#ajaxform").submit();
+    });
+
+    $('#sandbox-container div#inbound-date').datepicker()
+    .on( 'changeDate', function( e ) {
+        TO_ActionName="InboundDateChanged";
+        TO_ActionValue=e.format('yyyy-mm-dd');
+        //TO_ActionWidget
+        $("#ajaxform").submit();
+    });
 
 </script>
 </body>

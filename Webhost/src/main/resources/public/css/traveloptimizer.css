@@ -22,3 +22,21 @@ div.TO_row {
 input.btn-default.active {
     background-color: #caa5a5;
 }
+
+div#outbound-date-parent {
+    float: left;
+    clear: none;
+}
+
+div#inbound-date-parent {
+    float: left;
+    clear: none;
+}
+
+div#outbound-date-parent>label, div#inbound-date-parent>label {
+    margin-left: 15px;
+}
+
+body {
+    margin-left:10px;
+}
