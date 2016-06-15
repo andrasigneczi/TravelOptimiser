@@ -1,5 +1,6 @@
 package Util;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.context.annotation.Bean;
 
@@ -16,6 +17,8 @@ import java.util.Scanner;
  */
 public class ChartBuilder
 {
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger(ChartBuilder.class);
+
 	private final static String mHtmlTemplate   = InitHtmlTemplate();
 	private final static String mJsTemplate     = InitJsTemplate();
 	private final static String mDivTemplate    = InitDivTemplate();
@@ -346,7 +349,7 @@ public class ChartBuilder
 		return GetReturnTripHtmlContent();
 	}
 
-	private String[] GenerateDivAndScriptContents()
+	private String[] GenerateDivAndScriptContentsFromConfig()
 	{
 		ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
 		String lScriptCotent = "";
@@ -368,9 +371,43 @@ public class ChartBuilder
 		return new String[] { lScriptCotent, lDivContent };
 	}
 
+	private String[] GenerateDivAndScriptContentsFromFavorites( String[] aContents )
+	{
+		Favorites lFavorites = Favorites.getInstance();
+		String lScriptCotent = "";
+		String lDivContent = "";
+		int lContainerIndex = 0;
+
+		for( int i = 0; i < lFavorites.size(); i++ )
+		{
+			OneWayTrip[] lTrips = lFavorites.get( i );
+			String lDatetime2 = "";
+
+			if( !lTrips[ 0 ].getAirline().equals( "wizzair" ) && !lTrips[ 0 ].getAirline().equals( "ryanair" ))
+				continue;
+			if( lTrips.length == 2 )
+			{
+				if( !lTrips[ 1 ].getAirline().equals( "wizzair" ) && !lTrips[ 1 ].getAirline().equals( "ryanair" ))
+					continue;
+				lDatetime2 = lTrips[ 1 ].getDatetime();
+			}
+			String lStartTag = "<img class=\"favoritestar\" src=\"/img/star_filled.png\" onclick=\"bookmarkChart(this);\"/>";
+			String[] lContent = GetHtmlContent( lTrips[ 0 ].getDatetime(), lDatetime2,
+					lTrips[ 0 ].getAirline(), lTrips[ 0 ].getLeavingFrom(), lTrips[ 0 ].getGoingTo(),
+					"%", "Favoritecontainer" + lContainerIndex++, false,
+					null, null );
+			lScriptCotent += lContent[ 1 ];
+			lDivContent += lStartTag + lContent[ 0 ];
+		}
+
+		return new String[] { aContents[ 0 ] + lScriptCotent, aContents[ 1 ] + lDivContent };
+	}
+
 	public String GenerateHtmlContentUsingConfig()
 	{
-		String[] lContents = GenerateDivAndScriptContents();
+		String[] lContents1 = GenerateDivAndScriptContentsFromConfig();
+		String[] lContents = GenerateDivAndScriptContentsFromFavorites( lContents1 );
+
 		String lScriptCotent = lContents[ 0 ];
 		String lDivContent = lContents[ 1 ];
 
@@ -410,6 +447,8 @@ public class ChartBuilder
 				String[] lHtmlContent = GetHtmlContent( mToggledButton.getDatetime(), aTB.getDatetime(), aTB.getAirline(),
 						mToggledButton.getOutboundDepartureAirport(), mToggledButton.getOutboundArrivalAirport(),
 						"%", "modalcontainer", false, null, null );
+				if( Favorites.getInstance().contains( mToggledButton, aTB ))
+					lHtmlContent[ 0 ] += "<!-- bookmarked -->";
 				return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
 			}
 		}
@@ -431,6 +470,8 @@ public class ChartBuilder
 		String[] lHtmlContent = GetHtmlContent( aTB.getDatetime(), "", aTB.getAirline(),
 				aTB.getOutboundDepartureAirport(), aTB.getOutboundArrivalAirport(),
 				"%", "modalcontainer", true, null, null );
+		if( Favorites.getInstance().contains( aTB, null ))
+			lHtmlContent[ 0 ] += "<!-- bookmarked -->";
 		return lHtmlContent[ 0 ] + "<script>" + lHtmlContent[ 1 ] + "</script>";
 	}
 
@@ -447,5 +488,25 @@ public class ChartBuilder
 			return DBP_ReturnCheckboxChecked( lTB );
 
 		return DBP_ReturnCheckboxNotChecked( lTB );
+	}
+
+	public void BookmarkTrip( String aParam )
+	{
+		String[] lValues = aParam.split( "\\|" );
+		// lValues = airline, leavingfrom, goingto, outbound, datetime
+		OneWayTrip lTB = new OneWayTrip(
+				lValues[ 4 ], lValues[ 0 ],
+				lValues[ 1 ], lValues[ 2 ],
+				Boolean.parseBoolean( lValues[ 3 ] ));
+
+//		OneWayTrip lTB = new OneWayTrip( mTDI.mDepartureDatetime,
+//				mTDI.mAirline, mTDI.mAirportCode_LeavingFrom,
+//				mTDI.mAirportCode_GoingTo, true );
+
+		if( mToggledButton == null )
+			Favorites.getInstance().add( lTB, null );
+		else
+			Favorites.getInstance().add( mToggledButton, lTB );
+		Favorites.getInstance().SaveFavourtes();
 	}
 }

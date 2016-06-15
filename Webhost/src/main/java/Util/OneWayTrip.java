@@ -51,6 +51,15 @@ public class OneWayTrip
 				getOutboundArrivalAirport();
 	}
 
+	public static OneWayTrip fromString( String aParam )
+	{
+		String[] lValues = aParam.split( "\\|" );
+		return new OneWayTrip(
+				lValues[ 1 ], lValues[ 0 ],
+				lValues[ 2 ], lValues[ 3 ],
+				true );
+	}
+
 	@Override
 	public int hashCode() {
 		return toString().hashCode();

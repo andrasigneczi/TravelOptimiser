@@ -80,7 +80,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Price chart</h4>
+                <img class="favourite" src="/img/star_empty.png" onclick="bookmarkChart(this);"/><h4 class="modal-title">Price chart</h4>
             </div>
             <div class="modal-body" id="ModalWindowBody">
                 <p>Some text in the modal.</p>
@@ -126,14 +126,19 @@
         }
         else if( TO_ActionName == 'DateTimeButtonPushed' )
         {
-            //       airline                 datetime, leavingFrom, goingTo, outbound
-            lParam = TO_ActionValue + '|' + TO_ActionWidget.value
+            //       airline                 leavingFrom, goingTo, outbound, datetime
+            lParam = TO_ActionValue + '|' + TO_ActionWidget.value;
+            //console.log( lParam );
         }
         else if( TO_ActionName == 'ReturnTripChanged' )
         {
             lParam = TO_ActionWidget.checked;
         }
         else if( TO_ActionName == 'OutboundDateChanged' || TO_ActionName == 'InboundDateChanged' )
+        {
+            lParam = TO_ActionValue;
+        }
+        else if( TO_ActionName == 'bookmarkChart' )
         {
             lParam = TO_ActionValue;
         }
@@ -160,6 +165,7 @@
                     $("#OpenModalButton" ).click();
                     ModalRefresh();
                     TO_ActionWidget.className = TO_ActionWidget.className.replace( "active", "");
+                    modalStarOn( data.indexOf( '<!-- bookmarked -->' ) > 0 );
                 }
                 else
                 {
@@ -175,6 +181,7 @@
                         $("#OpenModalButton" ).click();
                         ModalRefresh();
                         TO_ActionWidget.className = TO_ActionWidget.className.replace( "active", "");
+                        modalStarOn( data.indexOf( '<!-- bookmarked -->' ) > 0 );
                     }
                 }
             }
@@ -191,6 +198,13 @@
             {
                 $("#AvailableTrips").html( data );
                 $('[data-toggle="buttonlist-tooltip"]').tooltip();
+            }
+            else if( TO_ActionName == 'bookmarkChart' )
+            {
+                if( TO_ActionValue == 'on' )
+                    TO_ActionWidget.src='/img/star_filled.png';
+                else
+                    TO_ActionWidget.src='/img/star_empty.png';
             }
         });
     });
@@ -235,6 +249,22 @@
         //TO_ActionWidget
         $("#ajaxform").submit();
     });
+
+function bookmarkChart( obj )
+{
+    TO_ActionName='bookmarkChart';
+    TO_ActionValue=(obj.src.indexOf("empty") > 0 ? "on" : "off");
+    TO_ActionWidget=obj;
+    $('#ajaxform').submit();
+}
+
+function modalStarOn( bOn )
+{
+    if( bOn )
+        document.getElementsByClassName('favourite')[0].src = '/img/star_filled.png';
+    else
+        document.getElementsByClassName('favourite')[0].src = '/img/star_empty.png';
+}
 
 </script>
 </body>

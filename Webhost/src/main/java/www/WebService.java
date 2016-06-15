@@ -24,6 +24,7 @@ import java.util.Scanner;
 public class WebService
 {
 	private ChartBuilder mBuilder;
+	private String mLastPushButtonParams;
 
 	public WebService()
 	{
@@ -77,12 +78,30 @@ public class WebService
 		{
 			String lReturnValue = mBuilder.DateTimeButtonPushed( aParam );
 			if( lReturnValue != null )
+			{
+				mLastPushButtonParams = aParam;
+				// mBuilder.isReturnCheckboxChecked()
+				// mBuilder.getToggledButton()
+				// mLastModalChartParams = aParam;
 				return lReturnValue;
+			}
 		}
 		else if( aId.equals( "OutboundDateChanged" ))
 			mBuilder.setOutboundDate( aParam );
 		else if( aId.equals( "InboundDateChanged" ))
 			mBuilder.setInboundDate( aParam );
+		else if( aId.equals( "bookmarkChart" ))
+		{
+			if( aParam.equals( "on" ))
+			{
+				mBuilder.BookmarkTrip( mLastPushButtonParams );
+			}
+			else
+			{
+				// TODO
+			}
+			return "";
+		}
 
 		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance()
 				.GetCollectedDepartureDateList( new HtmlListFormatterButtonList( mBuilder.getToggledButton() ),

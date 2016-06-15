@@ -37,6 +37,20 @@ div#outbound-date-parent>label, div#inbound-date-parent>label {
     margin-left: 15px;
 }
 
+img.favourite {
+    float: left;
+    clear: none;
+    margin: 3px 15px 0px 0px;
+}
+
 body {
     margin-left:10px;
+}
+
+img.favoritestar {
+    position: relative;
+    z-index:1000;
+    top: 30px;
+    float: right;
+    left: -40px;
 }

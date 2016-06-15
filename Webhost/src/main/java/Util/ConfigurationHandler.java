@@ -12,10 +12,10 @@ import java.util.ArrayList;
  */
 public class ConfigurationHandler extends DefaultHandler
 {
-	Configuration mConfiguration;
+	Configuration     mConfiguration;
 	ArrayList<String> mCurrentPath = new ArrayList<String>();
-	TravelData_INPUT mCurrentTravelDataInput;
-	final String mSearchPath;
+	TravelData_INPUT  mCurrentTravelDataInput;
+	final String      mSearchPath;
 
 	public ConfigurationHandler( Configuration aConfiguration, String aSearchPath )
 	{
