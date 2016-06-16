@@ -102,6 +102,11 @@ public class WebService
 			}
 			return "";
 		}
+		else if( aId.equals( "bookmarkChart2" ))
+		{
+			mBuilder.UpdateBookmarkTrip( aParam );
+			return "";
+		}
 
 		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance()
 				.GetCollectedDepartureDateList( new HtmlListFormatterButtonList( mBuilder.getToggledButton() ),

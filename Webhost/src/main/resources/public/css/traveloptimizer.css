@@ -53,4 +53,5 @@ img.favoritestar {
     top: 30px;
     float: right;
     left: -40px;
+    cursor: pointer;
 }

@@ -45,6 +45,11 @@ public class Favorites
 			e.printStackTrace();
 			return;
 		}
+		catch( java.util.NoSuchElementException e )
+		{
+			lScanner.close();
+			return;
+		}
 
 		Pattern lReg = Pattern.compile( "^(.+)$", Pattern.MULTILINE );
 		Matcher lMatch = lReg.matcher( lContent );
@@ -114,6 +119,13 @@ public class Favorites
 		}
 	}
 
+	public void remove( int aIndex )
+	{
+		if( aIndex < 0 || aIndex >= mTrips.size() )
+			return;
+		mTrips.remove( aIndex );
+	}
+
 	public boolean contains( OneWayTrip aTrip1, OneWayTrip aTrip2 )
 	{
 		String lTrip = "";
@@ -133,6 +145,23 @@ public class Favorites
 		return false;
 	}
 
+	public OneWayTrip[] getFromSource( String aTripString )
+	{
+		int lSeparatorIndex = aTripString.indexOf( "&" );
+
+		if( lSeparatorIndex != -1 )
+		{
+			OneWayTrip lTrip1 = OneWayTrip.fromString( aTripString.substring( 0, lSeparatorIndex ));
+			OneWayTrip lTrip2 = OneWayTrip.fromString( aTripString.substring( lSeparatorIndex + 1 ));
+			return new OneWayTrip[] { lTrip1, lTrip2 };
+		}
+		else
+		{
+			OneWayTrip lTrip = OneWayTrip.fromString( aTripString );
+			return new OneWayTrip[] { lTrip };
+		}
+	}
+
 	/**
 	 * Get a one way or a return trip from index
 	 * @param aIndex
@@ -144,19 +173,25 @@ public class Favorites
 			return null;
 
 		String lTripString = mTrips.get( aIndex );
-		int lSeparatorIndex = lTripString.indexOf( "&" );
+		return getFromSource( lTripString );
+	}
 
-		if( lSeparatorIndex != -1 )
+	public String getSource( int aIndex )
+	{
+		if( aIndex < 0 || aIndex >= mTrips.size() )
+			return null;
+
+		return mTrips.get( aIndex );
+	}
+
+	public int indexOf( String source )
+	{
+		for( int i = 0; i < mTrips.size(); i++ )
 		{
-			OneWayTrip lTrip1 = OneWayTrip.fromString( lTripString.substring( 0, lSeparatorIndex ));
-			OneWayTrip lTrip2 = OneWayTrip.fromString( lTripString.substring( lSeparatorIndex + 1 ));
-			return new OneWayTrip[] { lTrip1, lTrip2 };
+			if( mTrips.get( i ).equals( source ))
+				return i;
 		}
-		else
-		{
-			OneWayTrip lTrip = OneWayTrip.fromString( lTripString );
-			return new OneWayTrip[] { lTrip };
-		}
+		return -1;
 	}
 
 	public int size()

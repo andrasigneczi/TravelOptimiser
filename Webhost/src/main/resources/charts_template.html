@@ -138,7 +138,7 @@
         {
             lParam = TO_ActionValue;
         }
-        else if( TO_ActionName == 'bookmarkChart' )
+        else if( TO_ActionName == 'bookmarkChart' || TO_ActionName == 'bookmarkChart2' )
         {
             lParam = TO_ActionValue;
         }
@@ -206,6 +206,13 @@
                 else
                     TO_ActionWidget.src='/img/star_empty.png';
             }
+            else if( TO_ActionName == 'bookmarkChart2' )
+            {
+                if( TO_ActionWidget.src.indexOf( 'empty' ) > 0 )
+                    TO_ActionWidget.src='/img/star_filled.png';
+                else
+                    TO_ActionWidget.src='/img/star_empty.png';
+            }
         });
     });
 
@@ -254,6 +261,14 @@ function bookmarkChart( obj )
 {
     TO_ActionName='bookmarkChart';
     TO_ActionValue=(obj.src.indexOf("empty") > 0 ? "on" : "off");
+    TO_ActionWidget=obj;
+    $('#ajaxform').submit();
+}
+
+function bookmarkChart2( obj, bookmarkItem )
+{
+    TO_ActionName='bookmarkChart2';
+    TO_ActionValue=bookmarkItem;
     TO_ActionWidget=obj;
     $('#ajaxform').submit();
 }

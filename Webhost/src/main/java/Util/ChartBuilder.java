@@ -391,10 +391,11 @@ public class ChartBuilder
 					continue;
 				lDatetime2 = lTrips[ 1 ].getDatetime();
 			}
-			String lStartTag = "<img class=\"favoritestar\" src=\"/img/star_filled.png\" onclick=\"bookmarkChart(this);\"/>";
+			String lStartTag = "<img class=\"favoritestar\" src=\"/img/star_filled.png\" onclick=\"bookmarkChart2(this, '"
+					+ lFavorites.getSource( i ) + "' );\"/>";
 			String[] lContent = GetHtmlContent( lTrips[ 0 ].getDatetime(), lDatetime2,
 					lTrips[ 0 ].getAirline(), lTrips[ 0 ].getLeavingFrom(), lTrips[ 0 ].getGoingTo(),
-					"%", "Favoritecontainer" + lContainerIndex++, false,
+					"%", "Favoritecontainer" + lContainerIndex++, lDatetime2.length() == 0,
 					null, null );
 			lScriptCotent += lContent[ 1 ];
 			lDivContent += lStartTag + lContent[ 0 ];
@@ -507,6 +508,22 @@ public class ChartBuilder
 			Favorites.getInstance().add( lTB, null );
 		else
 			Favorites.getInstance().add( mToggledButton, lTB );
+		Favorites.getInstance().SaveFavourtes();
+	}
+
+	public void UpdateBookmarkTrip( String aParam )
+	{
+		int lIndex = Favorites.getInstance().indexOf( aParam );
+		if( lIndex >= 0 )
+			Favorites.getInstance().remove( lIndex );
+		else
+		{
+			OneWayTrip[] lTrips = Favorites.getInstance().getFromSource( aParam );
+			if( lTrips.length == 1 )
+				Favorites.getInstance().add( lTrips[ 0 ], null );
+			else
+				Favorites.getInstance().add( lTrips[ 0 ], lTrips[ 1 ] );
+		}
 		Favorites.getInstance().SaveFavourtes();
 	}
 }
