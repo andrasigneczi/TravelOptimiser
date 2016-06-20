@@ -126,6 +126,30 @@ public class DatetimeHelper
         return aDatetime.substring( 0, aDatetime.length() - 4 );
     }
 
+    public static String ConvertFromWizzairJSONStoredFormat( String aDatetime )
+    {
+        // 20160103 8:33
+        //
+        Pattern lReg = Pattern.compile( "^(\\d{4})(\\d{2})(\\d{2})\\s(\\d{1,2})\\:(\\d{2})$" );
+        Matcher lMatch = lReg.matcher( aDatetime );
+        if( lMatch.find() )
+        {
+            String lRow = lMatch.group(1).toString()
+                    + "-"
+                    + lMatch.group(2).toString()
+                    + "-"
+                    + lMatch.group(3).toString()
+                    + "T"
+                    + String.format( "%02d", Integer.parseInt( lMatch.group(4).toString()))
+                    + ":"
+                    + lMatch.group(5).toString()
+                    + ":00";
+            return lRow;
+        }
+        mLogger.warn( "Something wrong with the wizzair date time format: " + aDatetime );
+        return "";
+    }
+
     public static LocalDateTime WizzAirDatetimeCorrection( LocalDateTime aLocalDateTime )
     {
         // TODO: why must I add 1 more hour to get the right time?

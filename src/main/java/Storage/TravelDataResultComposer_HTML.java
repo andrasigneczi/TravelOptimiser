@@ -58,7 +58,7 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 		lBody += "<tr><th colspan=3>" + lCheckingDate + " &#45;" + lSEUtils.escapeHtml4( mResult.mTravelDataInput.mAirline ) + " &#45;" + mResult.mTravelDataInput.mAirportCode_LeavingFrom + "→" + mResult.mTravelDataInput.mAirportCode_GoingTo + "</th></tr>\n";
 
 		// Outbound
-		for( TravelData_RESULT.TravelData_PossibleTrips lTrip : mResult.mTrips )
+		for( TravelData_RESULT.TravelData_PossibleTrip lTrip : mResult.mTrips )
 		{
 			if( !lTrip.mOutboundTrip )
 				continue;
@@ -77,7 +77,7 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 		lBody += "<tr><th colspan=3>" + lSEUtils.escapeHtml4( mResult.mTravelDataInput.mAirline ) + " &#45;" + mResult.mTravelDataInput.mAirportCode_GoingTo + "→" + mResult.mTravelDataInput.mAirportCode_LeavingFrom + "</th></tr>\n";
 
 		// Return
-		for( TravelData_RESULT.TravelData_PossibleTrips lTrip : mResult.mTrips )
+		for( TravelData_RESULT.TravelData_PossibleTrip lTrip : mResult.mTrips )
 		{
 			if( lTrip.mOutboundTrip )
 				continue;
@@ -87,7 +87,7 @@ public class TravelDataResultComposer_HTML extends TravelDataResultComposer
 		return lBody;
 	}
 
-	private String toFormattedString_Trip( TravelData_RESULT.TravelData_PossibleTrips aTrip )
+	private String toFormattedString_Trip( TravelData_RESULT.TravelData_PossibleTrip aTrip )
 	{
 		StringEscapeUtils lSEUtils = new StringEscapeUtils();
 		ArrayList<String> lNormalizedDatetimes = NormalizeDatetimes( FormatDatetime( aTrip.mDepartureDatetime ), FormatDatetime( aTrip.mArrivalDatetime ));

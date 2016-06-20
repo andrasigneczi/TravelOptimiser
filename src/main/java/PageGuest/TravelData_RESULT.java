@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 public class TravelData_RESULT
 {
-	public static class TravelData_PossibleTrips implements Cloneable
+	public static class TravelData_PossibleTrip implements Cloneable
 	{
-		public String mDepartureDatetime          = "";    // 2016.03.25 17:10
-		public String mArrivalDatetime            = "";      // 2016.03.25 22:10
+		public String mDepartureDatetime          = "";    // 2017-01-04T17:25
+		public String mArrivalDatetime            = "";    // 2017-01-04T17:25
 		public String mPrices_BasicFare_Normal    = "";
 		public String mPrices_BasicFare_Discount  = "";
 		public String mPrices_PlusFare_Normal     = "";
@@ -31,14 +31,14 @@ public class TravelData_RESULT
 
 	public TravelData_RESULT()
 	{
-		mTrips = new ArrayList<TravelData_PossibleTrips>();
+		mTrips = new ArrayList<TravelData_PossibleTrip>();
 	}
 
 	public String mAirline                    = "";
 	public String mAirportCode_LeavingFrom    = "";   // SOF
 	public String mAirportCode_GoingTo        = "";       // HHN
 	public TravelData_INPUT mTravelDataInput  = null;
-	public ArrayList<TravelData_PossibleTrips> mTrips;
+	public ArrayList<TravelData_PossibleTrip> mTrips;
 	//public boolean mReturnTicket;
 
 	String toString( TravelDataResultComposer aComposer )

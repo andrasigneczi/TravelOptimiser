@@ -103,7 +103,7 @@ public class TravelDataResultComposer_LiteSQL extends TravelDataResultComposer
 		return lSQL;
 	}
 
-	public String insertTravelDataResult_PossibleTrips( TravelData_RESULT.TravelData_PossibleTrips aTrip,  int aTravelDataResultId )
+	public String insertTravelDataResult_PossibleTrips( TravelData_RESULT.TravelData_PossibleTrip aTrip,  int aTravelDataResultId )
 	{
 		String lSQL = "INSERT INTO TravelDataResult_PossibleTrips (\n" +
 				"\tDepartureDatetime         ,\n" +     // 2016.03.25 17:10

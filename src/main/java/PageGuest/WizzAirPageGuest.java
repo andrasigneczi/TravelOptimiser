@@ -315,7 +315,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			else
 			{
 				// rows of the table with useful datas
-				TravelData_RESULT.TravelData_PossibleTrips lTrip = new TravelData_RESULT.TravelData_PossibleTrips();
+				TravelData_RESULT.TravelData_PossibleTrip lTrip = new TravelData_RESULT.TravelData_PossibleTrip();
 				lTrip.mOutboundTrip = aOutbound;
 				java.util.List<DOMNode> lCells = lRowElement.getChildren();
 

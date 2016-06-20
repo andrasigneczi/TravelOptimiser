@@ -37,15 +37,8 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
 {
     private static org.apache.log4j.Logger mLogger = Logger.getLogger(RyanAirPageGuest.class);
 
-    private Thread                      mThread;
+    private Thread  mThread;
     private boolean mThreadStopped = true;
-
-    public enum FareType
-    {
-        Normal,
-        Business
-    };
-
 
     public RyanAirPageGuest()
     {
@@ -131,7 +124,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         System.out.println("stop()");
     }
 
-    private void ConvertToWizzairFormatAndStore( TravelData_RESULT.TravelData_PossibleTrips aTrip )
+    private void ConvertToWizzairFormatAndStore( TravelData_RESULT.TravelData_PossibleTrip aTrip )
     {
         aTrip.mArrivalDatetime = DatetimeHelper.ConvertFromRyanairJSONStoredFormat(aTrip.mArrivalDatetime);
         aTrip.mDepartureDatetime = DatetimeHelper.ConvertFromRyanairJSONStoredFormat(aTrip.mDepartureDatetime);
@@ -139,7 +132,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
     }
 
     private static void ParseFares( JSONObject aFares, FareType aFareType,
-                                      TravelData_RESULT.TravelData_PossibleTrips aTripClone,
+                                      TravelData_RESULT.TravelData_PossibleTrip aTripClone,
                                       String aCurrency)
     {
         JSONArray lFares = aFares.getJSONArray( "fares" );
@@ -168,7 +161,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
 
     private void ParseTrip( JSONObject aTrip, String aCurrency )
     {
-        TravelData_RESULT.TravelData_PossibleTrips lTDRTrip = new TravelData_RESULT.TravelData_PossibleTrips();
+        TravelData_RESULT.TravelData_PossibleTrip lTDRTrip = new TravelData_RESULT.TravelData_PossibleTrip();
         lTDRTrip.mOutboundTrip = true;
 
         String lOrigin = aTrip.getString( "origin" );
@@ -191,7 +184,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
             JSONArray lFlights = lDate.getJSONArray( "flights" );
             for( int lFlightIndex = 0; lFlightIndex < lFlights.length(); lFlightIndex++ )
             {
-                TravelData_RESULT.TravelData_PossibleTrips lTripClone = (TravelData_RESULT.TravelData_PossibleTrips)lTDRTrip.clone();
+                TravelData_RESULT.TravelData_PossibleTrip lTripClone = (TravelData_RESULT.TravelData_PossibleTrip)lTDRTrip.clone();
 
                 JSONObject lFlight = lFlights.getJSONObject( lFlightIndex );
                 JSONArray lTime = lFlight.getJSONArray( "time" );

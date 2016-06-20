@@ -20,6 +20,12 @@ public abstract class PageGuest
 	protected ArrayList<TravelData_INPUT> mSearchQueue;
 	protected Object  mMutex         = new Object();
 
+	public enum FareType
+	{
+		Normal,
+		Business
+	};
+
 	public PageGuest(String aAirline)
 	{
 		mAirline = aAirline;
