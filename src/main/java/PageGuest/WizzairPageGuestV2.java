@@ -112,6 +112,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		lTrip.mAirline = getAirline();
 		lTrip.mAirportCode_LeavingFrom = lTripsOnADay.getString( "DepartureStationCode" );
 		lTrip.mAirportCode_GoingTo = lTripsOnADay.getString( "ArrivalStationCode" );
+		String lMinimumPrice = lTripsOnADay.getString( "MinimumPrice" );
 
 		JSONArray lFligths = lTripsOnADay.getJSONArray( "Flights" );
 		for( int i = 0; i < lFligths.length(); i++ )
