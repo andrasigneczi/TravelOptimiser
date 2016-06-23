@@ -391,10 +391,12 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 						// TODO: separate the prices; currency handling
 						java.util.List<DOMNode> lChildren = lCell.getChildren();
 						lTrip.mPrices_BasicFare_Normal = ((DOMElement)lChildren.get(0)).getInnerText();
-						if( lTrip.mPrices_BasicFare_Normal.equals( "Elfogyott" ) &&
-								lTrip.mDepartureDatetime.length() == 0 &&
-								lTrip.mArrivalDatetime.length() == 0 )
+						if(( lTrip.mPrices_BasicFare_Normal.equals( "Elfogyott" ) ||
+								lTrip.mPrices_BasicFare_Normal.equals( "A megadott napon nem találhatók járatok."))
+								&& lTrip.mDepartureDatetime.length() == 0
+								&& lTrip.mArrivalDatetime.length() == 0 )
 						{
+							mLogger.warn( lTrip.mPrices_BasicFare_Normal + ": " + mTravelDataResult.mTravelDataInput.toString() );
 							lTrip = null;
 							// the trip is invalid, the company out of tickets
 							break;
