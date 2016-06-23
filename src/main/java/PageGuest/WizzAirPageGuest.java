@@ -454,7 +454,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 				PrintWriter lPrintWriter = new PrintWriter(lStringWriter);
 				aException.printStackTrace( lPrintWriter );
 
-				String lLogInformation = "Something wrong with the result parser!\n" +
+				String lLogInformation = "Something wrong with the result parser or there is no flights?!\n" +
 						aException.getMessage() + "\n" +
 						lStringWriter.toString() + "\n" +
 						aTravelDataInput.toString();

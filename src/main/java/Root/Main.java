@@ -54,10 +54,8 @@ public class Main
             lGuestR.DoSearchFromConfig();
 
 
-            FileWriterAgent lFWA         = new FileWriterAgent("database.html");
             SQLiteAgent     lSQLiteAgent = new SQLiteAgent();
             lSQLiteAgent.InitializeDatabase();
-            lFWA.setNextAgent(lSQLiteAgent);
 
             final int WaitBeforeStop = 60;
             int i = WaitBeforeStop;
@@ -66,7 +64,7 @@ public class Main
                 TravelData_RESULT lResult = ResultQueue.getInstance().pop();
                 if (lResult != null)
                 {
-                    lFWA.Archive(lResult);
+                    lSQLiteAgent.Archive(lResult);
                     i = WaitBeforeStop;
                     continue;
                 }
