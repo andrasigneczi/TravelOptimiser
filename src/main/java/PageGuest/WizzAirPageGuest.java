@@ -36,6 +36,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	public WizzAirPageGuest()
 	{
 		super( "wizzair" );
+		mLogger.trace( "tr" );
 		mSearchQueue = new ArrayList<TravelData_INPUT>();
 		mThread = new Thread( this );
 		mThread.setName( "WizzAirThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME ) );
@@ -46,6 +47,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	private WizzAirPageGuest( JTabbedPane aTabbedPane )
 	{
 		super( "wizzair" );
+		mLogger.trace( "tr" );
 		mTabbedPane = aTabbedPane;
 		mSearchQueue = new ArrayList<TravelData_INPUT>();
 		mThread = new Thread( this );
@@ -56,6 +58,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	public static void StartMultiBrowser( int aBrowserCount )
 	{
+		mLogger.trace( "tr" );
 		if( mWizzAirPageGuestList != null )
 			return;
 
@@ -74,6 +77,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	public static void StopMultiBrowser()
 	{
+		mLogger.trace( "tr" );
 		if( mWizzAirPageGuestList == null )
 			return;
 
@@ -85,6 +89,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	private static void DoMultiSearchFromConfig()
 	{
+		mLogger.trace( "tr" );
 		int lPageIndex = 0;
 		WizzAirPageGuest lWPG = mWizzAirPageGuestList.get( lPageIndex );
 		ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
@@ -120,6 +125,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	public void DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
 	{
+		mLogger.trace( "Thread name: " + mThread.getName() );
 		if( !ValidateDate( aDepartureDate, aReturnDate ))
 		{
 			mLogger.warn( "DoSearch: the departure date (" + aDepartureDate + ") or the return date " +
@@ -157,6 +163,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	public void DoSearchFromConfig()
 	{
+		mLogger.trace( "Thread name: " + mThread.getName() );
 		synchronized( mMutex )
 		{
 			if( mBrowser == null )
@@ -187,6 +194,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	private boolean InitBrowser( int aBrowserIndex )
 	{
+		mLogger.trace( "Thread name: " + mThread.getName() );
 		new BrowserStateInit().doAction( this );
 
 		mBrowser = TeamDevJxBrowser.getInstance().getJxBrowser(getAirline());
@@ -218,6 +226,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	private void setDOMInput( DOMDocument aDOMDocument, String aId, String aValue )
 	{
+		mLogger.trace( "Thread name: " + mThread.getName() );
 		DOMElement elementTextSource = aDOMDocument.findElement( By.id( aId ) );
 		DOMInputElement textInputSource = (DOMInputElement)elementTextSource;
 		textInputSource.setValue( aValue );
@@ -225,6 +234,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	private void setDOMSelect( DOMDocument aDOMDocument, String aId, String aValue )
 	{
+		mLogger.trace( "Thread name: " + mThread.getName() );
 		DOMElement elementAdultNumber = aDOMDocument.findElement( By.id( aId ) );
 		DOMSelectElement selectAdultNumber = (DOMSelectElement)elementAdultNumber;
 		java.util.List<DOMOptionElement> lOptionsAdultNumber = selectAdultNumber.getOptions();
@@ -240,6 +250,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	private void FillTheResultForm(DOMDocument aDOMDocument, TravelData_INPUT aTravelDataInput )
 	{
+		mLogger.trace( "Thread name: " + mThread.getName() );
 		// leaving from
 		String lId    = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_AutocompleteOriginStation";
 		String lValue = getAirportName( aTravelDataInput.mAirportCode_LeavingFrom ) +  " (" + aTravelDataInput.mAirportCode_LeavingFrom + ")";
@@ -283,6 +294,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	private void FillTheForm(DOMDocument aDOMDocument, TravelData_INPUT aTravelDataInput )
 	{
+		mLogger.trace( "Thread name: " + mThread.getName() );
 		mLogger.debug( "FillTheForm: " + aTravelDataInput.toString() );
 		//DOMElement element = document.findElement( By.xpath("//textarea"));
 		//DOMTextAreaElement textArea = (DOMTextAreaElement) element;
@@ -336,6 +348,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	private void ClickTheSearchButton( DOMDocument aDOMDocument )
 	{
+		mLogger.trace( "Thread name: " + mThread.getName() );
 		String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
 		Sleep( 1000 * Integer.parseInt( lSleep ));
 
@@ -346,12 +359,14 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 		if( link != null )
 		{
+			mLogger.trace( "click, thread name: " + mThread.getName() );
 			link.click();
 		}
 	}
 
 	private void CollectDatas_ParseTheRows( DOMElement aFlightBodyElement, boolean aOutbound )
 	{
+		mLogger.trace( "Thread name: " + mThread.getName() );
 		java.util.List<DOMElement> lRows = aFlightBodyElement.findElements( By.className( "flight-row" ) );
 		int lRowElementIndex = 0;
 		for( DOMElement lRowElement : lRows )
@@ -426,6 +441,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
 	{
+		mLogger.trace( "Thread name: " + mThread.getName() );
 		mTravelDataResult = new TravelData_RESULT();
 		mTravelDataResult.mAirline = aTravelDataInput.mAirline;
 		mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
@@ -471,6 +487,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	public void run()
 	{
+		mLogger.trace( "Thread name: " + mThread.getName() );
 		try
 		{
 			System.out.println( "Thread::run" );
@@ -533,6 +550,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 	public void stop()
 	{
+		mLogger.trace( "Thread name: " + mThread.getName() );
 		mThreadStopped = true;
 		try
 		{
