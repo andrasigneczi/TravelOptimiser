@@ -3,6 +3,7 @@ package Root;
 import PageGuest.ResultQueue;
 import PageGuest.TravelData_RESULT;
 import PageGuest.WebPageGuest;
+import PageGuest.WizzAirPageGuest;
 import Storage.FileWriterAgent;
 import Storage.SQLiteAgent;
 import Util.CurrencyHelper;
@@ -45,10 +46,11 @@ public class Main
             // Initialize the configuration
             Util.Configuration lConfiguration = Util.Configuration.getInstance();
 
-            PageGuest.PageGuest lGuestW = PageGuestFactory.Create( "WizzAir" );
+            //PageGuest.PageGuest lGuestW = PageGuestFactory.Create( "WizzAir" );
             PageGuest.PageGuest lGuestR = PageGuestFactory.Create( "RyanAir" );
 
-            lGuestW.DoSearchFromConfig();
+            //lGuestW.DoSearchFromConfig();
+            WizzAirPageGuest.StartMultiBrowser( 4 );
             lGuestR.DoSearchFromConfig();
 
 
@@ -71,7 +73,8 @@ public class Main
                 Thread.sleep(1000);
                 i--;
             }
-            lGuestW.stop();
+            //lGuestW.stop();
+            WizzAirPageGuest.StopMultiBrowser();
             lGuestR.stop();
             System.exit(-1);
         }

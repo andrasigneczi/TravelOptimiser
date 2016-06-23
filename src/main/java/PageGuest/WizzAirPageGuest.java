@@ -6,23 +6,19 @@ package PageGuest;
 
 import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.dom.*;
-import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
-import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 import com.traveloptimizer.browserengine.TeamDevJxBrowser;
 import org.apache.log4j.Logger;
 
-import javax.security.auth.login.Configuration;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.IntStream;
 
 /**
  * Created by Andras on 15/03/2016.
@@ -34,6 +30,8 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	private Thread  mThread;
 	private Browser mBrowser = null;
 	private boolean mThreadStopped = true;
+	private JTabbedPane mTabbedPane = null;
+	private static ArrayList<WizzAirPageGuest> mWizzAirPageGuestList = null;
 
 	public WizzAirPageGuest()
 	{
@@ -43,6 +41,81 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		mThread.setName( "WizzAirThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME ) );
 		mThread.start();
 		System.out.println("WizzAirPageGuest()");
+	}
+
+	private WizzAirPageGuest( JTabbedPane aTabbedPane )
+	{
+		super( "wizzair" );
+		mTabbedPane = aTabbedPane;
+		mSearchQueue = new ArrayList<TravelData_INPUT>();
+		mThread = new Thread( this );
+		mThread.setName( "WizzAirThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME ) );
+		mThread.start();
+		System.out.println("WizzAirPageGuest()");
+	}
+
+	public static void StartMultiBrowser( int aBrowserCount )
+	{
+		if( mWizzAirPageGuestList != null )
+			return;
+
+		JTabbedPane lTabbedPane = new JTabbedPane();
+		JFrame frame = new JFrame( "Travel Optimizer - wizzair" );
+		frame.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
+		frame.getContentPane().add( lTabbedPane, BorderLayout.CENTER );
+		frame.setSize( 1152, 864 );
+		frame.setLocationRelativeTo( null );
+		frame.setVisible( true );
+
+		mWizzAirPageGuestList = new ArrayList<WizzAirPageGuest>();
+		IntStream.range(0,aBrowserCount).forEach( i ->  mWizzAirPageGuestList.add( new WizzAirPageGuest(lTabbedPane)));
+		DoMultiSearchFromConfig();
+	}
+
+	public static void StopMultiBrowser()
+	{
+		if( mWizzAirPageGuestList == null )
+			return;
+
+		for( WizzAirPageGuest lWPG : mWizzAirPageGuestList )
+		{
+			lWPG.stop();
+		}
+	}
+
+	private static void DoMultiSearchFromConfig()
+	{
+		int lPageIndex = 0;
+		WizzAirPageGuest lWPG = mWizzAirPageGuestList.get( lPageIndex );
+		ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
+		for( TravelData_INPUT lTDI : lSearchList )
+		{
+			if( !lTDI.mAirline.equals( lWPG.getAirline() ))
+				continue;
+
+			if( !lWPG.ValidateDate( lTDI.mDepartureDay, lTDI.mReturnDay ))
+			{
+				mLogger.warn( "DoSearch: the departure date (" + lTDI.mDepartureDay + ") or the return date " +
+						lTDI.mReturnDay + " expired!" );
+				continue;
+			}
+
+			if( lTDI.mReturnDay.length() == 0 )
+				lTDI.mReturnTicket = false;
+
+			synchronized( lWPG.mMutex )
+			{
+				if( lWPG.mBrowser == null )
+				{
+					lWPG.InitBrowser( lPageIndex + 1 );
+					lWPG.mBrowser.loadURL( "http://www.wizzair.com" );
+				}
+				lWPG.mSearchQueue.add( lTDI );
+			}
+			lPageIndex++;
+			lPageIndex %= mWizzAirPageGuestList.size();
+			lWPG = mWizzAirPageGuestList.get( lPageIndex );
+		}
 	}
 
 	public void DoSearch( String aFrom, String aTo, String aDepartureDate, String aReturnDate )
@@ -58,7 +131,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		{
 			if( mBrowser == null )
 			{
-				InitBrowser();
+				InitBrowser( 1 );
 				mBrowser.loadURL( "http://www.wizzair.com" );
 			}
 
@@ -88,7 +161,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		{
 			if( mBrowser == null )
 			{
-				InitBrowser();
+				InitBrowser( 1 );
 				mBrowser.loadURL( "http://www.wizzair.com" );
 			}
 
@@ -112,57 +185,32 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		}
 	}
 
-	private boolean InitBrowser()
+	private boolean InitBrowser( int aBrowserIndex )
 	{
 		new BrowserStateInit().doAction( this );
 
-		//mBrowser = new Browser();
 		mBrowser = TeamDevJxBrowser.getInstance().getJxBrowser(getAirline());
-		BrowserView view = new BrowserView(mBrowser);
 
-		//final JTextField addressBar = new JTextField("http://www.teamdev.com/jxbrowser");
-		//final JTextField addressBar = new JTextField("http://www.momondo.com");
-//		final JTextField addressBar = new JTextField("http://www.wizzair.com");
-//		addressBar.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				mBrowser.loadURL(addressBar.getText());
-//			}
-//		});
+		boolean lNewWindow = false;
+		if( mTabbedPane == null )
+		{
+			lNewWindow = true;
+			mTabbedPane = new JTabbedPane();
+		}
 
-//		JPanel addressPane = new JPanel(new BorderLayout());
-//		addressPane.add(new JLabel(" URL: "), BorderLayout.WEST);
-//		addressPane.add(addressBar, BorderLayout.CENTER);
+		mTabbedPane.addTab("Browser " + aBrowserIndex, new BrowserView(mBrowser));
 
-		JFrame frame = new JFrame("Travel Optimizer - " + getAirline());
-		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-//		frame.add(addressPane, BorderLayout.NORTH);
-		frame.add(view, BorderLayout.CENTER);
-		frame.setSize(1152, 864);
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
+		if( lNewWindow )
+		{
+			JFrame frame = new JFrame( "Travel Optimizer - " + getAirline() );
+			frame.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
+			frame.getContentPane().add( mTabbedPane, BorderLayout.CENTER );
+			frame.setSize( 1152, 864 );
+			frame.setLocationRelativeTo( null );
+			frame.setVisible( true );
+		}
 
-		mBrowser.addLoadListener(new LoadAdapter() {
-			@Override
-			public void onFinishLoadingFrame(FinishLoadingEvent event) {
-				// A click után újra bejövök ide, erre ügyelni kell!!!!
-				if (event.isMainFrame())
-				{
-					TravelData_INPUT lTravelDataInput = null;
-					if( getBrowserState().toString().equals( "BrowserStateSearching" ))
-					{
-						lTravelDataInput = ((BrowserStateSearching)getBrowserState()).getTravelDataInput();
-					}
-
-					DOMDocument lDOMDocument = event.getBrowser().getDocument();
-					if( lTravelDataInput == null )
-						new BrowserStateReadyToSearch( lDOMDocument ).doAction( getBrowserState().getWebPageGuest());
-					else
-						new BrowserStateSearchingFinished( lDOMDocument, lTravelDataInput ).doAction( getBrowserState().getWebPageGuest() );
-					System.out.println("addLoadListener()");
-				}
-			}
-		});
+		mBrowser.addLoadListener( new WizzAirPageGuest_LoadListener(this));
 
 		System.out.println("InitBrowser()");
 		return false;

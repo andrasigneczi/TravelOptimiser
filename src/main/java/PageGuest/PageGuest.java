@@ -13,12 +13,12 @@ import java.util.regex.Pattern;
  */
 public abstract class PageGuest
 {
-	private final String mAirline;
-	private   Hashtable<String, String> mAirports;
-	protected TravelData_RESULT         mTravelDataResult = null;
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger(PageGuest.class);
-	protected ArrayList<TravelData_INPUT> mSearchQueue;
-	protected Object  mMutex         = new Object();
+	private final  String                      mAirline;
+	private        Hashtable<String, String>   mAirports;
+	protected      TravelData_RESULT           mTravelDataResult = null;
+	protected      ArrayList<TravelData_INPUT> mSearchQueue;
+	protected      Object                      mMutex = new Object();
 
 	public enum FareType
 	{
