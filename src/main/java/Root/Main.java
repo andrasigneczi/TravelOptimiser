@@ -57,7 +57,7 @@ public class Main
             SQLiteAgent     lSQLiteAgent = new SQLiteAgent();
             lSQLiteAgent.InitializeDatabase();
 
-            final int WaitBeforeStop = 60;
+            final int WaitBeforeStop = 120;
             int i = WaitBeforeStop;
             while( i > 0 )
             {
