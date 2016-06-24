@@ -369,7 +369,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		mLogger.trace( "Thread name: " + mThread.getName() );
 		java.util.List<DOMElement> lRows = aFlightBodyElement.findElements( By.className( "flight-row" ) );
 		if( lRows.size() == 0 )
-			mLogger.warn( "Probably there is no flight for this search." );
+			mLogger.warn( "Probably there is no flight for this search: " + mTravelDataResult.mTravelDataInput.toString() );
 
 		int lRowElementIndex = 0;
 		for( DOMElement lRowElement : lRows )
