@@ -1,0 +1,21 @@
+/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#include "nsISupports.idl"
+
+[ptr] native RequestHeaderTuples(mozilla::net::RequestHeaderTuples);
+
+[uuid(3842c5e9-b5b1-400c-8eb7-936a3316ff21)]
+interface nsIHttpChannelChild : nsISupports
+{
+  void addCookiesToRequest();
+
+  // Mark this channel as requiring an interception; this will propagate
+  // to the corresponding parent channel when a redirect occurs.
+  void forceIntercepted();
+
+  // Headers that the channel client has set via SetRequestHeader.
+  readonly attribute RequestHeaderTuples clientSetRequestHeaders;
+};
