@@ -10,7 +10,7 @@ import net.sourceforge.tess4j.util.LoadLibs;
 public class Tess4jHW
 {
 	public static void main(String[] args) {
-		File imageFile = new File("c:\\Users\\Andras\\IdeaProjects\\TravelOptimizer-ryanair\\test3.png");
+		File imageFile = new File("c:\\Users\\Andras\\IdeaProjects\\TravelOptimizer_devel\\doc\\test.png");
 		//ITesseract instance = new Tesseract();  // JNA Interface Mapping
 		ITesseract instance = new Tesseract1(); // JNA Direct Mapping
 
