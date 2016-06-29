@@ -17,36 +17,48 @@
         <jna.version>4.1.0</jna.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>com.teamdev</id>
+            <url>http://maven.teamdev.com/repository/products</url>
+        </repository>
+        <repository>
+            <id>mylibid</id>
+            <url>file:${basedir}/lib</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
             <version>${jna.version}</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>net.java.dev.jna</groupId>-->
-            <!--<artifactId>jna</artifactId>-->
-            <!--<version>${jna.version}</version>-->
-            <!--<classifier>platform</classifier>-->
-        <!--</dependency>-->
-
         <dependency>
             <groupId>net.sourceforge.tess4j</groupId>
             <artifactId>tess4j</artifactId>
             <version>3.1.0</version>
-            <!--<exclusions>-->
-                <!--<exclusion>-->
-                    <!--<groupId>com.sun.jna</groupId>-->
-                    <!--<artifactId>jna</artifactId>-->
-                <!--</exclusion>-->
-            <!--</exclusions>-->
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.teamdev.jxbrowser</groupId>-->
+            <!--<artifactId>jxbrowser-cross-platform</artifactId>-->
+            <!--<version>6.2</version>-->
+            <!--&lt;!&ndash;<type>pom</type>&ndash;&gt;-->
+            <!--&lt;!&ndash;<scope>import</scope>&ndash;&gt;-->
+            <!--&lt;!&ndash;<scope>system</scope>&ndash;&gt;-->
+            <!--&lt;!&ndash;<systemPath>${project.basedir}/lib/jxbrowser-6.2.jar</systemPath>&ndash;&gt;-->
+        <!--</dependency>-->
         <dependency>
             <groupId>com.teamdev.jxbrowser</groupId>
-            <artifactId>jxbrowser-cross-platform</artifactId>
+            <artifactId>jxbrowser-win</artifactId>
             <version>6.2</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jxbrowser-6.2.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>mylibid</groupId>
+            <artifactId>licence</artifactId>
+            <version>1.0</version>
+            <type>jar</type>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

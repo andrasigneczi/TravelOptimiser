@@ -41,15 +41,9 @@
     <orderEntry type="library" name="Maven: org.slf4j:jul-to-slf4j:1.7.19" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:jcl-over-slf4j:1.7.19" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:log4j-over-slf4j:1.7.19" level="project" />
-    <orderEntry type="module-library">
-      <library name="Maven: com.teamdev.jxbrowser:jxbrowser-cross-platform:6.2">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jxbrowser-6.2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" name="Maven: com.teamdev.jxbrowser:jxbrowser-win:6.2" level="project" />
+    <orderEntry type="library" name="Maven: com.teamdev.jxbrowser:jxbrowser:6.2" level="project" />
+    <orderEntry type="library" name="Maven: mylibid:licence:1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.4" level="project" />
     <orderEntry type="library" name="Maven: org.xerial:sqlite-jdbc:3.8.11.2" level="project" />
     <orderEntry type="library" name="Maven: log4j:log4j:1.2.17" level="project" />

@@ -17,7 +17,12 @@ import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.stream.IntStream;
+
+import static com.teamdev.jxbrowser.chromium.LoggerProvider.getBrowserLogger;
+import static com.teamdev.jxbrowser.chromium.LoggerProvider.getChromiumProcessLogger;
+import static com.teamdev.jxbrowser.chromium.LoggerProvider.getIPCLogger;
 
 /**
  * Created by Andras on 15/03/2016.
@@ -36,6 +41,9 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	{
 		super( "wizzair" );
 		mLogger.trace( "tr" );
+		getBrowserLogger().setLevel( Level.WARNING );
+		getChromiumProcessLogger().setLevel( Level.WARNING );
+		getIPCLogger().setLevel( Level.WARNING );
 		mSearchQueue = new ArrayList<TravelData_INPUT>();
 		mThread = new Thread( this );
 		mThread.setName( "WizzAirThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME ) );
@@ -60,6 +68,10 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		mLogger.trace( "tr" );
 		if( mWizzAirPageGuestList != null )
 			return;
+
+		getBrowserLogger().setLevel( Level.WARNING );
+		getChromiumProcessLogger().setLevel( Level.WARNING );
+		getIPCLogger().setLevel( Level.WARNING );
 
 		JTabbedPane lTabbedPane = new JTabbedPane();
 		JFrame frame = new JFrame( "Travel Optimizer - wizzair" );
