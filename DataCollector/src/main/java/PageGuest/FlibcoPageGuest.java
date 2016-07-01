@@ -7,7 +7,7 @@ public class FlibcoPageGuest extends WebPageGuest
 {
 	public FlibcoPageGuest()
 	{
-		super("flibco");
+		super("flibco", "http://www.flibco.com");
 	}
 
 	public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate )

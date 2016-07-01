@@ -7,7 +7,7 @@ public class MomondoPageGuest extends WebPageGuest
 {
 	public MomondoPageGuest()
 	{
-		super("momondo");
+		super("momondo", "http://www.momondo.com");
 	}
 
 	public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate )

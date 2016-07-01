@@ -36,26 +36,29 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	private boolean mThreadStopped = true;
 	private JTabbedPane mTabbedPane = null;
 	private static ArrayList<WizzAirPageGuest> mWizzAirPageGuestList = null;
+	private final static String SEARCH_PAGE_URL =  "https://wizzair.com/hu-HU/FlightSearch";
+	private final static String AIRLINE = "wizzair";
 
 	public WizzAirPageGuest()
 	{
-		super( "wizzair" );
+		super( AIRLINE, SEARCH_PAGE_URL );
 		mLogger.trace( "tr" );
 		getBrowserLogger().setLevel( Level.WARNING );
 		getChromiumProcessLogger().setLevel( Level.WARNING );
 		getIPCLogger().setLevel( Level.WARNING );
-		mSearchQueue = new ArrayList<TravelData_INPUT>();
-		mThread = new Thread( this );
-		mThread.setName( "WizzAirThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME ) );
-		mThread.start();
-		System.out.println("WizzAirPageGuest()");
+		InitObject();
 	}
 
 	private WizzAirPageGuest( JTabbedPane aTabbedPane )
 	{
-		super( "wizzair" );
+		super( AIRLINE, SEARCH_PAGE_URL );
 		mLogger.trace( "tr" );
 		mTabbedPane = aTabbedPane;
+		InitObject();
+	}
+
+	private void InitObject()
+	{
 		mSearchQueue = new ArrayList<TravelData_INPUT>();
 		mThread = new Thread( this );
 		mThread.setName( "WizzAirThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME ) );

@@ -7,7 +7,7 @@ public class BookingDotComPageGuest extends WebPageGuest
 {
 	public BookingDotComPageGuest()
 	{
-		super("booking.com");
+		super("booking.com", "http://www.booking.com");
 	}
 
 	public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate )

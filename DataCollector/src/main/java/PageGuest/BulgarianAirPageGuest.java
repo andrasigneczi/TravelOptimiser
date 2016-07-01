@@ -7,7 +7,7 @@ public class BulgarianAirPageGuest extends WebPageGuest
 {
 	public BulgarianAirPageGuest()
 	{
-		super("bulgarianair");
+		super("bulgarianair", "http://www.bulgarianair.com");
 	}
 
 	public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate )

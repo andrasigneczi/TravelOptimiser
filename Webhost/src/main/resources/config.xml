@@ -6,6 +6,92 @@
         <wizzair>
             <LeavingFrom>SOF</LeavingFrom>
             <GoingTo>HHN</GoingTo>
+            <DepartureDatetime>2016-09-27 06:30</DepartureDatetime>
+            <AdultNumber>1</AdultNumber>
+            <ChildNumber>0</ChildNumber>
+            <InfantNumber>0</InfantNumber>
+            <NearbyAirports>false</NearbyAirports>
+            <Currency>lv</Currency>
+        </wizzair>
+        <wizzair>
+            <LeavingFrom>SOF</LeavingFrom>
+            <GoingTo>HHN</GoingTo>
+            <DepartureDatetime>2016-07-16 06:30</DepartureDatetime>
+            <ReturnDatetime>2016-07-19 08:30</ReturnDatetime>
+            <AdultNumber>1</AdultNumber>
+            <ChildNumber>0</ChildNumber>
+            <InfantNumber>0</InfantNumber>
+            <NearbyAirports>false</NearbyAirports>
+            <Currency>lv</Currency>
+            <BoughtTicket
+                    Name="SOF-HHN"
+                    Datetime="2016-05-27 19:23"
+                    Price="59.99 lv"
+            />
+            <BoughtTicket
+                    Name="HHN-SOF (89.99 €)"
+                    Datetime="2016-06-17 06:49"
+                    Price="175.73 lv"
+            />
+            <Discount
+                    Name="20% discount"
+                    Beginning="2016-05-03 00:00"
+                    Ending="2016-05-04 00:00"
+                    Percentage="20"
+            />
+        </wizzair>
+        <wizzair>
+            <LeavingFrom>CRL</LeavingFrom>
+            <GoingTo>BUD</GoingTo>
+            <DepartureDatetime>2016-09-23 20:45</DepartureDatetime>
+            <ReturnDatetime>2016-09-26 06:10</ReturnDatetime>
+            <AdultNumber>1</AdultNumber>
+            <ChildNumber>0</ChildNumber>
+            <InfantNumber>0</InfantNumber>
+            <NearbyAirports>false</NearbyAirports>
+            <Currency>€</Currency>
+            <BoughtTicket
+                    Name="BUD-CRL"
+                    Datetime="2016-06-07 20:00"
+                    Price="15.07 €"
+            />
+            <BoughtTicket
+                    Name="CRL-BUD"
+                    Datetime="2016-06-16 08:30"
+                    Price="39.99 lv"
+            />
+            <Discount
+                    Name="20% discount"
+                    Beginning="2016-05-03 00:00"
+                    Ending="2016-05-04 00:00"
+                    Percentage="20"
+            />
+        </wizzair>
+        <wizzair>
+            <LeavingFrom>CRL</LeavingFrom>
+            <GoingTo>BUD</GoingTo>
+            <DepartureDatetime>2016-07-22 20:45</DepartureDatetime>
+            <ReturnDatetime>2016-07-25 06:10</ReturnDatetime>
+            <AdultNumber>1</AdultNumber>
+            <ChildNumber>0</ChildNumber>
+            <InfantNumber>0</InfantNumber>
+            <NearbyAirports>false</NearbyAirports>
+            <Currency>€</Currency>
+            <BoughtTicket
+                    Name="CRL-BUD return"
+                    Datetime="2016-04-02 00:00"
+                    Price="71.98 €"
+            />
+            <Discount
+                    Name="20% discount"
+                    Beginning="2016-05-03 00:00"
+                    Ending="2016-05-04 00:00"
+                    Percentage="20"
+            />
+        </wizzair>
+        <wizzair>
+            <LeavingFrom>SOF</LeavingFrom>
+            <GoingTo>HHN</GoingTo>
             <DepartureDatetime>2016-07-02 06:30</DepartureDatetime>
             <ReturnDatetime>2016-07-05 08:30</ReturnDatetime>
             <AdultNumber>1</AdultNumber>
@@ -22,28 +108,6 @@
                     Name="HHN-SOF"
                     Datetime="2016-04-18 22:30"
                     Price="97.78 lv"
-            />
-            <Discount
-                    Name="20% discount"
-                    Beginning="2016-05-03 00:00"
-                    Ending="2016-05-04 00:00"
-                    Percentage="20"
-            />
-        </wizzair>
-        <wizzair>
-            <LeavingFrom>SOF</LeavingFrom>
-            <GoingTo>HHN</GoingTo>
-            <DepartureDatetime>2016-07-16 06:30</DepartureDatetime>
-            <ReturnDatetime>2016-07-19 08:30</ReturnDatetime>
-            <AdultNumber>1</AdultNumber>
-            <ChildNumber>0</ChildNumber>
-            <InfantNumber>0</InfantNumber>
-            <NearbyAirports>false</NearbyAirports>
-            <Currency>lv</Currency>
-            <BoughtTicket
-                    Name="SOF-HHN"
-                    Datetime="2016-05-27 19:23"
-                    Price="59.99 lv"
             />
             <Discount
                     Name="20% discount"
@@ -109,28 +173,6 @@
         <wizzair>
             <LeavingFrom>CRL</LeavingFrom>
             <GoingTo>BUD</GoingTo>
-            <DepartureDatetime>2016-07-22 20:45</DepartureDatetime>
-            <ReturnDatetime>2016-07-25 06:10</ReturnDatetime>
-            <AdultNumber>1</AdultNumber>
-            <ChildNumber>0</ChildNumber>
-            <InfantNumber>0</InfantNumber>
-            <NearbyAirports>false</NearbyAirports>
-            <Currency>€</Currency>
-            <BoughtTicket
-                    Name="CRL-BUD return"
-                    Datetime="2016-04-02 00:00"
-                    Price="71.98 €"
-            />
-            <Discount
-                    Name="20% discount"
-                    Beginning="2016-05-03 00:00"
-                    Ending="2016-05-04 00:00"
-                    Percentage="20"
-            />
-        </wizzair>
-        <wizzair>
-            <LeavingFrom>CRL</LeavingFrom>
-            <GoingTo>BUD</GoingTo>
             <DepartureDatetime>2016-09-09 20:45</DepartureDatetime>
             <ReturnDatetime>2016-09-12 06:10</ReturnDatetime>
             <AdultNumber>1</AdultNumber>
@@ -147,6 +189,11 @@
                     Name="BUD-CRL"
                     Datetime="2016-05-20 09:00"
                     Price="19.99 €"
+            />
+            <BoughtTicket
+                    Name="Dessy BUD-CRL"
+                    Datetime="2016-06-23 20:35"
+                    Price="13.08 €"
             />
             <Discount
                     Name="20% discount"

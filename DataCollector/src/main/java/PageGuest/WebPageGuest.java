@@ -9,17 +9,19 @@ import java.awt.event.KeyEvent;
  */
 public abstract class WebPageGuest extends PageGuest
 {
-    protected BrowserState              mBrowserState     = null;
-    protected Robot                     mRobot            = null;
-    protected Insets mInsets;
+    protected BrowserState  mBrowserState     = null;
+    protected Robot         mRobot            = null;
+    protected Insets        mInsets;
+    private   String        mURL;
 
     final protected String mGetElementByXPathPattern = "document.evaluate('%s', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue";
 
     public abstract void stop();
 
-    public WebPageGuest(String aAirline)
+    public WebPageGuest(String aAirline, String aURL)
     {
         super( aAirline );
+        mURL = aURL;
         GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice      screen      = environment.getDefaultScreenDevice();
         try
@@ -168,6 +170,16 @@ public abstract class WebPageGuest extends PageGuest
                 mRobot.keyRelease(KeyEvent.VK_ENTER);
             }
         }
+    }
+
+    public String getURL()
+    {
+        return mURL;
+    }
+
+    public void setURL( String mURL )
+    {
+        this.mURL = mURL;
     }
 
 }
