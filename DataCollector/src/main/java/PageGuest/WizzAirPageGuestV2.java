@@ -19,6 +19,15 @@ import static Util.DatetimeHelper.ConvertFromWizzairJSONStoredFormat;
 
 /**
  * Created by Andras on 09/06/2016.
+ *
+ * There are some given trip, e.g. CRL-BUD, HHN-SOF, ...
+ * The goal: collect every available in- and outbound trip between the airports 6 month ahead. Store them in the database.
+ * The algorithm has to update this database (delete trips, update trips, add trips).
+ * The WizzAirPageGuest will search the prices.
+ * Questions:
+ * 1. Can this algorithm work paralel with the WizzAirPageGuest?
+ * 2. How will I handle the different currencies?
+ *
  */
 public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 {

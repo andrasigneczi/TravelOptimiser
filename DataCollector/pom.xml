@@ -34,11 +34,12 @@
             <artifactId>jna</artifactId>
             <version>${jna.version}</version>
         </dependency>
-        <dependency>
-            <groupId>net.sourceforge.tess4j</groupId>
-            <artifactId>tess4j</artifactId>
-            <version>3.1.0</version>
-        </dependency>
+        <!-- if tess4j is in the dependency, the log4j doesn't write the log file -->
+        <!--<dependency>-->
+            <!--<groupId>net.sourceforge.tess4j</groupId>-->
+            <!--<artifactId>tess4j</artifactId>-->
+            <!--<version>3.1.0</version>-->
+        <!--</dependency>-->
         <!--<dependency>-->
             <!--<groupId>com.teamdev.jxbrowser</groupId>-->
             <!--<artifactId>jxbrowser-cross-platform</artifactId>-->
