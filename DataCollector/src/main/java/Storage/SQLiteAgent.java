@@ -2,8 +2,14 @@ package Storage;
 
 import PageGuest.TravelDataResultComposer;
 import PageGuest.TravelData_RESULT;
+import Util.Configuration;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Created by Andras on 27/03/2016.
@@ -13,6 +19,9 @@ public class SQLiteAgent extends ArchiverAgent
 	private Connection mConnection = null;
 	private TravelData_RESULT mResult;
 	private TravelDataResultComposer_LiteSQL mComposer;
+	private final static String mDatabaseFileName = "database";
+	private final static String mDatabaseFileExtension = ".db";
+	private final static String mDatabaseFullFileName = mDatabaseFileName + mDatabaseFileExtension;
 
 	public void SQLiteAgent()
 	{
@@ -159,7 +168,7 @@ public class SQLiteAgent extends ArchiverAgent
 	{
 		try {
 			Class.forName("org.sqlite.JDBC");
-			mConnection = DriverManager.getConnection("jdbc:sqlite:test.db");
+			mConnection = DriverManager.getConnection("jdbc:sqlite:" + mDatabaseFullFileName );
 			System.out.println("Opened database successfully");
 
 			//DropEverything();
@@ -232,6 +241,23 @@ public class SQLiteAgent extends ArchiverAgent
 			mConnection.close();
 		}
 		catch( SQLException e )
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public void ArchiveDatabaseFile()
+	{
+		Configuration lConfiguration = Configuration.getInstance();
+		String lArchivedDatabaseFolder = lConfiguration.getValue( "/configuration/global/ArchivedDatabaseFolder", "" );
+		String lNewDatabaseFullFileName = lArchivedDatabaseFolder + "\\" + mDatabaseFileName + "_"
+				+ LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME).replace( ":", "" )
+				+ mDatabaseFileExtension;
+		try
+		{
+			Files.copy(new File(mDatabaseFullFileName).toPath(), new File(lNewDatabaseFullFileName).toPath());
+		}
+		catch( IOException e )
 		{
 			e.printStackTrace();
 		}

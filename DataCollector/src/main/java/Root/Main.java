@@ -54,7 +54,7 @@ public class Main
             lGuestR.DoSearchFromConfig();
 
 
-            SQLiteAgent     lSQLiteAgent = new SQLiteAgent();
+            SQLiteAgent lSQLiteAgent = new SQLiteAgent();
             lSQLiteAgent.InitializeDatabase();
 
             final int WaitBeforeStop = 120;
@@ -74,6 +74,10 @@ public class Main
             //lGuestW.stop();
             WizzAirPageGuest.StopMultiBrowser();
             lGuestR.stop();
+
+            lSQLiteAgent.ConnectionClose();
+            lSQLiteAgent.ArchiveDatabaseFile();
+
             System.exit(-1);
         }
         catch (Exception e)

@@ -2,8 +2,14 @@ package Util;
 
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.Hashtable;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Andras on 13/04/2016.
@@ -15,13 +21,23 @@ public class SQLiteDataProvider implements DataProvider
 	private static SQLiteDataProvider mInstance = null;
 	private Connection mConnection = null;
 	private SQLiteComposer mComposer = null;
+	private final static String mDatabaseFileName = "database";
+	private final static String mDatabaseFileExtension = ".db";
+	private final static String mDatabaseFullFileName = mDatabaseFileName + mDatabaseFileExtension;
 
 	private SQLiteDataProvider()
 	{
 		try
 		{
+			Configuration lConfiguration = Configuration.getInstance();
+			String lArchivedDatabaseFolder = lConfiguration.getValue( "/configuration/global/ArchivedDatabaseFolder", "" );
+
+			String lDatabaseFileName = SearchLatestDatabaseFile( lArchivedDatabaseFolder );
+			if( lDatabaseFileName == null )
+				lDatabaseFileName = mDatabaseFullFileName;
+
 			Class.forName("org.sqlite.JDBC");
-			mConnection = DriverManager.getConnection("jdbc:sqlite:test.db");
+			mConnection = DriverManager.getConnection( "jdbc:sqlite:" + lDatabaseFileName );
 		}
 		catch ( Exception e )
 		{
@@ -250,4 +266,28 @@ public class SQLiteDataProvider implements DataProvider
 		}
 		return aArrivalAirportListFormatter.getFormattedResult();
 	}
+
+	private String SearchLatestDatabaseFile( String aPath ) throws IOException
+	{
+		String lJoinedString;
+		final String lItemSeparator = "::";
+		String[] lFileList = null;
+		String test = "database_2016-07-03T154655.243.db";
+		boolean b = test.matches("^database_\\d{4}-\\d{2}-\\d{2}T\\d{6}\\.\\d{3}\\.db$");
+		try (Stream<Path> stream = Files.list( Paths.get( aPath )))
+		{
+			lJoinedString = stream
+					.map(String::valueOf)
+					.filter(path -> path.matches("^.*\\\\database_\\d{4}-\\d{2}-\\d{2}T\\d{6}\\.\\d{3}\\.db$"))
+					.sorted()
+					.collect( Collectors.joining(lItemSeparator));
+			lFileList = lJoinedString.split( lItemSeparator );
+		}
+
+		if( lFileList == null || lFileList.length == 0 )
+			return null;
+
+		return lFileList[ lFileList.length - 1 ];
+	}
+
 }
