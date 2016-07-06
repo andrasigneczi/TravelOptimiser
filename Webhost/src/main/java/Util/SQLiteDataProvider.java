@@ -2,6 +2,7 @@ package Util;
 
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -272,13 +273,11 @@ public class SQLiteDataProvider implements DataProvider
 		String lJoinedString;
 		final String lItemSeparator = "::";
 		String[] lFileList = null;
-		String test = "database_2016-07-03T154655.243.db";
-		boolean b = test.matches("^database_\\d{4}-\\d{2}-\\d{2}T\\d{6}\\.\\d{3}\\.db$");
 		try (Stream<Path> stream = Files.list( Paths.get( aPath )))
 		{
 			lJoinedString = stream
 					.map(String::valueOf)
-					.filter(path -> path.matches("^.*\\\\database_\\d{4}-\\d{2}-\\d{2}T\\d{6}\\.\\d{3}\\.db$"))
+					.filter(path -> path.matches("^.*\\\\database_\\d{4}-\\d{2}-\\d{2}T\\d{6}\\.\\d{1,3}\\.db$"))
 					.sorted()
 					.collect( Collectors.joining(lItemSeparator));
 			lFileList = lJoinedString.split( lItemSeparator );
@@ -287,6 +286,10 @@ public class SQLiteDataProvider implements DataProvider
 		if( lFileList == null || lFileList.length == 0 )
 			return null;
 
+		// 20 database file backup is enough
+		for( int i = 0; i < lFileList.length - 20; i++ )
+			Files.delete( new File(lFileList[ i ]).toPath() );
+		
 		return lFileList[ lFileList.length - 1 ];
 	}
 

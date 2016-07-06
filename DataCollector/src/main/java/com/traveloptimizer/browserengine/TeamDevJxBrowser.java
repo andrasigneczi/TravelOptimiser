@@ -35,7 +35,10 @@ public class TeamDevJxBrowser
 
 	public Browser getJxBrowser( String aContext )
 	{
-		BrowserContext lBrowserContext = new BrowserContext(new BrowserContextParams(".\\cache\\" + aContext ));
-		return new Browser(lBrowserContext);
+		// THERE WERE PROBLEMS WITH THE CACHE AND/OR COOKIES IN CASE OF WIZZAIR MULTIBROWSER, SO i WON'T USE IT FOR AWHILE
+//		BrowserContext lBrowserContext =
+//				new BrowserContext(new BrowserContextParams(".\\cache\\" + aContext ));
+//		return new Browser(lBrowserContext);
+		return new Browser();
 	}
 }
