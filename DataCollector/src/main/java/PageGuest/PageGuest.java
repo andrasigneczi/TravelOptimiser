@@ -104,7 +104,7 @@ public abstract class PageGuest
 
 	}
 
-	protected void Sleep(int aValue)
+	static protected void Sleep(int aValue)
 	{
 		try
 		{
