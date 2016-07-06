@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,6 +26,7 @@ public class SQLiteDataProvider implements DataProvider
 	private final static String mDatabaseFileName = "database";
 	private final static String mDatabaseFileExtension = ".db";
 	private final static String mDatabaseFullFileName = mDatabaseFileName + mDatabaseFileExtension;
+	private String mOpenedDatabaseFileName = null;
 
 	private SQLiteDataProvider()
 	{
@@ -39,6 +41,7 @@ public class SQLiteDataProvider implements DataProvider
 
 			Class.forName("org.sqlite.JDBC");
 			mConnection = DriverManager.getConnection( "jdbc:sqlite:" + lDatabaseFileName );
+			mOpenedDatabaseFileName = lDatabaseFileName;
 		}
 		catch ( Exception e )
 		{
@@ -70,7 +73,8 @@ public class SQLiteDataProvider implements DataProvider
 	{
 		try
 		{
-			mConnection.close();
+			if( mConnection != null )
+				mConnection.close();
 		}
 		catch( SQLException e )
 		{
@@ -268,7 +272,7 @@ public class SQLiteDataProvider implements DataProvider
 		return aArrivalAirportListFormatter.getFormattedResult();
 	}
 
-	private String SearchLatestDatabaseFile( String aPath ) throws IOException
+	private static String SearchLatestDatabaseFile( String aPath ) throws IOException
 	{
 		String lJoinedString;
 		final String lItemSeparator = "::";
@@ -289,8 +293,42 @@ public class SQLiteDataProvider implements DataProvider
 		// 20 database file backup is enough
 		for( int i = 0; i < lFileList.length - 20; i++ )
 			Files.delete( new File(lFileList[ i ]).toPath() );
-		
+
 		return lFileList[ lFileList.length - 1 ];
 	}
 
+	public void OpenANewerDatabaseFile()
+	{
+		Configuration lConfiguration = Configuration.getInstance();
+		String lArchivedDatabaseFolder = lConfiguration.getValue( "/configuration/global/ArchivedDatabaseFolder", "" );
+		String lDatabaseFileName = null;
+
+		try
+		{
+			lDatabaseFileName = SearchLatestDatabaseFile( lArchivedDatabaseFolder );
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+
+		if( lDatabaseFileName == null || mOpenedDatabaseFileName == null )
+			return;
+
+		if( lDatabaseFileName.compareToIgnoreCase(mOpenedDatabaseFileName) != 1 )
+			return;
+
+		ConnectionClose();
+
+		try
+		{
+			mConnection = DriverManager.getConnection( "jdbc:sqlite:" + lDatabaseFileName );
+			mOpenedDatabaseFileName = lDatabaseFileName;
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+		}
+
+	}
 }
