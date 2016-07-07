@@ -25,6 +25,7 @@ public class SQLiteDataProvider implements DataProvider
 	private final static String mDatabaseFileName = "database";
 	private final static String mDatabaseFileExtension = ".db";
 	private final static String mDatabaseFullFileName = mDatabaseFileName + mDatabaseFileExtension;
+	private String mOpenedDatabaseFileName = null;
 
 	private SQLiteDataProvider()
 	{
@@ -36,9 +37,7 @@ public class SQLiteDataProvider implements DataProvider
 			String lDatabaseFileName = SearchLatestDatabaseFile( lArchivedDatabaseFolder );
 			if( lDatabaseFileName == null )
 				lDatabaseFileName = mDatabaseFullFileName;
-
-			Class.forName("org.sqlite.JDBC");
-			mConnection = DriverManager.getConnection( "jdbc:sqlite:" + lDatabaseFileName );
+			ConnectionOpen( lDatabaseFileName );
 		}
 		catch ( Exception e )
 		{
@@ -66,11 +65,19 @@ public class SQLiteDataProvider implements DataProvider
 		return mInstance;
 	}
 
-	public void ConnectionClose()
+	private void ConnectionOpen( String aDatabaseFileName ) throws ClassNotFoundException, SQLException
+	{
+		Class.forName("org.sqlite.JDBC");
+		mConnection = DriverManager.getConnection( "jdbc:sqlite:" + aDatabaseFileName );
+		mOpenedDatabaseFileName = aDatabaseFileName;
+	}
+
+	private void ConnectionClose()
 	{
 		try
 		{
-			mConnection.close();
+			if( mConnection != null )
+				mConnection.close();
 		}
 		catch( SQLException e )
 		{
@@ -268,7 +275,13 @@ public class SQLiteDataProvider implements DataProvider
 		return aArrivalAirportListFormatter.getFormattedResult();
 	}
 
-	private String SearchLatestDatabaseFile( String aPath ) throws IOException
+	/**
+	 * It exists in the DataCollector too!
+	 * @param aPath
+	 * @return
+	 * @throws IOException
+	 */
+	private static String SearchLatestDatabaseFile( String aPath ) throws IOException
 	{
 		String lJoinedString;
 		final String lItemSeparator = "::";
@@ -289,8 +302,45 @@ public class SQLiteDataProvider implements DataProvider
 		// 20 database file backup is enough
 		for( int i = 0; i < lFileList.length - 20; i++ )
 			Files.delete( new File(lFileList[ i ]).toPath() );
-		
+
 		return lFileList[ lFileList.length - 1 ];
 	}
 
+	public void OpenANewerDatabaseFile()
+	{
+		Configuration lConfiguration = Configuration.getInstance();
+		String lArchivedDatabaseFolder = lConfiguration.getValue( "/configuration/global/ArchivedDatabaseFolder", "" );
+		String lDatabaseFileName = null;
+
+		try
+		{
+			lDatabaseFileName = SearchLatestDatabaseFile( lArchivedDatabaseFolder );
+		}
+		catch (IOException aException)
+		{
+			mLogger.error( "SearchLatestDatabaseFile threw an exception: " + Util.getTraceInformation( aException ) );
+			return;
+		}
+
+		if( lDatabaseFileName == null || mOpenedDatabaseFileName == null || lDatabaseFileName.equals( mOpenedDatabaseFileName ) )
+			return;
+
+		if( lDatabaseFileName.compareToIgnoreCase(mOpenedDatabaseFileName) != 1 )
+			return;
+
+		ConnectionClose();
+
+		try
+		{
+			ConnectionOpen( lDatabaseFileName );
+		}
+		catch (SQLException aException)
+		{
+			mLogger.error( "Open database threw an exception: " + Util.getTraceInformation( aException ) );
+		}
+		catch( ClassNotFoundException e )
+		{
+			mLogger.error( "Open database threw an exception: " + Util.getTraceInformation( e ) );
+		}
+	}
 }

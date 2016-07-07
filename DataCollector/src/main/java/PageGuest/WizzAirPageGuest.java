@@ -559,9 +559,13 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			}
 			System.out.println( "run()" );
 		}
-		catch( Exception e )
+		catch( Exception aException )
 		{
-			e.printStackTrace();
+			StringWriter lStringWriter = new StringWriter();
+			PrintWriter lPrintWriter = new PrintWriter(lStringWriter);
+			aException.printStackTrace( lPrintWriter );
+
+			mLogger.error( lStringWriter.toString() );
 		}
 	}
 

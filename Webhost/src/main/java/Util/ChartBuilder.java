@@ -351,7 +351,7 @@ public class ChartBuilder
 
 	private String[] GenerateDivAndScriptContentsFromConfig()
 	{
-		ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
+		ArrayList<TravelData_INPUT> lSearchList = Configuration.getInstance().getSearchList();
 		String lScriptCotent = "";
 		String lDivContent = "";
 		int lContainerIndex = 0;

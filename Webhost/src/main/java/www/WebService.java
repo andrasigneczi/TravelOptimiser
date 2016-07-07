@@ -57,6 +57,7 @@ public class WebService
 				.replace( "[CHART_DIVS]", lContent1[ 0 ] + lContent2[ 0 ] + lContent3[ 0 ] );
 		return lHtml;
 */
+		SQLiteDataProvider.getInstance().OpenANewerDatabaseFile();
 		return GenHtmlContentUsingConfig();
 	}
 

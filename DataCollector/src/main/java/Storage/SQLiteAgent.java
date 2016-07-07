@@ -7,9 +7,13 @@ import Util.Configuration;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Andras on 27/03/2016.
@@ -22,6 +26,7 @@ public class SQLiteAgent extends ArchiverAgent
 	private final static String mDatabaseFileName = "database";
 	private final static String mDatabaseFileExtension = ".db";
 	private final static String mDatabaseFullFileName = mDatabaseFileName + mDatabaseFileExtension;
+	private String mOpenedDatabaseFileName = null;
 
 	public void SQLiteAgent()
 	{
@@ -164,12 +169,50 @@ public class SQLiteAgent extends ArchiverAgent
 		ExecuteStatement("DROP INDEX IF EXISTS TravelDataResultIndex;");
 	}
 
+	/**
+	 * It exists in the Webhost too!
+	 * @param aPath
+	 * @return
+	 * @throws IOException
+	 */
+	private static String SearchLatestDatabaseFile( String aPath ) throws IOException
+	{
+		String lJoinedString;
+		final String lItemSeparator = "::";
+		String[] lFileList = null;
+		try (Stream<Path> stream = Files.list( Paths.get( aPath )))
+		{
+			lJoinedString = stream
+					.map(String::valueOf)
+					.filter(path -> path.matches("^.*\\\\database_\\d{4}-\\d{2}-\\d{2}T\\d{6}\\.\\d{1,3}\\.db$"))
+					.sorted()
+					.collect( Collectors.joining(lItemSeparator));
+			lFileList = lJoinedString.split( lItemSeparator );
+		}
+
+		if( lFileList == null || lFileList.length == 0 )
+			return null;
+
+		// 20 database file backup is enough
+		for( int i = 0; i < lFileList.length - 20; i++ )
+			Files.delete( new File(lFileList[ i ]).toPath() );
+
+		if( lFileList[ lFileList.length - 1 ].length() == 0 )
+			return null;
+
+		return lFileList[ lFileList.length - 1 ];
+	}
+
 	public void InitializeDatabase()
 	{
 		try {
-			Class.forName("org.sqlite.JDBC");
-			mConnection = DriverManager.getConnection("jdbc:sqlite:" + mDatabaseFullFileName );
-			System.out.println("Opened database successfully");
+			Configuration lConfiguration = Configuration.getInstance();
+			String lArchivedDatabaseFolder = lConfiguration.getValue( "/configuration/global/ArchivedDatabaseFolder", "" );
+
+			String lDatabaseFileName = SearchLatestDatabaseFile( lArchivedDatabaseFolder );
+			if( lDatabaseFileName == null )
+				lDatabaseFileName = mDatabaseFullFileName;
+			ConnectionOpen( lDatabaseFileName );
 
 			//DropEverything();
 
@@ -234,11 +277,22 @@ public class SQLiteAgent extends ArchiverAgent
 		System.out.println("Table created successfully");
 	}
 
+	private void ConnectionOpen( String aDatabaseFileName ) throws ClassNotFoundException, SQLException
+	{
+		Class.forName("org.sqlite.JDBC");
+		mConnection = DriverManager.getConnection( "jdbc:sqlite:" + aDatabaseFileName );
+		mOpenedDatabaseFileName = aDatabaseFileName;
+	}
+
 	public void ConnectionClose()
 	{
 		try
 		{
-			mConnection.close();
+			if( mConnection != null )
+			{
+				mConnection.close();
+				mConnection = null;
+			}
 		}
 		catch( SQLException e )
 		{
@@ -255,7 +309,14 @@ public class SQLiteAgent extends ArchiverAgent
 				+ mDatabaseFileExtension;
 		try
 		{
-			Files.copy(new File(mDatabaseFullFileName).toPath(), new File(lNewDatabaseFullFileName).toPath());
+			ConnectionClose();
+			final String lDatabaseFullFileName;
+			if( mOpenedDatabaseFileName != null )
+				lDatabaseFullFileName = mOpenedDatabaseFileName;
+			else
+				lDatabaseFullFileName = mDatabaseFullFileName;
+
+			Files.copy(new File(lDatabaseFullFileName).toPath(), new File(lNewDatabaseFullFileName).toPath());
 		}
 		catch( IOException e )
 		{
