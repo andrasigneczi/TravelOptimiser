@@ -275,6 +275,12 @@ public class SQLiteDataProvider implements DataProvider
 		return aArrivalAirportListFormatter.getFormattedResult();
 	}
 
+	/**
+	 * It exists in the DataCollector too!
+	 * @param aPath
+	 * @return
+	 * @throws IOException
+	 */
 	private static String SearchLatestDatabaseFile( String aPath ) throws IOException
 	{
 		String lJoinedString;
