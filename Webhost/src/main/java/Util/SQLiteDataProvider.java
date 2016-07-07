@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,10 +37,7 @@ public class SQLiteDataProvider implements DataProvider
 			String lDatabaseFileName = SearchLatestDatabaseFile( lArchivedDatabaseFolder );
 			if( lDatabaseFileName == null )
 				lDatabaseFileName = mDatabaseFullFileName;
-
-			Class.forName("org.sqlite.JDBC");
-			mConnection = DriverManager.getConnection( "jdbc:sqlite:" + lDatabaseFileName );
-			mOpenedDatabaseFileName = lDatabaseFileName;
+			ConnectionOpen( lDatabaseFileName );
 		}
 		catch ( Exception e )
 		{
@@ -69,7 +65,14 @@ public class SQLiteDataProvider implements DataProvider
 		return mInstance;
 	}
 
-	public void ConnectionClose()
+	private void ConnectionOpen( String aDatabaseFileName ) throws ClassNotFoundException, SQLException
+	{
+		Class.forName("org.sqlite.JDBC");
+		mConnection = DriverManager.getConnection( "jdbc:sqlite:" + aDatabaseFileName );
+		mOpenedDatabaseFileName = aDatabaseFileName;
+	}
+
+	private void ConnectionClose()
 	{
 		try
 		{
@@ -307,12 +310,13 @@ public class SQLiteDataProvider implements DataProvider
 		{
 			lDatabaseFileName = SearchLatestDatabaseFile( lArchivedDatabaseFolder );
 		}
-		catch (IOException e)
+		catch (IOException aException)
 		{
-			e.printStackTrace();
+			mLogger.error( "SearchLatestDatabaseFile threw an exception: " + Util.getTraceInformation( aException ) );
+			return;
 		}
 
-		if( lDatabaseFileName == null || mOpenedDatabaseFileName == null )
+		if( lDatabaseFileName == null || mOpenedDatabaseFileName == null || lDatabaseFileName.equals( mOpenedDatabaseFileName ) )
 			return;
 
 		if( lDatabaseFileName.compareToIgnoreCase(mOpenedDatabaseFileName) != 1 )
@@ -322,13 +326,15 @@ public class SQLiteDataProvider implements DataProvider
 
 		try
 		{
-			mConnection = DriverManager.getConnection( "jdbc:sqlite:" + lDatabaseFileName );
-			mOpenedDatabaseFileName = lDatabaseFileName;
+			ConnectionOpen( lDatabaseFileName );
 		}
-		catch (SQLException e)
+		catch (SQLException aException)
 		{
-			e.printStackTrace();
+			mLogger.error( "Open database threw an exception: " + Util.getTraceInformation( aException ) );
 		}
-
+		catch( ClassNotFoundException e )
+		{
+			mLogger.error( "Open database threw an exception: " + Util.getTraceInformation( e ) );
+		}
 	}
 }
