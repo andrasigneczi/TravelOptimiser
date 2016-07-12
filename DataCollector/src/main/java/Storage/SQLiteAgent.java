@@ -3,6 +3,7 @@ package Storage;
 import PageGuest.TravelDataResultComposer;
 import PageGuest.TravelData_RESULT;
 import Util.Configuration;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +21,8 @@ import java.util.stream.Stream;
  */
 public class SQLiteAgent extends ArchiverAgent
 {
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger(SQLiteAgent.class);
+
 	private Connection mConnection = null;
 	private TravelData_RESULT mResult;
 	private TravelDataResultComposer_LiteSQL mComposer;
@@ -46,6 +49,8 @@ public class SQLiteAgent extends ArchiverAgent
 		else
 			lQuery = aQuery;
 
+		mLogger.trace( lQuery );
+
 		Statement lStmt = null;
 		try
 		{
@@ -71,6 +76,9 @@ public class SQLiteAgent extends ArchiverAgent
 	{
 		String lQuery = mComposer.getTravelDataResultRecordIdString( aSearchId );
 		Statement lStmt = null;
+
+		mLogger.trace( lQuery );
+
 		try
 		{
 			int lID = -1;
@@ -94,12 +102,18 @@ public class SQLiteAgent extends ArchiverAgent
 	private int InsertNewSearch()
 	{
 		String lQuery = mComposer.insertNewSearchString();
+
+		mLogger.trace( lQuery );
+
 		return ExecuteStatement( lQuery, Statement.RETURN_GENERATED_KEYS );
 	}
 
 	private int InsertTravelDataResult( int aSearchId )
 	{
 		String lQuery = mComposer.insertTravelDataResultString( aSearchId );
+
+		mLogger.trace( lQuery );
+
 		return ExecuteStatement( lQuery, Statement.RETURN_GENERATED_KEYS );
 	}
 
@@ -108,6 +122,9 @@ public class SQLiteAgent extends ArchiverAgent
 		for( int i = 0; i < mResult.mTrips.size(); i++ )
 		{
 			String lQuery = mComposer.insertTravelDataResult_PossibleTrips( mResult.mTrips.get( i ), aTravelDataResultId );
+
+			mLogger.trace( lQuery );
+
 			ExecuteStatement( lQuery );
 		}
 	}
