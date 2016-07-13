@@ -3,6 +3,7 @@ package Storage;
 import PageGuest.TravelDataResultComposer;
 import PageGuest.TravelData_RESULT;
 import Util.Configuration;
+import Util.StringHelper;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -65,7 +66,8 @@ public class SQLiteAgent extends ArchiverAgent
 			return lID;
 		}
 		catch ( Exception e ) {
-			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			//System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			mLogger.error( StringHelper.getTraceInformation( e ) );
 			System.exit( 0 );
 		}
 
@@ -92,7 +94,8 @@ public class SQLiteAgent extends ArchiverAgent
 			return lID;
 		}
 		catch ( Exception e ) {
-			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			//System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			mLogger.error( StringHelper.getTraceInformation( e ) );
 			System.exit( 0 );
 		}
 
@@ -171,7 +174,8 @@ public class SQLiteAgent extends ArchiverAgent
 			lStmt.close();
 		}
 		catch ( Exception e ) {
-			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			//System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			mLogger.error( StringHelper.getTraceInformation( e ) );
 			System.exit( 0 );
 		}
 		return lReturnValue;
@@ -288,7 +292,8 @@ public class SQLiteAgent extends ArchiverAgent
 			ExecuteStatement( aSql );
 
 		} catch ( Exception e ) {
-			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			//System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			mLogger.error( StringHelper.getTraceInformation( e ) );
 			System.exit( 0 );
 		}
 		System.out.println("Table created successfully");
@@ -313,7 +318,8 @@ public class SQLiteAgent extends ArchiverAgent
 		}
 		catch( SQLException e )
 		{
-			e.printStackTrace();
+			//e.printStackTrace();
+			mLogger.error( StringHelper.getTraceInformation( e ) );
 		}
 	}
 
@@ -337,7 +343,8 @@ public class SQLiteAgent extends ArchiverAgent
 		}
 		catch( IOException e )
 		{
-			e.printStackTrace();
+			//e.printStackTrace();
+			mLogger.error( StringHelper.getTraceInformation( e ) );
 		}
 	}
 }

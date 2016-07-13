@@ -19,6 +19,8 @@ package Util;
  */
 
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
@@ -105,5 +107,12 @@ public class StringHelper {
 			}
 		}
 		return sb.toString();
+	}
+	public static String getTraceInformation( Exception aException )
+	{
+		StringWriter lStringWriter = new StringWriter();
+		PrintWriter lPrintWriter = new PrintWriter(lStringWriter);
+		aException.printStackTrace( lPrintWriter );
+		return lStringWriter.toString();
 	}
 }

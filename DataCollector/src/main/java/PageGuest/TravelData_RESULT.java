@@ -27,6 +27,19 @@ public class TravelData_RESULT
 			}
 			return null;
 		}
+
+		public String dump()
+		{
+			String lReturnValue = "";
+			lReturnValue += "mDepartureDatetime: "         + mDepartureDatetime         + "\n";
+			lReturnValue += "mArrivalDatetime:"            + mArrivalDatetime           + "\n";
+			lReturnValue += "mPrices_BasicFare_Normal: "   + mPrices_BasicFare_Normal   + "\n";
+			lReturnValue += "mPrices_BasicFare_Discount: " + mPrices_BasicFare_Discount + "\n";
+			lReturnValue += "mPrices_PlusFare_Normal: "    + mPrices_PlusFare_Normal    + "\n";
+			lReturnValue += "mPrices_PlusFare_Discount: "  + mPrices_PlusFare_Discount  + "\n";
+			lReturnValue += "mOutboundTrip: " + ( mOutboundTrip ? "true" : "false" ) + "\n";
+			return lReturnValue;
+		}
 	}
 
 	public TravelData_RESULT()
