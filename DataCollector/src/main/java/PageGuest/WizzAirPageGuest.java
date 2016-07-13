@@ -77,7 +77,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		getIPCLogger().setLevel( Level.WARNING );
 
 		JTabbedPane lTabbedPane = new JTabbedPane();
-		JFrame frame = new JFrame( "Travel Optimizer - wizzair" );
+		JFrame frame = new JFrame( "Travel Optimizer - " + AIRLINE );
 		frame.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
 		frame.getContentPane().add( lTabbedPane, BorderLayout.CENTER );
 		frame.setSize( 1152, 864 );
@@ -127,7 +127,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 				if( lWPG.mBrowser == null )
 				{
 					lWPG.InitBrowser( lPageIndex + 1 );
-					lWPG.mBrowser.loadURL( "http://www.wizzair.com" );
+					lWPG.mBrowser.loadURL( lWPG.getURL() );
 				}
 				lWPG.mSearchQueue.add( lTDI );
 			}
@@ -152,7 +152,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			if( mBrowser == null )
 			{
 				InitBrowser( 1 );
-				mBrowser.loadURL( "http://www.wizzair.com" );
+				mBrowser.loadURL( getURL() );
 			}
 
 			TravelData_INPUT lTravelDataInput = new TravelData_INPUT();
@@ -183,7 +183,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			if( mBrowser == null )
 			{
 				InitBrowser( 1 );
-				mBrowser.loadURL( "http://www.wizzair.com" );
+				mBrowser.loadURL( getURL() );
 			}
 
 			ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
@@ -449,7 +449,10 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 					lCellIndex++;
 				}
 				if( lTrip != null )
+				{
+					mLogger.debug( lTrip.dump() );
 					mTravelDataResult.mTrips.add( lTrip );
+				}
 			}
 			lRowElementIndex++;
 		}
