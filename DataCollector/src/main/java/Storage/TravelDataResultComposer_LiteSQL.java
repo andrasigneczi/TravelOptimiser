@@ -131,7 +131,6 @@ public class TravelDataResultComposer_LiteSQL extends TravelDataResultComposer
 
 	public String toFormattedString()
 	{
-
 		return null;
 	}
 }
