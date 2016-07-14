@@ -124,6 +124,11 @@ public class SQLiteAgent extends ArchiverAgent
 	{
 		for( int i = 0; i < mResult.mTrips.size(); i++ )
 		{
+			if( !mResult.mTravelDataInput.mDepartureDay.replace(".", "").equals( mResult.mTrips.get( i ).mDepartureDatetime.substring(0,10).replace(".", "") ))
+			{
+				// debug
+				i = i;
+			}
 			String lQuery = mComposer.insertTravelDataResult_PossibleTrips( mResult.mTrips.get( i ), aTravelDataResultId );
 
 			mLogger.trace( lQuery );

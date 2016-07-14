@@ -4,6 +4,7 @@ TODO: fill the adult-,infant-,children number and handle it.
 
 package PageGuest;
 
+import Util.StringHelper;
 import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.dom.*;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
@@ -12,10 +13,6 @@ import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
@@ -61,7 +58,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	{
 		mSearchQueue = new ArrayList<TravelData_INPUT>();
 		mThread = new Thread( this );
-		mThread.setName( "WizzAirThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME ) );
+		mThread.setName( "WizzAirThread " + java.lang.System.identityHashCode(this) );
 		mThread.start();
 		System.out.println("WizzAirPageGuest()");
 	}
@@ -411,7 +408,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 						lTrip.mDepartureDatetime = ((DOMElement)lChildren.get(0)).getAttribute("data-flight-departure");
 						lTrip.mArrivalDatetime = ((DOMElement)lChildren.get(0)).getAttribute("data-flight-arrival");
-						System.out.println( lTrip.mDepartureDatetime );
+						mLogger.trace( "lTrip.mDepartureDatetime: " + lTrip.mDepartureDatetime );
 
 					}
 					else if( lCellIndex == 1 )
@@ -488,13 +485,8 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			}
 			catch( Exception aException )
 			{
-				StringWriter lStringWriter = new StringWriter();
-				PrintWriter lPrintWriter = new PrintWriter(lStringWriter);
-				aException.printStackTrace( lPrintWriter );
-
 				String lLogInformation = "Something wrong with the result parser or there is no flights?!\n" +
-						aException.getMessage() + "\n" +
-						lStringWriter.toString() + "\n" +
+                        StringHelper.getTraceInformation( aException ) + "\n" +
 						aTravelDataInput.toString();
 				mLogger.warn( lLogInformation );
 			}
@@ -502,6 +494,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		}
 
 		ResultQueue.getInstance().push( mTravelDataResult );
+        mTravelDataResult = null;
 		System.out.println("CollectDatas()");
 	}
 
@@ -564,11 +557,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		}
 		catch( Exception aException )
 		{
-			StringWriter lStringWriter = new StringWriter();
-			PrintWriter lPrintWriter = new PrintWriter(lStringWriter);
-			aException.printStackTrace( lPrintWriter );
-
-			mLogger.error( lStringWriter.toString() );
+			mLogger.error(StringHelper.getTraceInformation( aException ) );
 		}
 	}
 
