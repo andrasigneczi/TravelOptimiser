@@ -44,6 +44,8 @@ public class SQLiteAgent extends ArchiverAgent
 
 	private int GetSearchId( String aQuery )
 	{
+		mLogger.trace( "begin" );
+
 		String lQuery;
 		if( aQuery == null )
 			lQuery = mComposer.getSearchRecordIdString();
@@ -63,6 +65,7 @@ public class SQLiteAgent extends ArchiverAgent
 			}
 			lResultSet.close();
 			lStmt.close();
+			mLogger.trace( "return" );
 			return lID;
 		}
 		catch ( Exception e ) {
@@ -71,11 +74,13 @@ public class SQLiteAgent extends ArchiverAgent
 			System.exit( 0 );
 		}
 
+		mLogger.trace( "end" );
 		return -1;
 	}
 
 	private int GetTravelDataResultId( int aSearchId )
 	{
+		mLogger.trace( "begin" );
 		String lQuery = mComposer.getTravelDataResultRecordIdString( aSearchId );
 		Statement lStmt = null;
 
@@ -91,6 +96,7 @@ public class SQLiteAgent extends ArchiverAgent
 			}
 			lResultSet.close();
 			lStmt.close();
+			mLogger.trace( "return" );
 			return lID;
 		}
 		catch ( Exception e ) {
@@ -99,29 +105,35 @@ public class SQLiteAgent extends ArchiverAgent
 			System.exit( 0 );
 		}
 
+		mLogger.trace( "end" );
 		return -1;
 	}
 
 	private int InsertNewSearch()
 	{
+		mLogger.trace( "begin" );
 		String lQuery = mComposer.insertNewSearchString();
 
 		mLogger.trace( lQuery );
 
+		mLogger.trace( "end" );
 		return ExecuteStatement( lQuery, Statement.RETURN_GENERATED_KEYS );
 	}
 
 	private int InsertTravelDataResult( int aSearchId )
 	{
+		mLogger.trace( "begin" );
 		String lQuery = mComposer.insertTravelDataResultString( aSearchId );
 
 		mLogger.trace( lQuery );
 
+		mLogger.trace( "end" );
 		return ExecuteStatement( lQuery, Statement.RETURN_GENERATED_KEYS );
 	}
 
 	private void InsertTravelDataResult_PossibleTrips( int aTravelDataResultId )
 	{
+		mLogger.trace( "begin" );
 		for( int i = 0; i < mResult.mTrips.size(); i++ )
 		{
 			if( !mResult.mTravelDataInput.mDepartureDay.replace(".", "").equals( mResult.mTrips.get( i ).mDepartureDatetime.substring(0,10).replace(".", "") ))
@@ -135,10 +147,12 @@ public class SQLiteAgent extends ArchiverAgent
 
 			ExecuteStatement( lQuery );
 		}
+		mLogger.trace( "end" );
 	}
 
 	protected void WriteData( TravelData_RESULT aResult )
 	{
+		mLogger.trace( "begin" );
 		mComposer = (TravelDataResultComposer_LiteSQL)TravelDataResultComposer.Create( aResult, "litesql" );
 		mResult = aResult;
 
@@ -154,6 +168,7 @@ public class SQLiteAgent extends ArchiverAgent
 			lTravelDataResultId = InsertTravelDataResult( lSearchId );
 		}
 		InsertTravelDataResult_PossibleTrips( lTravelDataResultId );
+		mLogger.trace( "end" );
 	}
 
 	private int ExecuteStatement( String aSql )
@@ -163,6 +178,7 @@ public class SQLiteAgent extends ArchiverAgent
 
 	private int ExecuteStatement( String aSql, int aReturnValueType )
 	{
+		mLogger.trace( "begin" );
 		Statement lStmt = null;
 		int lReturnValue = -1;
 		try
@@ -183,6 +199,7 @@ public class SQLiteAgent extends ArchiverAgent
 			mLogger.error( StringHelper.getTraceInformation( e ) );
 			System.exit( 0 );
 		}
+		mLogger.trace( "end" );
 		return lReturnValue;
 	}
 
