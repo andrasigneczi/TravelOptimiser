@@ -7,6 +7,7 @@ import PageGuest.WizzAirPageGuest;
 import Storage.FileWriterAgent;
 import Storage.SQLiteAgent;
 import Util.CurrencyHelper;
+import Util.StringHelper;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -82,10 +83,7 @@ public class Main
         }
         catch (Exception e)
         {
-            StringWriter lStringWriter = new StringWriter();
-            PrintWriter lPrintWriter = new PrintWriter(lStringWriter);
-            e.printStackTrace( lPrintWriter );
-            mLogger.error( "Unhandled exception: " + lStringWriter.toString() );
+            mLogger.error( "Unhandled exception: " + StringHelper.getTraceInformation( e ));
         }
     }
 }
