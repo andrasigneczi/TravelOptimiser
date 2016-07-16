@@ -1,5 +1,8 @@
 package PageGuest;
 
+import BrowserState.BrowserStateReadyToSearch;
+import BrowserState.BrowserStateSearching;
+import BrowserState.BrowserStateSearchingFinished;
 import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
 import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
 import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
@@ -23,7 +26,7 @@ public class WizzAirPageGuest_LoadListener extends LoadAdapter
 		// A click után újra bejövök ide, erre ügyelni kell!!!!
 		if (event.isMainFrame())
 		{
-			mLogger.trace( "tr" );
+			mLogger.trace( "begin, thread name: " + mPageGuest.getThreadName());
 			TravelData_INPUT lTravelDataInput = null;
 			if( mPageGuest.getBrowserState().toString().equals( "BrowserStateSearching" ))
 			{
@@ -31,11 +34,13 @@ public class WizzAirPageGuest_LoadListener extends LoadAdapter
 			}
 
 			DOMDocument lDOMDocument = event.getBrowser().getDocument();
+			mLogger.trace( "thread name: " + mPageGuest.getThreadName() + "; DOMDocument: " + java.lang.System.identityHashCode(lDOMDocument));
 			if( lTravelDataInput == null )
 				new BrowserStateReadyToSearch( lDOMDocument ).doAction( mPageGuest.getBrowserState().getWebPageGuest());
 			else
 				new BrowserStateSearchingFinished( lDOMDocument, lTravelDataInput ).doAction( mPageGuest.getBrowserState().getWebPageGuest() );
-			mLogger.trace( lTravelDataInput == null );
+			mLogger.trace( "is lTravelDataInput null?: " + lTravelDataInput == null );
+			mLogger.trace( "end, thread name: " + mPageGuest.getThreadName());
 		}
 	}
 }

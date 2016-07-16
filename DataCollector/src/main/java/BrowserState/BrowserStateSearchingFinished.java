@@ -1,5 +1,7 @@
-package PageGuest;
+package BrowserState;
 
+import PageGuest.TravelData_INPUT;
+import PageGuest.WebPageGuest;
 import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
 
 /**

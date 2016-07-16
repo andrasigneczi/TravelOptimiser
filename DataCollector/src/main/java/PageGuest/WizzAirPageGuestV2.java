@@ -33,7 +33,6 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 {
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger(RyanAirPageGuest.class);
 
-	private Thread  mThread;
 	private boolean mThreadStopped = true;
 
 	public WizzAirPageGuestV2( boolean dummy )

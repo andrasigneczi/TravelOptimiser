@@ -1,4 +1,7 @@
-package PageGuest;
+package BrowserState;
+
+import PageGuest.TravelData_INPUT;
+import PageGuest.WebPageGuest;
 
 /**
  * Created by andras.igneczi on 16/03/2016.

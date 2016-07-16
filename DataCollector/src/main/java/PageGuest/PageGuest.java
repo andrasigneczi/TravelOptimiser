@@ -19,6 +19,7 @@ public abstract class PageGuest
 	protected      TravelData_RESULT           mTravelDataResult = null;
 	protected      ArrayList<TravelData_INPUT> mSearchQueue;
 	protected      Object                      mMutex = new Object();
+	protected      Thread                      mThread;
 
 	public enum FareType
 	{
@@ -173,5 +174,10 @@ public abstract class PageGuest
 			e.printStackTrace();
 		}
 		return false;
+	}
+
+	public String getThreadName()
+	{
+		return mThread.getName();
 	}
 }
