@@ -34,12 +34,21 @@ public class WizzAirPageGuest_LoadListener extends LoadAdapter
 			}
 
 			DOMDocument lDOMDocument = event.getBrowser().getDocument();
+			mLogger.trace( "thread name: " + mPageGuest.getThreadName() + "; Browser: " + java.lang.System.identityHashCode(event.getBrowser()));
 			mLogger.trace( "thread name: " + mPageGuest.getThreadName() + "; DOMDocument: " + java.lang.System.identityHashCode(lDOMDocument));
+			mLogger.trace( "thread name: " + mPageGuest.getThreadName() + "; Is lTravelDataInput null?: " + ( lTravelDataInput == null ) );
+
 			if( lTravelDataInput == null )
-				new BrowserStateReadyToSearch( lDOMDocument ).doAction( mPageGuest.getBrowserState().getWebPageGuest());
+			{
+				new BrowserStateReadyToSearch( lDOMDocument ).doAction(
+						mPageGuest.getBrowserState().getWebPageGuest() );
+			}
 			else
-				new BrowserStateSearchingFinished( lDOMDocument, lTravelDataInput ).doAction( mPageGuest.getBrowserState().getWebPageGuest() );
-			mLogger.trace( "is lTravelDataInput null?: " + lTravelDataInput == null );
+			{
+				mLogger.trace( "thread name: " + mPageGuest.getThreadName() + "; lTravelDataInput: " + lTravelDataInput.toString());
+				new BrowserStateSearchingFinished( lDOMDocument, lTravelDataInput ).doAction(
+						mPageGuest.getBrowserState().getWebPageGuest() );
+			}
 			mLogger.trace( "end, thread name: " + mPageGuest.getThreadName());
 		}
 	}

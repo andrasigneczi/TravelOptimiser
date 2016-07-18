@@ -11,7 +11,7 @@ import java.awt.event.KeyEvent;
  */
 public abstract class WebPageGuest extends PageGuest
 {
-    protected BrowserState mBrowserState     = null;
+    protected BrowserState  mBrowserState     = null;
     protected Robot         mRobot            = null;
     protected Insets        mInsets;
     private   String        mURL;

@@ -69,6 +69,14 @@ public class Configuration
 		return lReturn;
 	}
 
+	public int getIntValue( String aPath, String aDefaultValue ) throws NumberFormatException
+	{
+		String lReturn = mConfigValues.get( aPath );
+		if( lReturn == null )
+			return Integer.parseInt( aDefaultValue );
+		return Integer.parseInt( lReturn );
+	}
+
 	private void ParseConfigurationFile()
 	{
 		try {

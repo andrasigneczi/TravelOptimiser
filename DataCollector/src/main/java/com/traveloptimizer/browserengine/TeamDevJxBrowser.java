@@ -3,6 +3,7 @@ package com.traveloptimizer.browserengine;
 import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.BrowserContext;
 import com.teamdev.jxbrowser.chromium.BrowserContextParams;
+import com.teamdev.jxbrowser.chromium.BrowserType;
 
 /**
  * Created by Andras on 13/04/2016.
@@ -35,10 +36,10 @@ public class TeamDevJxBrowser
 
 	public Browser getJxBrowser( String aContext )
 	{
-		// THERE WERE PROBLEMS WITH THE CACHE AND/OR COOKIES IN CASE OF WIZZAIR MULTIBROWSER, SO i WON'T USE IT FOR AWHILE
+		// THERE WERE PROBLEMS WITH THE CACHE AND/OR COOKIES IN CASE OF WIZZAIR MULTIBROWSER, SO I WON'T USE IT FOR AWHILE
 //		BrowserContext lBrowserContext =
 //				new BrowserContext(new BrowserContextParams(".\\cache\\" + aContext ));
 //		return new Browser(lBrowserContext);
-		return new Browser();
+		return new Browser( BrowserType.LIGHTWEIGHT );
 	}
 }

@@ -12,11 +12,19 @@ import Util.StringHelper;
 import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.dom.*;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
+import com.teamdev.jxbrowser.chromium.swing.internal.HeavyWeightWidget;
+import com.teamdev.jxbrowser.chromium.swing.internal.LightWeightWidget;
 import com.traveloptimizer.browserengine.TeamDevJxBrowser;
 import org.apache.log4j.Logger;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
@@ -33,6 +41,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuest.class);
 
 	private Browser mBrowser = null;
+	private BrowserView mBrowserView = null;
 	private boolean mThreadStopped = true;
 	private JTabbedPane mTabbedPane = null;
 	private static ArrayList<WizzAirPageGuest> mWizzAirPageGuestList = null;
@@ -227,7 +236,8 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			mTabbedPane = new JTabbedPane();
 		}
 
-		mTabbedPane.addTab("Browser " + aBrowserIndex, new BrowserView(mBrowser));
+		mBrowserView = new BrowserView( mBrowser );
+		mTabbedPane.addTab( "Browser " + aBrowserIndex, mBrowserView );
 
 		if( lNewWindow )
 		{
@@ -457,6 +467,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 					}
 					lCellIndex++;
 				}
+
 				if( lTrip != null )
 				{
 					mLogger.debug( lTrip.dump() );
@@ -507,9 +518,49 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 		if( lFlightsBodyElements.size() == 0 )
 		{
-			lBodyElementIndex = lBodyElementIndex;
-			mLogger.error( "thread name: " + getThreadName() + "; Something wrong with the result page!!" );
+			// lBodyElementIndex = lBodyElementIndex;
+			mLogger.error( "thread name: " + getThreadName() + "; Something wrong with the result page!! Image saved." );
+
+			LightWeightWidget heavyWeightWidget = (LightWeightWidget)mBrowserView.getComponent(0);
+			Image image = heavyWeightWidget.getImage();
+			try
+			{
+				ImageIO.write((RenderedImage)image, "PNG", new File( getAirline() + "_"
+						+ LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "_" + getThreadName()
+						+ ".png" ));
+			}
+			catch( IOException e )
+			{
+				e.printStackTrace();
+			}
 		}
+
+		// ellenőrzi a aTravelDataInput.DepartureDay és a trip.mDepartureDatetime egyezőségét
+		boolean lWrongTripFound = false;
+		for( TravelData_RESULT.TravelData_PossibleTrip lTrip : mTravelDataResult.mTrips )
+		{
+			if( !aTravelDataInput.mDepartureDay.replace(".", "").equals( lTrip.mDepartureDatetime.substring(0,10).replace("-", ""))
+               && !aTravelDataInput.mReturnDay.replace(".", "").equals( lTrip.mDepartureDatetime.substring(0,10).replace("-", "")))
+			{
+				lWrongTripFound = true;
+				break;
+			}
+		}
+
+		if( lWrongTripFound )
+		{
+			mLogger.error( "thread name: " + getThreadName()
+					+ "; Wrong trip found: aTravelDataInput: "
+					+ aTravelDataInput.toString());
+
+			for( TravelData_RESULT.TravelData_PossibleTrip lTrip : mTravelDataResult.mTrips )
+			{
+				mLogger.error( "thread name: " + getThreadName()
+						+ "; Trip: "
+						+ lTrip.dump() );
+			}
+		}
+
 		ResultQueue.getInstance().push( mTravelDataResult );
         mTravelDataResult = null;
 		mLogger.trace( "end, thread name: " + getThreadName());
@@ -549,8 +600,12 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 					BrowserStateSearchingFinished lState = (BrowserStateSearchingFinished)getBrowserState();
 					TravelData_INPUT lTravelDataInput = lState.getTravelDataInput();
 					DOMDocument lDOMDocument = lState.getDOMDocument();
-					mLogger.trace( "thread name: " + getThreadName() + "; DOMDocument: " + java.lang.System.identityHashCode(lDOMDocument));
-					
+					mLogger.trace( "thread name: " + getThreadName() + "; Browser: " + java.lang.System.identityHashCode(mBrowser));
+					mLogger.trace( "thread name: " + getThreadName() + "; DOMDocument: " + java.lang.System.identityHashCode(lDOMDocument)
+							+ "; lBrowserState: " + lBrowserState );
+
+					if( lTravelDataInput != null )
+						mLogger.trace( "thread name: " + getThreadName() + "; lTravelDataInput: " + lTravelDataInput.toString());
 					// The last search has been finished, collect the datas, start a new search
 					CollectDatas( lDOMDocument, lTravelDataInput );
 					new BrowserStateReadyToSearch( lDOMDocument ).doAction( this );
@@ -560,12 +615,16 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 					BrowserStateReadyToSearch lState = (BrowserStateReadyToSearch)getBrowserState();
 					TravelData_INPUT lTravelDataInput;
 					DOMDocument lDOMDocument = lState.getDOMDocument();
-					mLogger.trace( "thread name: " + getThreadName() + "; DOMDocument: " + java.lang.System.identityHashCode(lDOMDocument));
+					mLogger.trace( "thread name: " + getThreadName() + "; Browser: " + java.lang.System.identityHashCode(mBrowser));
+					mLogger.trace( "thread name: " + getThreadName() + "; DOMDocument: " + java.lang.System.identityHashCode(lDOMDocument)
+									+ "; lBrowserState: " + lBrowserState );
 
 					synchronized( mMutex )
 					{
 						lTravelDataInput = mSearchQueue.remove( 0 );
 					}
+					if( lTravelDataInput != null )
+						mLogger.trace( "thread name: " + getThreadName() + "; lTravelDataInput: " + lTravelDataInput.toString());
 					new BrowserStateSearching( lTravelDataInput ).doAction( this );
 
 					FillTheForm( lDOMDocument, lTravelDataInput );

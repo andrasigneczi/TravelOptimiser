@@ -46,12 +46,32 @@ public class Main
             CurrencyHelper.Init();
             // Initialize the configuration
             Util.Configuration lConfiguration = Util.Configuration.getInstance();
+            int lWizzAirWindowCount;
 
-            //PageGuest.PageGuest lGuestW = PageGuestFactory.Create( "WizzAir" );
+            try
+            {
+                lWizzAirWindowCount = lConfiguration.getIntValue( "/configuration/global/WizzAirWindowCount", "1" );
+            }
+            catch( NumberFormatException e )
+            {
+                mLogger.error( "WizzAirWindowCount problem: " + StringHelper.getTraceInformation( e ));
+                lWizzAirWindowCount = 1;
+            }
+
             PageGuest.PageGuest lGuestR = PageGuestFactory.Create( "RyanAir" );
 
-            //lGuestW.DoSearchFromConfig();
-            WizzAirPageGuest.StartMultiBrowser( 4 );
+            final PageGuest.PageGuest lGuestW;
+            if( lWizzAirWindowCount > 1 )
+            {
+                WizzAirPageGuest.StartMultiBrowser( 4 );
+                lGuestW = null;
+            }
+            else
+            {
+                lGuestW = PageGuestFactory.Create( "WizzAir" );
+                lGuestW.DoSearchFromConfig();
+            }
+
             lGuestR.DoSearchFromConfig();
 
 
@@ -72,8 +92,10 @@ public class Main
                 Thread.sleep(1000);
                 i--;
             }
-            //lGuestW.stop();
-            WizzAirPageGuest.StopMultiBrowser();
+            if( lWizzAirWindowCount > 1 )
+                WizzAirPageGuest.StopMultiBrowser();
+            else
+                lGuestW.stop();
             lGuestR.stop();
 
             lSQLiteAgent.ConnectionClose();
