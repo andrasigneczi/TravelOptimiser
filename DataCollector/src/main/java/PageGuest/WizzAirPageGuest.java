@@ -479,6 +479,120 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
+	private void CollectDatas_Change_TravelDataInput( DOMDocument aDOMDocument )
+	{
+		// Inputs
+		String lLeavingFromHiddenId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_OriginStation";
+		String lGoingToHiddenId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DestinationStation";
+		String lDepartureDateId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DepartureDate";
+		String lReturnDateId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_ReturnDate";
+		// Selects
+		String lAdultId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountADT";
+		String lChildrenlId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountCHD";
+		String lInfantlId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountINFANT";
+
+		DOMElement lLeavingFromHidden = aDOMDocument.findElement( By.id( lLeavingFromHiddenId ));
+		DOMElement lGoingToHidden = aDOMDocument.findElement( By.id( lGoingToHiddenId ));
+		DOMElement lDepartureDate = aDOMDocument.findElement( By.id( lDepartureDateId ));
+		DOMElement lReturnDate = aDOMDocument.findElement( By.id( lReturnDateId ));
+
+		DOMElement lAdult = aDOMDocument.findElement( By.id( lAdultId ));
+		DOMElement lChildren = aDOMDocument.findElement( By.id( lChildrenlId ));
+		DOMElement lInfant = aDOMDocument.findElement( By.id( lInfantlId ));
+
+		if( lLeavingFromHidden == null )
+		{
+			mLogger.error( "thread name: " + getThreadName() + "; lLeavingFromHidden is null" );
+			return;
+		}
+		if( lGoingToHidden == null )
+		{
+			mLogger.error( "thread name: " + getThreadName() + "; lGoingToHidden is null" );
+			return;
+		}
+		if( lDepartureDate == null )
+		{
+			mLogger.error( "thread name: " + getThreadName() + "; lDepartureDate is null" );
+			return;
+		}
+		if( lReturnDate == null )
+		{
+			mLogger.error( "thread name: " + getThreadName() + "; lReturnDate is null" );
+			return;
+		}
+		if( lAdult == null )
+		{
+			mLogger.error( "thread name: " + getThreadName() + "; lAdult is null" );
+			return;
+		}
+		if( lChildren == null )
+		{
+			mLogger.error( "thread name: " + getThreadName() + "; lChildren is null" );
+			return;
+		}
+		if( lInfant == null )
+		{
+			mLogger.error( "thread name: " + getThreadName() + "; lInfant is null" );
+			return;
+		}
+
+		String lValue = ((DOMInputElement)lLeavingFromHidden).getValue();
+		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mAirportCode_LeavingFrom ))
+		{
+			mLogger.trace( "mAirportCode_LeavingFrom will changed from "
+					+ mTravelDataResult.mTravelDataInput.mAirportCode_LeavingFrom + " to " + lValue );
+			mTravelDataResult.mTravelDataInput.mAirportCode_LeavingFrom = lValue;
+		}
+
+		lValue = ((DOMInputElement)lGoingToHidden).getValue();
+		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mAirportCode_GoingTo ))
+		{
+			mLogger.trace( "mAirportCode_GoingTo will changed from "
+					+ mTravelDataResult.mTravelDataInput.mAirportCode_GoingTo + " to " + lValue );
+			mTravelDataResult.mTravelDataInput.mAirportCode_GoingTo = lValue;
+		}
+
+		lValue = ((DOMInputElement)lDepartureDate).getValue();
+		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mDepartureDay ))
+		{
+			mLogger.trace( "mDepartureDay will changed from "
+					+ mTravelDataResult.mTravelDataInput.mDepartureDay + " to " + lValue );
+			mTravelDataResult.mTravelDataInput.mDepartureDay = lValue;
+		}
+
+		lValue = ((DOMInputElement)lReturnDate).getValue();
+		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mReturnDay ))
+		{
+			mLogger.trace( "mReturnDay will changed from "
+					+ mTravelDataResult.mTravelDataInput.mReturnDay + " to " + lValue );
+			mTravelDataResult.mTravelDataInput.mReturnDay = lValue;
+		}
+
+		lValue = ((DOMSelectElement)lAdult).getValue();
+		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mAdultNumber ))
+		{
+			mLogger.trace( "mAdultNumber will changed from "
+					+ mTravelDataResult.mTravelDataInput.mAdultNumber + " to " + lValue );
+			mTravelDataResult.mTravelDataInput.mAdultNumber = lValue;
+		}
+
+		lValue = ((DOMSelectElement)lChildren).getValue();
+		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mChildNumber ))
+		{
+			mLogger.trace( "mChildNumber will changed from "
+					+ mTravelDataResult.mTravelDataInput.mChildNumber + " to " + lValue );
+			mTravelDataResult.mTravelDataInput.mChildNumber = lValue;
+		}
+
+		lValue = ((DOMSelectElement)lInfant).getValue();
+		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mInfantNumber ))
+		{
+			mLogger.trace( "mInfantNumber will changed from "
+					+ mTravelDataResult.mTravelDataInput.mInfantNumber + " to " + lValue );
+			mTravelDataResult.mTravelDataInput.mInfantNumber = lValue;
+		}
+	}
+
 	private void CollectDatas(DOMDocument document, TravelData_INPUT aTravelDataInput)
 	{
 		mLogger.trace( "begin, thread name: " + getThreadName());
@@ -488,6 +602,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
 		mTravelDataResult.mTravelDataInput = aTravelDataInput;
 		//mTravelDataResult.mReturnTicket = aTravelDataInput.mReturnTicket;
+		CollectDatas_Change_TravelDataInput( document );
 
 		java.util.List<DOMElement> lFlightsBodyElements = document.findElements( By.className( "flights-body" ) );
 		int lBodyElementIndex = 0;
