@@ -602,7 +602,9 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
 		mTravelDataResult.mTravelDataInput = aTravelDataInput;
 		//mTravelDataResult.mReturnTicket = aTravelDataInput.mReturnTicket;
-		CollectDatas_Change_TravelDataInput( document );
+
+		// todo Check later
+		//CollectDatas_Change_TravelDataInput( document );
 
 		java.util.List<DOMElement> lFlightsBodyElements = document.findElements( By.className( "flights-body" ) );
 		int lBodyElementIndex = 0;

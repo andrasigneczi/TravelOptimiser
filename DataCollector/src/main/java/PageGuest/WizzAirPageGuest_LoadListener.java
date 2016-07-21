@@ -3,10 +3,7 @@ package PageGuest;
 import BrowserState.BrowserStateReadyToSearch;
 import BrowserState.BrowserStateSearching;
 import BrowserState.BrowserStateSearchingFinished;
-import com.teamdev.jxbrowser.chromium.dom.By;
-import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
-import com.teamdev.jxbrowser.chromium.dom.DOMElement;
-import com.teamdev.jxbrowser.chromium.dom.DOMInputElement;
+import com.teamdev.jxbrowser.chromium.dom.*;
 import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
 import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
 import org.apache.log4j.Logger;
@@ -48,47 +45,95 @@ public class WizzAirPageGuest_LoadListener extends LoadAdapter
 			}
 			else
 			{
-				CheckTheReceivedDocument( lDOMDocument );
-				mLogger.trace( "thread name: " + mPageGuest.getThreadName() + "; lTravelDataInput: " + lTravelDataInput.toString());
-				new BrowserStateSearchingFinished( lDOMDocument, lTravelDataInput ).doAction(
-						mPageGuest.getBrowserState().getWebPageGuest() );
+				if( CheckTheReceivedDocument( lDOMDocument, lTravelDataInput ))
+				{
+					mLogger.trace(
+							"thread name: " + mPageGuest.getThreadName() + "; lTravelDataInput: " + lTravelDataInput.toString() );
+					new BrowserStateSearchingFinished( lDOMDocument, lTravelDataInput ).doAction(
+							mPageGuest.getBrowserState().getWebPageGuest() );
+				}
 			}
 			mLogger.trace( "end, thread name: " + mPageGuest.getThreadName());
 		}
 	}
 
-	private void TraceInputElementValue( String aLabel, DOMElement aElement )
+	private boolean CheckDOMElementValue( DOMElement aElement, String aTraceLabel, String aValue )
 	{
 		if( aElement == null )
 		{
-			mLogger.error( "thread name: " + mPageGuest.getThreadName() + "; " + aLabel + " is null" );
+			mLogger.error( "thread name: " + mPageGuest.getThreadName() + "; " + aTraceLabel + " is null" );
+			return false;
 		}
 		else
 		{
 			if( aElement instanceof DOMInputElement)
+			{
+				String lValue = ((DOMInputElement)aElement).getValue();
 				mLogger.trace(
-					"thread name: " + mPageGuest.getThreadName() + "; " + aLabel + ": " + ( (DOMInputElement) aElement ).getValue() );
+						"thread name: " + mPageGuest.getThreadName() + "; " + aTraceLabel + ": " + lValue );
+				return lValue.equals( aValue );
+			}
 			else
-				mLogger.error( "thread name: " + mPageGuest.getThreadName() + "; DOMElement is not instance of DOMInputElement" );
+			{
+				if( aElement instanceof DOMSelectElement)
+				{
+					String lValue = ((DOMSelectElement)aElement).getValue();
+					mLogger.trace(
+							"thread name: " + mPageGuest.getThreadName() + "; " + aTraceLabel + ": " + lValue );
+					return lValue.equals( aValue );
+				}
+
+				mLogger.error(
+						"thread name: " + mPageGuest.getThreadName() + "; DOMElement is not instance of DOMInputElement or DOMSelectElement" );
+			}
 		}
+		return false;
 	}
 
-	private void CheckTheReceivedDocument( DOMDocument aDOMDocument )
+	private boolean CheckTheReceivedDocument( DOMDocument aDOMDocument, TravelData_INPUT aTravelData_input )
 	{
-		mLogger.trace( "thread name: " + mPageGuest.getThreadName() + "; DOMDocument fields' values: " );
+		mLogger.trace( "begin, thread name: " + mPageGuest.getThreadName());
 
-		String lLeavingFromId    = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_AutocompleteOriginStation";
+		// Inputs
+		//String lLeavingFromId     = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_AutocompleteOriginStation";
+		//String lGoingToId         = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_AutocompleteDestinationStation";
 		String lLeavingFromHiddenId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_OriginStation";
-		String lGoingToId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_AutocompleteDestinationStation";
-		String lGoingToHiddenId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DestinationStation";
-		String lDepartureDateId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DepartureDate";
-		String lReturnDateId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_ReturnDate";
+		String lGoingToHiddenId     = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DestinationStation";
+		String lDepartureDateId     = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DepartureDate";
+		String lReturnDateId        = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_ReturnDate";
 
-		TraceInputElementValue( "LeavingFrom", aDOMDocument.findElement( By.id( lLeavingFromId )));
-		TraceInputElementValue( "LeavingFromHidden", aDOMDocument.findElement( By.id( lLeavingFromHiddenId )));
-		TraceInputElementValue( "GoingTo", aDOMDocument.findElement( By.id( lGoingToId )));
-		TraceInputElementValue( "GoingToHidden", aDOMDocument.findElement( By.id( lGoingToHiddenId )));
-		TraceInputElementValue( "DepartureDate", aDOMDocument.findElement( By.id( lDepartureDateId )));
-		TraceInputElementValue( "ReturnDate", aDOMDocument.findElement( By.id( lReturnDateId )));
+		// Selects
+		String lAdultId     = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountADT";
+		String lChildrenlId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountCHD";
+		String lInfantlId   = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountINFANT";
+
+		//if( !TraceInputElementValue( aDOMDocument.findElement( By.id( lLeavingFromId )), "LeavingFrom", aTravelData_input.mAirportCode_LeavingFrom ))
+		//	return false;
+
+		//TraceInputElementValue( "GoingTo", aDOMDocument.findElement( By.id( lGoingToId )));
+
+		if( !CheckDOMElementValue( aDOMDocument.findElement( By.id( lLeavingFromHiddenId )), "LeavingFromHidden", aTravelData_input.mAirportCode_LeavingFrom ))
+			return false;
+
+		if( !CheckDOMElementValue( aDOMDocument.findElement( By.id( lGoingToHiddenId )), "GoingToHidden", aTravelData_input.mAirportCode_GoingTo ))
+			return false;
+
+		if( !CheckDOMElementValue( aDOMDocument.findElement( By.id( lDepartureDateId )), "DepartureDate", aTravelData_input.mDepartureDay ))
+			return false;
+
+		if( !CheckDOMElementValue( aDOMDocument.findElement( By.id( lReturnDateId )), "ReturnDate", aTravelData_input.mReturnDay ))
+			return false;
+
+		if( !CheckDOMElementValue( aDOMDocument.findElement( By.id( lAdultId )), "AdultCount", aTravelData_input.mAdultNumber ))
+			return false;
+
+		if( !CheckDOMElementValue( aDOMDocument.findElement( By.id( lChildrenlId )), "ChildrenCount", aTravelData_input.mChildNumber ))
+			return false;
+
+		if( !CheckDOMElementValue( aDOMDocument.findElement( By.id( lInfantlId )), "InfantCount", aTravelData_input.mInfantNumber ))
+			return false;
+
+		mLogger.trace( "end, thread name: " + mPageGuest.getThreadName());
+		return true;
 	}
 }
