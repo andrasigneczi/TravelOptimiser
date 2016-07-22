@@ -24,36 +24,44 @@ public class WizzAirPageGuest_LoadListener extends LoadAdapter
 	@Override
 	public void onFinishLoadingFrame(FinishLoadingEvent event) {
 		// A click után újra bejövök ide, erre ügyelni kell!!!!
-		if (event.isMainFrame())
+		//synchronized( this )
 		{
-			mLogger.trace( "begin, thread name: " + mPageGuest.getThreadName());
-			TravelData_INPUT lTravelDataInput = null;
-			if( mPageGuest.getBrowserState().toString().equals( "BrowserStateSearching" ))
+			if( event.isMainFrame() )
 			{
-				lTravelDataInput = ((BrowserStateSearching)mPageGuest.getBrowserState()).getTravelDataInput();
-			}
+				mLogger.trace( "begin, thread name: " + mPageGuest.getThreadName() );
+				TravelData_INPUT lTravelDataInput = null;
+				if( mPageGuest.getBrowserState().toString().equals( "BrowserStateSearching" ) )
+				{
+					lTravelDataInput = ( (BrowserStateSearching) mPageGuest.getBrowserState() ).getTravelDataInput();
+				}
 
-			DOMDocument lDOMDocument = event.getBrowser().getDocument();
-			mLogger.trace( "thread name: " + mPageGuest.getThreadName() + "; Browser: " + java.lang.System.identityHashCode(event.getBrowser()));
-			mLogger.trace( "thread name: " + mPageGuest.getThreadName() + "; DOMDocument: " + java.lang.System.identityHashCode(lDOMDocument));
-			mLogger.trace( "thread name: " + mPageGuest.getThreadName() + "; Is lTravelDataInput null?: " + ( lTravelDataInput == null ) );
+				DOMDocument lDOMDocument = event.getBrowser().getDocument();
+				mLogger.trace(
+						"thread name: " + mPageGuest.getThreadName() + "; Browser: " + java.lang.System.identityHashCode(
+								event.getBrowser() ) );
+				mLogger.trace(
+						"thread name: " + mPageGuest.getThreadName() + "; DOMDocument: " + java.lang.System.identityHashCode(
+								lDOMDocument ) );
+				mLogger.trace(
+						"thread name: " + mPageGuest.getThreadName() + "; Is lTravelDataInput null?: " + ( lTravelDataInput == null ) );
 
-			if( lTravelDataInput == null )
-			{
-				new BrowserStateReadyToSearch( lDOMDocument ).doAction(
-						mPageGuest.getBrowserState().getWebPageGuest() );
-			}
-			else
-			{
-				if( CheckTheReceivedDocument( lDOMDocument, lTravelDataInput ))
+				if( lTravelDataInput == null )
+				{
+					new BrowserStateReadyToSearch( lDOMDocument ).doAction(
+							mPageGuest.getBrowserState().getWebPageGuest() );
+				}
+				else
 				{
 					mLogger.trace(
 							"thread name: " + mPageGuest.getThreadName() + "; lTravelDataInput: " + lTravelDataInput.toString() );
-					new BrowserStateSearchingFinished( lDOMDocument, lTravelDataInput ).doAction(
-							mPageGuest.getBrowserState().getWebPageGuest() );
+					//if( CheckTheReceivedDocument( lDOMDocument, lTravelDataInput ) )
+					{
+						new BrowserStateSearchingFinished( lDOMDocument, lTravelDataInput ).doAction(
+								mPageGuest.getBrowserState().getWebPageGuest() );
+					}
 				}
+				mLogger.trace( "end, thread name: " + mPageGuest.getThreadName() );
 			}
-			mLogger.trace( "end, thread name: " + mPageGuest.getThreadName());
 		}
 	}
 
@@ -71,7 +79,12 @@ public class WizzAirPageGuest_LoadListener extends LoadAdapter
 				String lValue = ((DOMInputElement)aElement).getValue();
 				mLogger.trace(
 						"thread name: " + mPageGuest.getThreadName() + "; " + aTraceLabel + ": " + lValue );
-				return lValue.equals( aValue );
+				boolean lResult = lValue.equals( aValue );
+				if( !lResult )
+					mLogger.error("thread name: " + mPageGuest.getThreadName()
+							+ "; " + aTraceLabel + " is defferent" );
+				return lResult;
+
 			}
 			else
 			{
@@ -80,7 +93,11 @@ public class WizzAirPageGuest_LoadListener extends LoadAdapter
 					String lValue = ((DOMSelectElement)aElement).getValue();
 					mLogger.trace(
 							"thread name: " + mPageGuest.getThreadName() + "; " + aTraceLabel + ": " + lValue );
-					return lValue.equals( aValue );
+					boolean lResult = lValue.equals( aValue );
+					if( !lResult )
+						mLogger.error("thread name: " + mPageGuest.getThreadName()
+								+ "; " + aTraceLabel + " is defferent" );
+					return lResult;
 				}
 
 				mLogger.error(
@@ -103,9 +120,9 @@ public class WizzAirPageGuest_LoadListener extends LoadAdapter
 		String lReturnDateId        = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_ReturnDate";
 
 		// Selects
-		String lAdultId     = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountADT";
-		String lChildrenlId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountCHD";
-		String lInfantlId   = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountINFANT";
+		String lAdultId     = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountADT";
+		String lChildrenlId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountCHD";
+		String lInfantlId   = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountINFANT";
 
 		//if( !TraceInputElementValue( aDOMDocument.findElement( By.id( lLeavingFromId )), "LeavingFrom", aTravelData_input.mAirportCode_LeavingFrom ))
 		//	return false;

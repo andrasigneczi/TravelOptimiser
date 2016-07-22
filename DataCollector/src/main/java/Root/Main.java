@@ -31,14 +31,12 @@ public class Main
             //lSQLiteAgent2.InitializeDatabase();
             //HelloWorld.SQLiteHelloWorld.Test7();
             //HelloWorld.XmlHelloWorld.Test();
-//            HelloWorld.JxBrowserHelloWorld.HelloWorld();
-//            Thread.sleep(50000);
-//            Thread.sleep(50000);
-//            Thread.sleep(50000);
+            //HelloWorld.JxBrowserHelloWorld2.HelloWorld();
+            //Thread.sleep(50000);
             //TestDatetimeParser();
 //            mLogger.trace( "trace teszt" );
 //            mLogger.error( "debug teszt" );
-//            System.exit(0);
+            //System.exit(0);
 
             //HelloWorld.JxBrowserHelloWorld.HelloWorld();
             //HelloWorld.JxBrowserHelloWorld.FlashSample();
