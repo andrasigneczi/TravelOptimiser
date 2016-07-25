@@ -16,11 +16,20 @@ public class ConfigurationHandler extends DefaultHandler
 	ArrayList<String> mCurrentPath = new ArrayList<String>();
 	TravelData_INPUT mCurrentTravelDataInput;
 	final String mSearchPath;
+	final String mFlightPath;
+	enum OpenedNode {
+		SEARCH_NODE,
+		FLIGHT_NODE,
+		NONE
+	};
 
-	public ConfigurationHandler( Configuration aConfiguration, String aSearchPath )
+	OpenedNode mOpenedNode = OpenedNode.NONE;
+
+	public ConfigurationHandler( Configuration aConfiguration, String aSearchPath, String aFlightPath )
 	{
 		mConfiguration = aConfiguration;
 		mSearchPath = aSearchPath;
+		mFlightPath = aFlightPath;
 	}
 
 	public void startElement(String uri, String localName,
@@ -39,6 +48,13 @@ public class ConfigurationHandler extends DefaultHandler
 		{
 			mCurrentTravelDataInput = new TravelData_INPUT();
 			mCurrentTravelDataInput.mAirline = qName;
+			mOpenedNode = OpenedNode.SEARCH_NODE;
+		}
+		else if( mConfiguration.getValidAirlines().contains( qName ) && getPath().equals( mFlightPath + qName ))
+		{
+			mCurrentTravelDataInput = new TravelData_INPUT();
+			mCurrentTravelDataInput.mAirline = qName;
+			mOpenedNode = OpenedNode.FLIGHT_NODE;
 		}
 	}
 
@@ -49,8 +65,15 @@ public class ConfigurationHandler extends DefaultHandler
 		//System.out.println("End Element :" + qName);
 		if( mConfiguration.getValidAirlines().contains( qName ) && getPath().equals( mSearchPath + qName ))
 		{
-			mConfiguration.add( mCurrentTravelDataInput );
+			mConfiguration.addShearchItem( mCurrentTravelDataInput );
 			mCurrentTravelDataInput = null;
+			mOpenedNode = OpenedNode.NONE;
+		}
+		else if( mConfiguration.getValidAirlines().contains( qName ) && getPath().equals( mFlightPath + qName ))
+		{
+			mConfiguration.addFlightItem( mCurrentTravelDataInput );
+			mCurrentTravelDataInput = null;
+			mOpenedNode = OpenedNode.NONE;
 		}
 		mCurrentPath.remove( mCurrentPath.size() - 1 );
 	}
@@ -72,7 +95,16 @@ public class ConfigurationHandler extends DefaultHandler
 
 		String lNodeName = mCurrentPath.get( mCurrentPath.size() - 1 );
 		String lNodeValue = new String(ch, start, length).trim();
-		if( mCurrentTravelDataInput != null && mConfiguration.getValidSearchNodes().contains( lNodeName ) )
+		
+//		if( mCurrentTravelDataInput != null
+//            && ( mConfiguration.getValidSearchNodes().contains( lNodeName )
+//				|| mConfiguration.getValidFlightNodes().contains( lNodeName ))
+//          )
+		boolean lValid = ( mOpenedNode == OpenedNode.SEARCH_NODE && mConfiguration.getValidSearchNodes().contains( lNodeName ));
+		if( !lValid )
+			lValid = ( mOpenedNode == OpenedNode.FLIGHT_NODE && mConfiguration.getValidFlightNodes().contains( lNodeName ));
+
+		if( lValid )
 		{
 			mCurrentTravelDataInput.set( lNodeName, lNodeValue );
 		}
