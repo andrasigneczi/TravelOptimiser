@@ -1,9 +1,12 @@
 package PageGuest;
 
+import java.io.IOException;
+import java.io.Serializable;
+
 /**
  * Created by Andras on 15/03/2016.
  */
-public class TravelData_INPUT implements Cloneable
+public class TravelData_INPUT implements Cloneable, Serializable
 {
 	public String  mAirline;
 	public String  mAirportCode_LeavingFrom;   // SOF
@@ -15,6 +18,34 @@ public class TravelData_INPUT implements Cloneable
 	public String  mInfantNumber      = "0";
 	public boolean mNearbyAirports    = false;
 	public boolean mReturnTicket      = true;
+
+	private void writeObject(java.io.ObjectOutputStream out) throws IOException
+	{
+		out.writeObject(  mAirline );
+		out.writeObject(  mAirportCode_LeavingFrom );
+		out.writeObject(  mAirportCode_GoingTo );
+		out.writeObject(  mDepartureDay );
+		out.writeObject(  mReturnDay );
+		out.writeObject(  mAdultNumber );
+		out.writeObject(  mChildNumber );
+		out.writeObject(  mInfantNumber );
+		out.writeBoolean( mNearbyAirports );
+		out.writeBoolean( mReturnTicket );
+	}
+
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
+	{
+		mAirline                 = (String)in.readObject();
+		mAirportCode_LeavingFrom = (String)in.readObject();
+		mAirportCode_GoingTo     = (String)in.readObject();
+		mDepartureDay            = (String)in.readObject();
+		mReturnDay               = (String)in.readObject();
+		mAdultNumber             = (String)in.readObject();
+		mChildNumber             = (String)in.readObject();
+		mInfantNumber            = (String)in.readObject();
+		mNearbyAirports          = in.readBoolean();
+		mReturnTicket            = in.readBoolean();
+	}
 
 	public boolean set( String aName, String aValue )
 	{

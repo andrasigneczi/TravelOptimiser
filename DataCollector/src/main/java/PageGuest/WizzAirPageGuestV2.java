@@ -1,16 +1,20 @@
 package PageGuest;
 
+import QueueHandlers.JMSPublisher;
+import Util.StringHelper;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import javax.jms.JMSException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -31,7 +35,7 @@ import static Util.DatetimeHelper.ConvertFromWizzairJSONStoredFormat;
  */
 public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger(RyanAirPageGuest.class);
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuestV2.class);
 
 	private boolean mThreadStopped = true;
 
@@ -40,6 +44,8 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		super( "wizzair" );
 	}
 
+	private JMSPublisher mPublisher;
+
 	public WizzAirPageGuestV2()
 	{
 		super( "wizzair" );
@@ -47,6 +53,18 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		mThread = new Thread(this);
 		mThread.setName("WizzAirThread2 " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 		mThread.start();
+
+		mPublisher = new JMSPublisher( "FlightCollector" );
+		try
+		{
+			mPublisher.Connect();
+		}
+		catch( JMSException e )
+		{
+			mPublisher = null;
+			e.printStackTrace();
+		}
+
 		System.out.println("WizzAirPageGuestV2()");
 	}
 
@@ -135,13 +153,31 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		return lTrip;
 	}
 
-	public void FillTheForm( TravelData_INPUT aTravelDataInput ) throws URISyntaxException, IOException
+	public void FillTheForm( TravelData_INPUT aTravelDataInput ) throws URISyntaxException, IOException, JMSException
+	{
+		LocalDate lDate = LocalDate.now();
+		int lYear = lDate.getYear();
+		int lMonth = lDate.getMonthValue();
+
+		for( int i = 0; i < 6; i++ )
+		{
+			ArrayList<TravelData_RESULT> lResultList = FillTheForm( aTravelDataInput, lYear, lMonth + i );
+			SaveMonthlyFlights( lResultList );
+			if( ++lMonth == 13 )
+			{
+				lMonth = 1;
+				lYear++;
+			}
+		}
+	}
+
+	private ArrayList<TravelData_RESULT> FillTheForm( TravelData_INPUT aTravelDataInput, int aYear, int aMonth ) throws URISyntaxException, IOException
 	{
 		// String lUrl = "https://cdn.static.wizzair.com/hu-HU/TimeTableAjax?departureIATA=CRL&arrivalIATA=BUD&year=2016&month=8";
 		String lUrl = "https://cdn.static.wizzair.com/hu-HU/TimeTableAjax?departureIATA="
 				+ aTravelDataInput.mAirportCode_LeavingFrom
 				+ "&arrivalIATA=" + aTravelDataInput.mAirportCode_GoingTo
-				+ "year=2016&month=8";
+				+ "year=" + aYear + "&month=" + aMonth;
 
 		String lTestJsonString = "[{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.01.\",\"Date\":\"20160801\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"29,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.02.\",\"Date\":\"20160802\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"29,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.03.\",\"Date\":\"20160803\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"39,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.04.\",\"Date\":\"20160804\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"49,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.05.\",\"Date\":\"20160805\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"49,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.06.\",\"Date\":\"20160806\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"29,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.07.\",\"Date\":\"20160807\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"49,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.08.\",\"Date\":\"20160808\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"59,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.09.\",\"Date\":\"20160809\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"59,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.10.\",\"Date\":\"20160810\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"59,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.11.\",\"Date\":\"20160811\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"59,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.12.\",\"Date\":\"20160812\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"69,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.13.\",\"Date\":\"20160813\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"49,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.14.\",\"Date\":\"20160814\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"24,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.15.\",\"Date\":\"20160815\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"19,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.16.\",\"Date\":\"20160816\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"9,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.17.\",\"Date\":\"20160817\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"19,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.18.\",\"Date\":\"20160818\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"24,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.19.\",\"Date\":\"20160819\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"19,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.20.\",\"Date\":\"20160820\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"9,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.21.\",\"Date\":\"20160821\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"9,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.22.\",\"Date\":\"20160822\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"9,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.23.\",\"Date\":\"20160823\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"9,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.24.\",\"Date\":\"20160824\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"9,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.25.\",\"Date\":\"20160825\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"9,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.26.\",\"Date\":\"20160826\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"39,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.27.\",\"Date\":\"20160827\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"9,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.28.\",\"Date\":\"20160828\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"19,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.29.\",\"Date\":\"20160829\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"9,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.30.\",\"Date\":\"20160830\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"9,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.08.31.\",\"Date\":\"20160831\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"True\",\"MinimumPrice\":\"14,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.09.01.\",\"Date\":\"20160901\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"False\",\"MinimumPrice\":\"24,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.09.02.\",\"Date\":\"20160902\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"False\",\"MinimumPrice\":\"29,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.09.03.\",\"Date\":\"20160903\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"False\",\"MinimumPrice\":\"19,99 €\"},{\"ArrivalStationCode\":\"BUD\",\"CurrentDate\":\"2016.09.04.\",\"Date\":\"20160904\",\"DepartureStationCode\":\"CRL\",\"Flights\":[{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2282\",\"STD\":\"8:45\",\"STA\":\"10:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"},{\"CarrierCode\":\"W6\",\"FlightNumber\":\"2284\",\"STD\":\"20:45\",\"STA\":\"22:40\",\"ArrivalStationName\":\"Budapest\",\"DepartureStationName\":\"Brüsszel Charleroi\",\"IsMACStation\":\"True\",\"IsAirportChange\":\"False\"}],\"HasSelection\":\"True\",\"InMonth\":\"False\",\"MinimumPrice\":\"19,99 €\"}]";
 
@@ -161,6 +197,12 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 			lResultList.add( lTDR );
 		}
 
+		return lResultList;
+	}
+
+	public void SaveMonthlyFlights( ArrayList<TravelData_RESULT> aResultList ) throws JMSException
+	{
+		// todo Send everything to the activemq
 //		mTravelDataResult = new TravelData_RESULT();
 //		mTravelDataResult.mAirline = aTravelDataInput.mAirline;
 //		mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
@@ -172,6 +214,11 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 //			ParseTrip( lTrips.getJSONObject( lTripIndex ), lCurrency );
 //		}
 //		ResultQueue.getInstance().push( mTravelDataResult );
+
+		for( TravelData_RESULT lResult : aResultList )
+		{
+			mPublisher.Publish( lResult );
+		}
 	}
 
 	public void stop()
@@ -190,6 +237,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 
 	public void run()
 	{
+		mLogger.trace( "begin, thread name: " + getThreadName());
 		try
 		{
 			System.out.println("Thread::run");
@@ -232,13 +280,11 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 			}
 			System.out.println("run()");
 		}
-		catch (Exception e)
+		catch( Exception aException )
 		{
-			StringWriter lStringWriter = new StringWriter();
-			PrintWriter lPrintWriter = new PrintWriter(lStringWriter);
-			e.printStackTrace( lPrintWriter );
-			mLogger.error( "Exception in Ryanair.run: " + lStringWriter.toString() );
+			mLogger.error( StringHelper.getTraceInformation( aException ) );
 		}
+		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
 	// https://cdn.static.wizzair.com/hu-HU/TimeTableAjax?departureIATA=CRL&arrivalIATA=BUD&year=2016&month=8

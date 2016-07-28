@@ -1,4 +1,6 @@
-package PageGuest;
+package QueueHandlers;
+
+import PageGuest.TravelData_RESULT;
 
 import java.util.ArrayList;
 
