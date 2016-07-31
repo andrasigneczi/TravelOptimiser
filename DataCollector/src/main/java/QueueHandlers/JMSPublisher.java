@@ -1,5 +1,7 @@
 package QueueHandlers;
 
+import PageGuest.WizzAirPageGuest;
+import org.apache.log4j.Logger;
 import org.apache.qpid.jms.JmsConnectionFactory;
 
 import javax.jms.*;
@@ -15,6 +17,8 @@ import static org.apache.qpid.jms.provider.amqp.AmqpSupport.TOPIC_PREFIX;
  */
 public class JMSPublisher
 {
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger( JMSPublisher.class);
+
 	private final String user     = env( "ACTIVEMQ_USER",     "admin"     );
 	private final String password = env( "ACTIVEMQ_PASSWORD", "password"  );
 	private final String host     = env( "ACTIVEMQ_HOST",     "localhost" );
@@ -56,9 +60,9 @@ public class JMSPublisher
 
 	public void Publish( Serializable aObject ) throws JMSException
 	{
+		mLogger.trace( "aObject: " + aObject );
 		ObjectMessage msg = mSession.createObjectMessage( aObject );
 		msg.setIntProperty( "id", mMessageId.getAndIncrement());
 		mProducer.send(msg);
-		//mProducer.send(mSession.createTextMessage("SHUTDOWN"));
 	}
 }
