@@ -1,19 +1,12 @@
 package Root;
 
-import PageGuest.ResultQueue;
 import PageGuest.TravelData_RESULT;
-import PageGuest.WebPageGuest;
 import PageGuest.WizzAirPageGuest;
-import Storage.FileWriterAgent;
+import QueueHandlers.ResultQueue;
 import Storage.SQLiteAgent;
 import Util.CurrencyHelper;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Created by andras.igneczi on 10/03/2016.
