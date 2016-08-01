@@ -13,6 +13,10 @@ public class PageGuestFactory
 		{
 			return new WizzAirPageGuest();
 		}
+		else if( PageType.equalsIgnoreCase( "wizzairv2" ))
+		{
+			return new WizzAirPageGuestV2();
+		}
 		else if( PageType.equalsIgnoreCase( "ryanair" ))
 		{
 			return new RyanAirPageGuest();

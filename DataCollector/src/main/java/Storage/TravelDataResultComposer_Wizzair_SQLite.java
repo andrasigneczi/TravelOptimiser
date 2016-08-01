@@ -8,9 +8,9 @@ import java.time.LocalDateTime;
 /**
  * Created by Andras on 08/05/2016.
  */
-public class TravelDataResultComposer_Wizzair_LiteSQL extends TravelDataResultComposer_LiteSQL
+public class TravelDataResultComposer_Wizzair_SQLite extends TravelDataResultComposer_SQLite
 {
-	public TravelDataResultComposer_Wizzair_LiteSQL( TravelData_RESULT aResult )
+	public TravelDataResultComposer_Wizzair_SQLite( TravelData_RESULT aResult )
 	{
 		super( aResult );
 	}

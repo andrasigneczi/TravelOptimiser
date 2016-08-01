@@ -1,9 +1,6 @@
 package com.traveloptimizer.browserengine;
 
-import com.teamdev.jxbrowser.chromium.Browser;
-import com.teamdev.jxbrowser.chromium.BrowserContext;
-import com.teamdev.jxbrowser.chromium.BrowserContextParams;
-import com.teamdev.jxbrowser.chromium.BrowserType;
+import com.teamdev.jxbrowser.chromium.*;
 
 /**
  * Created by Andras on 13/04/2016.
@@ -30,6 +27,7 @@ public class TeamDevJxBrowser
 				return mInstance;
 			}
 			mInstance = new TeamDevJxBrowser();
+			BrowserPreferences.setChromiumSwitches("--lang=HU");
 		}
 		return mInstance;
 	}

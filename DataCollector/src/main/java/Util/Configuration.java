@@ -20,14 +20,17 @@ public class Configuration
 	private static Configuration mInstance = null;
 
 	private ArrayList<TravelData_INPUT> mSearchList = null;
+	private ArrayList<TravelData_INPUT> mFlightList = null;
 	private Hashtable<String,String> mConfigValues;
 	private HashSet<String> mValidAirlines = new HashSet<String>();
 	private HashSet<String> mValidSearchNodes = new HashSet<String>();
+	private HashSet<String> mValidFlightNodes = new HashSet<String>();
 
 	private Configuration()
 	{
 		mMutex = new Object();
 		mSearchList = new ArrayList<TravelData_INPUT>();
+		mFlightList = new ArrayList<TravelData_INPUT>();
 		mConfigValues = new Hashtable<String, String>(  );
 		mValidAirlines.add( "wizzair" );
 		mValidAirlines.add( "ryanair" );
@@ -40,6 +43,10 @@ public class Configuration
 		mValidSearchNodes.add( "InfantNumber" );
 		mValidSearchNodes.add( "NearbyAirports" );
 		mValidSearchNodes.add( "ReturnTicket" );
+
+		mValidFlightNodes.add( "LeavingFrom" );
+		mValidFlightNodes.add( "GoingTo" );
+
 		ParseConfigurationFile();
 	}
 
@@ -84,7 +91,7 @@ public class Configuration
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
 
-			DefaultHandler handler = new ConfigurationHandler( this, "/configuration/searches/" );
+			DefaultHandler handler = new ConfigurationHandler( this, "/configuration/searches/", "/configuration/flights/" );
 
 			//File file = new File("test.xml");
 			//InputStream inputStream= new FileInputStream(file);
@@ -121,6 +128,25 @@ public class Configuration
 		return lSearchList;
 	}
 
+	public ArrayList<TravelData_INPUT> getFlightList()
+	{
+		ArrayList<TravelData_INPUT> lFlightList = new ArrayList<TravelData_INPUT>();
+		for( TravelData_INPUT lTDI : mFlightList )
+		{
+			TravelData_INPUT lClone = null;
+			try
+			{
+				lClone = (TravelData_INPUT)lTDI.clone();
+			}
+			catch( CloneNotSupportedException e )
+			{
+				e.printStackTrace();
+			}
+			lFlightList.add( lClone );
+		}
+		return lFlightList;
+	}
+
 	public HashSet<String> getValidAirlines()
 	{
 		return mValidAirlines;
@@ -131,13 +157,22 @@ public class Configuration
 		return mValidSearchNodes;
 	}
 
+	public HashSet<String> getValidFlightNodes()
+	{
+		return mValidFlightNodes;
+	}
+
 	public void put( String aPath, String aNodeValue )
 	{
 		mConfigValues.put( aPath, aNodeValue );
 	}
 
-	public void add( TravelData_INPUT aTDI )
+	public void addShearchItem( TravelData_INPUT aTDI )
 	{
 		mSearchList.add( aTDI );
+	}
+	public void addFlightItem( TravelData_INPUT aTDI )
+	{
+		mFlightList.add( aTDI );
 	}
 }

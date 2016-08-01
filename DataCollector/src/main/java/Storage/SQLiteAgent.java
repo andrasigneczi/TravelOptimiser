@@ -26,7 +26,7 @@ public class SQLiteAgent extends ArchiverAgent
 
 	private Connection mConnection = null;
 	private TravelData_RESULT mResult;
-	private TravelDataResultComposer_LiteSQL mComposer;
+	private TravelDataResultComposer_SQLite mComposer;
 	private final static String mDatabaseFileName = "database";
 	private final static String mDatabaseFileExtension = ".db";
 	private final static String mDatabaseFullFileName = mDatabaseFileName + mDatabaseFileExtension;
@@ -148,7 +148,7 @@ public class SQLiteAgent extends ArchiverAgent
 	protected void WriteData( TravelData_RESULT aResult )
 	{
 		mLogger.trace( "begin" );
-		mComposer = (TravelDataResultComposer_LiteSQL)TravelDataResultComposer.Create( aResult, "litesql" );
+		mComposer = (TravelDataResultComposer_SQLite)TravelDataResultComposer.Create( aResult, "sqlite" );
 		mResult = aResult;
 
 		int lSearchId = GetSearchId();

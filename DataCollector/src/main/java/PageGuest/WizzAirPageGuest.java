@@ -8,11 +8,11 @@ import BrowserState.BrowserStateInit;
 import BrowserState.BrowserStateReadyToSearch;
 import BrowserState.BrowserStateSearching;
 import BrowserState.BrowserStateSearchingFinished;
+import QueueHandlers.ResultQueue;
 import Util.StringHelper;
 import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.dom.*;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
-import com.teamdev.jxbrowser.chromium.swing.internal.HeavyWeightWidget;
 import com.teamdev.jxbrowser.chromium.swing.internal.LightWeightWidget;
 import com.traveloptimizer.browserengine.TeamDevJxBrowser;
 import org.apache.log4j.Logger;
@@ -671,13 +671,13 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 		if( lWrongTripFound )
 		{
-			mLogger.error( "thread name: " + getThreadName()
-					+ "; Wrong trip found: aTravelDataInput: "
+			mLogger.warn( "thread name: " + getThreadName()
+					+ "; Maybe a wrong trip was found: aTravelDataInput: "
 					+ aTravelDataInput.toString());
 
 			for( TravelData_RESULT.TravelData_PossibleTrip lTrip : mTravelDataResult.mTrips )
 			{
-				mLogger.error( "thread name: " + getThreadName()
+				mLogger.warn( "thread name: " + getThreadName()
 						+ "; Trip: "
 						+ lTrip.dump() );
 			}
