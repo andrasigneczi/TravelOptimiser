@@ -666,13 +666,13 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 		if( lWrongTripFound )
 		{
-			mLogger.error( "thread name: " + getThreadName()
-					+ "; Wrong trip found: aTravelDataInput: "
+			mLogger.warn( "thread name: " + getThreadName()
+					+ "; Maybe a wrong trip was found: aTravelDataInput: "
 					+ aTravelDataInput.toString());
 
 			for( TravelData_RESULT.TravelData_PossibleTrip lTrip : mTravelDataResult.mTrips )
 			{
-				mLogger.error( "thread name: " + getThreadName()
+				mLogger.warn( "thread name: " + getThreadName()
 						+ "; Trip: "
 						+ lTrip.dump() );
 			}
