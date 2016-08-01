@@ -11,13 +11,13 @@ import static org.junit.Assert.*;
 /**
  * Created by Andras on 26/05/2016.
  */
-public class TravelDataResultComposer_Wizzair_LiteSQLTest
+public class TravelDataResultComposer_Wizzair_SQLiteTest
 {
 	@Test
 	public void dateTimeCorrection() throws Exception
 	{
 		TravelData_RESULT lTDR = new  TravelData_RESULT();
-		TravelDataResultComposer_Wizzair_LiteSQL lTDRC_W = new TravelDataResultComposer_Wizzair_LiteSQL( lTDR );
+		TravelDataResultComposer_Wizzair_SQLite lTDRC_W = new TravelDataResultComposer_Wizzair_SQLite( lTDR );
 
 		DateTimeFormatter mFormatterWizzair;
 		mFormatterWizzair = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
