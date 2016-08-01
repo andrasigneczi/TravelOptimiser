@@ -55,3 +55,9 @@ img.favoritestar {
     left: -40px;
     cursor: pointer;
 }
+
+#accordion {
+    margin-top: 300px;
+    clear: none;
+    float: none;
+}
