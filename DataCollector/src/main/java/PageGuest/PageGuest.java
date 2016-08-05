@@ -1,7 +1,12 @@
 package PageGuest;
 
+import QueueHandlers.JMSListener;
+import QueueHandlers.JMSPublisher;
+import Util.StringHelper;
 import org.apache.log4j.Logger;
 
+import javax.jms.JMSException;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -26,6 +31,12 @@ public abstract class PageGuest
 		Normal,
 		Business
 	};
+
+	protected enum SEARCH_QUEUE_TYPE {
+		ARRAY,
+		JMS
+	};
+	protected SEARCH_QUEUE_TYPE mSearchQueueType = SEARCH_QUEUE_TYPE.ARRAY;
 
 	public PageGuest(String aAirline)
 	{
@@ -136,17 +147,71 @@ public abstract class PageGuest
 	public abstract void DoSearchFromConfig();
 	public abstract void stop();
 
-	/**
-	 * Just for the unit tests
-	 * @return TravelData_INPUT from the search queue
-	 */
+	private void Transferm_Item_From_JMS_To_SearchQueue()
+	{
+		JMSListener jmsListener = new JMSListener( getAirline() );
+		try
+		{
+			jmsListener.Connect();
+			Serializable obj = jmsListener.Listen();
+			if( obj != null )
+			{
+				if( obj instanceof TravelData_INPUT  )
+				{
+					mSearchQueue.add( (TravelData_INPUT) obj );
+				}
+				else
+				{
+					mLogger.warn( "Illegal message in the " + getAirline() + " message queue!" );
+				}
+			}
+			jmsListener.Disconnect();
+		}
+		catch( JMSException e )
+		{
+			mLogger.error( StringHelper.getTraceInformation( e ) );
+		}
+	}
+
+	protected int getSearchQueueSize()
+	{
+		synchronized( mMutex )
+		{
+			if( mSearchQueueType == SEARCH_QUEUE_TYPE.ARRAY )
+			{
+				return mSearchQueue.size();
+			}
+			else if( mSearchQueueType == SEARCH_QUEUE_TYPE.JMS )
+			{
+				if( mSearchQueue.size() != 0 )
+					return mSearchQueue.size();
+				Transferm_Item_From_JMS_To_SearchQueue();
+				return mSearchQueue.size();
+			}
+		}
+		mLogger.error( "Illegal SearchQueue type" );
+		return 0;
+	}
+
 	public TravelData_INPUT popSearchQueue()
 	{
 		synchronized (mMutex)
 		{
-			if( mSearchQueue.isEmpty() )
-				return null;
-			return mSearchQueue.remove(0);
+			if( mSearchQueueType == SEARCH_QUEUE_TYPE.ARRAY )
+			{
+				if( mSearchQueue.isEmpty() )
+					return null;
+				return mSearchQueue.remove(0);
+			}
+			else if( mSearchQueueType == SEARCH_QUEUE_TYPE.JMS )
+			{
+				if( !mSearchQueue.isEmpty() )
+					return mSearchQueue.remove(0);
+				Transferm_Item_From_JMS_To_SearchQueue();
+				if( !mSearchQueue.isEmpty() )
+					return mSearchQueue.remove(0);
+			}
+			return null;
 		}
 	}
 

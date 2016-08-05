@@ -222,6 +222,21 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
+	public void DoSearchFromJMS()
+	{
+		mLogger.trace( "begin, thread name: " + getThreadName());
+		synchronized( mMutex )
+		{
+			if( mBrowser == null )
+			{
+				InitBrowser( 1 );
+				mBrowser.loadURL( getURL() );
+			}
+			mSearchQueueType = SEARCH_QUEUE_TYPE.JMS;
+		}
+		mLogger.trace( "end, thread name: " + getThreadName());
+	}
+
 	private boolean InitBrowser( int aBrowserIndex )
 	{
 		mLogger.trace( "begin, thread name: " + getThreadName());
@@ -693,11 +708,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			mThreadStopped = false;
 			while( !mThreadStopped )
 			{
-				int lSearQueueSize;
-				synchronized( mMutex )
-				{
-					lSearQueueSize = mSearchQueue.size();
-				}
+				int lSearQueueSize = getSearchQueueSize();
 
 				if( getBrowserState() == null )
 				{
@@ -736,10 +747,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 					mLogger.trace( "thread name: " + getThreadName() + "; DOMDocument: " + java.lang.System.identityHashCode(lDOMDocument)
 									+ "; lBrowserState: " + lBrowserState );
 
-					synchronized( mMutex )
-					{
-						lTravelDataInput = mSearchQueue.remove( 0 );
-					}
+					lTravelDataInput = popSearchQueue();
 					if( lTravelDataInput != null )
 						mLogger.trace( "thread name: " + getThreadName() + "; lTravelDataInput: " + lTravelDataInput.toString());
 					new BrowserStateSearching( lTravelDataInput ).doAction( this );
