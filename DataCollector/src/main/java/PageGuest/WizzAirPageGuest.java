@@ -711,7 +711,9 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 				}
 
 				String lBrowserState = getBrowserState().toString();
-				if( ( lSearQueueSize == 0 && !lBrowserState.equals( "BrowserStateSearchingFinished" ) ) || lBrowserState.equals( "BrowserStateInit" ) )
+				if( ( lSearQueueSize == 0 && !lBrowserState.equals( "BrowserStateSearchingFinished" ) )
+						|| lBrowserState.equals( "BrowserStateInit" )
+						|| lBrowserState.equals( "BrowserStateSearching" ))
 				{
 					Sleep( 100 );
 					continue;
