@@ -1,6 +1,7 @@
 package PageGuest;
 
 import QueueHandlers.JMSPublisher;
+import QueueHandlers.LocalStack;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -50,7 +51,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 	public WizzAirPageGuestV2()
 	{
 		super( "wizzair" );
-		mSearchQueue = new ArrayList<TravelData_INPUT>();
+		mSearchQueue = new LocalStack<TravelData_INPUT>();
 		mThread = new Thread(this);
 		mThread.setName("WizzAirThread2 " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 		mThread.start();
@@ -80,7 +81,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 			lTravelDataInput.mChildNumber = "0";
 			lTravelDataInput.mInfantNumber = "0";
 			lTravelDataInput.mReturnTicket = true;
-			mSearchQueue.add(lTravelDataInput);
+			mSearchQueue.push(lTravelDataInput);
 		}
 		System.out.println("DoSearch()");
 	}
@@ -99,7 +100,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 			{
 				if (!lTDI.mAirline.equals(getAirline()))
 					continue;
-				mSearchQueue.add(lTDI);
+				mSearchQueue.push(lTDI);
 			}
 		}
 	}
@@ -400,7 +401,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 				int lSearQueueSize;
 				synchronized (mMutex)
 				{
-					lSearQueueSize = mSearchQueue.size();
+					lSearQueueSize = mSearchQueue.isEmpty();
 				}
 
 				if ( lSearQueueSize == 0 )
@@ -412,7 +413,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 				TravelData_INPUT lTravelDataInput = null;
 				synchronized (mMutex)
 				{
-					lTravelDataInput = mSearchQueue.remove(0);
+					lTravelDataInput = mSearchQueue.pop();
 				}
 
 				try

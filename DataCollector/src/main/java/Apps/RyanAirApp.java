@@ -22,6 +22,7 @@ public class RyanAirApp
 			CurrencyHelper.Init();
 			Util.Configuration lConfiguration = Util.Configuration.getInstance();
 	        final PageGuest.RyanAirPageGuest lGuestR = (PageGuest.RyanAirPageGuest)PageGuestFactory.Create( "RyanAir" );
+			lGuestR.InitJMS();
 			lGuestR.WaitForFinish();
 			//lGuestR.stop();
 		}
