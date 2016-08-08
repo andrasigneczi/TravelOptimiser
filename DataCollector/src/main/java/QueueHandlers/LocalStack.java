@@ -40,4 +40,10 @@ public class LocalStack<E> implements StackIF<E>
 			mList.push( aItem );
 		}
 	}
+
+	@Override
+	public void setQueueName( String aQueueName )
+	{
+
+	}
 }

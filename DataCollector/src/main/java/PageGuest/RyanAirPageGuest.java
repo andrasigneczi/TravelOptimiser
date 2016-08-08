@@ -1,7 +1,11 @@
 package PageGuest;
 
+import QueueHandlers.JMSStack;
+import QueueHandlers.LocalStack;
 import QueueHandlers.ResultQueue;
+import QueueHandlers.StackIF;
 import Util.DatetimeHelper;
+import Util.StringHelper;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -12,6 +16,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -26,11 +31,12 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
     private static org.apache.log4j.Logger mLogger = Logger.getLogger(RyanAirPageGuest.class);
 
     private boolean mThreadStopped = true;
+    private long mTimeoutStart;
 
     public RyanAirPageGuest()
     {
         super("ryanair");
-        mSearchQueue = new ArrayList<TravelData_INPUT>();
+        mSearchQueue = new LocalStack<>();
         mThread = new Thread(this);
         mThread.setName("RyanAirThread " + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         mThread.start();
@@ -67,7 +73,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
                 lTravelDataInput.mReturnTicket = true;
             }
 
-            mSearchQueue.add(lTravelDataInput);
+            mSearchQueue.push(lTravelDataInput);
         }
         System.out.println("DoSearch()");
     }
@@ -92,9 +98,16 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
                 if (lTDI.mReturnDay.length() == 0)
                     lTDI.mReturnTicket = false;
 
-                mSearchQueue.add(lTDI);
+                mSearchQueue.push(lTDI);
             }
         }
+    }
+
+    public void InitJMS()
+    {
+        mLogger.trace( "begin, thread name: " + getThreadName());
+        mSearchQueue = new JMSStack<TravelData_INPUT>();
+        mLogger.trace( "end, thread name: " + getThreadName());
     }
 
     public void stop()
@@ -234,6 +247,13 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         ResultQueue.getInstance().push( mTravelDataResult );
     }
 
+    private void TimeoutTest()
+    {
+        Sleep( 100 );
+        if( Duration.ofMillis( System.currentTimeMillis() - mTimeoutStart ).getSeconds() > 120 )
+            mThreadStopped = true;
+    }
+
     public void run()
     {
         try
@@ -241,24 +261,25 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
             System.out.println("Thread::run");
 
             mThreadStopped = false;
+            mTimeoutStart = System.currentTimeMillis();
             while (!mThreadStopped)
             {
                 int lSearQueueSize;
                 synchronized (mMutex)
                 {
-                    lSearQueueSize = mSearchQueue.size();
+                    lSearQueueSize = mSearchQueue.isEmpty();
                 }
 
                 if ( lSearQueueSize == 0 )
                 {
-                    Sleep(100);
+                    TimeoutTest();
                     continue;
                 }
 
                 TravelData_INPUT lTravelDataInput = null;
                 synchronized (mMutex)
                 {
-                    lTravelDataInput = mSearchQueue.remove(0);
+                    lTravelDataInput = mSearchQueue.pop();
                 }
 
                 try
@@ -275,6 +296,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
 
                 String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
                 Sleep( 1000 * Integer.parseInt( lSleep ));
+                mTimeoutStart = System.currentTimeMillis();
             }
             System.out.println("run()");
         }
@@ -285,5 +307,19 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
             e.printStackTrace( lPrintWriter );
             mLogger.error( "Exception in Ryanair.run: " + lStringWriter.toString() );
         }
+    }
+
+    public void WaitForFinish()
+    {
+        mLogger.trace( "begin, thread name: " + getThreadName());
+        try
+        {
+            mThread.join();
+        }
+        catch( InterruptedException e )
+        {
+            mLogger.error( StringHelper.getTraceInformation( e ));
+        }
+        mLogger.trace( "end, thread name: " + getThreadName());
     }
 }

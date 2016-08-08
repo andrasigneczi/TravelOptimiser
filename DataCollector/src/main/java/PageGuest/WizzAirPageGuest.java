@@ -8,6 +8,8 @@ import BrowserState.BrowserStateInit;
 import BrowserState.BrowserStateReadyToSearch;
 import BrowserState.BrowserStateSearching;
 import BrowserState.BrowserStateSearchingFinished;
+import QueueHandlers.JMSStack;
+import QueueHandlers.LocalStack;
 import QueueHandlers.ResultQueue;
 import Util.StringHelper;
 import com.teamdev.jxbrowser.chromium.Browser;
@@ -23,6 +25,7 @@ import java.awt.*;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -47,6 +50,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	private static ArrayList<WizzAirPageGuest> mWizzAirPageGuestList = null;
 	private final static String SEARCH_PAGE_URL =  "https://wizzair.com/hu-HU/FlightSearch";
 	private final static String AIRLINE = "wizzair";
+	private long mTimeoutStart;
 
 	public WizzAirPageGuest()
 	{
@@ -71,7 +75,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	private void InitObject()
 	{
 		mLogger.trace( "begin" );
-		mSearchQueue = new ArrayList<TravelData_INPUT>();
+		mSearchQueue = new LocalStack<TravelData_INPUT>();
 		mThread = new Thread( this );
 		mThread.setName( "WizzAirThread " + java.lang.System.identityHashCode(this) );
 		mThread.start();
@@ -143,7 +147,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 					lWPG.InitBrowser( lPageIndex + 1 );
 					lWPG.mBrowser.loadURL( lWPG.getURL() );
 				}
-				lWPG.mSearchQueue.add( lTDI );
+				lWPG.mSearchQueue.push( lTDI );
 			}
 			lPageIndex++;
 			lPageIndex %= mWizzAirPageGuestList.size();
@@ -185,7 +189,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			else
 				lTravelDataInput.mReturnTicket = true;
 
-			mSearchQueue.add( lTravelDataInput );
+			mSearchQueue.push( lTravelDataInput );
 		}
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
@@ -216,24 +220,16 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 				if( lTDI.mReturnDay.length() == 0 )
 					lTDI.mReturnTicket = false;
-				mSearchQueue.add( lTDI );
+				mSearchQueue.push( lTDI );
 			}
 		}
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
-	public void DoSearchFromJMS()
+	public void InitJMS()
 	{
 		mLogger.trace( "begin, thread name: " + getThreadName());
-		synchronized( mMutex )
-		{
-			if( mBrowser == null )
-			{
-				InitBrowser( 1 );
-				mBrowser.loadURL( getURL() );
-			}
-			mSearchQueueType = SEARCH_QUEUE_TYPE.JMS;
-		}
+		mSearchQueue = new JMSStack<TravelData_INPUT>();
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
@@ -698,6 +694,13 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
+	private void TimeoutTest()
+	{
+		Sleep( 100 );
+		if( Duration.ofMillis( System.currentTimeMillis() - mTimeoutStart ).getSeconds() > 120 )
+			mThreadStopped = true;
+	}
+
 	public void run()
 	{
 		mLogger.trace( "begin, thread name: " + getThreadName());
@@ -706,20 +709,23 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			System.out.println( "Thread::run" );
 
 			mThreadStopped = false;
+			mTimeoutStart = System.currentTimeMillis();
 			while( !mThreadStopped )
 			{
-				int lSearQueueSize = getSearchQueueSize();
+				int lSearQueueSize = mSearchQueue.isEmpty();
 
 				if( getBrowserState() == null )
 				{
-					Sleep( 100 );
+					TimeoutTest();
 					continue;
 				}
 
 				String lBrowserState = getBrowserState().toString();
-				if( ( lSearQueueSize == 0 && !lBrowserState.equals( "BrowserStateSearchingFinished" ) ) || lBrowserState.equals( "BrowserStateInit" ) )
+				if( ( lSearQueueSize == 0 && !lBrowserState.equals( "BrowserStateSearchingFinished" ) )
+						|| lBrowserState.equals( "BrowserStateInit" )
+						|| lBrowserState.equals( "BrowserStateSearching" ))
 				{
-					Sleep( 100 );
+					TimeoutTest();
 					continue;
 				}
 
@@ -747,7 +753,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 					mLogger.trace( "thread name: " + getThreadName() + "; DOMDocument: " + java.lang.System.identityHashCode(lDOMDocument)
 									+ "; lBrowserState: " + lBrowserState );
 
-					lTravelDataInput = popSearchQueue();
+					lTravelDataInput = mSearchQueue.pop();
 					if( lTravelDataInput != null )
 						mLogger.trace( "thread name: " + getThreadName() + "; lTravelDataInput: " + lTravelDataInput.toString());
 					new BrowserStateSearching( lTravelDataInput ).doAction( this );
@@ -755,6 +761,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 					FillTheForm( lDOMDocument, lTravelDataInput );
 					ClickTheSearchButton( lDOMDocument );
 				}
+				mTimeoutStart = System.currentTimeMillis();
 			}
 		}
 		catch( Exception aException )
@@ -768,17 +775,24 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	{
 		mLogger.trace( "begin, thread name: " + getThreadName());
 		mThreadStopped = true;
+		WaitForFinish();
+		mLogger.trace( "end, thread name: " + getThreadName());
+	}
+
+	public void WaitForFinish()
+	{
+		mLogger.trace( "begin, thread name: " + getThreadName());
 		try
 		{
 			mThread.join();
 		}
 		catch( InterruptedException e )
 		{
-			e.printStackTrace();
+			mLogger.error( StringHelper.getTraceInformation( e ));
 		}
-		System.out.println("stop()");
 		if( mBrowser != null )
 			mBrowser.dispose();
+		mBrowser = null;
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 }

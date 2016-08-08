@@ -1,5 +1,6 @@
 package Apps;
 
+import QueueHandlers.ResultQueue;
 import Root.Main;
 import Root.PageGuestFactory;
 import Util.CurrencyHelper;
@@ -17,11 +18,12 @@ public class RyanAirApp
 	{
 		try
 		{
+			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
 			CurrencyHelper.Init();
 			Util.Configuration lConfiguration = Util.Configuration.getInstance();
-	        final PageGuest.PageGuest lGuestR = PageGuestFactory.Create( "RyanAir" );
-			lGuestR.DoSearchFromConfig();
-			lGuestR.stop();
+	        final PageGuest.RyanAirPageGuest lGuestR = (PageGuest.RyanAirPageGuest)PageGuestFactory.Create( "RyanAir" );
+			lGuestR.WaitForFinish();
+			//lGuestR.stop();
 		}
 		catch (Exception e)
 		{

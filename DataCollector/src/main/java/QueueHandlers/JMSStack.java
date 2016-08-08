@@ -16,7 +16,7 @@ public class JMSStack<E> implements StackIF<E>
 	private String mQueueName = "__default";
 	private E mCache = null;
 
-	public void setQueueType( String aQueueName )
+	public void setQueueName( String aQueueName )
 	{
 		mQueueName = aQueueName;
 	}

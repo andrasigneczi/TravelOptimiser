@@ -17,8 +17,7 @@ public class ResultQueue
 {
     private static org.apache.log4j.Logger mLogger = Logger.getLogger( ResultQueue.class);
 
-    private Object mMutex  = null;
-    private ArrayList<TravelData_RESULT> mResultList = null;
+    private StackIF<TravelData_RESULT> mResultList = null;
     private static ResultQueue mInstance = null;
 
     public enum RESULT_QUEUE_TYPE {
@@ -27,12 +26,15 @@ public class ResultQueue
     };
 
     private static RESULT_QUEUE_TYPE mQueueType = RESULT_QUEUE_TYPE.ARRAY;
-    private static String mQueueName = "";
+    private static String mQueueName = "__default";
 
-    private ResultQueue()
+    private ResultQueue( RESULT_QUEUE_TYPE aQueueType )
     {
-        mMutex = new Object();
-        mResultList = new ArrayList<TravelData_RESULT>();
+        if( aQueueType == RESULT_QUEUE_TYPE.ARRAY )
+            mResultList = new LocalStack<>();
+        else if( aQueueType == RESULT_QUEUE_TYPE.JMS )
+            mResultList = new JMSStack<>();
+        mResultList.setQueueName( mQueueName );
     }
 
     public static ResultQueue getInstance()
@@ -48,11 +50,16 @@ public class ResultQueue
             {
                 return mInstance;
             }
-            mInstance = new ResultQueue();
+            mInstance = new ResultQueue( mQueueType );
         }
         return mInstance;
     }
 
+	/**
+     * This function has to be called before the firt getInstance in case of JMS
+     * @param aQueueType
+     * @param aQueueName
+     */
     public static void setQueueType( RESULT_QUEUE_TYPE aQueueType, String aQueueName )
     {
         mQueueType = aQueueType;
@@ -61,94 +68,16 @@ public class ResultQueue
 
     public void push( TravelData_RESULT aResult )
     {
-        synchronized( mMutex )
-        {
-            if( mQueueType == RESULT_QUEUE_TYPE.ARRAY )
-            {
-                mResultList.add( aResult );
-            }
-            else
-            {
-                JMSPublisher lJMSPublisher = new JMSPublisher( mQueueName );
-                try
-                {
-                    lJMSPublisher.Connect();
-                    lJMSPublisher.Publish( aResult );
-                    lJMSPublisher.Disconnect();
-                }
-                catch( JMSException e )
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
+        mResultList.push( aResult );
     }
 
     public TravelData_RESULT pop()
     {
-        synchronized( mMutex )
-        {
-            if( mQueueType == RESULT_QUEUE_TYPE.ARRAY )
-            {
-                if( mResultList.size() == 0 )
-                    return null;
-                return mResultList.remove( 0 );
-            }
-            else if( mQueueType == RESULT_QUEUE_TYPE.JMS )
-            {
-                if( mResultList.size() > 0 )
-                    return mResultList.remove( 0 );
-                Transferm_Item_From_JMS_To_ResultList();
-                if( mResultList.size() > 0 )
-                    return mResultList.remove( 0 );
-            }
-            return null;
-        }
-    }
-
-    private void Transferm_Item_From_JMS_To_ResultList()
-    {
-        JMSListener jmsListener = new JMSListener( mQueueName );
-        try
-        {
-            jmsListener.Connect();
-            Serializable obj = jmsListener.Listen();
-            if( obj != null )
-            {
-                if( obj instanceof TravelData_RESULT )
-                {
-                    // when we ask the size/isempty, we will get an item because of the receive methode
-                    mResultList.add( (TravelData_RESULT) obj );
-                }
-                else
-                {
-                    mLogger.warn( "Illegal message in the " + mQueueName + " message queue!" );
-                }
-            }
-            jmsListener.Disconnect();
-        }
-        catch( JMSException e )
-        {
-            mLogger.error( StringHelper.getTraceInformation( e ) );
-        }
+        return mResultList.pop();
     }
 
     public int isEmpty()
     {
-        synchronized( mMutex )
-        {
-            if( mQueueType == RESULT_QUEUE_TYPE.ARRAY )
-            {
-                return mResultList.size();
-            }
-            else if( mQueueType == RESULT_QUEUE_TYPE.JMS )
-            {
-                if( mResultList.size() > 0 )
-                    return mResultList.size();
-                Transferm_Item_From_JMS_To_ResultList();
-                return mResultList.size();
-            }
-            return 0;
-        }
+        return mResultList.isEmpty();
     }
 }

@@ -1,5 +1,6 @@
 package Apps;
 
+import QueueHandlers.ResultQueue;
 import Root.Main;
 import Root.PageGuestFactory;
 import Util.CurrencyHelper;
@@ -16,11 +17,13 @@ public class WizzAirApp
 	{
 		try
 		{
+			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
 			CurrencyHelper.Init();
 			Util.Configuration lConfiguration = Util.Configuration.getInstance();
 			final PageGuest.WizzAirPageGuest lGuestW = (PageGuest.WizzAirPageGuest)PageGuestFactory.Create( "WizzAir" );
-	        lGuestW.DoSearchFromJMS();
-			lGuestW.stop();
+			lGuestW.InitJMS();
+			lGuestW.WaitForFinish();
+			//lGuestW.stop();
 		}
 		catch (Exception e)
 		{
