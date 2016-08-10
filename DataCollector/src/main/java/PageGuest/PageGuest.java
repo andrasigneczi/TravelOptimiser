@@ -140,7 +140,7 @@ public abstract class PageGuest
 	public abstract void DoSearchFromConfig();
 	public abstract void stop();
 
-	protected boolean ValidateDate( String aDepartureDay, String aReturnDay )
+	public static boolean ValidateDate( String aDepartureDay, String aReturnDay )
 	{
 		try
 		{
