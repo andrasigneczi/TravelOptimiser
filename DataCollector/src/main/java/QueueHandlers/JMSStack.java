@@ -18,7 +18,7 @@ public class JMSStack<E> implements StackIF<E>
 
 	public void setQueueName( String aQueueName )
 	{
-		mQueueName = aQueueName;
+		mQueueName = aQueueName.toLowerCase();
 	}
 
 	@Override

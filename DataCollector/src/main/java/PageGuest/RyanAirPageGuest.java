@@ -106,8 +106,11 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
     public void InitJMS()
     {
         mLogger.trace( "begin, thread name: " + getThreadName());
-        mSearchQueue = new JMSStack<TravelData_INPUT>();
-        mSearchQueue.setQueueName( "DBAgent" );
+        synchronized (mMutex)
+        {
+            mSearchQueue = new JMSStack<TravelData_INPUT>();
+            mSearchQueue.setQueueName( getAirline() );
+        }
         mLogger.trace( "end, thread name: " + getThreadName());
     }
 

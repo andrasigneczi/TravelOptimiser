@@ -170,4 +170,9 @@ public abstract class PageGuest
 	{
 		return mThread.getName();
 	}
+
+	public TravelData_INPUT popSearchQueue()
+	{
+		return mSearchQueue.pop();
+	}
 }

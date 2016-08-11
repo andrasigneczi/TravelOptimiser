@@ -17,6 +17,11 @@ public class Main
 
     private static void StartApp( String[] argv)
     {
+        if( argv.length == 0 )
+        {
+            DefaultApp.Run();
+            return;
+        }
         for( String arg : argv )
         {
             if( arg.equals( "-inputfeeder" ))

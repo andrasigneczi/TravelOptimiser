@@ -23,16 +23,16 @@ public class JMSPublisher
 	private final String password = env( "ACTIVEMQ_PASSWORD", "password"  );
 	private final String host     = env( "ACTIVEMQ_HOST",     "localhost" );
 	private final int    port     = Integer.parseInt( env( "ACTIVEMQ_PORT", "5672" ));
-	private final String mTopic;
+	private final String mQueueName;
 
 	private MessageProducer mProducer;
 	private Connection      mConnection;
 	private Session         mSession;
 	private AtomicInteger   mMessageId = new AtomicInteger(Integer.MIN_VALUE);
 
-	public JMSPublisher( String aTopic )
+	public JMSPublisher( String aQueueName )
 	{
-		mTopic = aTopic;
+		mQueueName = aQueueName.toLowerCase();
 	}
 
 	public void Connect() throws JMSException
@@ -47,7 +47,7 @@ public class JMSPublisher
 		mSession = mConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 		Destination destination = null;
-		destination = mSession.createQueue(mTopic);
+		destination = mSession.createQueue(mQueueName);
 
 		mProducer = mSession.createProducer(destination);
 		mProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);

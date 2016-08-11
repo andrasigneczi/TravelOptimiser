@@ -63,7 +63,7 @@ public class ResultQueue
     public static void setQueueType( RESULT_QUEUE_TYPE aQueueType, String aQueueName )
     {
         mQueueType = aQueueType;
-        mQueueName = aQueueName;
+        mQueueName = aQueueName.toLowerCase();
     }
 
     public void push( TravelData_RESULT aResult )

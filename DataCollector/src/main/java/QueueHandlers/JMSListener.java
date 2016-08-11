@@ -5,6 +5,7 @@ import org.apache.qpid.jms.JmsConnectionFactory;
 import javax.jms.*;
 
 import java.io.Serializable;
+import java.util.Locale;
 
 import static Util.System.env;
 
@@ -17,15 +18,15 @@ public class JMSListener
 	private final String password = env( "ACTIVEMQ_PASSWORD", "password"  );
 	private final String host     = env( "ACTIVEMQ_HOST",     "localhost" );
 	private final int    port     = Integer.parseInt( env( "ACTIVEMQ_PORT", "5672" ));
-	private final String mTopic;
+	private final String mQueueName;
 
 	private Connection      mConnection;
 	private Session         mSession;
 	private MessageConsumer mConsumer;
 
-	public JMSListener( String aTopic )
+	public JMSListener( String aQueueName )
 	{
-		mTopic = aTopic;
+		mQueueName = aQueueName.toLowerCase();
 	}
 
 	public void Connect() throws JMSException
@@ -38,7 +39,7 @@ public class JMSListener
 		mConnection.start();
 		mSession = mConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-		Destination destination = mSession.createQueue(mTopic);
+		Destination destination = mSession.createQueue(mQueueName);
 
 		mConsumer = mSession.createConsumer(destination);
 	}
