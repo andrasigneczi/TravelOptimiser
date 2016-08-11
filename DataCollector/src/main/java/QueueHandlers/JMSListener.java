@@ -60,7 +60,8 @@ public class JMSListener
 		}
 		else
 		{
-			System.out.println("Unexpected message type: " + msg.getClass());
+			if( msg != null )
+				System.out.println("Unexpected message type: " + msg.getClass());
 		}
 		return null;
 	}

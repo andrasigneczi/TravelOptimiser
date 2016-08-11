@@ -306,10 +306,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         }
         catch (Exception e)
         {
-            StringWriter lStringWriter = new StringWriter();
-            PrintWriter lPrintWriter = new PrintWriter(lStringWriter);
-            e.printStackTrace( lPrintWriter );
-            mLogger.error( "Exception in Ryanair.run: " + lStringWriter.toString() );
+            mLogger.error( "Exception in Ryanair.run: " + StringHelper.getTraceInformation( e ) );
         }
     }
 
