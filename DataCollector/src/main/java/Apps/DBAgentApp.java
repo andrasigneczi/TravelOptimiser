@@ -19,9 +19,9 @@ public class DBAgentApp
 	{
 		try
 		{
+			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
 			CurrencyHelper.Init();
 			Util.Configuration lConfiguration = Util.Configuration.getInstance();
-
 			SQLiteAgent lSQLiteAgent = new SQLiteAgent();
 			lSQLiteAgent.InitializeDatabase();
 
