@@ -55,5 +55,6 @@ public class Main
     public static void main(String[] argv)
     {
         StartApp( argv );
+        System.exit( 0 );
     }
 }

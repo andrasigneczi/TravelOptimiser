@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
 
@@ -51,6 +52,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	private final static String SEARCH_PAGE_URL =  "https://wizzair.com/hu-HU/FlightSearch";
 	private final static String AIRLINE = "wizzair";
 	private long mTimeoutStart;
+	private final Random mRandom = new Random();
 
 	public WizzAirPageGuest()
 	{
@@ -402,7 +404,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	{
 		mLogger.trace( "begin, thread name: " + getThreadName());
 		String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
-		Sleep( 1000 * Integer.parseInt( lSleep ));
+		Sleep( 1000 * ( Integer.parseInt( lSleep ) + ( mRandom.nextInt( 2 ) - 2 )));
 
 		// click the button
 		DOMNode link = aDOMDocument.findElement( By.id( "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_ButtonSubmit" ) );
@@ -503,13 +505,13 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 	{
 		// Inputs
 		String lLeavingFromHiddenId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_OriginStation";
-		String lGoingToHiddenId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DestinationStation";
-		String lDepartureDateId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DepartureDate";
-		String lReturnDateId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_ReturnDate";
+		String lGoingToHiddenId     = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DestinationStation";
+		String lDepartureDateId     = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_DepartureDate";
+		String lReturnDateId        = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_ReturnDate";
 		// Selects
-		String lAdultId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountADT";
-		String lChildrenlId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountCHD";
-		String lInfantlId = "ControlGroupRibbonAnonNewHomeView_AvailabilitySearchInputRibbonAnonNewHomeView_PaxCountINFANT";
+		String lAdultId     = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountADT";
+		String lChildrenlId = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountCHD";
+		String lInfantlId   = "HeaderControlGroupRibbonSelectView_AvailabilitySearchInputRibbonSelectView_PaxCountINFANT";
 
 		DOMElement lLeavingFromHidden = aDOMDocument.findElement( By.id( lLeavingFromHiddenId ));
 		DOMElement lGoingToHidden = aDOMDocument.findElement( By.id( lGoingToHiddenId ));
@@ -559,7 +561,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		String lValue = ((DOMInputElement)lLeavingFromHidden).getValue();
 		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mAirportCode_LeavingFrom ))
 		{
-			mLogger.trace( "mAirportCode_LeavingFrom will changed from "
+			mLogger.error( "mAirportCode_LeavingFrom will be changed from "
 					+ mTravelDataResult.mTravelDataInput.mAirportCode_LeavingFrom + " to " + lValue );
 			mTravelDataResult.mTravelDataInput.mAirportCode_LeavingFrom = lValue;
 		}
@@ -567,7 +569,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		lValue = ((DOMInputElement)lGoingToHidden).getValue();
 		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mAirportCode_GoingTo ))
 		{
-			mLogger.trace( "mAirportCode_GoingTo will changed from "
+			mLogger.error( "mAirportCode_GoingTo will be changed from "
 					+ mTravelDataResult.mTravelDataInput.mAirportCode_GoingTo + " to " + lValue );
 			mTravelDataResult.mTravelDataInput.mAirportCode_GoingTo = lValue;
 		}
@@ -575,7 +577,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		lValue = ((DOMInputElement)lDepartureDate).getValue();
 		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mDepartureDay ))
 		{
-			mLogger.trace( "mDepartureDay will changed from "
+			mLogger.error( "mDepartureDay will be changed from "
 					+ mTravelDataResult.mTravelDataInput.mDepartureDay + " to " + lValue );
 			mTravelDataResult.mTravelDataInput.mDepartureDay = lValue;
 		}
@@ -583,15 +585,17 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		lValue = ((DOMInputElement)lReturnDate).getValue();
 		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mReturnDay ))
 		{
-			mLogger.trace( "mReturnDay will changed from "
+			mLogger.error( "mReturnDay will be changed from "
 					+ mTravelDataResult.mTravelDataInput.mReturnDay + " to " + lValue );
 			mTravelDataResult.mTravelDataInput.mReturnDay = lValue;
+			if( lValue.length() == 0 )
+				mTravelDataResult.mTravelDataInput.mReturnTicket = false;
 		}
 
 		lValue = ((DOMSelectElement)lAdult).getValue();
 		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mAdultNumber ))
 		{
-			mLogger.trace( "mAdultNumber will changed from "
+			mLogger.error( "mAdultNumber be will changed from "
 					+ mTravelDataResult.mTravelDataInput.mAdultNumber + " to " + lValue );
 			mTravelDataResult.mTravelDataInput.mAdultNumber = lValue;
 		}
@@ -599,7 +603,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		lValue = ((DOMSelectElement)lChildren).getValue();
 		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mChildNumber ))
 		{
-			mLogger.trace( "mChildNumber will changed from "
+			mLogger.error( "mChildNumber be will changed from "
 					+ mTravelDataResult.mTravelDataInput.mChildNumber + " to " + lValue );
 			mTravelDataResult.mTravelDataInput.mChildNumber = lValue;
 		}
@@ -607,7 +611,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		lValue = ((DOMSelectElement)lInfant).getValue();
 		if(!lValue.equals( mTravelDataResult.mTravelDataInput.mInfantNumber ))
 		{
-			mLogger.trace( "mInfantNumber will changed from "
+			mLogger.error( "mInfantNumber be will changed from "
 					+ mTravelDataResult.mTravelDataInput.mInfantNumber + " to " + lValue );
 			mTravelDataResult.mTravelDataInput.mInfantNumber = lValue;
 		}
@@ -623,8 +627,7 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		mTravelDataResult.mTravelDataInput = aTravelDataInput;
 		//mTravelDataResult.mReturnTicket = aTravelDataInput.mReturnTicket;
 
-		// todo Check later
-		//CollectDatas_Change_TravelDataInput( document );
+		CollectDatas_Change_TravelDataInput( document );
 
 		java.util.List<DOMElement> lFlightsBodyElements = document.findElements( By.className( "flights-body" ) );
 		int lBodyElementIndex = 0;
@@ -662,9 +665,11 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 			Image image = heavyWeightWidget.getImage();
 			try
 			{
-				ImageIO.write((RenderedImage)image, "PNG", new File( getAirline() + "_"
+				String lFileName = getAirline() + "_"
 						+ LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "_" + getThreadName()
-						+ ".png" ));
+						+ ".png";
+				lFileName = lFileName.replace( ":", "" ).replace( " ", "" );
+				ImageIO.write((RenderedImage)image, "PNG", new File( lFileName ));
 			}
 			catch( IOException e )
 			{
