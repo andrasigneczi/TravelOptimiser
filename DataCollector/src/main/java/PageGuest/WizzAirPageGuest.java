@@ -231,6 +231,11 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 		mLogger.trace( "begin, thread name: " + getThreadName());
 		synchronized (mMutex)
 		{
+			if( mBrowser == null )
+			{
+				InitBrowser( 1 );
+				mBrowser.loadURL( getURL() );
+			}
 			mSearchQueue = new JMSStack<TravelData_INPUT>();
 			mSearchQueue.setQueueName( getAirline() );
 		}
