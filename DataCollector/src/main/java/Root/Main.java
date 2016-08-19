@@ -54,6 +54,8 @@ public class Main
 
     public static void main(String[] argv)
     {
+        CurrencyHelper.Init();
+        Util.Configuration lConfiguration = Util.Configuration.getInstance();
         StartApp( argv );
         System.exit( 0 );
     }

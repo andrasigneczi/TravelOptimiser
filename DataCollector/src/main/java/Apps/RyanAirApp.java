@@ -19,8 +19,6 @@ public class RyanAirApp
 		try
 		{
 			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
-			CurrencyHelper.Init();
-			Util.Configuration lConfiguration = Util.Configuration.getInstance();
 	        final PageGuest.RyanAirPageGuest lGuestR = (PageGuest.RyanAirPageGuest)PageGuestFactory.Create( "RyanAir" );
 			lGuestR.InitJMS();
 			lGuestR.WaitForFinish();

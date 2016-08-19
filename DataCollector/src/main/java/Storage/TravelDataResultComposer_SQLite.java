@@ -2,6 +2,7 @@ package Storage;
 
 import PageGuest.TravelDataResultComposer;
 import PageGuest.TravelData_RESULT;
+import Util.CurrencyHelper;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -112,6 +113,7 @@ public class TravelDataResultComposer_SQLite extends TravelDataResultComposer
 				"\tPrices_BasicFare_Discount ,\n" +
 				"\tPrices_PlusFare_Normal    ,\n" +
 				"\tPrices_PlusFare_Discount  ,\n" +
+				"\tCurrency_Price_In_Euro    ,\n" +
 				"\tOutboundTrip              ,\n" +
 				"\tSearchDatetime            ,\n" +
 				"\tTravelDataResult_ID       )\n" +
@@ -120,7 +122,8 @@ public class TravelDataResultComposer_SQLite extends TravelDataResultComposer
 				aTrip.mPrices_BasicFare_Normal + "', '" +
 				aTrip.mPrices_BasicFare_Discount + "', '" +
 				aTrip.mPrices_PlusFare_Normal + "', '" +
-				aTrip.mPrices_PlusFare_Discount + "', '" +
+				aTrip.mPrices_PlusFare_Discount + "', " +
+				String.valueOf( CurrencyHelper.getCurrencyPriceInEuro( aTrip.mPrices_BasicFare_Normal )) + ", '" +
 				aTrip.mOutboundTrip + "', " +
 				"datetime('now', 'localtime')," +
 				aTravelDataResultId + ");\n";

@@ -18,8 +18,6 @@ public class WizzAirApp
 		try
 		{
 			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
-			CurrencyHelper.Init();
-			Util.Configuration lConfiguration = Util.Configuration.getInstance();
 			final PageGuest.WizzAirPageGuest lGuestW = (PageGuest.WizzAirPageGuest)PageGuestFactory.Create( "WizzAir" );
 			lGuestW.InitJMS();
 			lGuestW.WaitForFinish();

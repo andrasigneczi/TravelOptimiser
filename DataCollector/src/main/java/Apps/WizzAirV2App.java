@@ -15,8 +15,6 @@ public class WizzAirV2App
 	{
 		try
 		{
-			CurrencyHelper.Init();
-			Util.Configuration lConfiguration = Util.Configuration.getInstance();
 		}
 		catch (Exception e)
 		{

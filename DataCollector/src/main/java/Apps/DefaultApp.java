@@ -35,8 +35,6 @@ public class DefaultApp
 			//HelloWorld.JxBrowserHelloWorld.HelloWorld();
 			//HelloWorld.JxBrowserHelloWorld.FlashSample();
 
-			CurrencyHelper.Init();
-			// Initialize the configuration
 			Util.Configuration lConfiguration = Util.Configuration.getInstance();
 			int lWizzAirWindowCount;
 

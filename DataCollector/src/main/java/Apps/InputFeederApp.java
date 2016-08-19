@@ -23,8 +23,6 @@ public class InputFeederApp
 	{
 		try
 		{
-			CurrencyHelper.Init();
-			Util.Configuration lConfiguration = Util.Configuration.getInstance();
 			HashMap<String, JMSPublisher> lPublishers = new HashMap<>();
 
 			ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();

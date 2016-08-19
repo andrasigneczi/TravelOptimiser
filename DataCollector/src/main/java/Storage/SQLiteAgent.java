@@ -300,6 +300,7 @@ public class SQLiteAgent extends ArchiverAgent
 					"\tPrices_BasicFare_Discount FLOAT,\n" +
 					"\tPrices_PlusFare_Normal    FLOAT,\n" +
 					"\tPrices_PlusFare_Discount  FLOAT,\n" +
+					"\tCurrency_Price_In_Euro    FLOAT,\n" +
 					"\tOutboundTrip              TINYINT NOT NULL DEFAULT 0,\n" +
 					"\tSearchDatetime            CHAR(19) NOT NULL,\n" +
 					"\tTravelDataResult_ID       INTEGER NOT NULL,\n" +
