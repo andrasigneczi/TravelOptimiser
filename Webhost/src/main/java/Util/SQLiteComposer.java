@@ -10,13 +10,14 @@ public class SQLiteComposer implements SQLComposer
 
 	}
 
-	public String GetTripQuery( String aDateTime, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency )
+	public String GetTripQuery( String aDateTime, String aAirline, String aAirportFrom, String aAirportTo )
 	{
 		String lQueryTemplate =
 				"SELECT\n" +
 				"    Airline,\n" +
 				"    AirportCode_LeavingFrom,\n" +
 				"    AirportCode_GoingTo,\n" +
+                "    Currency_Price_In_Euro, \n" +
 				"    OutboundTrip,\n" +
 				"\tDepartureDatetime,\n" +
 				"\tArrivalDatetime,\n" +
@@ -39,13 +40,7 @@ public class SQLiteComposer implements SQLComposer
 				"\t\tAND TDR.AirportCode_GoingTo like '[AIRPORT_FROM]'\n" +
 				"\t\tAND TDR_PT.OutboundTrip='false'\n" +
 				"\t))\n" +
-				"[CURRENCY]" +
 				"ORDER BY DepartureDatetime ASC, OutboundTrip DESC, SearchDatetime ASC;\n";
-
-		String lCurrencyString = "AND ( Prices_BasicFare_Discount LIKE '% " + aCurrency + "' OR " +
-				"Prices_BasicFare_Normal LIKE '% " + aCurrency + "')\n";
-		if( aCurrency.equals( "%" ))
-			lCurrencyString = "";
 
 		if( aAirportFrom.equals( "-" ))
 			aAirportFrom = "%";
@@ -54,8 +49,7 @@ public class SQLiteComposer implements SQLComposer
 			aAirportTo = "%";
 
 		String lReturnValue = lQueryTemplate.replace( "[DDATETIME]", aDateTime ).replace( "[AIRLINE]", aAirline )
-				.replace( "[AIRPORT_FROM]", aAirportFrom ).replace( "[AIRPORT_TO]", aAirportTo )
-				.replace( "[CURRENCY]", lCurrencyString );
+				.replace( "[AIRPORT_FROM]", aAirportFrom ).replace( "[AIRPORT_TO]", aAirportTo );
 
 		System.out.println( lReturnValue );
 		return lReturnValue;

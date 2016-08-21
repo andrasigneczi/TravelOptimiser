@@ -254,7 +254,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
     private void TimeoutTest()
     {
         Sleep( 100 );
-        if( Duration.ofMillis( System.currentTimeMillis() - mTimeoutStart ).getSeconds() > 120 )
+        if( Duration.ofMillis( System.currentTimeMillis() - mTimeoutStart ).getSeconds() > 60 )
             mThreadStopped = true;
     }
 

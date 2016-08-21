@@ -91,15 +91,14 @@ public class SQLiteDataProvider implements DataProvider
 	 * @param aAirline
 	 * @param aAirportFrom
 	 * @param aAirportTo
-	 * @param aCurrency
 	 * @param aDRComposer
 	 * @return
 	 */
-	public Hashtable<String,String> GetTripData( String aDateTime, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency, DataResultComposer aDRComposer )
+	public Hashtable<String,String> GetTripData( String aDateTime, String aAirline, String aAirportFrom, String aAirportTo, DataResultComposer aDRComposer )
 	{
 		Hashtable<String,String> lReturnData = new Hashtable<String,String>();
 		String lQuery;
-		lQuery = mComposer.GetTripQuery( aDateTime, aAirline, aAirportFrom, aAirportTo, aCurrency);
+		lQuery = mComposer.GetTripQuery( aDateTime, aAirline, aAirportFrom, aAirportTo);
 
 		String lAirportCode_LeavingFrom = "";
 		String lAirportCode_GoingTo = "";
@@ -132,7 +131,10 @@ public class SQLiteDataProvider implements DataProvider
 				if( lPrice.length() == 0 )
 					lPrice = lResultSet.getString( "Prices_BasicFare_Normal");
 
-				aDRComposer.add( lResultSet.getString( "SearchDatetime" ), lPrice, aCurrency);
+				Float lCurrencyPriceInEuro = lResultSet.getFloat( "Currency_Price_In_Euro" );
+				if( lResultSet.wasNull())
+					lCurrencyPriceInEuro = null;
+				aDRComposer.add( lResultSet.getString( "SearchDatetime" ), lPrice, lCurrencyPriceInEuro );
 			}
 			lResultSet.close();
 			lStmt.close();

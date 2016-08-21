@@ -16,21 +16,24 @@ public class HighChartDataResultComposer extends DataResultComposer
 	private ArrayList<Double> mValues;
 	private ArrayList<String> mDates;
 	private ArrayList<Double> mUnfilteredValues;
+	private ArrayList<Double>  mCurrencyPriceInEuro;
 	private ArrayList<String> mUnfilteredDates;
 	private HashSet<String>   mFoundCurrency;
 	private double            mMaxValue = Double.MIN_VALUE;
+	//private boolean           mCurrency_Price_In_Euro_Is_Null = false;
 
 	public HighChartDataResultComposer()
 	{
-		mValues = new ArrayList<>( );
-		mDates = new ArrayList<>( );
-		mUnfilteredValues = new ArrayList<>( );
-		mUnfilteredDates = new ArrayList<>( );
-		mFoundCurrency = new HashSet<>( );
+		mValues              = new ArrayList<>( );
+		mDates               = new ArrayList<>( );
+		mUnfilteredValues    = new ArrayList<>( );
+		mUnfilteredDates     = new ArrayList<>( );
+		mCurrencyPriceInEuro = new ArrayList<>( );
+		mFoundCurrency       = new HashSet<>( );
 	}
 
 	@Override
-	public void add( String aDate, String aValue, String aCurrency )
+	public void add( String aDate, String aValueInOriginalCurrency, Float aOriginalCurrencyMultiplerToEuro )
 	{
 		// [Date.UTC(1970, 10, 9), 0.4]
 		// 2016-04-06 04:00:51
@@ -38,18 +41,18 @@ public class HighChartDataResultComposer extends DataResultComposer
 		// 53 195,00 Ft
 
 		String lValue = "";
-		int lPos = aValue.length() - 1;
-		char lActChar = aValue.charAt( lPos );
+		int lPos = aValueInOriginalCurrency.length() - 1;
+		char lActChar = aValueInOriginalCurrency.charAt( lPos );
 		while( lActChar < '0' || lActChar > '9' )
 		{
 			lPos--;
-			lActChar = aValue.charAt( lPos );
+			lActChar = aValueInOriginalCurrency.charAt( lPos );
 		}
-		lValue = aValue.substring( 0, lPos + 1 ).trim();
-		String lCurrency = aValue.substring( lPos + 1 ).trim();
+		lValue = aValueInOriginalCurrency.substring( 0, lPos + 1 ).trim();
+		String lCurrency = aValueInOriginalCurrency.substring( lPos + 1 ).trim();
 
-		if( !aCurrency.equals( "%" )&& !aCurrency.equals( lCurrency ))
-			mLogger.warn( "Illegal currency (" + lCurrency + ") in chart. Expected currency is " + aCurrency );
+//		if( !aCurrency.equals( "%" )&& !aCurrency.equals( lCurrency ))
+//			mLogger.warn( "Illegal currency (" + lCurrency + ") in chart. Expected currency is " + aCurrency );
 
 		mFoundCurrency.add( lCurrency );
 
@@ -61,29 +64,17 @@ public class HighChartDataResultComposer extends DataResultComposer
 				lValue.charAt( i ) == '.' )
 				lBuffer.append( lValue.charAt( i ));
 		double lDValue = Double.parseDouble( lBuffer.toString() );
+		if( aOriginalCurrencyMultiplerToEuro != null
+				&& mUnfilteredDates.size() == mCurrencyPriceInEuro.size()
+				&& aOriginalCurrencyMultiplerToEuro > 0.0 )
+		{
+			lDValue *= (double)aOriginalCurrencyMultiplerToEuro;
+			mCurrencyPriceInEuro.add( (double)aOriginalCurrencyMultiplerToEuro );
+		}
 
 		aDate = aDate.replace( " ", "T" );
 		mUnfilteredDates.add( aDate );
 		mUnfilteredValues.add( lDValue );
-//		if( mValues.size() < 2 )
-//		{
-//			mDates.add( aDate );
-//			mValues.add( lDValue );
-//		}
-//		else
-//		{
-//			if( mValues.get( mValues.size() - 2 ).doubleValue() == mValues.get( mValues.size() - 1 ).doubleValue()
-//					&& mValues.get( mValues.size() - 1 ).doubleValue() == lDValue )
-//			{
-//				mDates.set( mValues.size() - 1, aDate );
-//				mValues.set( mValues.size() - 1, lDValue );
-//			}
-//			else
-//			{
-//				mDates.add( aDate );
-//				mValues.add( lDValue );
-//			}
-//		}
 		addDates( mDates, mValues, aDate, lDValue );
 	}
 
@@ -130,6 +121,12 @@ public class HighChartDataResultComposer extends DataResultComposer
 
 	public HashSet<String> getFoundCurrency()
 	{
+		if( mUnfilteredDates.size() == mCurrencyPriceInEuro.size())
+		{
+			HashSet<String> lRetun = new HashSet<String>();
+			lRetun.add( "€" );
+			return lRetun;
+		}
 		return mFoundCurrency;
 	}
 
@@ -162,7 +159,7 @@ public class HighChartDataResultComposer extends DataResultComposer
 	}
 
 	/**
-	 * This function generate the char values of two charts. It ignores those points of charts
+	 * This function generates the chart values of two charts. It ignores those points of charts
 	 * which date axis is different.
 	 * @param lComposer
 	 * @return

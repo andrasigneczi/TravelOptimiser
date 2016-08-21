@@ -179,8 +179,8 @@ public class ChartBuilder
 		for( TravelData_INPUT.Discount lDiscount : aDiscounts )
 		{
 			HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
-			lHCDRCExtra.add( lDiscount.mBeginning, lHeight, "%" );
-			lHCDRCExtra.add( lDiscount.mEnding, lHeight, "%" );
+			lHCDRCExtra.add( lDiscount.mBeginning, lHeight, new Float(1.0) );
+			lHCDRCExtra.add( lDiscount.mEnding, lHeight, new Float( 1.0 ));
 			lSeries += mSeriesTemplate.replace( "[SERIES.NAME]", lDiscount.mName )
 					.replace( "[TYPE.NAME]", "area" )
 					.replace( "[COLOR]", DISCOUNT_COLOR )
@@ -199,7 +199,7 @@ public class ChartBuilder
 		for( TravelData_INPUT.BoughtTicket lTicket : aBoughtTickets )
 		{
 			HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
-			lHCDRCExtra.add( lTicket.mDatetime, lTicket.mPrice, "%" );
+			lHCDRCExtra.add( lTicket.mDatetime, lTicket.mPrice, new Float( 1.0 ));
 			lSeries += ",\n" + mSeriesTemplate.replace( "[SERIES.NAME]", lTicket.mName )
 					.replace( "[TYPE.NAME]", "line" )
 					.replace( "[COLOR]", BOUGHT_TICKET_COLOR )
@@ -214,7 +214,7 @@ public class ChartBuilder
 		mHighChartDataResultComposerOutbound = new HighChartDataResultComposer();
 		mResult1 = SQLiteDataProvider.getInstance().GetTripData( mTDI.mDepartureDatetime /*2016-07-16 06:30*/,
 				mTDI.mAirline, mTDI.mAirportCode_LeavingFrom, mTDI.mAirportCode_GoingTo,
-				mTDI.mCurrency, mHighChartDataResultComposerOutbound );
+				mHighChartDataResultComposerOutbound );
 		mDate1 = IsoDatetimeToEngDate( mTDI.mDepartureDatetime );
 		String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", mDate1 )
 				.replace( "[TYPE.NAME]", "line" )
@@ -232,7 +232,6 @@ public class ChartBuilder
 						mTDI.mAirline,
 						mTDI.mAirportCode_GoingTo,
 						mTDI.mAirportCode_LeavingFrom,
-						mTDI.mCurrency,
 						mHighChartDataResultComposerReturn );
 		mDate2 = IsoDatetimeToEngDate( mTDI.mReturnDatetime );
 		String lSeries = mSeriesTemplate.replace( "[SERIES.NAME]", mDate2 )

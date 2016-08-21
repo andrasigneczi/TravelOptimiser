@@ -5,5 +5,5 @@ package Util;
  */
 public interface SQLComposer
 {
-	String GetTripQuery( String aDateTime, String aAirline, String aAirportFrom, String aAirportTo, String aCurrency );
+	String GetTripQuery( String aDateTime, String aAirline, String aAirportFrom, String aAirportTo );
 }
