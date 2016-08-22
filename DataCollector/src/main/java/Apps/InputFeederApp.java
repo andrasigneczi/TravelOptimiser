@@ -34,8 +34,8 @@ public class InputFeederApp
 
 				if( lValidity == PageGuest.DateValidity.INVALID_COMBINATION )
 				{
-					mLogger.warn("DoSearch: the departure date (" + lTDI.mDepartureDay + ") and/or the return date " +
-							lTDI.mReturnDay + " invalid!");
+					mLogger.warn( "DoSearch: the departure date (" + lTDI.mDepartureDay + ") and/or the return date " +
+							lTDI.mReturnDay + " is/are invalid!" );
 					continue;
 				}
 

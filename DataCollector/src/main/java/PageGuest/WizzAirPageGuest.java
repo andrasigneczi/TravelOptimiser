@@ -136,13 +136,15 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 			if( lValidity == DateValidity.INVALID_COMBINATION )
 			{
-				mLogger.warn("DoSearch: the departure date (" + lTDI.mDepartureDay + ") and/or the return date " +
-						lTDI.mReturnDay + " invalid!");
+				mLogger.warn( "DoSearch: the departure date (" + lTDI.mDepartureDay + ") and/or the return date " +
+						lTDI.mReturnDay + " is/are invalid!" );
 				continue;
 			}
 
 			if( lValidity == DateValidity.ONLY_THE_RETURN_DATE_VALID )
 			{
+				mLogger.warn(" DoSearch: the departure date (" + lTDI.mDepartureDay + ") is invalid!" );
+
 				// we will use only the return date
 				String lTemp = lTDI.mAirportCode_LeavingFrom;
 				lTDI.mAirportCode_LeavingFrom = lTDI.mAirportCode_GoingTo;
@@ -182,8 +184,8 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 		if( lValidity == DateValidity.INVALID_COMBINATION )
 		{
-			mLogger.warn("DoSearch: the departure date (" + aDepartureDate + ") and/or the return date " +
-					aReturnDate + " invalid!");
+			mLogger.warn( "DoSearch: the departure date (" + aDepartureDate + ") and/or the return date " +
+					aReturnDate + " is/are invalid!" );
 			return;
 		}
 
@@ -195,6 +197,8 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 		if( lValidity == DateValidity.ONLY_THE_RETURN_DATE_VALID )
 		{
+			mLogger.warn(" DoSearch: the departure date (" + aDepartureDate + ") is invalid!" );
+
 			// we will use only the return date
 			lTravelDataInput.mAirportCode_LeavingFrom = aTo;
 			lTravelDataInput.mAirportCode_GoingTo = aFrom;
@@ -249,13 +253,15 @@ public class WizzAirPageGuest extends WebPageGuest implements Runnable
 
 				if( lValidity == DateValidity.INVALID_COMBINATION )
 				{
-					mLogger.warn("DoSearch: the departure date (" + lTDI.mDepartureDay + ") and/or the return date " +
-							lTDI.mReturnDay + " invalid!");
+					mLogger.warn( "DoSearch: the departure date (" + lTDI.mDepartureDay + ") and/or the return date " +
+							lTDI.mReturnDay + " is/are invalid!" );
 					continue;
 				}
 
 				if( lValidity == DateValidity.ONLY_THE_RETURN_DATE_VALID )
 				{
+					mLogger.warn(" DoSearch: the departure date (" + lTDI.mDepartureDay + ") is invalid!" );
+
 					// we will use only the return date
 					String lTemp = lTDI.mAirportCode_LeavingFrom;
 					lTDI.mAirportCode_LeavingFrom = lTDI.mAirportCode_GoingTo;
