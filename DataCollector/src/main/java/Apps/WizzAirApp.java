@@ -13,8 +13,10 @@ import org.apache.log4j.Logger;
 public class WizzAirApp
 {
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger( WizzAirApp.class);
+
 	public static void Run()
 	{
+		mLogger.trace( "WizzAirApp start" );
 		try
 		{
 			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
@@ -27,5 +29,6 @@ public class WizzAirApp
 		{
 			mLogger.error( "Unhandled exception: " + StringHelper.getTraceInformation( e ));
 		}
+		mLogger.trace( "WizzAirApp stop" );
 	}
 }

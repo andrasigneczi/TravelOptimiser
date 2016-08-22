@@ -31,6 +31,13 @@ public abstract class PageGuest
 		Business
 	};
 
+	public enum DateValidity
+	{
+		INVALID_COMBINATION,
+		BOTH_OF_THEM_VALID,
+		ONLY_THE_RETURN_DATE_VALID
+	};
+
 	public PageGuest(String aAirline)
 	{
 		mAirline = aAirline;
@@ -140,7 +147,7 @@ public abstract class PageGuest
 	public abstract void DoSearchFromConfig();
 	public abstract void stop();
 
-	public static boolean ValidateDate( String aDepartureDay, String aReturnDay )
+	public static DateValidity ValidateDate( String aDepartureDay, String aReturnDay )
 	{
 		try
 		{
@@ -148,22 +155,28 @@ public abstract class PageGuest
 			LocalDate lDepartureDay = LocalDate.parse( aDepartureDay, lFormatter );
 			if( LocalDate.now().isAfter( lDepartureDay ) )
 			{
-				return false;
+				if( aReturnDay.length() != 0 )
+				{
+					LocalDate lReturnDay = LocalDate.parse( aReturnDay, lFormatter );
+					if( !LocalDate.now().isAfter( lReturnDay ) )
+						return DateValidity.ONLY_THE_RETURN_DATE_VALID;
+				}
+				return DateValidity.INVALID_COMBINATION;
 			}
 
 			if( aReturnDay.length() == 0 )
-				return true;
+				return DateValidity.BOTH_OF_THEM_VALID;
 
 			LocalDate lReturnDay = LocalDate.parse( aReturnDay, lFormatter );
 			if( lReturnDay.isBefore( lDepartureDay ) )
-				return false;
-			return true;
+				return DateValidity.INVALID_COMBINATION;
+			return DateValidity.BOTH_OF_THEM_VALID;
 		}
 		catch( Exception e )
 		{
-			e.printStackTrace();
+			mLogger.error( StringHelper.getTraceInformation( e ) );
 		}
-		return false;
+		return DateValidity.INVALID_COMBINATION;
 	}
 
 	public String getThreadName()

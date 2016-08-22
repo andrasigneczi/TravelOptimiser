@@ -8,6 +8,12 @@ import Util.CurrencyHelper;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
 
+import java.util.logging.Level;
+
+import static com.teamdev.jxbrowser.chromium.LoggerProvider.getBrowserLogger;
+import static com.teamdev.jxbrowser.chromium.LoggerProvider.getChromiumProcessLogger;
+import static com.teamdev.jxbrowser.chromium.LoggerProvider.getIPCLogger;
+
 /**
  * Created by Andras on 02/08/2016.
  */
@@ -17,8 +23,13 @@ public class DBAgentApp
 
 	public static void Run()
 	{
+		mLogger.trace( "DBAgentApp start" );
 		try
 		{
+			getBrowserLogger().setLevel( Level.WARNING );
+			getChromiumProcessLogger().setLevel( Level.WARNING );
+			getIPCLogger().setLevel( Level.WARNING );
+
 			if( !CurrencyHelper.DownloadRecentCurrencyPrices())
 			{
 				mLogger.error( "Currency values are not available!" );
@@ -51,5 +62,6 @@ public class DBAgentApp
 		{
 			mLogger.error( "Unhandled exception: " + StringHelper.getTraceInformation( e ));
 		}
+		mLogger.trace( "DBAgentApp stop" );
 	}
 }

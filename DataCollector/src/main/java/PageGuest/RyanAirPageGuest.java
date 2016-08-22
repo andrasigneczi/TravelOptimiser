@@ -4,6 +4,7 @@ import QueueHandlers.JMSStack;
 import QueueHandlers.LocalStack;
 import QueueHandlers.ResultQueue;
 import QueueHandlers.StackIF;
+import Util.Configuration;
 import Util.DatetimeHelper;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
@@ -45,58 +46,87 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
 
     public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate)
     {
-        if (!ValidateDate(aDepartureDate, aReturnDate))
+        mLogger.trace( "begin, thread name: " + getThreadName());
+        DateValidity lValidity = ValidateDate(aDepartureDate, aReturnDate);
+
+        if( lValidity == DateValidity.INVALID_COMBINATION )
         {
-            mLogger.warn("DoSearch: the departure date (" + aDepartureDate + ") or the return date " +
-                                 aReturnDate + " expired!");
+            mLogger.warn("DoSearch: the departure date (" + aDepartureDate + ") and/or the return date " +
+                                 aReturnDate + " invalid!");
             return;
         }
 
-        synchronized (mMutex)
+        TravelData_INPUT lTravelDataInput = new TravelData_INPUT();
+        lTravelDataInput.mAirline = getAirline();
+        lTravelDataInput.mAdultNumber = "1";
+        lTravelDataInput.mChildNumber = "0";
+        lTravelDataInput.mInfantNumber = "0";
+
+        if( lValidity == DateValidity.ONLY_THE_RETURN_DATE_VALID )
         {
-            TravelData_INPUT lTravelDataInput = new TravelData_INPUT();
-            lTravelDataInput.mAirline = getAirline();
+            // we will use only the return date
+            lTravelDataInput.mAirportCode_LeavingFrom = aTo;
+            lTravelDataInput.mAirportCode_GoingTo = aFrom;
+            lTravelDataInput.mDepartureDay = aReturnDate;
+            lTravelDataInput.mReturnDay = "";
+            lTravelDataInput.mReturnTicket = false;
+        }
+        else if( lValidity == DateValidity.BOTH_OF_THEM_VALID )
+        {
             lTravelDataInput.mAirportCode_LeavingFrom = aFrom;
             lTravelDataInput.mAirportCode_GoingTo = aTo;
             lTravelDataInput.mDepartureDay = aDepartureDate;
             lTravelDataInput.mReturnDay = aReturnDate;
-            lTravelDataInput.mAdultNumber = "1";
-            lTravelDataInput.mChildNumber = "0";
-            lTravelDataInput.mInfantNumber = "0";
             //lTravelDataInput.mNearbyAirports          = false;
             if (aReturnDate.length() == 0)
-            {
                 lTravelDataInput.mReturnTicket = false;
-            }
             else
-            {
                 lTravelDataInput.mReturnTicket = true;
-            }
+        }
 
+        synchronized (mMutex)
+        {
             mSearchQueue.push(lTravelDataInput);
         }
-        System.out.println("DoSearch()");
+        mLogger.trace( "end, thread name: " + getThreadName());
     }
 
     public void DoSearchFromConfig()
     {
         synchronized (mMutex)
         {
-            ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
+            ArrayList<TravelData_INPUT> lSearchList = Configuration.getInstance().getSearchList();
             for (TravelData_INPUT lTDI : lSearchList)
             {
                 if (!lTDI.mAirline.equals(getAirline()))
                     continue;
 
-                if (!ValidateDate(lTDI.mDepartureDay, lTDI.mReturnDay))
+                DateValidity lValidity = ValidateDate(lTDI.mDepartureDay, lTDI.mReturnDay);
+
+                if( lValidity == DateValidity.INVALID_COMBINATION )
                 {
-                    mLogger.warn("DoSearch: the departure date (" + lTDI.mDepartureDay + ") or the return date " +
-                                         lTDI.mReturnDay + " expired!");
+                    mLogger.warn("DoSearch: the departure date (" + lTDI.mDepartureDay + ") and/or the return date " +
+                            lTDI.mReturnDay + " invalid!");
                     continue;
                 }
 
-                if (lTDI.mReturnDay.length() == 0)
+                if( lValidity == DateValidity.ONLY_THE_RETURN_DATE_VALID )
+                {
+                    // we will use only the return date
+                    String lTemp = lTDI.mAirportCode_LeavingFrom;
+                    lTDI.mAirportCode_LeavingFrom = lTDI.mAirportCode_GoingTo;
+                    lTDI.mAirportCode_GoingTo = lTemp;
+                    lTDI.mDepartureDay = lTDI.mReturnDay;
+                    lTDI.mReturnDay = "";
                     lTDI.mReturnTicket = false;
+                }
+                else if( lValidity == DateValidity.BOTH_OF_THEM_VALID )
+                {
+                    if (lTDI.mReturnDay.length() == 0)
+                        lTDI.mReturnTicket = false;
+                    else
+                        lTDI.mReturnTicket = true;
+                }
 
                 mSearchQueue.push(lTDI);
             }

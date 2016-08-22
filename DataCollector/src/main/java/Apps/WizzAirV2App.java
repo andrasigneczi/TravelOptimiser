@@ -15,6 +15,8 @@ public class WizzAirV2App
 	{
 		try
 		{
+			mLogger.trace( "WizzAirV2App start" );
+			mLogger.trace( "WizzAirV2App stop" );
 		}
 		catch (Exception e)
 		{

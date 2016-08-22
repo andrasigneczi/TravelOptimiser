@@ -16,6 +16,7 @@ public class RyanAirApp
 
 	public static void Run()
 	{
+		mLogger.trace( "RyanAirApp start" );
 		try
 		{
 			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
@@ -28,5 +29,6 @@ public class RyanAirApp
 		{
 			mLogger.error( "Unhandled exception: " + StringHelper.getTraceInformation( e ));
 		}
+		mLogger.trace( "RyanAirApp stop" );
 	}
 }
