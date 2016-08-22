@@ -64,6 +64,8 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
 
         if( lValidity == DateValidity.ONLY_THE_RETURN_DATE_VALID )
         {
+            mLogger.warn(" DoSearch: the departure date (" + aDepartureDate + ") is invalid!" );
+
             // we will use only the return date
             lTravelDataInput.mAirportCode_LeavingFrom = aTo;
             lTravelDataInput.mAirportCode_GoingTo = aFrom;

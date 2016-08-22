@@ -41,6 +41,8 @@ public class InputFeederApp
 
 				if( lValidity == PageGuest.DateValidity.ONLY_THE_RETURN_DATE_VALID )
 				{
+					mLogger.warn(" DoSearch: the departure date (" + lTDI.mDepartureDay + ") is invalid!" );
+
 					// we will use only the return date
 					String lTemp = lTDI.mAirportCode_LeavingFrom;
 					lTDI.mAirportCode_LeavingFrom = lTDI.mAirportCode_GoingTo;
