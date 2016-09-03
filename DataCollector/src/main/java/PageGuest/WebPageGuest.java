@@ -1,6 +1,7 @@
 package PageGuest;
 
 import BrowserState.BrowserState;
+import com.teamdev.jxbrowser.chromium.Browser;
 
 import java.awt.*;
 import java.awt.event.InputEvent;
@@ -70,6 +71,16 @@ public abstract class WebPageGuest extends PageGuest
         mRobot.keyPress(KeyEvent.VK_A);
         mRobot.keyRelease(KeyEvent.VK_A);
         mRobot.keyRelease(KeyEvent.VK_CONTROL);
+    }
+
+    public void PressTab()
+    {
+        if (mRobot == null)
+        {
+            return;
+        }
+        mRobot.keyPress(KeyEvent.VK_TAB);
+        mRobot.keyRelease(KeyEvent.VK_TAB);
     }
 
     public void PressShiftTab()
@@ -184,4 +195,24 @@ public abstract class WebPageGuest extends PageGuest
         this.mURL = mURL;
     }
 
+    private void javaScriptSetFocus( Browser aBrowser, String aXPath )
+    {
+        aBrowser.executeJavaScript( String.format( mGetElementByXPathPattern + ".focus();", aXPath ));
+    }
+
+    private void javaScriptSubmit( Browser aBrowser, String aXPath )
+    {
+        aBrowser.executeJavaScript( String.format( mGetElementByXPathPattern + ".submit();", aXPath ));
+    }
+
+    private void javaSendKeys( Browser aBrowser, String aXPath, int aKey )
+    {
+        String lSendKeys = ";TraveDataOptimizer.sendkeys(" + String.format( "%d", aKey ) + ");";
+        aBrowser.executeJavaScript( String.format( "var TraveDataOptimizer = " + mGetElementByXPathPattern + lSendKeys, aXPath ));
+    }
+
+    private void javaScriptClick( Browser aBrowser, String aXPath )
+    {
+        aBrowser.executeJavaScript( String.format( mGetElementByXPathPattern + ".click();", aXPath ));
+    }
 }

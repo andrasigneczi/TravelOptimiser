@@ -9,6 +9,12 @@ import Util.CurrencyHelper;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
 
+import java.util.logging.Level;
+
+import static com.teamdev.jxbrowser.chromium.LoggerProvider.getBrowserLogger;
+import static com.teamdev.jxbrowser.chromium.LoggerProvider.getChromiumProcessLogger;
+import static com.teamdev.jxbrowser.chromium.LoggerProvider.getIPCLogger;
+
 /**
  * Created by Andras on 11/08/2016.
  */
@@ -36,8 +42,17 @@ public class DefaultApp
 			//HelloWorld.JxBrowserHelloWorld.FlashSample();
 
 			Util.Configuration lConfiguration = Util.Configuration.getInstance();
-			int lWizzAirWindowCount;
+			getBrowserLogger().setLevel( Level.WARNING );
+			getChromiumProcessLogger().setLevel( Level.WARNING );
+			getIPCLogger().setLevel( Level.WARNING );
 
+			if( !CurrencyHelper.DownloadRecentCurrencyPrices())
+			{
+				mLogger.error( "Currency values are not available!" );
+				return;
+			}
+
+			int lWizzAirWindowCount;
 			try
 			{
 				lWizzAirWindowCount = lConfiguration.getIntValue( "/configuration/global/WizzAirWindowCount", "1" );
