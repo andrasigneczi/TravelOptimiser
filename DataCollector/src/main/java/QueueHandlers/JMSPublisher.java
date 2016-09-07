@@ -1,6 +1,5 @@
 package QueueHandlers;
 
-import PageGuest.WizzAirPageGuest;
 import org.apache.log4j.Logger;
 import org.apache.qpid.jms.JmsConnectionFactory;
 

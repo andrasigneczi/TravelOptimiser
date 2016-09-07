@@ -1,7 +1,6 @@
 package Apps;
 
 import PageGuest.TravelData_RESULT;
-import PageGuest.WizzAirPageGuest;
 import QueueHandlers.ResultQueue;
 import Storage.SQLiteAgent;
 import Util.CurrencyHelper;

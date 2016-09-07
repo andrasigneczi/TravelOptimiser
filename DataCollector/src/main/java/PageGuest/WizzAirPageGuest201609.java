@@ -9,6 +9,7 @@ import Util.HttpRequest;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -313,15 +314,27 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 
 		for( int lDateIndex = 0; lDateIndex < lRoot.length(); lDateIndex++ )
 		{
-			JSONObject jobj = lRoot.getJSONObject( lDateIndex );
-			String    lCurrencyCode    = jobj.getString(    "currencyCode"    );
-			JSONArray returnFlights    = jobj.getJSONArray( "returnFlights"   );
-			JSONArray outboundBundles  = jobj.getJSONArray( "outboundBundles" );
-			JSONArray returnBundles    = jobj.getJSONArray( "returnBundles"   );
-			JSONArray outboundFlights  = jobj.getJSONArray( "outboundFlights" );
+			try
+			{
+				JSONObject jobj = lRoot.getJSONObject( lDateIndex );
+				String lCurrencyCode = jobj.getString( "currencyCode" );
+				JSONArray returnFlights = null;
+				Object returnFlightsObject = jobj.get( "returnFlights" );
+				if( returnFlightsObject != null && returnFlightsObject instanceof JSONArray )
+					returnFlights = (JSONArray)returnFlightsObject;
 
-			ParseFlights( outboundFlights, true );
-			ParseFlights( returnFlights,   false );
+				//JSONArray outboundBundles = jobj.getJSONArray( "outboundBundles" );
+				//JSONArray returnBundles = jobj.getJSONArray( "returnBundles" );
+				JSONArray outboundFlights = jobj.getJSONArray( "outboundFlights" );
+
+				ParseFlights( outboundFlights, true );
+				if( returnFlights != null )
+					ParseFlights( returnFlights, false );
+			}
+			catch (JSONException e)
+			{
+				mLogger.error( "Exception in ParseTheResponse: " + StringHelper.getTraceInformation( e ) );
+			}
 		}
 
 
@@ -335,7 +348,7 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 		mLogger.trace( "begin, thread name: " + getThreadName());
 
 		// curl "https://be.wizzair.com/3.0.4/Api/search/search" -H "origin: https://wizzair.com" -H "accept-encoding: gzip, deflate, br" -H "accept-language: hu,en-US;q=0.8,en;q=0.6,de-DE;q=0.4,de;q=0.2,fr;q=0.2" -H "user-agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36" -H "content-type: application/json" -H "accept: application/json, text/plain, */*" -H "referer: https://wizzair.com/" -H "authority: be.wizzair.com" -H "cookie: ASP.NET_SessionId=spvzv4uxq44q5y10exk2e2a5; _ga=GA1.2.1798072642.1456818314; _gat=1" --data-binary "{""flightList"":[{""departureStation"":""CRL"",""arrivalStation"":""BUD"",""departureDate"":""2016-10-07""},{""departureStation"":""BUD"",""arrivalStation"":""CRL"",""departureDate"":""2016-10-10""}],""adultCount"":1,""childCount"":0,""infantCount"":0,""wdc"":true}" --compressed
-		String lUrl = "https://be.wizzair.com/3.0.4/Api/search/search";
+		String lUrl = "https://be.wizzair.com/3.0.5/Api/search/search";
 		// "{\"flightList\":[{\"departureStation\":\"CRL\",\"arrivalStation\":\"BUD\",\"departureDate\":\"2016-10-07\"},{\"departureStation\":\"BUD\",\"arrivalStation\":\"CRL\",\"departureDate\":\"2016-10-10\"}],\"adultCount\":1,\"childCount\":0,\"infantCount\":0,\"wdc\":true}"
 		String lParameters = "";
 		if( aTravelDataInput.mReturnTicket )
@@ -445,3 +458,12 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 }
+
+
+// curl "https://be.wizzair.com/3.0.5/Api/search/search" -H "pragma: no-cache" -H "origin: https://wizzair.com"
+// -H "accept-encoding: gzip, deflate, br" -H "accept-language: hu-HU,hu;q=0.8,en-US;q=0.6,en;q=0.4"
+// -H "user-agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36"
+// -H "content-type: application/json" -H "accept: application/json, text/plain, */*" -H "cache-control: no-cache"
+// -H "authority: be.wizzair.com" -H "cookie: __gfp_64b=v1ZwjWFMy.S2s_BKE9rLUPwt2tj_xQ.Xhm_sOInyotT.37; ASP.NET_SessionId=0ejkw1kvwhesad5c1jekl05f; _ga=GA1.2.831145438.1445423299; _gat=1"
+// -H "referer: https://wizzair.com/hu-HU/main-page"
+// --data-binary "{""flightList"":[{""departureStation"":""GYD"",""arrivalStation"":""BUD"",""departureDate"":""2016-09-24""}],""adultCount"":1,""childCount"":0,""infantCount"":0,""wdc"":true}" --compressed

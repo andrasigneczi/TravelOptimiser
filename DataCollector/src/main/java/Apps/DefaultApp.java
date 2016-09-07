@@ -1,7 +1,6 @@
 package Apps;
 
 import PageGuest.TravelData_RESULT;
-import PageGuest.WizzAirPageGuest;
 import QueueHandlers.ResultQueue;
 import Root.PageGuestFactory;
 import Storage.SQLiteAgent;
@@ -52,31 +51,10 @@ public class DefaultApp
 				return;
 			}
 
-			int lWizzAirWindowCount;
-			try
-			{
-				lWizzAirWindowCount = lConfiguration.getIntValue( "/configuration/global/WizzAirWindowCount", "1" );
-			}
-			catch( NumberFormatException e )
-			{
-				mLogger.error( "WizzAirWindowCount problem: " + StringHelper.getTraceInformation( e ));
-				lWizzAirWindowCount = 1;
-			}
+			final PageGuest.PageGuest lGuestR = PageGuestFactory.Create( "RyanAir" );
+			final PageGuest.PageGuest lGuestW = PageGuestFactory.Create( "WizzAir" );
 
-			PageGuest.PageGuest lGuestR = PageGuestFactory.Create( "RyanAir" );
-
-			final PageGuest.PageGuest lGuestW;
-			if( lWizzAirWindowCount > 1 )
-			{
-				WizzAirPageGuest.StartMultiBrowser( 4 );
-				lGuestW = null;
-			}
-			else
-			{
-				lGuestW = PageGuestFactory.Create( "WizzAir" );
-				lGuestW.DoSearchFromConfig();
-			}
-
+			lGuestW.DoSearchFromConfig();
 			lGuestR.DoSearchFromConfig();
 
 
@@ -97,10 +75,8 @@ public class DefaultApp
 				Thread.sleep(1000);
 				i--;
 			}
-			if( lWizzAirWindowCount > 1 )
-				WizzAirPageGuest.StopMultiBrowser();
-			else
-				lGuestW.stop();
+
+			lGuestW.stop();
 			lGuestR.stop();
 
 			lSQLiteAgent.ConnectionClose();
