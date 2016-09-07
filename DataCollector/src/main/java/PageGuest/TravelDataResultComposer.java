@@ -2,8 +2,6 @@ package PageGuest;
 
 import Storage.TravelDataResultComposer_HTML;
 import Storage.TravelDataResultComposer_SQLite;
-import Storage.TravelDataResultComposer_Wizzair_HTML;
-import Storage.TravelDataResultComposer_Wizzair_SQLite;
 
 import java.time.LocalDateTime;
 
@@ -30,16 +28,16 @@ public abstract class TravelDataResultComposer
 	{
 		if( aType.equalsIgnoreCase( "sqlite" ))
 		{
-			if( aResult.mAirline.equalsIgnoreCase( "wizzair" ) )
-				return new TravelDataResultComposer_Wizzair_SQLite( aResult );
-			else
+//			if( aResult.mAirline.equalsIgnoreCase( "wizzair" ) )
+//				return new TravelDataResultComposer_Wizzair_SQLite( aResult );
+//			else
 				return new TravelDataResultComposer_SQLite( aResult );
 		}
 		else if( aType.equalsIgnoreCase( "html" ))
 		{
-			if( aResult.mAirline.equalsIgnoreCase( "wizzair" ) )
-				return new TravelDataResultComposer_Wizzair_HTML( aResult );
-			else
+//			if( aResult.mAirline.equalsIgnoreCase( "wizzair" ) )
+//				return new TravelDataResultComposer_Wizzair_HTML( aResult );
+//			else
 				return new TravelDataResultComposer_HTML( aResult );
 		}
 		return null;

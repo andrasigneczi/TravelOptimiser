@@ -426,10 +426,11 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 				}
 				catch( URISyntaxException e )
 				{
+					mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
 				}
 				catch( IOException e )
 				{
-
+					mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
 				}
 
 				String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
