@@ -34,6 +34,7 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 
 	private boolean mThreadStopped = true;
 	private long mTimeoutStart;
+	private final String mApiUrl = "https://be.wizzair.com/3.1.0/Api/search/search";
 
 	public WizzAirPageGuest201609()
 	{
@@ -348,7 +349,7 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 		mLogger.trace( "begin, thread name: " + getThreadName());
 
 		// curl "https://be.wizzair.com/3.0.4/Api/search/search" -H "origin: https://wizzair.com" -H "accept-encoding: gzip, deflate, br" -H "accept-language: hu,en-US;q=0.8,en;q=0.6,de-DE;q=0.4,de;q=0.2,fr;q=0.2" -H "user-agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36" -H "content-type: application/json" -H "accept: application/json, text/plain, */*" -H "referer: https://wizzair.com/" -H "authority: be.wizzair.com" -H "cookie: ASP.NET_SessionId=spvzv4uxq44q5y10exk2e2a5; _ga=GA1.2.1798072642.1456818314; _gat=1" --data-binary "{""flightList"":[{""departureStation"":""CRL"",""arrivalStation"":""BUD"",""departureDate"":""2016-10-07""},{""departureStation"":""BUD"",""arrivalStation"":""CRL"",""departureDate"":""2016-10-10""}],""adultCount"":1,""childCount"":0,""infantCount"":0,""wdc"":true}" --compressed
-		String lUrl = "https://be.wizzair.com/3.0.5/Api/search/search";
+
 		// "{\"flightList\":[{\"departureStation\":\"CRL\",\"arrivalStation\":\"BUD\",\"departureDate\":\"2016-10-07\"},{\"departureStation\":\"BUD\",\"arrivalStation\":\"CRL\",\"departureDate\":\"2016-10-10\"}],\"adultCount\":1,\"childCount\":0,\"infantCount\":0,\"wdc\":true}"
 		String lParameters = "";
 		if( aTravelDataInput.mReturnTicket )
@@ -374,7 +375,7 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 
 		HttpRequest request = new HttpRequest();
 		String strResponse;
-		strResponse = request.sendPost( lUrl, lParameters );
+		strResponse = request.sendPost( mApiUrl, lParameters );
 
 		mTravelDataResult = new TravelData_RESULT();
 		mTravelDataResult.mAirline = aTravelDataInput.mAirline;
