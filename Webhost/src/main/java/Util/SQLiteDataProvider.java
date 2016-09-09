@@ -141,7 +141,7 @@ public class SQLiteDataProvider implements DataProvider
 		}
 		catch ( Exception e )
 		{
-			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			mLogger.error( "Trip data processing threw an exception: " + Util.getTraceInformation( e ) );
 			System.exit( 0 );
 		}
 
