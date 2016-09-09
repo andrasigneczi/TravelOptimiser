@@ -300,7 +300,11 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 			lTripClone.mArrivalDatetime   = lJSONTrip.getString( "arrivalDateTime" );
 			JSONArray lFares = lJSONTrip.getJSONArray( "fares" );
 			ParseFares( lFares, lTripClone );
-			mTravelDataResult.mTrips.add( lTripClone );
+			if( lTripClone.mPrices_PlusFare_Normal.length() != 0
+					|| lTripClone.mPrices_PlusFare_Discount.length() != 0
+					|| lTripClone.mPrices_BasicFare_Normal.length() != 0
+					|| lTripClone.mPrices_BasicFare_Discount.length() != 0 )
+				mTravelDataResult.mTrips.add( lTripClone );
 		}
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
