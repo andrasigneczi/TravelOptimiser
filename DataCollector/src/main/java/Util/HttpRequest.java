@@ -1,7 +1,9 @@
 package Util;
 
+import PageGuest.WizzAirPageGuest201609;
 import com.sun.mail.iap.ByteArray;
 import com.sun.org.apache.xerces.internal.impl.io.UTF8Reader;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONTokener;
 
@@ -19,7 +21,9 @@ import java.util.zip.GZIPInputStream;
 
 public class HttpRequest
 {
-    private final String USER_AGENT      = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36";
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger( HttpRequest.class);
+
+	private final String USER_AGENT      = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36";
 	private final String ACCEPT_LANGUAGE = "hu,en-US;q=0.8,en;q=0.6,de-DE;q=0.4,de;q=0.2,fr;q=0.2";
 	private final String ACCEPT_ENCODING = "gzip, deflate, br";
 	private final String CONTENT_TYPE    = "application/json";
@@ -75,7 +79,7 @@ public class HttpRequest
                 redirect = true;
         }
 
-        java.lang.System.out.println("Response Code ... " + mResponseCode);
+        //java.lang.System.out.println("Response Code ... " + mResponseCode);
 
         if (redirect) {
 
@@ -92,7 +96,7 @@ public class HttpRequest
             conn.addRequestProperty("User-Agent", "Mozilla");
             conn.addRequestProperty("Referer", "google.com");
 
-	        java.lang.System.out.println("Redirect to URL : " + newUrl);
+	        //java.lang.System.out.println("Redirect to URL : " + newUrl);
 
         }
 
@@ -110,11 +114,11 @@ public class HttpRequest
         }
         catch ( java.io.FileNotFoundException e )
         {
-            e.printStackTrace();
+	        mLogger.error( StringHelper.getTraceInformation( e ));
         }
         catch (java.io.IOException e )
         {
-            e.printStackTrace();
+	        mLogger.error( StringHelper.getTraceInformation( e ));
         }
 
         //print result
@@ -162,9 +166,9 @@ public class HttpRequest
         wr.close();
 
         mResponseCode = conHttp.getResponseCode();
-	    System.out.println( "\nSending 'POST' request to URL : " + aUrl );
-	    System.out.println( "Post parameters : " + aPostData/*urlParameters*/ );
-	    System.out.println( "Response Code : " + mResponseCode );
+	    mLogger.trace( "Sending 'POST' request to URL : " + aUrl );
+	    mLogger.trace( "Post parameters : " + aPostData/*urlParameters*/ );
+	    mLogger.trace( "Response Code : " + mResponseCode );
 
 
 	    print_all_headers( conHttp );
@@ -212,7 +216,7 @@ public class HttpRequest
 		//get all headers
 		Map<String, List<String>> map = con.getHeaderFields();
 		for (Map.Entry<String, List<String>> entry : map.entrySet()) {
-			java.lang.System.out.println("Key : " + entry.getKey() +
+			mLogger.trace("Key : " + entry.getKey() +
 					" ,Value : " + entry.getValue());
 		}
 	}
@@ -223,30 +227,29 @@ public class HttpRequest
 		{
 			try
 			{
-				System.out.println("Response Code : " + con.getResponseCode());
-				System.out.println("Cipher Suite : " + con.getCipherSuite());
-				System.out.println("\n");
+				mLogger.trace("Response Code : " + con.getResponseCode());
+				mLogger.trace("Cipher Suite : " + con.getCipherSuite());
 
 				Certificate[] certs = con.getServerCertificates();
 				for(Certificate cert : certs)
 				{
-					System.out.println("Cert Type : " + cert.getType());
-					System.out.println("Cert Hash Code : " + cert.hashCode());
-					System.out.println("Cert Public Key Algorithm : "
+					mLogger.trace("Cert Type : " + cert.getType());
+					mLogger.trace("Cert Hash Code : " + cert.hashCode());
+					mLogger.trace("Cert Public Key Algorithm : "
 							+ cert.getPublicKey().getAlgorithm());
-					System.out.println("Cert Public Key Format : "
+					mLogger.trace("Cert Public Key Format : "
 							+ cert.getPublicKey().getFormat());
-					System.out.println("\n");
+					mLogger.trace("\n");
 				}
 
 			}
 			catch (SSLPeerUnverifiedException e)
 			{
-				e.printStackTrace();
+				mLogger.error( StringHelper.getTraceInformation( e ));
 			}
 			catch (IOException e)
 			{
-				e.printStackTrace();
+				mLogger.error( StringHelper.getTraceInformation( e ));
 			}
 		}
 	}

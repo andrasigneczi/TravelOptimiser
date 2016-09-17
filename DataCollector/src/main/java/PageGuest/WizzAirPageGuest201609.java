@@ -34,7 +34,7 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 
 	private boolean mThreadStopped = true;
 	private long mTimeoutStart;
-	private final String mApiUrl = "https://be.wizzair.com/3.1.1/Api/search/search";
+	private final String mApiUrl = "https://be.wizzair.com/3.2.0/Api/search/search";
 
 	public WizzAirPageGuest201609()
 	{
@@ -434,6 +434,10 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 					mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
 				}
 				catch( IOException e )
+				{
+					mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
+				}
+				catch( IllegalStateException e )
 				{
 					mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
 				}
