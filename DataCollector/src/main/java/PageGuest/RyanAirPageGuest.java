@@ -9,6 +9,7 @@ import Util.DatetimeHelper;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -230,10 +231,19 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
                 lTripClone.mArrivalDatetime   = lTime.getString( 1 );
 
                 JSONObject lRegularFare  = lFlight.getJSONObject( "regularFare" );
-                JSONObject lBusinessFare = lFlight.getJSONObject( "businessFare" );
+                JSONObject lBusinessFare = null;
+                try
+                {
+                    lBusinessFare = lFlight.getJSONObject( "businessFare" );
+                }
+                catch ( JSONException e)
+                {
+                    mLogger.info( "businessFare JSONObject not found: " + StringHelper.getTraceInformation( e ) );
+                }
 
                 ParseFares( lRegularFare, FareType.Normal, lTripClone, aCurrency );
-                ParseFares( lBusinessFare, FareType.Business, lTripClone, aCurrency );
+                if( lBusinessFare != null )
+                    ParseFares( lBusinessFare, FareType.Business, lTripClone, aCurrency );
                 ConvertToWizzairFormatAndStore( lTripClone );
             }
         }
@@ -252,9 +262,12 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         String lUrl = "https://desktopapps.ryanair.com/en-gb/availability?ADT="
                 + aTravelDataInput.mAdultNumber
                 + "&CHD=" + aTravelDataInput.mChildNumber
-                + "&DateIn=" + FormatDate( aTravelDataInput.mReturnDay )
-                + "&DateOut=" + FormatDate( aTravelDataInput.mDepartureDay )
-                + "&Destination=" + aTravelDataInput.mAirportCode_GoingTo
+                + "&DateOut=" + FormatDate( aTravelDataInput.mDepartureDay );
+
+        if( aTravelDataInput.mReturnTicket )
+                lUrl += "&DateIn=" + FormatDate( aTravelDataInput.mReturnDay );
+
+        lUrl += "&Destination=" + aTravelDataInput.mAirportCode_GoingTo
                 + "&FlexDaysIn=6&FlexDaysOut=6&INF=" + aTravelDataInput.mInfantNumber
                 + "&Origin=" + aTravelDataInput.mAirportCode_LeavingFrom
                 + "&RoundTrip=" + ( aTravelDataInput.mReturnTicket ? "true" : "false" )
@@ -326,10 +339,11 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
                 }
                 catch( URISyntaxException e )
                 {
+                    mLogger.error( "Exception in RyanAir.run: " + StringHelper.getTraceInformation( e ) );
                 }
                 catch( IOException e )
                 {
-
+                    mLogger.error( "Exception in RyanAir.run: " + StringHelper.getTraceInformation( e ) );
                 }
 
                 String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
