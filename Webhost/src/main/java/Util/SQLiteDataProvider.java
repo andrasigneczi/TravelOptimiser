@@ -327,7 +327,7 @@ public class SQLiteDataProvider implements DataProvider
 		if( lDatabaseFileName == null || mOpenedDatabaseFileName == null || lDatabaseFileName.equals( mOpenedDatabaseFileName ) )
 			return;
 
-		if( lDatabaseFileName.compareToIgnoreCase(mOpenedDatabaseFileName) != 1 )
+		if( lDatabaseFileName.compareToIgnoreCase(mOpenedDatabaseFileName) <= 0 )
 			return;
 
 		ConnectionClose();
