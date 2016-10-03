@@ -19,6 +19,8 @@ public class TravelData_INPUT implements Cloneable, Serializable
 	public boolean mNearbyAirports    = false;
 	public boolean mReturnTicket      = true;
 
+	public ResultFilter mFilter       = null;
+
 	private void writeObject(java.io.ObjectOutputStream out) throws IOException
 	{
 		out.writeObject(  mAirline );

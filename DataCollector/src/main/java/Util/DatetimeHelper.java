@@ -2,22 +2,22 @@ package Util;
 
 import org.apache.log4j.Logger;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
+import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DatetimeHelper
 {
+    private static org.apache.log4j.Logger mLogger = Logger.getLogger( DatetimeHelper.class);
+
     // wizzair format, this format the required: "yyyy-MM-dd'T'HH:mm:ss"
 
     private static final String [] mMonthShortNames = new String[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-    private static final String [] mDayNames = new String[] { "Mon", "Tue", "Wen", "Thu", "Fri", "Sat", "Sun" };
+    //private static final String [] mDayNames = new String[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
     private static final String [] lMonthNames = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
-    private static org.apache.log4j.Logger mLogger = Logger.getLogger( DatetimeHelper.class);
-
+    private static Hashtable<String, DayOfWeek> mDayNames = null;
 
     public static String ConvertFromRyanairFormat( String aDatetime )
     {
@@ -186,5 +186,32 @@ public class DatetimeHelper
         }
 
         return aLocalDateTime;
+    }
+
+    public static DayOfWeek[] ConvertDayList( String aDayList )
+    {
+        if( mDayNames == null )
+        {
+            mDayNames = new Hashtable<String, DayOfWeek>();
+            mDayNames.put( "Mon", DayOfWeek.MONDAY );
+            mDayNames.put( "Tue", DayOfWeek.TUESDAY );
+            mDayNames.put( "Wed", DayOfWeek.WEDNESDAY );
+            mDayNames.put( "Thu", DayOfWeek.THURSDAY );
+            mDayNames.put( "Fri", DayOfWeek.FRIDAY );
+            mDayNames.put( "Sat", DayOfWeek.SATURDAY );
+            mDayNames.put( "Sun", DayOfWeek.SUNDAY );
+        }
+
+        String aDays[] = aDayList.split( "," );
+        ArrayList<DayOfWeek> lReturn = new ArrayList<DayOfWeek>();
+
+        for( String lDay : aDays )
+        {
+            if( mDayNames.containsKey( lDay ))
+                lReturn.add( mDayNames.get( lDay ) );
+            else
+                mLogger.warn( "Illegal short day name: " + lDay );
+        }
+        return (DayOfWeek[]) lReturn.toArray();
     }
 }

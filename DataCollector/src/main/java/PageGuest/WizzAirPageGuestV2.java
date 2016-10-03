@@ -121,7 +121,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		return lPossibleTrip;
 	}
 
-	private TravelData_RESULT ParseTripList( JSONObject lTripsOnADay )
+	private TravelData_RESULT ParseTripList( JSONObject lTripsOnADay, ResultFilter aFilter, boolean aOutbound )
 	{
 		//ArrayList<TravelData_RESULT> lResultTrip = new ArrayList<TravelData_RESULT>();
 		TravelData_RESULT lTrip = new TravelData_RESULT();
@@ -138,6 +138,13 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 					ConvertFromWizzairJSONStoredFormat( lTripsOnADay.getString( "Date" ) + " " +  lFlight.mDepartureDatetime );
 			lFlight.mArrivalDatetime =
 					ConvertFromWizzairJSONStoredFormat( lTripsOnADay.getString( "Date" ) + " " +  lFlight.mArrivalDatetime );
+
+			if( aFilter != null )
+			{
+				if( !aFilter.testADay( lFlight.mDepartureDatetime.substring( 0, 8 ), aOutbound ))
+					continue;
+			}
+
 			lTrip.mTrips.add( lFlight );
 		}
 		return lTrip;
@@ -152,9 +159,10 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
 		ArrayList<TravelData_RESULT> lResultList = new ArrayList<TravelData_RESULT>();
 
+		// 6 month ahead
 		for( int i = 0; i < 6; i++ )
 		{
-			FillTheForm( aTravelDataInput, lYear, lMonth, lResultList );
+			FillTheForm( aTravelDataInput, lYear, lMonth, lResultList, true );
 			if( ++lMonth == 13 )
 			{
 				lMonth = 1;
@@ -172,7 +180,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 
 		for( int i = 0; i < 6; i++ )
 		{
-			FillTheForm( lTravelDataInput, lYear, lMonth, lResultList );
+			FillTheForm( lTravelDataInput, lYear, lMonth, lResultList, false );
 			if( ++lMonth == 13 )
 			{
 				lMonth = 1;
@@ -184,7 +192,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		SaveMonthlyFlights( lResultList );
 	}
 
-	private void FillTheForm( TravelData_INPUT aTravelDataInput, int aYear, int aMonth, ArrayList<TravelData_RESULT> aResultList ) throws URISyntaxException, IOException
+	private void FillTheForm( TravelData_INPUT aTravelDataInput, int aYear, int aMonth, ArrayList<TravelData_RESULT> aResultList, boolean aOutbound ) throws URISyntaxException, IOException
 	{
 		// String lUrl = "https://cdn.static.wizzair.com/hu-HU/TimeTableAjax?departureIATA=CRL&arrivalIATA=BUD&year=2016&month=8";
 		String lUrl = "https://cdn.static.wizzair.com/hu-HU/TimeTableAjax?departureIATA="
@@ -204,18 +212,19 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 
 		for( int lDateIndex = 0; lDateIndex < lRoot.length(); lDateIndex++ )
 		{
-			TravelData_RESULT lTDR = ParseTripList( lRoot.getJSONObject( lDateIndex ));
+			TravelData_RESULT lTDR = ParseTripList( lRoot.getJSONObject( lDateIndex ), aTravelDataInput.mFilter, aOutbound );
 			lTDR.mTravelDataInput = aTravelDataInput;
 			aResultList.add( lTDR );
 		}
 	}
 
 	/**
-	 * Convert all the trips into TravelData_INPUT and send them to the ActiveMQ
+	 * Prepare an inputlist from the resultlist. This list will be inserted into the ActiveMQ.
 	 * @param aResultList
+	 * @return prepared input list
 	 * @throws JMSException
 	 */
-	public void SaveMonthlyFlights( ArrayList<TravelData_RESULT> aResultList ) throws JMSException
+	private ArrayList<TravelData_INPUT> PrepareInputList( ArrayList<TravelData_RESULT> aResultList ) throws JMSException
 	{
 		TravelData_INPUT lTravelData_input = null;
 		ArrayList<TravelData_INPUT> lTravelDataInputs = new ArrayList<TravelData_INPUT>();
@@ -273,6 +282,17 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 				}
 			}
 		}
+		return lTravelDataInputs;
+	}
+
+	/**
+	 * Convert all the trips into TravelData_INPUT and send them to the ActiveMQ
+	 * @param aResultList
+	 * @throws JMSException
+	 */
+	public void SaveMonthlyFlights( ArrayList<TravelData_RESULT> aResultList ) throws JMSException
+	{
+		ArrayList<TravelData_INPUT> lTravelDataInputs = PrepareInputList( aResultList );
 
 		ArrayList<TravelData_INPUT> lReturnTrips = CreateReturnTrips( lTravelDataInputs );
 
