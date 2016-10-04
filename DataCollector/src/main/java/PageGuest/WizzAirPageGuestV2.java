@@ -159,8 +159,10 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
 		ArrayList<TravelData_RESULT> lResultList = new ArrayList<TravelData_RESULT>();
 
+		final int lInterval = StringHelper.parseInt( aTravelDataInput.mInterval, 6 );
+
 		// 6 month ahead
-		for( int i = 0; i < 6; i++ )
+		for( int i = 0; i < lInterval; i++ )
 		{
 			FillTheForm( aTravelDataInput, lYear, lMonth, lResultList, true );
 			if( ++lMonth == 13 )
@@ -178,7 +180,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		lTravelDataInput.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_LeavingFrom;
 		lTravelDataInput.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_GoingTo;
 
-		for( int i = 0; i < 6; i++ )
+		for( int i = 0; i < lInterval; i++ )
 		{
 			FillTheForm( lTravelDataInput, lYear, lMonth, lResultList, false );
 			if( ++lMonth == 13 )

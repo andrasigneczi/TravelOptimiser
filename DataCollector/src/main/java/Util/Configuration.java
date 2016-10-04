@@ -47,6 +47,7 @@ public class Configuration
 		mValidFlightNodes.add( "LeavingFrom" );
 		mValidFlightNodes.add( "GoingTo" );
 		mValidFlightNodes.add( "Filter" );
+		mValidFlightNodes.add( "Interval" );
 
 		ParseConfigurationFile();
 	}

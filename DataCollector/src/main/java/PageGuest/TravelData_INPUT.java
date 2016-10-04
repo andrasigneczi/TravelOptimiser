@@ -20,6 +20,7 @@ public class TravelData_INPUT implements Cloneable, Serializable
 	public boolean mReturnTicket      = true;
 
 	public ResultFilter mFilter       = null;
+	public String       mInterval     = "";
 
 	private void writeObject(java.io.ObjectOutputStream out) throws IOException
 	{
@@ -33,6 +34,7 @@ public class TravelData_INPUT implements Cloneable, Serializable
 		out.writeObject(  mInfantNumber );
 		out.writeBoolean( mNearbyAirports );
 		out.writeBoolean( mReturnTicket );
+		out.writeObject(  mInterval );
 	}
 
 	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
@@ -47,6 +49,7 @@ public class TravelData_INPUT implements Cloneable, Serializable
 		mInfantNumber            = (String)in.readObject();
 		mNearbyAirports          = in.readBoolean();
 		mReturnTicket            = in.readBoolean();
+		mInterval                = (String)in.readObject();
 	}
 
 	public boolean set( String aName, String aValue )
@@ -120,6 +123,13 @@ public class TravelData_INPUT implements Cloneable, Serializable
 			if( aName.equals( "ReturnTicket" ) )
 			{
 				mReturnTicket = aValue.equals( "true" );
+				lReturnValue = true;
+				break setvalues;
+			}
+
+			if( aName.equals( "Interval" ) )
+			{
+				mInterval = aValue;
 				lReturnValue = true;
 				break setvalues;
 			}

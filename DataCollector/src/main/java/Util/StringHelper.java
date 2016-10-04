@@ -115,4 +115,22 @@ public class StringHelper {
 		aException.printStackTrace( lPrintWriter );
 		return lStringWriter.toString();
 	}
+
+	public static int parseInt( String aValue, int aDefaultValue )
+	{
+		int lValue = aDefaultValue;
+		if( aValue != null && aValue.length() > 0 )
+		{
+			try
+			{
+				lValue = Integer.parseInt( aValue );
+			}
+			catch( NumberFormatException e )
+			{
+				// Nothing to do
+			}
+		}
+
+		return lValue;
+	}
 }
