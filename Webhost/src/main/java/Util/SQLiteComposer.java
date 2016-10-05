@@ -40,7 +40,7 @@ public class SQLiteComposer implements SQLComposer
 				"\t\tAND TDR.AirportCode_GoingTo like '[AIRPORT_FROM]'\n" +
 				"\t\tAND TDR_PT.OutboundTrip='false'\n" +
 				"\t))\n" +
-				"ORDER BY DepartureDatetime ASC, OutboundTrip DESC, SearchDatetime ASC;\n";
+				"ORDER BY DepartureDatetime ASC, SearchDatetime ASC;\n";
 
 		if( aAirportFrom.equals( "-" ))
 			aAirportFrom = "%";
@@ -83,7 +83,7 @@ public class SQLiteComposer implements SQLComposer
 				"\t\tAND TDR_PT.OutboundTrip='false'\n" +
 				"\t\t[INBOUND_DATE]\n" +
 				"\t))\n" +
-				"ORDER BY DepartureDatetime ASC, OutboundTrip DESC, SearchDatetime ASC;\n";
+				"ORDER BY DepartureDatetime ASC, SearchDatetime ASC;\n";
 
 		String lReturnValue = lQueryTemlate;
 		if( aReturnCheckboxChecked )

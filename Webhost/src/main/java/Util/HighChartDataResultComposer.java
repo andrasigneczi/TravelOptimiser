@@ -13,13 +13,13 @@ public class HighChartDataResultComposer extends DataResultComposer
 
 	//private String mResult = new String();
 	// if 3 or more value one by one are the same in the list, only the first one and the last one will be displayed
-	private ArrayList<Double> mValues;
-	private ArrayList<String> mDates;
-	private ArrayList<Double> mUnfilteredValues;
+	private ArrayList<Double>  mValues;
+	private ArrayList<String>  mDates;
+	private ArrayList<Double>  mUnfilteredValues;
 	private ArrayList<Double>  mCurrencyPriceInEuro;
-	private ArrayList<String> mUnfilteredDates;
-	private HashSet<String>   mFoundCurrency;
-	private double            mMaxValue = Double.MIN_VALUE;
+	private ArrayList<String>  mUnfilteredDates;
+	private HashSet<String>    mFoundCurrency;
+	private double             mMaxValue = Double.MIN_VALUE;
 	//private boolean           mCurrency_Price_In_Euro_Is_Null = false;
 
 	public HighChartDataResultComposer()
@@ -70,6 +70,23 @@ public class HighChartDataResultComposer extends DataResultComposer
 		{
 			lDValue *= (double)aOriginalCurrencyMultiplerToEuro;
 			mCurrencyPriceInEuro.add( (double)aOriginalCurrencyMultiplerToEuro );
+		}
+		else
+		{
+			// Some fixes for older data, where the program didn't store the currency multipler
+			if( lCurrency.equals( "€" ))
+			{
+				mCurrencyPriceInEuro.add( 1.0 );
+			}
+			else if( lCurrency.equals( "lv" ))
+			{
+				if( aOriginalCurrencyMultiplerToEuro == null )
+				{
+					final double lCurrencyMultiplerToEuro = 0.511763;
+					lDValue *= lCurrencyMultiplerToEuro;
+					mCurrencyPriceInEuro.add( lCurrencyMultiplerToEuro );
+				}
+			}
 		}
 
 		aDate = aDate.replace( " ", "T" );
