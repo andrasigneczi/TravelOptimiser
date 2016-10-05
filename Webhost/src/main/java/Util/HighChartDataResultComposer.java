@@ -95,6 +95,14 @@ public class HighChartDataResultComposer extends DataResultComposer
 		addDates( mDates, mValues, aDate, lDValue );
 	}
 
+	/**
+	 * If the algorithm find three identical currency value one after another,
+	 * it will remove the middle one. Two value identical if their difference less than 0.7.
+	 * @param aDatesArray
+	 * @param aValuesArray
+	 * @param aDate
+	 * @param aValue
+	 */
 	private void addDates( ArrayList<String> aDatesArray, ArrayList<Double> aValuesArray, String aDate, Double aValue )
 	{
 		if( aValuesArray.size() < 2 )
@@ -104,8 +112,11 @@ public class HighChartDataResultComposer extends DataResultComposer
 		}
 		else
 		{
-			if( aValuesArray.get( aValuesArray.size() - 2 ).doubleValue() == aValuesArray.get( aValuesArray.size() - 1 ).doubleValue()
-					&& aValuesArray.get( aValuesArray.size() - 1 ).doubleValue() == aValue )
+			final double lLastValue = aValuesArray.get( aValuesArray.size() - 1 ).doubleValue();
+			final double lPenultimateValue = aValuesArray.get( aValuesArray.size() - 2 ).doubleValue();
+			final double lThreshold = 0.7;
+			//if( lPenultimateValue == lLastValue && lLastValue == aValue )
+			if( Math.abs( lPenultimateValue - lLastValue ) < lThreshold && Math.abs( lLastValue - aValue ) < lThreshold )
 			{
 				aDatesArray.set( aValuesArray.size() - 1, aDate );
 				aValuesArray.set( aValuesArray.size() - 1, aValue );
