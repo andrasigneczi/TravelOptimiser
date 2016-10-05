@@ -1,5 +1,6 @@
 package Util;
 
+import PageGuest.ResultFilter;
 import PageGuest.ResultFilterBuilder;
 import PageGuest.TravelData_INPUT;
 import org.xml.sax.Attributes;
@@ -46,8 +47,9 @@ public class ConfigurationHandler extends DefaultHandler
 		//System.out.println("Start Element :" + qName);
 		mCurrentPath.add( qName );
 
-		if( qName.equals( "DayFilter" ))
+		if( qName.equals( "DayFilter" ) && mCurrentTravelDataInput != null )
 		{
+			mCurrentTravelDataInput.add( ResultFilterBuilder.Release() );
 			ResultFilterBuilder.Create( ResultFilterBuilder.ResultFilterType.Day );
 			for( int i = 0; i < attributes.getLength(); i++ )
 			{
@@ -81,7 +83,7 @@ public class ConfigurationHandler extends DefaultHandler
 		}
 		else if( mConfiguration.getValidAirlines().contains( qName ) && getPath().equals( mFlightPath + qName ))
 		{
-			mCurrentTravelDataInput.mFilter = ResultFilterBuilder.Release();
+			mCurrentTravelDataInput.add( ResultFilterBuilder.Release());
 			mConfiguration.addFlightItem( mCurrentTravelDataInput );
 			mCurrentTravelDataInput = null;
 			mOpenedNode = OpenedNode.NONE;

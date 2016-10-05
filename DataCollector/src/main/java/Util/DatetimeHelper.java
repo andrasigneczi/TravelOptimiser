@@ -188,7 +188,7 @@ public class DatetimeHelper
         return aLocalDateTime;
     }
 
-    public static DayOfWeek[] ConvertDayList( String aDayList )
+    public static ArrayList<DayOfWeek> ConvertDayList( String aDayList )
     {
         if( mDayNames == null )
         {
@@ -212,6 +212,6 @@ public class DatetimeHelper
             else
                 mLogger.warn( "Illegal short day name: " + lDay );
         }
-        return (DayOfWeek[]) lReturn.toArray();
+        return lReturn;
     }
 }

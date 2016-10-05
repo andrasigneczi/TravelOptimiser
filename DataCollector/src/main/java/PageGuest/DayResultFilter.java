@@ -1,10 +1,12 @@
 package PageGuest;
 
 import Util.DatetimeHelper;
+import Util.StringHelper;
 import org.apache.log4j.Logger;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -19,7 +21,7 @@ public class DayResultFilter implements ResultFilter
 
 	private String mAffectedDays = "";
 	private Methods mMethod = Methods.Accept;
-	private DayOfWeek mDays[];
+	private ArrayList<DayOfWeek> mDays = null;
 	private Directions mDirection = Directions.Both;
 
 	/**
@@ -41,15 +43,15 @@ public class DayResultFilter implements ResultFilter
 			return true;
 
 		String lDateArray[] = aDay.split( "-" );
-		LocalDate lDate = LocalDate.of( Integer.parseInt( lDateArray[ 0 ] ),
-				Integer.parseInt( lDateArray[ 1 ] ),
-				Integer.parseInt( lDateArray[ 2 ] ));
+		LocalDate lDate = LocalDate.of( StringHelper.parseInt( lDateArray[ 0 ], 0 ),
+				StringHelper.parseInt( lDateArray[ 1 ], 0 ),
+				StringHelper.parseInt( lDateArray[ 2 ], 0 ));
 
 		boolean lDayAccepted = false;
 		int lDifferenceCount = 0;
-		for( int i = 0; i < mDays.length; i++ )
+		for( int i = 0; i < mDays.size(); i++ )
 		{
-			if( mDays[ i ] == lDate.getDayOfWeek())
+			if( mDays.get( i ) == lDate.getDayOfWeek())
 			{
 				if( mMethod == Methods.Accept )
 				{
@@ -70,7 +72,7 @@ public class DayResultFilter implements ResultFilter
 			}
 		}
 
-		if( mMethod == Methods.Deny && lDifferenceCount == mDays.length )
+		if( mMethod == Methods.Deny && lDifferenceCount == mDays.size() )
 		{
 			lDayAccepted = true;
 		}

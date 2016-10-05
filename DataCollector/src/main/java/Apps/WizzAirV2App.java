@@ -1,6 +1,6 @@
 package Apps;
 
-import Util.CurrencyHelper;
+import Root.PageGuestFactory;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
 
@@ -16,6 +16,10 @@ public class WizzAirV2App
 		try
 		{
 			mLogger.trace( "WizzAirV2App start" );
+
+			final PageGuest.WizzAirPageGuestV2 lGuestW = (PageGuest.WizzAirPageGuestV2) PageGuestFactory.Create( "WizzAirV2" );
+			lGuestW.DoSearchFromConfig();
+			lGuestW.WaitForFinish();
 			mLogger.trace( "WizzAirV2App stop" );
 		}
 		catch (Exception e)

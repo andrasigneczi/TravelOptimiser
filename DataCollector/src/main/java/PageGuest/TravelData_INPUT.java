@@ -2,6 +2,7 @@ package PageGuest;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * Created by Andras on 15/03/2016.
@@ -18,9 +19,9 @@ public class TravelData_INPUT implements Cloneable, Serializable
 	public String  mInfantNumber      = "0";
 	public boolean mNearbyAirports    = false;
 	public boolean mReturnTicket      = true;
+	public String  mInterval          = "";
 
-	public ResultFilter mFilter       = null;
-	public String       mInterval     = "";
+	public ArrayList<ResultFilter> mFilters = new ArrayList<ResultFilter>();
 
 	private void writeObject(java.io.ObjectOutputStream out) throws IOException
 	{
@@ -137,6 +138,12 @@ public class TravelData_INPUT implements Cloneable, Serializable
 		return lReturnValue;
 	}
 
+	public void add( ResultFilter aFilter )
+	{
+		if( aFilter != null )
+			mFilters.add( aFilter );
+	}
+
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
@@ -157,6 +164,7 @@ public class TravelData_INPUT implements Cloneable, Serializable
 		lReturn += "InfantNumber: " + mInfantNumber + "\n";
 		lReturn += "NearbyAirports: " + mNearbyAirports + "\n";
 		lReturn += "ReturnTicket: " + mReturnTicket + "\n";
+		lReturn += "Interval: " + mInterval + "\n";
 		return lReturn;
 	}
 }

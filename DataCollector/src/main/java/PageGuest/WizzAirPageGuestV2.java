@@ -15,6 +15,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -42,6 +43,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuestV2.class);
 
 	private boolean mThreadStopped = true;
+	private long mTimeoutStart;
 
 	public WizzAirPageGuestV2( boolean dummy )
 	{
@@ -121,7 +123,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		return lPossibleTrip;
 	}
 
-	private TravelData_RESULT ParseTripList( JSONObject lTripsOnADay, ResultFilter aFilter, boolean aOutbound )
+	private TravelData_RESULT ParseTripList( JSONObject lTripsOnADay, ArrayList<ResultFilter> aFilters, boolean aOutbound )
 	{
 		//ArrayList<TravelData_RESULT> lResultTrip = new ArrayList<TravelData_RESULT>();
 		TravelData_RESULT lTrip = new TravelData_RESULT();
@@ -139,9 +141,19 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 			lFlight.mArrivalDatetime =
 					ConvertFromWizzairJSONStoredFormat( lTripsOnADay.getString( "Date" ) + " " +  lFlight.mArrivalDatetime );
 
-			if( aFilter != null )
+			if( aFilters != null && aFilters.size() > 0 )
 			{
-				if( !aFilter.testADay( lFlight.mDepartureDatetime.substring( 0, 8 ), aOutbound ))
+				String lDepartureDay = lFlight.mDepartureDatetime.substring( 0, 10 );
+				boolean lTestFailed = false;
+				for( ResultFilter aFilter : aFilters )
+				{
+					if( !aFilter.testADay( lDepartureDay, aOutbound ) )
+					{
+						lTestFailed = true;
+						break;
+					}
+				}
+				if( lTestFailed )
 					continue;
 			}
 
@@ -214,7 +226,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 
 		for( int lDateIndex = 0; lDateIndex < lRoot.length(); lDateIndex++ )
 		{
-			TravelData_RESULT lTDR = ParseTripList( lRoot.getJSONObject( lDateIndex ), aTravelDataInput.mFilter, aOutbound );
+			TravelData_RESULT lTDR = ParseTripList( lRoot.getJSONObject( lDateIndex ), aTravelDataInput.mFilters, aOutbound );
 			lTDR.mTravelDataInput = aTravelDataInput;
 			aResultList.add( lTDR );
 		}
@@ -410,6 +422,13 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		System.out.println("stop()");
 	}
 
+	private void TimeoutTest()
+	{
+		Sleep( 100 );
+		if( Duration.ofMillis( System.currentTimeMillis() - mTimeoutStart ).getSeconds() > 60 )
+			mThreadStopped = true;
+	}
+
 	public void run()
 	{
 		mLogger.trace( "begin, thread name: " + getThreadName());
@@ -418,6 +437,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 			System.out.println("Thread::run");
 
 			mThreadStopped = false;
+			mTimeoutStart = System.currentTimeMillis();
 			while (!mThreadStopped)
 			{
 				int lSearQueueSize;
@@ -428,7 +448,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 
 				if ( lSearQueueSize == 0 )
 				{
-					Sleep(100);
+					TimeoutTest();
 					continue;
 				}
 
@@ -451,8 +471,9 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 					mLogger.error( StringHelper.getTraceInformation( e ));
 				}
 
-				//String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
-				//Sleep( 1000 * Integer.parseInt( lSleep ));
+				String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
+				Sleep( 1000 * Integer.parseInt( lSleep ));
+				mTimeoutStart = System.currentTimeMillis();
 			}
 			System.out.println("run()");
 		}
@@ -463,6 +484,19 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
+	public void WaitForFinish()
+	{
+		mLogger.trace( "begin, thread name: " + getThreadName() );
+		try
+		{
+			mThread.join();
+		}
+		catch( InterruptedException e )
+		{
+			mLogger.error( StringHelper.getTraceInformation( e ) );
+		}
+		mLogger.trace( "end, thread name: " + getThreadName() );
+	}
 	// https://cdn.static.wizzair.com/hu-HU/TimeTableAjax?departureIATA=CRL&arrivalIATA=BUD&year=2016&month=8
 }
 
