@@ -86,9 +86,11 @@ public class CurrencyHelper
             });
 
             DOMDocument lDocument = lBrowser.getDocument();
-            DOMElement lElement = lDocument.findElement( By.xpath( "//*[@id=\"contentL\"]/div[1]/div[1]/div/span/table/tbody/tr[1]/td[3]" ) );
+            //DOMElement lElement = lDocument.findElement( By.xpath( "//*[@id=\"contentL\"]/div[1]/div[1]/div/span/table/tbody/tr[1]/td[3]" ) );
+            DOMElement lElement = lDocument.findElement( By.xpath( "//*[@id=\"ucc-container\"]/span[2]/span[2]" ) );
             String lInner = lElement.getInnerText();
-            String lCurrencyValue = lElement.getInnerText().substring( 0, lInner.length() - 4 );
+            //String lCurrencyValue = lElement.getInnerText().substring( 0, lInner.length() - 4 );
+            String lCurrencyValue = lInner;
             mMultipliers.put( lItem.getValue().toString(), Double.valueOf( lCurrencyValue ) );
         }
         lBrowser.dispose();

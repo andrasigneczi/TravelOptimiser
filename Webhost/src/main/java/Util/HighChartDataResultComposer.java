@@ -16,7 +16,7 @@ public class HighChartDataResultComposer extends DataResultComposer
 	private ArrayList<Double>  mValues;
 	private ArrayList<String>  mDates;
 	private ArrayList<Double>  mUnfilteredValues;
-	private ArrayList<Double>  mCurrencyPriceInEuro;
+	private int                mFoundCurrencyCount;
 	private ArrayList<String>  mUnfilteredDates;
 	private HashSet<String>    mFoundCurrency;
 	private double             mMaxValue = Double.MIN_VALUE;
@@ -28,7 +28,7 @@ public class HighChartDataResultComposer extends DataResultComposer
 		mDates               = new ArrayList<>( );
 		mUnfilteredValues    = new ArrayList<>( );
 		mUnfilteredDates     = new ArrayList<>( );
-		mCurrencyPriceInEuro = new ArrayList<>( );
+		mFoundCurrencyCount  = 0;
 		mFoundCurrency       = new HashSet<>( );
 	}
 
@@ -65,18 +65,18 @@ public class HighChartDataResultComposer extends DataResultComposer
 				lBuffer.append( lValue.charAt( i ));
 		double lDValue = Double.parseDouble( lBuffer.toString() );
 		if( aOriginalCurrencyMultiplerToEuro != null
-				&& mUnfilteredDates.size() == mCurrencyPriceInEuro.size()
+				&& mUnfilteredDates.size() == mFoundCurrencyCount
 				&& aOriginalCurrencyMultiplerToEuro > 0.0 )
 		{
 			lDValue *= (double)aOriginalCurrencyMultiplerToEuro;
-			mCurrencyPriceInEuro.add( (double)aOriginalCurrencyMultiplerToEuro );
+			mFoundCurrencyCount++;
 		}
 		else
 		{
 			// Some fixes for older data, where the program didn't store the currency multipler
 			if( lCurrency.equals( "€" ))
 			{
-				mCurrencyPriceInEuro.add( 1.0 );
+				mFoundCurrencyCount++;
 			}
 			else if( lCurrency.equals( "lv" ))
 			{
@@ -84,7 +84,7 @@ public class HighChartDataResultComposer extends DataResultComposer
 				{
 					final double lCurrencyMultiplerToEuro = 0.511763;
 					lDValue *= lCurrencyMultiplerToEuro;
-					mCurrencyPriceInEuro.add( lCurrencyMultiplerToEuro );
+					mFoundCurrencyCount++;
 				}
 			}
 		}
@@ -149,7 +149,7 @@ public class HighChartDataResultComposer extends DataResultComposer
 
 	public HashSet<String> getFoundCurrency()
 	{
-		if( mUnfilteredDates.size() == mCurrencyPriceInEuro.size())
+		if( mUnfilteredDates.size() == mFoundCurrencyCount )
 		{
 			HashSet<String> lRetun = new HashSet<String>();
 			lRetun.add( "€" );
