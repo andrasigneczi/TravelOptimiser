@@ -104,7 +104,9 @@ public class TravelDataResultComposer_SQLite extends TravelDataResultComposer
 		return lSQL;
 	}
 
-	public String insertTravelDataResult_PossibleTrips( TravelData_RESULT.TravelData_PossibleTrip aTrip,  int aTravelDataResultId )
+	public String insertTravelDataResult_PossibleTrips( TravelData_RESULT.TravelData_PossibleTrip aTrip,
+	                                                    int aTravelDataResultId,
+	                                                    String recordedDatetime )
 	{
 		String lSQL = "INSERT INTO TravelDataResult_PossibleTrips (\n" +
 				"\tDepartureDatetime         ,\n" +     // 2016.03.25 17:10
@@ -125,7 +127,7 @@ public class TravelDataResultComposer_SQLite extends TravelDataResultComposer
 				aTrip.mPrices_PlusFare_Discount + "', " +
 				String.valueOf( CurrencyHelper.getCurrencyPriceInEuro( aTrip.mPrices_BasicFare_Normal )) + ", '" +
 				aTrip.mOutboundTrip + "', " +
-				"datetime('now', 'localtime')," +
+				"datetime('" + recordedDatetime + "')," +
 				aTravelDataResultId + ");\n";
 
 

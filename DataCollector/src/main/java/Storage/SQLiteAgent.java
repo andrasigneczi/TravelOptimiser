@@ -131,12 +131,14 @@ public class SQLiteAgent extends ArchiverAgent
 		return ExecuteStatement( lQuery, Statement.RETURN_GENERATED_KEYS );
 	}
 
-	private void InsertTravelDataResult_PossibleTrips( int aTravelDataResultId )
+	private void InsertTravelDataResult_PossibleTrips( int aTravelDataResultId, String recordedDatetime )
 	{
 		mLogger.trace( "begin" );
 		for( int i = 0; i < mResult.mTrips.size(); i++ )
 		{
-			String lQuery = mComposer.insertTravelDataResult_PossibleTrips( mResult.mTrips.get( i ), aTravelDataResultId );
+			String lQuery = mComposer.insertTravelDataResult_PossibleTrips( mResult.mTrips.get( i ),
+					aTravelDataResultId,
+					recordedDatetime );
 
 			mLogger.trace( lQuery );
 
@@ -162,7 +164,7 @@ public class SQLiteAgent extends ArchiverAgent
 		{
 			lTravelDataResultId = InsertTravelDataResult( lSearchId );
 		}
-		InsertTravelDataResult_PossibleTrips( lTravelDataResultId );
+		InsertTravelDataResult_PossibleTrips( lTravelDataResultId, aResult.mRecordedDatetime );
 		mLogger.trace( "end" );
 	}
 

@@ -2,6 +2,8 @@ package PageGuest;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class TravelData_RESULT implements Serializable
@@ -77,8 +79,9 @@ public class TravelData_RESULT implements Serializable
 	public String mAirportCode_LeavingFrom    = "";   // SOF
 	public String mAirportCode_GoingTo        = "";       // HHN
 	public TravelData_INPUT mTravelDataInput  = null;
+	public String mRecordedDatetime           = LocalDateTime.now().format( DateTimeFormatter.ofPattern( "yyyy-MM-dd HH:mm:ss" ));
 	public ArrayList<TravelData_PossibleTrip> mTrips;
-	//public boolean mReturnTicket;
+
 
 	String toString( TravelDataResultComposer aComposer )
 	{
@@ -94,6 +97,7 @@ public class TravelData_RESULT implements Serializable
 		out.writeObject( mAirportCode_LeavingFrom );
 		out.writeObject( mAirportCode_GoingTo );
 		out.writeObject( mTravelDataInput );
+		out.writeObject( mRecordedDatetime );
 		out.writeInt( mTrips.size() );
 		for( TravelData_PossibleTrip lTrip : mTrips )
 			out.writeObject( lTrip );
@@ -106,6 +110,8 @@ public class TravelData_RESULT implements Serializable
 		mAirportCode_LeavingFrom = (String)in.readObject();
 		mAirportCode_GoingTo     = (String)in.readObject();
 		mTravelDataInput         = (TravelData_INPUT)in.readObject();
+		mRecordedDatetime        = (String)in.readObject();
+
 		int lSize = in.readInt();
 		mTrips = new ArrayList<TravelData_PossibleTrip>();
 		for( int i = 0; i < lSize; i++ )
