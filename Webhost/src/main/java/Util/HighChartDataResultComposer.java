@@ -2,6 +2,9 @@ package Util;
 
 import org.apache.log4j.Logger;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -158,64 +161,128 @@ public class HighChartDataResultComposer extends DataResultComposer
 		return mFoundCurrency;
 	}
 
-	private class SummarizeNode
+	enum NodeSource
 	{
-		private double mValue;
-		private int mAddCount;
+		FirstList,
+		SecondList,
+		BothList
+	};
+
+	private final static DateTimeFormatter mFormatter = DateTimeFormatter.ofPattern( "yyyy-MM-dd'T'HH:mm:ss" );
+
+	private class DatetimeNode
+	{
+		private LocalDateTime mDatetime;
+		private NodeSource    mSource;
+		private double        mValue;
+
+		public DatetimeNode( String aDatetime, NodeSource aSource, double aValue )
+		{
+			mDatetime = LocalDateTime.parse( aDatetime, mFormatter );
+			mSource   = aSource;
+			mValue    = aValue;
+		}
+
+		public void setSource( NodeSource aSource )
+		{
+			mSource = aSource;
+		}
+
+		public NodeSource getSource()
+		{
+			return mSource;
+		}
+
+		public LocalDateTime getDatetime()
+		{
+			return mDatetime;
+		}
 
 		public double getValue()
 		{
 			return mValue;
 		}
 
-		public int getAddCount()
-		{
-			return mAddCount;
-		}
-
-		public SummarizeNode( double aValue )
-		{
-			mValue = aValue;
-			mAddCount = 0;
-		}
-
 		public void add( double aValue )
 		{
 			mValue += aValue;
-			mAddCount++;
 		}
 	}
 
-	/**
-	 * This function generates the chart values of two charts. It ignores those points of charts
-	 * which date axis is different.
-	 * @param lComposer
-	 * @return
+	/*
+	1. The values of the two unfilteredDates has to be merged into a DateTime Hashtable-be. Every item has to be marked
+	   related to the source list.
+	2. Create a sorted set from the Hastable.
+	3. Compare every key (datetime) with it's neighbours from the sortedset.
+	4. If two neighbour point came from different lists and the difference between them is less then 10 minutes,
+	   they are a couple in the Summarized list.
 	 */
 	public String Summarize( HighChartDataResultComposer lComposer )
 	{
-		// Collect points of the recent chart into a hashtable
-		Hashtable<String,SummarizeNode> lDatesHash = new Hashtable<>();
+		Hashtable<String,DatetimeNode> lDatesHash = new Hashtable<>();
 		for( int i = 0; i < mUnfilteredDates.size(); i++ )
-			lDatesHash.put( mUnfilteredDates.get( i ), new SummarizeNode( mUnfilteredValues.get( i )));
+			lDatesHash.put( mUnfilteredDates.get( i ),
+					new DatetimeNode( mUnfilteredDates.get( i ), NodeSource.FirstList, mUnfilteredValues.get( i ) ));
 
-		// add values of those points from tha parameter chart, which date is equal
 		for( int i = 0; i < lComposer.mUnfilteredDates.size(); i++ )
 		{
 			if( lDatesHash.containsKey( lComposer.mUnfilteredDates.get( i )))
-				lDatesHash.get( lComposer.mUnfilteredDates.get( i )).add( lComposer.mUnfilteredValues.get( i ));
+			{
+				DatetimeNode lTemp = lDatesHash.get( lComposer.mUnfilteredDates.get( i ));
+				lTemp.setSource( NodeSource.BothList );
+				lTemp.add( lComposer.mUnfilteredValues.get( i ) );
+			}
+			else
+			{
+				lDatesHash.put( lComposer.mUnfilteredDates.get( i ),
+						new DatetimeNode( lComposer.mUnfilteredDates.get( i ), NodeSource.SecondList, lComposer.mUnfilteredValues.get( i ) )
+				);
+			}
 		}
 
 		ArrayList<Double> lValuesList = new ArrayList<Double>();
 		ArrayList<String> lDatesList  = new ArrayList<String>();
 
 		SortedSet<String> keys = new TreeSet<String>(lDatesHash.keySet());
+		String lPrevKey = null;
 		for (String key : keys)
 		{
-			// ignore those points, which has single value, wasn't summarize with an other one
-			if( lDatesHash.get( key ).getAddCount() != 1 )
-				continue;
-			addDates( lDatesList, lValuesList, key, lDatesHash.get( key ).getValue());
+			if( lPrevKey == null )
+			{
+				lPrevKey = key;
+			}
+			else
+			{
+				DatetimeNode lNode1 = lDatesHash.get( lPrevKey );
+				DatetimeNode lNode2 = lDatesHash.get( key );
+
+				if( lNode1.getSource() == NodeSource.BothList )
+				{
+					addDates( lDatesList, lValuesList, lPrevKey, lDatesHash.get( lPrevKey ).getValue() );
+				}
+				else
+				{
+					if( lNode2.getSource() != NodeSource.BothList
+							&& lNode1.getSource() != lNode2.getSource() )
+					{
+						if( Duration.between( lNode1.getDatetime(), lNode2.getDatetime() ).getSeconds() <= 300 )
+						{
+							addDates( lDatesList, lValuesList, lPrevKey,
+									lDatesHash.get( lPrevKey ).getValue() + lDatesHash.get( key ).getValue()
+							);
+						}
+					}
+				}
+
+				lPrevKey = key;
+			}
+		}
+
+		if( lPrevKey != null )
+		{
+			DatetimeNode lNode1 = lDatesHash.get( lPrevKey );
+			if( lNode1.getSource() == NodeSource.BothList )
+				addDates( lDatesList, lValuesList, lPrevKey, lDatesHash.get( lPrevKey ).getValue());
 		}
 
 		String lResult = "";
