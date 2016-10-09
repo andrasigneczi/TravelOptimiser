@@ -390,6 +390,9 @@ public class ChartBuilder
 					continue;
 				lDatetime2 = lTrips[ 1 ].getDatetime();
 			}
+
+			String lPlusTag = "<img class=\"favoriteadd\" src=\"/img/Plus.ico\"/>";
+			//String lPlusTag = "";
 			String lStartTag = "<img class=\"favoritestar\" src=\"/img/star_filled.png\" onclick=\"bookmarkChart2(this, '"
 					+ lFavorites.getSource( i ) + "' );\"/>";
 			String[] lContent = GetHtmlContent( lTrips[ 0 ].getDatetime(), lDatetime2,
@@ -397,7 +400,7 @@ public class ChartBuilder
 					"%", "Favoritecontainer" + lContainerIndex++, lDatetime2.length() == 0,
 					null, null );
 			lScriptCotent += lContent[ 1 ];
-			lDivContent += lStartTag + lContent[ 0 ];
+			lDivContent += lStartTag + lPlusTag + lContent[ 0 ];
 		}
 
 		return new String[] { aContents[ 0 ] + lScriptCotent, aContents[ 1 ] + lDivContent };

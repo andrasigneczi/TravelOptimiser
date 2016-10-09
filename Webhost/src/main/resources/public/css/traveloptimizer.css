@@ -50,10 +50,20 @@ body {
 img.favoritestar {
     position: relative;
     z-index:1000;
-    top: 30px;
+    top: 37px;
     float: right;
     left: -40px;
     cursor: pointer;
+}
+
+img.favoriteadd {
+    position: relative;
+    z-index:1000;
+    top: 35px;
+    float: right;
+    left: -43px;
+    cursor: pointer;
+    width: 23px;
 }
 
 #accordion {
