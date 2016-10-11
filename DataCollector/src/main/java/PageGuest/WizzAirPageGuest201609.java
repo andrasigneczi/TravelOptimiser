@@ -34,7 +34,7 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 
 	private boolean mThreadStopped = true;
 	private long mTimeoutStart;
-	private final String mApiUrl = "https://be.wizzair.com/3.3.1/Api/search/search";
+	private final String mApiUrl = "https://be.wizzair.com/3.3.2/Api/search/search";
 
 	public WizzAirPageGuest201609()
 	{
