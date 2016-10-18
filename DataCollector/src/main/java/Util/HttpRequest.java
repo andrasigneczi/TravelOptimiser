@@ -57,10 +57,17 @@ public class HttpRequest
         conn.setRequestMethod("GET");
 
         //add request header
-        conn.setRequestProperty("User-Agent", USER_AGENT);
-        conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
-        //conn.addRequestProperty("User-Agent", "Mozilla");
-        conn.addRequestProperty("Referer", "google.com");
+	    conn.setRequestProperty( "User-Agent",      USER_AGENT );
+	    conn.setRequestProperty( "Accept-Language", ACCEPT_LANGUAGE );
+	    conn.setRequestProperty( "Accept-Encoding", ACCEPT_ENCODING );
+	    conn.setRequestProperty( "Accept",          ACCEPT );
+	    conn.setRequestProperty( "Referer",         REFERER );
+	    conn.setRequestProperty( "Authority",       AUTHORITY );
+	    conn.setRequestProperty( "Origin",          ORIGIN );
+	    //conn.setRequestProperty( "Content-Length",  String.valueOf(aPostData.length()));
+	    conn.setRequestProperty( "Pragma",          "no-cache" );
+	    conn.setRequestProperty( "Cache-Control",   "no-cache" );
+	    conn.setUseCaches( false );
 
         mResponseCode = conn.getResponseCode();
         //System.out.println("\nSending 'GET' request to URL : " + aUrl);
@@ -92,38 +99,24 @@ public class HttpRequest
             // open the new connnection again
             conn = (HttpURLConnection) new URL(newUrl).openConnection();
             conn.setRequestProperty("Cookie", cookies);
-            conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
-            conn.addRequestProperty("User-Agent", "Mozilla");
-            conn.addRequestProperty("Referer", "google.com");
+	        conn.setRequestProperty( "User-Agent",      USER_AGENT );
+	        conn.setRequestProperty( "Accept-Language", ACCEPT_LANGUAGE );
+	        conn.setRequestProperty( "Accept-Encoding", ACCEPT_ENCODING );
+	        conn.setRequestProperty( "Accept",          ACCEPT );
+	        conn.setRequestProperty( "Referer",         REFERER );
+	        conn.setRequestProperty( "Authority",       AUTHORITY );
+	        conn.setRequestProperty( "Origin",          ORIGIN );
+	        //conn.setRequestProperty( "Content-Length",  String.valueOf(aPostData.length()));
+	        conn.setRequestProperty( "Pragma",          "no-cache" );
+	        conn.setRequestProperty( "Cache-Control",   "no-cache" );
+	        conn.setUseCaches( false );
 
 	        //java.lang.System.out.println("Redirect to URL : " + newUrl);
 
         }
 
-        StringBuffer response = new StringBuffer();
-
-        try
-        {
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String inputLine;
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-        }
-        catch ( java.io.FileNotFoundException e )
-        {
-	        mLogger.error( StringHelper.getTraceInformation( e ));
-        }
-        catch (java.io.IOException e )
-        {
-	        mLogger.error( StringHelper.getTraceInformation( e ));
-        }
-
-        //print result
-        //System.out.println(response.toString());
-        return response.toString();
+	    print_all_headers( conn );
+	    return readResponse( conn );
     }
 
     /**
@@ -174,34 +167,47 @@ public class HttpRequest
 	    print_all_headers( conHttp );
 	    print_https_cert( conHttps );
 
-	    InputStream inputStream = conHttp.getInputStream();
-	    int available = inputStream.available();
-	    byte[] response = new byte[ available ];
-	    int readCount = inputStream.read( response );
-
-	    if( available != readCount )
-	    {
-		    int iDebug = 10;
-	    }
-
-	    String lReturnValue = "";
-	    if( isContentGzipped( conHttp ))
-	    {
-		    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream( response );
-		    GZIPInputStream gzis = new GZIPInputStream( byteArrayInputStream );
-		    InputStreamReader reader = new InputStreamReader( gzis );
-		    BufferedReader in = new BufferedReader( reader );
-
-		    String readed;
-		    while( ( readed = in.readLine() ) != null )
-			    lReturnValue += readed;
-	    }
-	    else
-	    {
-		    lReturnValue = new String(response, StandardCharsets.UTF_8);
-	    }
-	    return lReturnValue;
+	    return readResponse( conHttp );
     }
+
+	private String readResponse( HttpURLConnection conHttp ) throws IOException
+	{
+		InputStream inputStream = conHttp.getInputStream();
+		int available = inputStream.available();
+		byte[] response = new byte[ available ];
+		int readCount = inputStream.read( response );
+
+		if( available != readCount )
+		{
+			int iDebug = 10;
+		}
+
+		String lReturnValue = "";
+		if( isContentGzipped( conHttp ))
+		{
+			ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream( response );
+			GZIPInputStream gzis = new GZIPInputStream( byteArrayInputStream );
+			InputStreamReader reader = new InputStreamReader( gzis );
+			BufferedReader in = new BufferedReader( reader );
+
+			String readed;
+			try
+			{
+				while( ( readed = in.readLine() ) != null )
+					lReturnValue += readed;
+			}
+			catch ( java.io.EOFException e )
+			{
+				mLogger.warn( StringHelper.getTraceInformation( e ) );
+			}
+		}
+		else
+		{
+			lReturnValue = new String(response, StandardCharsets.UTF_8);
+		}
+		return lReturnValue;
+
+	}
 
 	public boolean isContentGzipped( HttpURLConnection con )
 	{
