@@ -422,12 +422,15 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 		String strResponse;
 		strResponse = request.sendPost( mApiSearchUrl, lParameters );
 
-		mTravelDataResult = new TravelData_RESULT();
-		mTravelDataResult.mAirline = aTravelDataInput.mAirline;
-		mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
-		mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
-		mTravelDataResult.mTravelDataInput = aTravelDataInput;
-		ParseTheResponse( strResponse );
+		if( request.getResponseCode() != 404 && strResponse.length() > 0 )
+		{
+			mTravelDataResult = new TravelData_RESULT();
+			mTravelDataResult.mAirline = aTravelDataInput.mAirline;
+			mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
+			mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
+			mTravelDataResult.mTravelDataInput = aTravelDataInput;
+			ParseTheResponse( strResponse );
+		}
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 

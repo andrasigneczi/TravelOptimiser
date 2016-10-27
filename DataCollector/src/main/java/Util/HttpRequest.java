@@ -163,6 +163,11 @@ public class HttpRequest
 	    mLogger.trace( "Post parameters : " + aPostData/*urlParameters*/ );
 	    mLogger.trace( "Response Code : " + mResponseCode );
 
+	    if( mResponseCode == 404 )
+	    {
+		    mLogger.warn( "Post request returned with reponsecode 404!" );
+		    return "";
+	    }
 
 	    print_all_headers( conHttp );
 	    print_https_cert( conHttps );
@@ -233,6 +238,9 @@ public class HttpRequest
 		{
 			try
 			{
+				if( con.getResponseCode() == 404 )
+					return;
+
 				mLogger.trace("Response Code : " + con.getResponseCode());
 				mLogger.trace("Cipher Suite : " + con.getCipherSuite());
 
@@ -254,6 +262,10 @@ public class HttpRequest
 				mLogger.error( StringHelper.getTraceInformation( e ));
 			}
 			catch (IOException e)
+			{
+				mLogger.error( StringHelper.getTraceInformation( e ));
+			}
+			catch( IllegalStateException e )
 			{
 				mLogger.error( StringHelper.getTraceInformation( e ));
 			}
