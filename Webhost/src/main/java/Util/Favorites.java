@@ -1,5 +1,7 @@
 package Util;
 
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -14,6 +16,7 @@ import java.util.regex.Pattern;
  */
 public class Favorites
 {
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger(Favorites.class);
 	private ArrayList<String> mTrips = new ArrayList<>();
 	private final static String mFileName = "favourite_flights.txt";
 
@@ -42,12 +45,13 @@ public class Favorites
 		}
 		catch( FileNotFoundException e )
 		{
-			e.printStackTrace();
+			mLogger.info( Util.getTraceInformation( e ));
 			return;
 		}
 		catch( java.util.NoSuchElementException e )
 		{
 			lScanner.close();
+			mLogger.info( Util.getTraceInformation( e ));
 			return;
 		}
 
@@ -70,11 +74,13 @@ public class Favorites
 		}
 		catch( FileNotFoundException e )
 		{
-			e.printStackTrace();
+			mLogger.info( "Faverites saving error!");
+			mLogger.error( Util.getTraceInformation( e ));
 		}
 		catch( UnsupportedEncodingException e )
 		{
-			e.printStackTrace();
+			mLogger.info( "Faverites saving error!");
+			mLogger.error( Util.getTraceInformation( e ));
 		}
 	}
 
