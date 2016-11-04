@@ -81,7 +81,7 @@ public class SQLiteDataProvider implements DataProvider
 		}
 		catch( SQLException e )
 		{
-			e.printStackTrace();
+			mLogger.error( "ConnectionClose error: " + Util.getTraceInformation( e ));
 		}
 	}
 

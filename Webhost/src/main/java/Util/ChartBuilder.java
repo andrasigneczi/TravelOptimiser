@@ -1,10 +1,7 @@
 package Util;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowire;
-import org.springframework.context.annotation.Bean;
 
-import java.lang.annotation.Annotation;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -510,7 +507,7 @@ public class ChartBuilder
 			Favorites.getInstance().add( lTB, null );
 		else
 			Favorites.getInstance().add( mToggledButton, lTB );
-		Favorites.getInstance().SaveFavourtes();
+		Favorites.getInstance().SaveFavourites();
 	}
 
 	public void UpdateBookmarkTrip( String aParam )
@@ -526,6 +523,6 @@ public class ChartBuilder
 			else
 				Favorites.getInstance().add( lTrips[ 0 ], lTrips[ 1 ] );
 		}
-		Favorites.getInstance().SaveFavourtes();
+		Favorites.getInstance().SaveFavourites();
 	}
 }

@@ -15,9 +15,10 @@ import java.util.regex.Pattern;
 public class Favorites
 {
 	private ArrayList<String> mTrips = new ArrayList<>();
-	private final static String mFileName = "favourite_flights.txt";
 
 	private final static Favorites mInstance = new Favorites();
+
+	private static FavouritesStorage mStorage;
 
 	public static Favorites getInstance()
 	{
@@ -26,56 +27,17 @@ public class Favorites
 
 	private Favorites()
 	{
-
+		mStorage = new FavouriteStorage_File();
 	}
 
 	public void LoadFavourites()
 	{
-		mTrips = new ArrayList<>();
-		Scanner lScanner = null;
-		String lContent;
-		try
-		{
-			lScanner = new Scanner( new File( mFileName ), "UTF-8" ).useDelimiter( "\\A" );
-			lContent = lScanner.next();
-			lScanner.close();
-		}
-		catch( FileNotFoundException e )
-		{
-			e.printStackTrace();
-			return;
-		}
-		catch( java.util.NoSuchElementException e )
-		{
-			lScanner.close();
-			return;
-		}
-
-		Pattern lReg = Pattern.compile( "^(.+)$", Pattern.MULTILINE );
-		Matcher lMatch = lReg.matcher( lContent );
-		while( lMatch.find() )
-		{
-			String lRow = lMatch.group().toString().trim();
-			mTrips.add( lRow );
-		}
+		mTrips = mStorage.LoadFavourites();
 	}
 
-	public void SaveFavourtes()
+	public void SaveFavourites()
 	{
-		try
-		{
-			final PrintWriter writer = new PrintWriter( mFileName, "UTF-8" );
-			mTrips.stream().forEach( (trip) -> writer.println(trip) );
-			writer.close();
-		}
-		catch( FileNotFoundException e )
-		{
-			e.printStackTrace();
-		}
-		catch( UnsupportedEncodingException e )
-		{
-			e.printStackTrace();
-		}
+		mStorage.SaveFavourites( mTrips );
 	}
 
 	/**
