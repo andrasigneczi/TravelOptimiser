@@ -67,6 +67,7 @@ public class TravelData_INPUT implements Cloneable
 		public String mBeginning;
 		public String mEnding;
 		public String mPercentage;
+		public String mAirline;
 
 		public boolean set( String aName, String aValue )
 		{
@@ -94,6 +95,12 @@ public class TravelData_INPUT implements Cloneable
 				else if( aName.equals( "Percentage" ) )
 				{
 					mPercentage = aValue;
+					lReturnValue = true;
+					break setvalues;
+				}
+				else if( aName.equals( "Airline" ) )
+				{
+					mAirline = aValue;
 					lReturnValue = true;
 					break setvalues;
 				}

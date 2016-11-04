@@ -271,6 +271,7 @@ public class ChartBuilder
 
 		String lSeries3 = GetSeries3();
 		mDiscountSeries = GetDiscountSeries( mTDI.mDiscounts );
+		mDiscountSeries += GetDiscountSeries( Configuration.getInstance().getDiscountList( mTDI.mAirline ));
 
 		String lTitle = mDate1 + " - " + mDate2 + " " + mAirportFrom + " - " + mAirportTo;
 		String lSeries = mDiscountSeries + mSeries1 + ",\n" + lSeries2 + ",\n" + lSeries3 + mBoughtTicketsSeries;
@@ -288,6 +289,7 @@ public class ChartBuilder
 			lCurrency = lFoundCurrency.iterator().next();
 
 		mDiscountSeries = GetDiscountSeries( mTDI.mDiscounts );
+		mDiscountSeries += GetDiscountSeries( Configuration.getInstance().getDiscountList( mTDI.mAirline ));
 
 		String lTitle = mDate1 + " " + mAirportFrom + " - " + mAirportTo;
 		String lSeriesSum = mDiscountSeries + mSeries1 + mBoughtTicketsSeries;
@@ -388,7 +390,7 @@ public class ChartBuilder
 				lDatetime2 = lTrips[ 1 ].getDatetime();
 			}
 
-			String lPlusTag = "<img class=\"favoriteadd\" src=\"/img/Plus.ico\"/>";
+			String lPlusTag = "<img class=\"favoriteadd\" src=\"/img/Plus.ico\" onclick=\"OpenQuestionForm();\"/>";
 			//String lPlusTag = "";
 			String lStartTag = "<img class=\"favoritestar\" src=\"/img/star_filled.png\" onclick=\"bookmarkChart2(this, '"
 					+ lFavorites.getSource( i ) + "' );\"/>";
