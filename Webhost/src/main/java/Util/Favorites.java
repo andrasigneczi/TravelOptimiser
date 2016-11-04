@@ -1,5 +1,7 @@
 package Util;
 
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -14,6 +16,7 @@ import java.util.regex.Pattern;
  */
 public class Favorites
 {
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger(Favorites.class);
 	private ArrayList<String> mTrips = new ArrayList<>();
 
 	private final static Favorites mInstance = new Favorites();

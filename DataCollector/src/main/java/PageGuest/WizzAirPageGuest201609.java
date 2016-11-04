@@ -4,9 +4,12 @@ import QueueHandlers.JMSStack;
 import QueueHandlers.LocalStack;
 import QueueHandlers.ResultQueue;
 import Util.Configuration;
-import Util.DatetimeHelper;
 import Util.HttpRequest;
 import Util.StringHelper;
+import com.teamdev.jxbrowser.chromium.Browser;
+import com.teamdev.jxbrowser.chromium.Callback;
+import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
+import com.traveloptimizer.browserengine.TeamDevJxBrowser;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,15 +18,20 @@ import org.json.JSONTokener;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static Util.CurrencyHelper.ConvertFrom3Digits;
+import static com.teamdev.jxbrowser.chromium.LoggerProvider.getBrowserLogger;
+import static com.teamdev.jxbrowser.chromium.LoggerProvider.getChromiumProcessLogger;
+import static com.teamdev.jxbrowser.chromium.LoggerProvider.getIPCLogger;
 
 /**
  * Created by Andras on 02/09/2016.
@@ -34,7 +42,40 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 
 	private boolean mThreadStopped = true;
 	private long mTimeoutStart;
-	private final String mApiUrl = "https://be.wizzair.com/3.3.1/Api/search/search";
+	private static String mApiSearchUrl = "https://be.wizzair.com/3.3.3/Api/search/search";
+
+	public static void InitApirURL() throws Exception
+	{
+		//var apiUrl = "https://be.wizzair.com/3.3.3/Api";
+//		HttpRequest lHttpRequest = new HttpRequest();
+//		String lContent = lHttpRequest.sendGet( "https://wizzair.com", 0 );
+
+		getBrowserLogger().setLevel( Level.WARNING );
+		getChromiumProcessLogger().setLevel( Level.WARNING );
+		getIPCLogger().setLevel( Level.WARNING );
+
+		Browser lBrowser = TeamDevJxBrowser.getInstance().getJxBrowser("wwwww");
+		Browser.invokeAndWaitFinishLoadingMainFrame(lBrowser, new Callback<Browser>() {
+			@Override
+			public void invoke(Browser browser) {
+				browser.loadURL("https://wizzair.com");
+			}
+		});
+
+		DOMDocument lDocument = lBrowser.getDocument();
+		String lContent = lDocument.getDocumentElement().getInnerHTML();
+
+		Pattern reg = Pattern.compile( "var apiUrl = \"(.*)\";" );
+		Matcher m = reg.matcher( lContent );
+		String lUrl = "";
+		if( m.find() )
+		{
+			lUrl = m.group(1).toString().trim();
+			mLogger.info( "WizzAir API URL: " + lUrl );
+			mApiSearchUrl = lUrl + "/search/search";
+		}
+		lBrowser.dispose();
+	}
 
 	public WizzAirPageGuest201609()
 	{
@@ -379,14 +420,17 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 
 		HttpRequest request = new HttpRequest();
 		String strResponse;
-		strResponse = request.sendPost( mApiUrl, lParameters );
+		strResponse = request.sendPost( mApiSearchUrl, lParameters );
 
-		mTravelDataResult = new TravelData_RESULT();
-		mTravelDataResult.mAirline = aTravelDataInput.mAirline;
-		mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
-		mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
-		mTravelDataResult.mTravelDataInput = aTravelDataInput;
-		ParseTheResponse( strResponse );
+		if( request.getResponseCode() != 404 && strResponse.length() > 0 )
+		{
+			mTravelDataResult = new TravelData_RESULT();
+			mTravelDataResult.mAirline = aTravelDataInput.mAirline;
+			mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
+			mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
+			mTravelDataResult.mTravelDataInput = aTravelDataInput;
+			ParseTheResponse( strResponse );
+		}
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
