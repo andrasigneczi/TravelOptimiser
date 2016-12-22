@@ -24,6 +24,8 @@ public class HighChartDataResultComposer extends DataResultComposer
 	private HashSet<String>    mFoundCurrency;
 	private double             mMaxValue = Double.MIN_VALUE;
 	//private boolean           mCurrency_Price_In_Euro_Is_Null = false;
+	private String             mMostLeftDate  = "";
+	private String             mMostRightDate = "";
 
 	public HighChartDataResultComposer()
 	{
@@ -143,6 +145,10 @@ public class HighChartDataResultComposer extends DataResultComposer
 			if( mValues.get( i ) > mMaxValue )
 				mMaxValue = mValues.get( i );
 			lResult += "[Date.parse('" + mDates.get( i ) + "'), " + mValues.get( i ) + "]";
+			if( i == 0 )
+				mMostLeftDate = mDates.get( i );
+			if( i == mValues.size() - 1 )
+				mMostRightDate = mDates.get( i );
 		}
 
 		if( mFoundCurrency.size() > 1 )
@@ -293,6 +299,10 @@ public class HighChartDataResultComposer extends DataResultComposer
 			if( lValuesList.get( i ) > mMaxValue )
 				mMaxValue = lValuesList.get( i );
 			lResult += "[Date.parse('" + lDatesList.get( i ) + "'), " + lValuesList.get( i ) + "]";
+			if( i == 0 )
+				mMostLeftDate = lDatesList.get( i );
+			if( i == mValues.size() - 1 )
+				mMostRightDate = lDatesList.get( i );
 		}
 
 		return lResult;
@@ -301,5 +311,13 @@ public class HighChartDataResultComposer extends DataResultComposer
 	public double getMaxValue()
 	{
 		return mMaxValue;
+	}
+
+	public String getMostLeftDate(){
+		return mMostLeftDate;
+	}
+
+	public String getMostRightDate(){
+		return mMostRightDate;
 	}
 }

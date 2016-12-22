@@ -169,20 +169,32 @@ public class ChartBuilder
 
 		String lSeries = "";
 		String lHeight = "100";
-
+		String lMostLeftDate = "";
+		String lMostRightDate = "";
 		if( mHighChartDataResultComposerOutbound != null )
+		{
 			lHeight = String.valueOf( mHighChartDataResultComposerOutbound.getMaxValue() );
+			lMostLeftDate = mHighChartDataResultComposerOutbound.getMostLeftDate();
+			lMostRightDate = mHighChartDataResultComposerOutbound.getMostRightDate();
+		}
 
+		final int lColorModifier = 0x102040;
+		int lCounter = 0;
 		for( TravelData_INPUT.Discount lDiscount : aDiscounts )
 		{
+			if( Util.compareDateTime( lDiscount.mEnding, lMostLeftDate ) == -1 )
+				continue;
+			if( Util.compareDateTime( lDiscount.mBeginning, lMostRightDate ) == 1 )
+				continue;
 			HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
 			lHCDRCExtra.add( lDiscount.mBeginning, lHeight, new Float(1.0) );
 			lHCDRCExtra.add( lDiscount.mEnding, lHeight, new Float( 1.0 ));
 			lSeries += mSeriesTemplate.replace( "[SERIES.NAME]", lDiscount.mName )
 					.replace( "[TYPE.NAME]", "area" )
-					.replace( "[COLOR]", DISCOUNT_COLOR )
+					.replace( "[COLOR]", Util.htmlColorChanger( DISCOUNT_COLOR, lColorModifier * lCounter ))
 					.replace( "[RADIUS]", "1" )
 					.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() ) + ",\n";
+			lCounter++;
 		}
 		return lSeries;
 	}

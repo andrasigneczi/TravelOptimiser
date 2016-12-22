@@ -39,7 +39,7 @@ public class DBAgentApp
 			lSQLiteAgent.InitializeDatabase();
 
 			// the jms listen 1 second before return, so in case of 30 the waiting time will be 60 seconds
-			final int WaitBeforeStop = 30;
+			final int WaitBeforeStop = 150;
 			int i = WaitBeforeStop;
 			while( i > 0 )
 			{
