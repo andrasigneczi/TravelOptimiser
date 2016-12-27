@@ -1,7 +1,7 @@
-package Util;
+package Favorites;
 
+import Util.StringHelper;
 import org.apache.log4j.Logger;
-import org.hibernate.validator.internal.util.StringHelper;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
  */
 public class FavouriteStorage_SQLite implements FavouritesStorage
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger(FavouriteStorage_SQLite.class);
+	private static Logger mLogger = Logger.getLogger(FavouriteStorage_SQLite.class);
 
 	private Connection mConnection = null;
 	private final static String mDatabaseFileName = "favourites.db";
@@ -29,11 +29,11 @@ public class FavouriteStorage_SQLite implements FavouritesStorage
 		}
 		catch( ClassNotFoundException e )
 		{
-			mLogger.error( "Favourite loading error: " + Util.getTraceInformation( e ));
+			mLogger.error( "Favourite loading error: " + StringHelper.getTraceInformation( e ));
 		}
 		catch( SQLException e )
 		{
-			mLogger.error( "Favourite loading error: " + Util.getTraceInformation( e ));
+			mLogger.error( "Favourite loading error: " + StringHelper.getTraceInformation( e ));
 		}
 	}
 
@@ -46,7 +46,7 @@ public class FavouriteStorage_SQLite implements FavouritesStorage
 		}
 		catch( SQLException e )
 		{
-			mLogger.error( "ConnectionClose error: " + Util.getTraceInformation( e ));
+			mLogger.error( "ConnectionClose error: " + StringHelper.getTraceInformation( e ));
 		}
 	}
 
@@ -86,7 +86,7 @@ public class FavouriteStorage_SQLite implements FavouritesStorage
 			return lID;
 		}
 		catch ( Exception e ) {
-			mLogger.error( Util.getTraceInformation( e ) );
+			mLogger.error( StringHelper.getTraceInformation( e ) );
 			System.exit( 0 );
 		}
 
@@ -113,7 +113,7 @@ public class FavouriteStorage_SQLite implements FavouritesStorage
 			lStmt.close();
 		}
 		catch ( Exception e ) {
-			mLogger.error( Util.getTraceInformation( e ) );
+			mLogger.error( StringHelper.getTraceInformation( e ) );
 			System.exit( 0 );
 		}
 		mLogger.trace( "end" );

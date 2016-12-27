@@ -3,8 +3,7 @@ package PageGuest;
 import QueueHandlers.JMSStack;
 import QueueHandlers.LocalStack;
 import QueueHandlers.ResultQueue;
-import QueueHandlers.StackIF;
-import Util.Configuration;
+import Configuration.Configuration;
 import Util.DatetimeHelper;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
@@ -14,8 +13,6 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -346,7 +343,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
                     mLogger.error( "Exception in RyanAir.run: " + StringHelper.getTraceInformation( e ) );
                 }
 
-                String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
+                String lSleep = Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
                 Sleep( 1000 * Integer.parseInt( lSleep ));
                 mTimeoutStart = System.currentTimeMillis();
             }

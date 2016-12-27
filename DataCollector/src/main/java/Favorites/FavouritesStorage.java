@@ -1,4 +1,4 @@
-package Util;
+package Favorites;
 
 import java.util.ArrayList;
 

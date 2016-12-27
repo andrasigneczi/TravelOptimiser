@@ -1,5 +1,6 @@
 package PageGuest;
 
+import Configuration.Configuration;
 import QueueHandlers.JMSPublisher;
 import QueueHandlers.LocalStack;
 import Util.StringHelper;
@@ -9,10 +10,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import javax.jms.JMSException;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -21,7 +19,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static Util.DatetimeHelper.ConvertFromWizzairJSONStoredFormat;
@@ -97,7 +94,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 	{
 		synchronized (mMutex)
 		{
-			ArrayList<TravelData_INPUT> lFlightList = Util.Configuration.getInstance().getFlightList();
+			ArrayList<TravelData_INPUT> lFlightList = Configuration.getInstance().getFlightList();
 			for (TravelData_INPUT lTDI : lFlightList)
 			{
 				if (!lTDI.mAirline.equals(getAirline()))
@@ -168,7 +165,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		LocalDate lDate = LocalDate.now();
 		int lYear = lDate.getYear();
 		int lMonth = lDate.getMonthValue();
-		String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
+		String lSleep = Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
 		ArrayList<TravelData_RESULT> lResultList = new ArrayList<TravelData_RESULT>();
 
 		final int lInterval = StringHelper.parseInt( aTravelDataInput.mInterval, 6 );
@@ -471,7 +468,7 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 					mLogger.error( StringHelper.getTraceInformation( e ));
 				}
 
-				String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
+				String lSleep = Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
 				Sleep( 1000 * Integer.parseInt( lSleep ));
 				mTimeoutStart = System.currentTimeMillis();
 			}

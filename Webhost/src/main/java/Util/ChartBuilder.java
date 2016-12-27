@@ -1,5 +1,6 @@
 package Util;
 
+import Favorites.Favorites;
 import org.apache.log4j.Logger;
 
 import java.time.LocalDateTime;

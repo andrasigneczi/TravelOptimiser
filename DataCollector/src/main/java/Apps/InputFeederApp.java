@@ -1,10 +1,9 @@
 package Apps;
 
+import Configuration.Configuration;
 import PageGuest.PageGuest;
 import PageGuest.TravelData_INPUT;
 import QueueHandlers.JMSPublisher;
-import Root.PageGuestFactory;
-import Util.CurrencyHelper;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
 
@@ -27,7 +26,7 @@ public class InputFeederApp
 		{
 			HashMap<String, JMSPublisher> lPublishers = new HashMap<>();
 
-			ArrayList<TravelData_INPUT> lSearchList = Util.Configuration.getInstance().getSearchList();
+			ArrayList<TravelData_INPUT> lSearchList = Configuration.getInstance().getSearchList();
 			for( TravelData_INPUT lTDI : lSearchList )
 			{
 				PageGuest.DateValidity lValidity = ValidateDate(lTDI.mDepartureDay, lTDI.mReturnDay);

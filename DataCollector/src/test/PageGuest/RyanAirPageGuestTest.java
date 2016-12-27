@@ -1,5 +1,6 @@
 package PageGuest;
 
+import Configuration.Configuration;
 import Root.PageGuestFactory;
 import Util.CurrencyHelper;
 import org.junit.Test;
@@ -15,7 +16,7 @@ public class RyanAirPageGuestTest
 	public void doSearch() throws Exception
 	{
 		CurrencyHelper.Init();
-		Util.Configuration lConfiguration = Util.Configuration.getInstance();
+		Configuration lConfiguration = Configuration.getInstance();
 		PageGuest lGuestR = PageGuestFactory.Create( "RyanAir" );
 		Thread.sleep( 1000 );
 		lGuestR.stop();

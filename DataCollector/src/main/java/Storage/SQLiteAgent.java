@@ -2,7 +2,7 @@ package Storage;
 
 import PageGuest.TravelDataResultComposer;
 import PageGuest.TravelData_RESULT;
-import Util.Configuration;
+import Configuration.Configuration;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
 
@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -366,6 +367,32 @@ public class SQLiteAgent extends ArchiverAgent
 			//e.printStackTrace();
 			mLogger.error( StringHelper.getTraceInformation( e ) );
 		}
+	}
+
+	public ResultSet Query( String query )
+	{
+		mLogger.trace( "Query begin" );
+		Statement lStmt = null;
+		mLogger.trace( query );
+		HashMap<String,String> result = new HashMap<>();
+		try
+		{
+			lStmt = mConnection.createStatement();
+			ResultSet lResultSet = lStmt.executeQuery( query );
+			while ( lResultSet.next() ) {
+				//lID = lResultSet.getInt("ID");
+				return lResultSet;
+			}
+			lResultSet.close();
+			lStmt.close();
+		}
+		catch ( Exception e ) {
+			//System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			mLogger.error( StringHelper.getTraceInformation( e ) );
+		}
+
+		mLogger.trace( "end" );
+		return null;
 	}
 }
 

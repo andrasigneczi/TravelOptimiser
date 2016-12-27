@@ -1,5 +1,6 @@
-package Util;
+package Favorites;
 
+import Util.StringHelper;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -16,7 +17,7 @@ import java.util.regex.Pattern;
  */
 public class FavouriteStorage_File implements FavouritesStorage
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger(FavouriteStorage_File.class);
+	private static Logger mLogger = Logger.getLogger(FavouriteStorage_File.class);
 
 	private final static String mFileName = "favourite_flights.txt";
 
@@ -34,13 +35,13 @@ public class FavouriteStorage_File implements FavouritesStorage
 		}
 		catch( FileNotFoundException e )
 		{
-			mLogger.error( "Favourite loading error: " + Util.getTraceInformation( e ));
+			mLogger.error( "Favourite loading error: " + StringHelper.getTraceInformation( e ));
 			return null;
 		}
 		catch( java.util.NoSuchElementException e )
 		{
 			lScanner.close();
-			mLogger.error( "Favourite loading error: " + Util.getTraceInformation( e ));
+			mLogger.error( "Favourite loading error: " + StringHelper.getTraceInformation( e ));
 			return null;
 		}
 
@@ -65,11 +66,11 @@ public class FavouriteStorage_File implements FavouritesStorage
 		}
 		catch( FileNotFoundException e )
 		{
-			mLogger.error( "Favourite loading error: " + Util.getTraceInformation( e ));
+			mLogger.error( "Favourite loading error: " + StringHelper.getTraceInformation( e ));
 		}
 		catch( UnsupportedEncodingException e )
 		{
-			mLogger.error( "Favourite loading error: " + Util.getTraceInformation( e ));
+			mLogger.error( "Favourite loading error: " + StringHelper.getTraceInformation( e ));
 		}
 	}
 }

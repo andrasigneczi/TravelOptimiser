@@ -1,5 +1,6 @@
 package Util;
 
+import Favorites.Favorites;
 import org.junit.Before;
 import org.junit.Test;
 

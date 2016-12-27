@@ -13,7 +13,7 @@ public class Util
 	private final static DateTimeFormatter mFormatter1 = DateTimeFormatter.ofPattern( "yyyy-MM-dd'T'HH:mm:ss" );
 	private final static DateTimeFormatter mFormatter2 = DateTimeFormatter.ofPattern( "yyyy-MM-dd HH:mm" );
 
-	static String getTraceInformation( Exception aException )
+	public static String getTraceInformation( Exception aException )
 	{
 		StringWriter lStringWriter = new StringWriter();
 		PrintWriter lPrintWriter = new PrintWriter(lStringWriter);
@@ -21,7 +21,7 @@ public class Util
 		return lStringWriter.toString();
 	}
 
-	static int compareDateTime( String d1, String d2 ){
+	public static int compareDateTime( String d1, String d2 ){
 		// 2016-05-04 00:00
 		// 2016-04-18T03:53:04
 		LocalDateTime lDT1, lDT2;
@@ -43,7 +43,7 @@ public class Util
 		return 0;
 	}
 
-	static String htmlColorChanger( String color, int add )
+	public static String htmlColorChanger( String color, int add )
 	{
 		// parse hexadeciaml string
 		Long value = Long.parseLong( color.replace( "#", "" ), 16 );
