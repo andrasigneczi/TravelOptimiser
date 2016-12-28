@@ -33,7 +33,7 @@ public class CurrencyHelper
         }
     }
 
-	/**
+    /**
      *
      * @param aPrice e.g. 10.99 €, 25963.50 Ft, ...
      * @return
@@ -88,6 +88,14 @@ public class CurrencyHelper
             DOMDocument lDocument = lBrowser.getDocument();
             //DOMElement lElement = lDocument.findElement( By.xpath( "//*[@id=\"contentL\"]/div[1]/div[1]/div/span/table/tbody/tr[1]/td[3]" ) );
             DOMElement lElement = lDocument.findElement( By.xpath( "//*[@id=\"ucc-container\"]/span[2]/span[2]" ) );
+            if( lElement == null )
+                lElement = lDocument.findElement( By.xpath( "//*[@id=\"ucc-container\"]/span[3]/span[2]" ));
+            if( lElement == null )
+            {
+                lBrowser.dispose();
+                return false;
+            }
+
             String lInner = lElement.getInnerText();
             //String lCurrencyValue = lElement.getInnerText().substring( 0, lInner.length() - 4 );
             String lCurrencyValue = lInner;
