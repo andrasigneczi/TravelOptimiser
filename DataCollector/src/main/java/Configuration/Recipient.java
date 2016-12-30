@@ -1,6 +1,7 @@
 package Configuration;
 
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Created by Andras on 26/12/2016.
@@ -26,5 +27,18 @@ public class Recipient implements Cloneable
 			return mAttributes.get( lowerKey );
 
 		return null;
+	}
+
+	@Override
+	public String toString()
+	{
+		String lRetValue = "";
+		Set<String> lKeySet = mAttributes.keySet();
+
+		for( String key : lKeySet )
+		{
+			lRetValue += key + ": " + mAttributes.get( key ) + "\n";
+		}
+		return lRetValue;
 	}
 }

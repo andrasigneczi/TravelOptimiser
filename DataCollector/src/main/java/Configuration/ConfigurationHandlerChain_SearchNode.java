@@ -22,6 +22,12 @@ public class ConfigurationHandlerChain_SearchNode extends ConfigurationHandlerCh
 	}
 
 	@Override
+	protected boolean conditionFunction2( String aName, String aPath )
+	{
+		return conditionFunction( aName, aPath );
+	}
+
+	@Override
 	protected boolean doReaction( String aName, Attributes attributes )
 	{
 		mCurrentTravelDataInput = new TravelData_INPUT();

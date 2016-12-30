@@ -1,6 +1,5 @@
 package Configuration;
 
-import PageGuest.ResultFilterBuilder;
 import org.xml.sax.Attributes;
 
 /**
@@ -8,11 +7,12 @@ import org.xml.sax.Attributes;
  */
 public class ConfigurationHandlerChain_RecipientNode extends ConfigurationHandlerChain
 {
-	private String mEmailPath;
+	private String mRecipientPath;
+	private String mAirline = "";
 	public ConfigurationHandlerChain_RecipientNode( Configuration aConfiguration, String aEmailPath )
 	{
 		super( aConfiguration );
-		mEmailPath = aEmailPath;
+		mRecipientPath = aEmailPath;
 	}
 
 	@Override
@@ -20,7 +20,13 @@ public class ConfigurationHandlerChain_RecipientNode extends ConfigurationHandle
 	{
 		if( aName.equalsIgnoreCase( "recipient" ) && mRecipient != null )
 			return true;
-		return getConfiguration().getValidAirlines().contains( aName ) && aPath.equals( mEmailPath + aName );
+		return conditionFunction2( aName, aPath );
+	}
+
+	@Override
+	protected boolean conditionFunction2( String aName, String aPath )
+	{
+		return getConfiguration().getValidAirlines().contains( aName ) && aPath.equals( mRecipientPath + aName );
 	}
 
 	@Override
@@ -32,10 +38,14 @@ public class ConfigurationHandlerChain_RecipientNode extends ConfigurationHandle
 			{
 				mRecipient.set( attributes.getQName( i ), attributes.getValue( i ) );
 			}
+			getConfiguration().addRecipientItem( mRecipient );
+			mRecipient = new Recipient();
+			mRecipient.set( "Airline", mAirline );
 			return true;
 		}
 		mRecipient = new Recipient();
 		mRecipient.set( "Airline", aName );
+		mAirline = aName;
 		mOpenedNode = OpenedNode.EMAIL_NODE;
 		return true;
 	}
@@ -43,7 +53,7 @@ public class ConfigurationHandlerChain_RecipientNode extends ConfigurationHandle
 	@Override
 	protected boolean doReaction2( String aName )
 	{
-		getConfiguration().addRecipientItem( mRecipient );
+		//getConfiguration().addRecipientItem( mRecipient );
 		mRecipient = null;
 		mOpenedNode = OpenedNode.NONE;
 		return true;

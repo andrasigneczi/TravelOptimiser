@@ -1,7 +1,5 @@
 package Configuration;
 
-import PageGuest.ResultFilterBuilder;
-import PageGuest.TravelData_INPUT;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -18,7 +16,7 @@ public class ConfigurationHandler extends DefaultHandler
 
 	ConfigurationHandlerChain_FlightNode     mCHChain_FlightNode;
 	ConfigurationHandlerChain_SearchNode     mCHChain_SearchNode;
-	ConfigurationHandlerChain_RecipientNode  mCHChain_EmailNode;
+	ConfigurationHandlerChain_RecipientNode  mCHChain_RecipientNode;
 
 	public ConfigurationHandler( Configuration aConfiguration,
 	                             String aSearchPath,
@@ -29,8 +27,9 @@ public class ConfigurationHandler extends DefaultHandler
 
 		mCHChain_FlightNode = new ConfigurationHandlerChain_FlightNode( aConfiguration, aFlightPath );
 		mCHChain_SearchNode = new ConfigurationHandlerChain_SearchNode( aConfiguration, aSearchPath );
-		mCHChain_EmailNode  = new ConfigurationHandlerChain_RecipientNode( aConfiguration, aEmailPath );
+		mCHChain_RecipientNode = new ConfigurationHandlerChain_RecipientNode( aConfiguration, aEmailPath );
 		mCHChain_FlightNode.setNext( mCHChain_SearchNode );
+		mCHChain_SearchNode.setNext( mCHChain_RecipientNode );
 	}
 
 	public void startElement(String uri, String localName,

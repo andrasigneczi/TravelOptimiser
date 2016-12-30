@@ -21,7 +21,7 @@ public class Configuration
 
 	private ArrayList<TravelData_INPUT> mSearchList = null;
 	private ArrayList<TravelData_INPUT> mFlightList = null;
-	private ArrayList<Recipient> mEmailList = null;
+	private ArrayList<Recipient> mRecipientList = null;
 	private Hashtable<String,String> mConfigValues;
 
 	private HashSet<String> mValidAirlines = new HashSet<String>();
@@ -35,7 +35,7 @@ public class Configuration
 
 		mSearchList = new ArrayList<TravelData_INPUT>();
 		mFlightList = new ArrayList<TravelData_INPUT>();
-		mEmailList  = new ArrayList<Recipient>();
+		mRecipientList = new ArrayList<Recipient>();
 
 		mConfigValues = new Hashtable<String, String>(  );
 
@@ -163,7 +163,7 @@ public class Configuration
 	public ArrayList<Recipient> getRecipientList()
 	{
 		ArrayList<Recipient> lRecipientList = new ArrayList<Recipient>();
-		for( Recipient lRecipient : mEmailList )
+		for( Recipient lRecipient : mRecipientList )
 		{
 			Recipient lClone = null;
 			try
@@ -209,6 +209,6 @@ public class Configuration
 	}
 	public void addRecipientItem( Recipient aR )
 	{
-		mEmailList.add( aR );
+		mRecipientList.add( aR );
 	}
 }

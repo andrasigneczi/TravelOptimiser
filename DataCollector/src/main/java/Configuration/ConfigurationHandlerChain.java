@@ -45,7 +45,7 @@ public abstract class ConfigurationHandlerChain
 
 	public boolean handleEvent2( String aName, String aPath )
 	{
-		if( conditionFunction( aName, aPath ))
+		if( conditionFunction2( aName, aPath ))
 			doReaction2( aName );
 		else if( mNext != null )
 			return mNext.handleEvent2( aName, aPath );
@@ -64,6 +64,7 @@ public abstract class ConfigurationHandlerChain
 	}
 
 	protected abstract boolean conditionFunction( String aName, String aPath );
+	protected abstract boolean conditionFunction2( String aName, String aPath );
 	protected abstract boolean doReaction( String aName, Attributes attributes );
 	protected abstract boolean doReaction2( String aName );
 

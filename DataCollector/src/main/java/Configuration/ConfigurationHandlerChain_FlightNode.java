@@ -22,6 +22,12 @@ public class ConfigurationHandlerChain_FlightNode extends ConfigurationHandlerCh
 		if( aName.equals( "DayFilter" ) && mCurrentTravelDataInput != null )
 			return true;
 
+		return conditionFunction2( aName, aPath );
+	}
+
+	@Override
+	protected boolean conditionFunction2( String aName, String aPath )
+	{
 		return getConfiguration().getValidAirlines().contains( aName ) && aPath.equals( mFlightPath + aName );
 	}
 
