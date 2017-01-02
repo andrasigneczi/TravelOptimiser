@@ -36,7 +36,7 @@ public class EmailNotifierAgent extends ArchiverAgent
 	private ArrayList<Recipient> mRecipientList;
 	private ArrayList<Recipient> mMatchedRecipients;
 
-	final double mPriceDropTreshold = 10; // €
+	double mPriceDropTreshold = 10; // €
 	private double mOldPrice;
 	private double mNewPrice;
 
@@ -95,12 +95,11 @@ public class EmailNotifierAgent extends ArchiverAgent
 			{
 				if( LoadNewestEarlierTripData( lOneWayTrip ))
 				{
-					if( checkPriceDrop( lTrip ))
+					double lPriceDrop = getPriceDrop( lTrip );
+					for( Recipient r : mRecipientList )
 					{
-						for( Recipient r : mRecipientList )
-						{
+						if( checkPriceDropTreshold( r, lPriceDrop ))
 							sendMail( r, lOneWayTrip );
-						}
 					}
 				}
 			}
@@ -127,6 +126,8 @@ public class EmailNotifierAgent extends ArchiverAgent
 					+ "limit 1";
 
 			ResultSet lResultSet = mSQLiteAgent.Query( query );
+			if( lResultSet == null )
+				return false;
 			mPrice = lResultSet.getString( "Prices_BasicFare_Discount");
 			if( mPrice.length() == 0 )
 				mPrice = lResultSet.getString( "Prices_BasicFare_Normal");
@@ -148,7 +149,7 @@ public class EmailNotifierAgent extends ArchiverAgent
 		return false;
 	}
 
-	private boolean checkPriceDrop( TravelData_RESULT.TravelData_PossibleTrip aTrip )
+	private double getPriceDrop( TravelData_RESULT.TravelData_PossibleTrip aTrip )
 	{
 		// DB PRICE CONVERTING
 		// 176,89 lv
@@ -180,7 +181,18 @@ public class EmailNotifierAgent extends ArchiverAgent
 			lPrice = aTrip.mPrices_BasicFare_Normal;
 		double mNewPrice = CurrencyHelper.getCurrencyPriceInEuro( lPrice );
 
-		return mOldPrice > mNewPrice + mPriceDropTreshold;
+
+		return  mOldPrice - mNewPrice;
+	}
+
+	private boolean checkPriceDropTreshold( Recipient r, double lPriceDrop )
+	{
+		String lPriceDropTreshold = r.get( "PriceDropTreshold" );
+		if( lPriceDropTreshold == null || lPriceDropTreshold.length() == 0 )
+			return mPriceDropTreshold <= lPriceDrop;
+
+		Double lPriceDropTresholdDouble = Double.parseDouble( lPriceDropTreshold );
+		return lPriceDropTresholdDouble <= lPriceDrop;
 	}
 
 	private void sendMail( Recipient recipient, OneWayTrip aOWTrip )
