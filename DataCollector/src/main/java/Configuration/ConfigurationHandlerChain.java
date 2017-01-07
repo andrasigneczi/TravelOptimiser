@@ -40,7 +40,7 @@ public abstract class ConfigurationHandlerChain
 		else if( mNext != null )
 			return mNext.handleEvent( aName, aPath, attributes );
 
-		return true;
+		return false;
 	}
 
 	public boolean handleEvent2( String aName, String aPath )
@@ -50,7 +50,7 @@ public abstract class ConfigurationHandlerChain
 		else if( mNext != null )
 			return mNext.handleEvent2( aName, aPath );
 
-		return true;
+		return false;
 	}
 
 	public boolean handleEvent3( String aNodeName, String aNodeValue )
@@ -60,7 +60,7 @@ public abstract class ConfigurationHandlerChain
 		else if( mNext != null )
 			return mNext.handleEvent3( aNodeName, aNodeValue );
 
-		return true;
+		return false;
 	}
 
 	protected abstract boolean conditionFunction( String aName, String aPath );

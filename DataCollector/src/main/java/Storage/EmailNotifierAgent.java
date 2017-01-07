@@ -13,10 +13,7 @@ import java.util.Properties;
 
 import Configuration.Recipient;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.*;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -36,7 +33,7 @@ public class EmailNotifierAgent extends ArchiverAgent
 	private ArrayList<Recipient> mRecipientList;
 	private ArrayList<Recipient> mMatchedRecipients;
 
-	double mPriceDropTreshold = 10; // €
+	final double mPriceDropTreshold = 10000; // €
 	private double mOldPrice;
 	private double mNewPrice;
 
@@ -88,7 +85,10 @@ public class EmailNotifierAgent extends ArchiverAgent
 		Favorites lFavorites = Favorites.getInstance();
 		for( TravelData_RESULT.TravelData_PossibleTrip lTrip : aResult.mTrips )
 		{
-			OneWayTrip lOneWayTrip = new OneWayTrip( lTrip.mDepartureDatetime, aResult.mAirline,
+			// convert from 2017-01-24T14:55:00 to 2017-01-24 14:55
+			String lDepartureDatetime = lTrip.mDepartureDatetime.replace( "T", " " );
+			lDepartureDatetime = lDepartureDatetime.substring( 0, lDepartureDatetime.length() - 3 );
+			OneWayTrip lOneWayTrip = new OneWayTrip( lDepartureDatetime, aResult.mAirline,
 					aResult.mAirportCode_LeavingFrom, aResult.mAirportCode_GoingTo,
 					lTrip.mOutboundTrip );
 			if( lFavorites.contains( lOneWayTrip, null ))
@@ -99,7 +99,7 @@ public class EmailNotifierAgent extends ArchiverAgent
 					for( Recipient r : mRecipientList )
 					{
 						if( checkPriceDropTreshold( r, lPriceDrop ))
-							sendMail( r, lOneWayTrip );
+							sendMailSSL( r, lOneWayTrip );
 					}
 				}
 			}
@@ -179,8 +179,7 @@ public class EmailNotifierAgent extends ArchiverAgent
 		String lPrice = aTrip.mPrices_BasicFare_Discount;
 		if( lPrice.length() == 0 )
 			lPrice = aTrip.mPrices_BasicFare_Normal;
-		double mNewPrice = CurrencyHelper.getCurrencyPriceInEuro( lPrice );
-
+		mNewPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice );
 
 		return  mOldPrice - mNewPrice;
 	}
@@ -188,17 +187,26 @@ public class EmailNotifierAgent extends ArchiverAgent
 	private boolean checkPriceDropTreshold( Recipient r, double lPriceDrop )
 	{
 		String lPriceDropTreshold = r.get( "PriceDropTreshold" );
-		if( lPriceDropTreshold == null || lPriceDropTreshold.length() == 0 )
-			return mPriceDropTreshold <= lPriceDrop;
+		String lPriceLimit = r.get( "PriceLimit" );
 
-		Double lPriceDropTresholdDouble = Double.parseDouble( lPriceDropTreshold );
-		return lPriceDropTresholdDouble <= lPriceDrop;
+		if( lPriceDropTreshold != null && lPriceDropTreshold.length() >= 0 )
+		{
+			Double lPriceDropTresholdDouble = Double.parseDouble( lPriceDropTreshold );
+			if( lPriceDropTresholdDouble <= lPriceDrop )
+				return true;
+		}
+
+		return mPriceDropTreshold <= lPriceDrop;
 	}
 
 	private void sendMail( Recipient recipient, OneWayTrip aOWTrip )
 	{
-		Properties props = new Properties();
-		Session session = Session.getDefaultInstance(props, null);
+		// Get system properties
+		Properties properties = System.getProperties();
+
+		// Setup mail server
+		properties.setProperty("mail.smtp.host", "localhost");
+		Session session = Session.getDefaultInstance(properties, null);
 
 		try {
 			Message msg = new MimeMessage(session);
@@ -220,6 +228,62 @@ public class EmailNotifierAgent extends ArchiverAgent
 			Transport.send(msg);
 		} catch (AddressException e) {
 			mLogger.warn( Util.StringHelper.getTraceInformation( e ) );
+		} catch (MessagingException e) {
+			mLogger.warn( Util.StringHelper.getTraceInformation( e ) );
+		} catch (UnsupportedEncodingException e) {
+			mLogger.warn( Util.StringHelper.getTraceInformation( e ) );
+		}
+	}
+
+	private void sendMailSSL( Recipient recipient, OneWayTrip aOWTrip )
+	{
+		String smtp_host = "smtp.gmail.com";
+		String smtp_port = "465";
+		String smtp_username = "";
+		String smtp_password = "";
+
+		Properties props = new Properties();
+		props.put("mail.smtp.host", smtp_host);
+		props.put("mail.smtp.socketFactory.port", smtp_port);
+		props.put("mail.smtp.socketFactory.class",
+				"javax.net.ssl.SSLSocketFactory");
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.port", "465");
+		props.put("mail.smtp.starttls.enable","true");
+
+		Session session = Session.getDefaultInstance(props,
+				new javax.mail.Authenticator() {
+					protected PasswordAuthentication getPasswordAuthentication() {
+						return new PasswordAuthentication(smtp_username,smtp_password);
+					}
+				});
+
+		try {
+
+			Message msg = new MimeMessage(session);
+			msg.setFrom(new InternetAddress("agent@traveloptimizer.com", "Travel Optimizer"));
+			msg.addRecipient(Message.RecipientType.TO,
+					new InternetAddress( recipient.get("email"), recipient.get("name")));
+			msg.setSubject("Travel Optimizer price drop warning");
+
+			String text = "Hi " + recipient.get("name") + ",\n" +
+					"the following trip's price went down:\n" +
+					aOWTrip.getAirline() + "\n" +
+					aOWTrip.getOutboundDepartureAirport() +
+					" - " + aOWTrip.getOutboundArrivalAirport() +
+					" " + aOWTrip.getDatetime() + "\n" +
+					"old price: " + mOldPrice + "\n" +
+					"new price: " + mNewPrice + "\n";
+
+			msg.setText( text );
+			//Transport.send(msg);
+			Transport transport = session.getTransport("smtps");
+			transport.connect (smtp_host, Integer.parseInt(smtp_port), smtp_username, smtp_password);
+			transport.sendMessage(msg, msg.getAllRecipients());
+			transport.close();
+
+			System.out.println("Done");
+
 		} catch (MessagingException e) {
 			mLogger.warn( Util.StringHelper.getTraceInformation( e ) );
 		} catch (UnsupportedEncodingException e) {
