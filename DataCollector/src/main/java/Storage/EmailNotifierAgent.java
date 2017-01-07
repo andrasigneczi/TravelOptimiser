@@ -237,10 +237,11 @@ public class EmailNotifierAgent extends ArchiverAgent
 
 	private void sendMailSSL( Recipient recipient, OneWayTrip aOWTrip )
 	{
+		Configuration lConfiguration = Configuration.getInstance();
 		String smtp_host = "smtp.gmail.com";
 		String smtp_port = "465";
-		String smtp_username = "";
-		String smtp_password = "";
+		String smtp_username = lConfiguration.getValue( "/configuration/global/SmtpUserName", "" );
+		String smtp_password = lConfiguration.getValue( "/configuration/global/SmtpPassword", "" );
 
 		Properties props = new Properties();
 		props.put("mail.smtp.host", smtp_host);
