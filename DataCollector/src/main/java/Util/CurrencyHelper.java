@@ -33,7 +33,7 @@ public class CurrencyHelper
         }
     }
 
-	/**
+    /**
      *
      * @param aPrice e.g. 10.99 €, 25963.50 Ft, ...
      * @return
