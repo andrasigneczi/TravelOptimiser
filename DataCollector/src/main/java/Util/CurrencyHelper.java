@@ -53,6 +53,21 @@ public class CurrencyHelper
         return mMultipliers.getOrDefault( aSymbol, 1.0 );
     }
 
+    public static Double convertPriceToPriceInEuro( String aPrice )
+    {
+        String[] aList = aPrice.split( " " );
+
+        if( aList.length == 0 )
+        {
+            mLogger.warn( "Wrong price format?! " + aPrice );
+            return 1.0;
+        }
+
+        String aSymbol = aList[ aList.length - 1 ];
+
+        return Double.parseDouble( aList[ 0 ] ) * mMultipliers.getOrDefault( aSymbol, 1.0 );
+    }
+
     public static String ConvertFromRyanairFormat( String aPrice )
     {
         // Ft 5,149

@@ -12,15 +12,17 @@ import java.util.ArrayList;
  */
 public class ConfigurationHandler extends DefaultHandler
 {
-	Configuration     mConfiguration;
-	ArrayList<String> mCurrentPath = new ArrayList<String>();
-	TravelData_INPUT  mCurrentTravelDataInput;
-	final String      mSearchPath;
+	Configuration            mConfiguration;
+	ArrayList<String>        mCurrentPath = new ArrayList<String>();
+	TravelData_INPUT         mCurrentTravelDataInput;
+	final String             mSearchPath;
+	ConfigurationNodeHandler mSpecialNodeHandler;
 
-	public ConfigurationHandler( Configuration aConfiguration, String aSearchPath )
+	public ConfigurationHandler( Configuration aConfiguration, String aSearchPath, ConfigurationNodeHandler aConfigurationNodeHandler )
 	{
 		mConfiguration = aConfiguration;
 		mSearchPath = aSearchPath;
+		mSpecialNodeHandler = aConfigurationNodeHandler;
 	}
 
 	public void startElement(String uri, String localName,
@@ -62,6 +64,9 @@ public class ConfigurationHandler extends DefaultHandler
 				mCurrentTravelDataInput.add( lDiscount );
 			}
 		}
+		else if( mConfiguration.getValidSpecialNodes().contains( qName ) && getPath().equals( mSearchPath + qName )) {
+			mSpecialNodeHandler.startElement( qName, attributes );
+		}
 	}
 
 	public void endElement(String uri, String localName,
@@ -73,6 +78,9 @@ public class ConfigurationHandler extends DefaultHandler
 		{
 			mConfiguration.add( mCurrentTravelDataInput );
 			mCurrentTravelDataInput = null;
+		}
+		else if( mConfiguration.getValidSpecialNodes().contains( qName ) && getPath().equals( mSearchPath + qName )) {
+			mSpecialNodeHandler.endElement( qName );
 		}
 		mCurrentPath.remove( mCurrentPath.size() - 1 );
 	}
@@ -101,6 +109,7 @@ public class ConfigurationHandler extends DefaultHandler
 		else
 		{
 			mConfiguration.put( getPath(), lNodeValue );
+			mSpecialNodeHandler.setValue( lNodeName, lNodeValue );
 		}
 	}
 }

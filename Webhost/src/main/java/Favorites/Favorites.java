@@ -1,15 +1,9 @@
-package Util;
+package Favorites;
 
+import Util.OneWayTrip;
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by Andras on 10/06/2016.
@@ -18,9 +12,10 @@ public class Favorites
 {
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger(Favorites.class);
 	private ArrayList<String> mTrips = new ArrayList<>();
-	private final static String mFileName = "favourite_flights.txt";
 
 	private final static Favorites mInstance = new Favorites();
+
+	private static FavouritesStorage mStorage;
 
 	public static Favorites getInstance()
 	{
@@ -29,59 +24,17 @@ public class Favorites
 
 	private Favorites()
 	{
-
+		mStorage = new FavouriteStorage_File();
 	}
 
 	public void LoadFavourites()
 	{
-		mTrips = new ArrayList<>();
-		Scanner lScanner = null;
-		String lContent;
-		try
-		{
-			lScanner = new Scanner( new File( mFileName ), "UTF-8" ).useDelimiter( "\\A" );
-			lContent = lScanner.next();
-			lScanner.close();
-		}
-		catch( FileNotFoundException e )
-		{
-			mLogger.info( Util.getTraceInformation( e ));
-			return;
-		}
-		catch( java.util.NoSuchElementException e )
-		{
-			lScanner.close();
-			mLogger.info( Util.getTraceInformation( e ));
-			return;
-		}
-
-		Pattern lReg = Pattern.compile( "^(.+)$", Pattern.MULTILINE );
-		Matcher lMatch = lReg.matcher( lContent );
-		while( lMatch.find() )
-		{
-			String lRow = lMatch.group().toString().trim();
-			mTrips.add( lRow );
-		}
+		mTrips = mStorage.LoadFavourites();
 	}
 
-	public void SaveFavourtes()
+	public void SaveFavourites()
 	{
-		try
-		{
-			final PrintWriter writer = new PrintWriter( mFileName, "UTF-8" );
-			mTrips.stream().forEach( (trip) -> writer.println(trip) );
-			writer.close();
-		}
-		catch( FileNotFoundException e )
-		{
-			mLogger.info( "Faverites saving error!");
-			mLogger.error( Util.getTraceInformation( e ));
-		}
-		catch( UnsupportedEncodingException e )
-		{
-			mLogger.info( "Faverites saving error!");
-			mLogger.error( Util.getTraceInformation( e ));
-		}
+		mStorage.SaveFavourites( mTrips );
 	}
 
 	/**

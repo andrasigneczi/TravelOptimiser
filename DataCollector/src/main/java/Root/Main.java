@@ -1,11 +1,8 @@
 package Root;
 
 import Apps.*;
-import QueueHandlers.ResultQueue;
-import PageGuest.TravelData_RESULT;
-import Storage.SQLiteAgent;
+import Configuration.Configuration;
 import Util.CurrencyHelper;
-import Util.StringHelper;
 import org.apache.log4j.Logger;
 
 /**
@@ -55,7 +52,7 @@ public class Main
     public static void main(String[] argv)
     {
         CurrencyHelper.Init();
-        Util.Configuration lConfiguration = Util.Configuration.getInstance();
+        Configuration lConfiguration = Configuration.getInstance();
         StartApp( argv );
         System.exit( 0 );
     }

@@ -3,7 +3,7 @@ package PageGuest;
 import QueueHandlers.JMSStack;
 import QueueHandlers.LocalStack;
 import QueueHandlers.ResultQueue;
-import Util.Configuration;
+import Configuration.Configuration;
 import Util.HttpRequest;
 import Util.StringHelper;
 import com.teamdev.jxbrowser.chromium.Browser;
@@ -486,7 +486,7 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 					mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
 				}
 
-				String lSleep = Util.Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
+				String lSleep = Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
 				Sleep( 1000 * Integer.parseInt( lSleep ));
 				mTimeoutStart = System.currentTimeMillis();
 			}

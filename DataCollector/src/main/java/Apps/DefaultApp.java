@@ -1,5 +1,6 @@
 package Apps;
 
+import Configuration.Configuration;
 import PageGuest.TravelData_RESULT;
 import QueueHandlers.ResultQueue;
 import Root.PageGuestFactory;
@@ -40,7 +41,7 @@ public class DefaultApp
 			//HelloWorld.JxBrowserHelloWorld.HelloWorld();
 			//HelloWorld.JxBrowserHelloWorld.FlashSample();
 
-			Util.Configuration lConfiguration = Util.Configuration.getInstance();
+			Configuration lConfiguration = Configuration.getInstance();
 			getBrowserLogger().setLevel( Level.WARNING );
 			getChromiumProcessLogger().setLevel( Level.WARNING );
 			getIPCLogger().setLevel( Level.WARNING );

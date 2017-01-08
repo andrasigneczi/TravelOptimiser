@@ -1,5 +1,6 @@
 package Util;
 
+import Favorites.Favorites;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -109,7 +110,7 @@ public class FavoritesTest
 	public void loadAndSave() throws Exception
 	{
 		Favorites lFavorites = prepareSomeWays();
-		lFavorites.SaveFavourtes();
+		lFavorites.SaveFavourites();
 		assertTrue( "Favorite file does not exist.", new java.io.File( "favourite_flights.txt" ).exists() );
 
 		int lOldSize = lFavorites.size();

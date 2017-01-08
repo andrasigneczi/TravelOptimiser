@@ -1,10 +1,8 @@
 package Util;
 
+import Favorites.Favorites;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowire;
-import org.springframework.context.annotation.Bean;
 
-import java.lang.annotation.Annotation;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -172,20 +170,32 @@ public class ChartBuilder
 
 		String lSeries = "";
 		String lHeight = "100";
-
+		String lMostLeftDate = "";
+		String lMostRightDate = "";
 		if( mHighChartDataResultComposerOutbound != null )
+		{
 			lHeight = String.valueOf( mHighChartDataResultComposerOutbound.getMaxValue() );
+			lMostLeftDate = mHighChartDataResultComposerOutbound.getMostLeftDate();
+			lMostRightDate = mHighChartDataResultComposerOutbound.getMostRightDate();
+		}
 
+		final int lColorModifier = 0x102040;
+		int lCounter = 0;
 		for( TravelData_INPUT.Discount lDiscount : aDiscounts )
 		{
+			if( Util.compareDateTime( lDiscount.mEnding, lMostLeftDate ) == -1 )
+				continue;
+			if( Util.compareDateTime( lDiscount.mBeginning, lMostRightDate ) == 1 )
+				continue;
 			HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
 			lHCDRCExtra.add( lDiscount.mBeginning, lHeight, new Float(1.0) );
 			lHCDRCExtra.add( lDiscount.mEnding, lHeight, new Float( 1.0 ));
 			lSeries += mSeriesTemplate.replace( "[SERIES.NAME]", lDiscount.mName )
 					.replace( "[TYPE.NAME]", "area" )
-					.replace( "[COLOR]", DISCOUNT_COLOR )
+					.replace( "[COLOR]", Util.htmlColorChanger( DISCOUNT_COLOR, lColorModifier * lCounter ))
 					.replace( "[RADIUS]", "1" )
 					.replace( "[SERIES.DATA]", lHCDRCExtra.getResult() ) + ",\n";
+			lCounter++;
 		}
 		return lSeries;
 	}
@@ -274,6 +284,7 @@ public class ChartBuilder
 
 		String lSeries3 = GetSeries3();
 		mDiscountSeries = GetDiscountSeries( mTDI.mDiscounts );
+		mDiscountSeries += GetDiscountSeries( Configuration.getInstance().getDiscountList( mTDI.mAirline ));
 
 		String lTitle = mDate1 + " - " + mDate2 + " " + mAirportFrom + " - " + mAirportTo;
 		String lSeries = mDiscountSeries + mSeries1 + ",\n" + lSeries2 + ",\n" + lSeries3 + mBoughtTicketsSeries;
@@ -291,6 +302,7 @@ public class ChartBuilder
 			lCurrency = lFoundCurrency.iterator().next();
 
 		mDiscountSeries = GetDiscountSeries( mTDI.mDiscounts );
+		mDiscountSeries += GetDiscountSeries( Configuration.getInstance().getDiscountList( mTDI.mAirline ));
 
 		String lTitle = mDate1 + " " + mAirportFrom + " - " + mAirportTo;
 		String lSeriesSum = mDiscountSeries + mSeries1 + mBoughtTicketsSeries;
@@ -391,7 +403,7 @@ public class ChartBuilder
 				lDatetime2 = lTrips[ 1 ].getDatetime();
 			}
 
-			String lPlusTag = "<img class=\"favoriteadd\" src=\"/img/Plus.ico\"/>";
+			String lPlusTag = "<img class=\"favoriteadd\" src=\"/img/Plus.ico\" onclick=\"OpenQuestionForm();\"/>";
 			//String lPlusTag = "";
 			String lStartTag = "<img class=\"favoritestar\" src=\"/img/star_filled.png\" onclick=\"bookmarkChart2(this, '"
 					+ lFavorites.getSource( i ) + "' );\"/>";
@@ -510,7 +522,7 @@ public class ChartBuilder
 			Favorites.getInstance().add( lTB, null );
 		else
 			Favorites.getInstance().add( mToggledButton, lTB );
-		Favorites.getInstance().SaveFavourtes();
+		Favorites.getInstance().SaveFavourites();
 	}
 
 	public void UpdateBookmarkTrip( String aParam )
@@ -526,6 +538,6 @@ public class ChartBuilder
 			else
 				Favorites.getInstance().add( lTrips[ 0 ], lTrips[ 1 ] );
 		}
-		Favorites.getInstance().SaveFavourtes();
+		Favorites.getInstance().SaveFavourites();
 	}
 }

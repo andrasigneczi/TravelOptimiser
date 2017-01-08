@@ -25,6 +25,8 @@ public class Configuration
 	private Hashtable<String,String> mConfigValues;
 	private HashSet<String> mValidAirlines = new HashSet<String>();
 	private HashSet<String> mValidSearchNodes = new HashSet<String>();
+	private HashSet<String> mValidSpecialNodes = new HashSet<>();
+	private ConfigurationNodeHandler_Discount mConfigurationNodeHandler_Discount;
 
 	private Configuration()
 	{
@@ -45,6 +47,8 @@ public class Configuration
 		mValidSearchNodes.add( "Currency" );
 		mValidSearchNodes.add( "BoughtTicket" );
 		mValidSearchNodes.add( "Discount" );
+
+		mValidSpecialNodes.add( "Discount" );
 		ParseConfigurationFile();
 	}
 
@@ -81,7 +85,8 @@ public class Configuration
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
 
-			DefaultHandler handler = new ConfigurationHandler( this, "/configuration/charts/" );
+			mConfigurationNodeHandler_Discount = new ConfigurationNodeHandler_Discount();
+			DefaultHandler handler = new ConfigurationHandler( this, "/configuration/charts/", mConfigurationNodeHandler_Discount );
 
 			//File file = new File("test.xml");
 			//InputStream inputStream= new FileInputStream(file);
@@ -128,6 +133,11 @@ public class Configuration
 		return mValidSearchNodes;
 	}
 
+	public HashSet<String> getValidSpecialNodes()
+	{
+		return mValidSpecialNodes;
+	}
+
 	public void put( String aPath, String aNodeValue )
 	{
 		mConfigValues.put( aPath, aNodeValue );
@@ -136,5 +146,10 @@ public class Configuration
 	public void add( TravelData_INPUT aTDI )
 	{
 		mSearchList.add( aTDI );
+	}
+
+	public ArrayList<TravelData_INPUT.Discount> getDiscountList( String airline )
+	{
+		return mConfigurationNodeHandler_Discount.findByAirline( airline );
 	}
 }

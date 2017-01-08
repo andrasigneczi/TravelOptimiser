@@ -1,4 +1,4 @@
-package Util;
+package Configuration;
 
 import PageGuest.TravelData_INPUT;
 import org.xml.sax.InputSource;
@@ -21,19 +21,27 @@ public class Configuration
 
 	private ArrayList<TravelData_INPUT> mSearchList = null;
 	private ArrayList<TravelData_INPUT> mFlightList = null;
+	private ArrayList<Recipient> mRecipientList = null;
 	private Hashtable<String,String> mConfigValues;
+
 	private HashSet<String> mValidAirlines = new HashSet<String>();
 	private HashSet<String> mValidSearchNodes = new HashSet<String>();
 	private HashSet<String> mValidFlightNodes = new HashSet<String>();
 
+
 	private Configuration()
 	{
 		mMutex = new Object();
+
 		mSearchList = new ArrayList<TravelData_INPUT>();
 		mFlightList = new ArrayList<TravelData_INPUT>();
+		mRecipientList = new ArrayList<Recipient>();
+
 		mConfigValues = new Hashtable<String, String>(  );
+
 		mValidAirlines.add( "wizzair" );
 		mValidAirlines.add( "ryanair" );
+
 		mValidSearchNodes.add( "LeavingFrom" );
 		mValidSearchNodes.add( "GoingTo" );
 		mValidSearchNodes.add( "DepartureDay" );
@@ -93,7 +101,10 @@ public class Configuration
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
 
-			DefaultHandler handler = new ConfigurationHandler( this, "/configuration/searches/", "/configuration/flights/" );
+			DefaultHandler handler = new ConfigurationHandler( this
+					, "/configuration/searches/"
+					, "/configuration/flights/"
+					, "/configuration/emails/");
 
 			//File file = new File("test.xml");
 			//InputStream inputStream= new FileInputStream(file);
@@ -149,6 +160,25 @@ public class Configuration
 		return lFlightList;
 	}
 
+	public ArrayList<Recipient> getRecipientList()
+	{
+		ArrayList<Recipient> lRecipientList = new ArrayList<Recipient>();
+		for( Recipient lRecipient : mRecipientList )
+		{
+			Recipient lClone = null;
+			try
+			{
+				lClone = (Recipient)lRecipient.clone();
+			}
+			catch( CloneNotSupportedException e )
+			{
+				e.printStackTrace();
+			}
+			lRecipientList.add( lClone );
+		}
+		return lRecipientList;
+	}
+
 	public HashSet<String> getValidAirlines()
 	{
 		return mValidAirlines;
@@ -176,5 +206,9 @@ public class Configuration
 	public void addFlightItem( TravelData_INPUT aTDI )
 	{
 		mFlightList.add( aTDI );
+	}
+	public void addRecipientItem( Recipient aR )
+	{
+		mRecipientList.add( aR );
 	}
 }

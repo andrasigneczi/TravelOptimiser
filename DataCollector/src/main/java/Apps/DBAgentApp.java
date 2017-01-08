@@ -1,7 +1,9 @@
 package Apps;
 
+import Favorites.*;
 import PageGuest.TravelData_RESULT;
 import QueueHandlers.ResultQueue;
+import Storage.EmailNotifierAgent;
 import Storage.SQLiteAgent;
 import Util.CurrencyHelper;
 import Util.StringHelper;
@@ -29,14 +31,29 @@ public class DBAgentApp
 			getChromiumProcessLogger().setLevel( Level.WARNING );
 			getIPCLogger().setLevel( Level.WARNING );
 
-			if( !CurrencyHelper.DownloadRecentCurrencyPrices())
+			for( int DownloadProbes = 5; DownloadProbes > 0; DownloadProbes-- )
 			{
-				mLogger.error( "Currency values are not available!" );
-				return;
+				if( CurrencyHelper.DownloadRecentCurrencyPrices() )
+				{
+					break;
+				}
+				else
+				{
+					mLogger.error( "Currency values are not available!" );
+					if( DownloadProbes == 1 )
+						return;
+					Thread.sleep(60 * 1000);
+				}
 			}
+
+			Favorites.getInstance().LoadFavourites();
+
 			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
 			SQLiteAgent lSQLiteAgent = new SQLiteAgent();
 			lSQLiteAgent.InitializeDatabase();
+
+			EmailNotifierAgent lEmailNotifierAgent = new EmailNotifierAgent( lSQLiteAgent );
+			lSQLiteAgent.setNextAgent( lEmailNotifierAgent );
 
 			// the jms listen 1 second before return, so in case of 30 the waiting time will be 60 seconds
 			final int WaitBeforeStop = 150;
