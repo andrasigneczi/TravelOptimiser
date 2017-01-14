@@ -1,7 +1,8 @@
 package Favorites;
 
 import Util.Util;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,7 +18,7 @@ import java.util.regex.Pattern;
  */
 public class FavouriteStorage_File implements FavouritesStorage
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger(FavouriteStorage_File.class);
+	private static Logger mLogger = LoggerFactory.getLogger(FavouriteStorage_File.class);
 
 	private final static String mFileName = "favourite_flights.txt";
 

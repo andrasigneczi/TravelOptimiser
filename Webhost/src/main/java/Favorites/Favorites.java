@@ -1,7 +1,8 @@
 package Favorites;
 
 import Util.OneWayTrip;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
@@ -10,7 +11,7 @@ import java.util.ArrayList;
  */
 public class Favorites
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger(Favorites.class);
+	private static Logger mLogger = LoggerFactory.getLogger(Favorites.class);
 	private ArrayList<String> mTrips = new ArrayList<>();
 
 	private final static Favorites mInstance = new Favorites();

@@ -1,7 +1,8 @@
 package Favorites;
 
 import Util.Util;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
  */
 public class FavouriteStorage_SQLite implements FavouritesStorage
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger(FavouriteStorage_SQLite.class);
+	private static Logger mLogger = LoggerFactory.getLogger(FavouriteStorage_SQLite.class);
 
 	private Connection mConnection = null;
 	private final static String mDatabaseFileName = "favourites.db";

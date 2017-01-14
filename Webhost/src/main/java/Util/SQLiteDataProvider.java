@@ -1,6 +1,7 @@
 package Util;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +18,7 @@ import java.util.stream.Stream;
  */
 public class SQLiteDataProvider implements DataProvider
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger(SQLiteDataProvider.class);
+	private static Logger mLogger = LoggerFactory.getLogger(SQLiteDataProvider.class);
 
 	private static SQLiteDataProvider mInstance = null;
 	private Connection mConnection = null;

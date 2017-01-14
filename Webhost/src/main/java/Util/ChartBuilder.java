@@ -1,7 +1,8 @@
 package Util;
 
 import Favorites.Favorites;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -15,7 +16,7 @@ import java.util.Scanner;
  */
 public class ChartBuilder
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger(ChartBuilder.class);
+	private static Logger mLogger = LoggerFactory.getLogger(ChartBuilder.class);
 
 	private final static String mHtmlTemplate   = InitHtmlTemplate();
 	private final static String mJsTemplate     = InitJsTemplate();
