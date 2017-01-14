@@ -44,6 +44,7 @@ public class Util
 
 		if( lDT1.isAfter( lDT2 ))
 			return 1;
+
 		if( lDT1.isBefore( lDT2 ))
 			return -1;
 		return 0;

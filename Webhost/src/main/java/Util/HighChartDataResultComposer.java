@@ -300,10 +300,10 @@ public class HighChartDataResultComposer extends DataResultComposer
 			if( lValuesList.get( i ) > mMaxValue )
 				mMaxValue = lValuesList.get( i );
 			lResult += "[Date.parse('" + lDatesList.get( i ) + "'), " + lValuesList.get( i ) + "]";
-			if( i == 0 )
-				mMostLeftDate = lDatesList.get( i );
-			if( i == mValues.size() - 1 )
-				mMostRightDate = lDatesList.get( i );
+//			if( i == 0 )
+//				mMostLeftDate = lDatesList.get( i );
+//			if( i == mValues.size() - 1 )
+//				mMostRightDate = lDatesList.get( i );
 		}
 
 		return lResult;
