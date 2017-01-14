@@ -25,7 +25,7 @@ import Favorites.*;
  */
 public class EmailNotifierAgent extends ArchiverAgent
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger(SQLiteAgent.class);
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger(EmailNotifierAgent.class);
 
 	private SQLiteAgent mSQLiteAgent;
 	private String mPrice;
@@ -45,26 +45,32 @@ public class EmailNotifierAgent extends ArchiverAgent
 
 	private void initMatchedRecipients( TravelData_RESULT aResult )
 	{
+		mLogger.trace( "begin" );
 		mMatchedRecipients = new ArrayList<Recipient>();
 
+		mLogger.trace( "result airline: " + aResult.mAirline );
 		for( Recipient r : mRecipientList )
 		{
 			String lAirLine = r.get( "airline" );
 			if( lAirLine != null && lAirLine.compareToIgnoreCase( aResult.mAirline ) == 0 )
 			{
+				mLogger.trace( "recipient airline: " + lAirLine );
 				String lAirportCodes = r.get( "ObservedAirportCodes" );
+				mLogger.trace( "lAirportCodes: " + lAirportCodes );
 				String[] lACodes = lAirportCodes.split( "," );
 				for( String lAC : lACodes )
 				{
 					if( lAC.compareToIgnoreCase( aResult.mAirportCode_LeavingFrom ) == 0 ||
 							lAC.compareToIgnoreCase( aResult.mAirportCode_GoingTo ) == 0 )
 					{
+						mLogger.trace( "matched recipient: " + r.toString() );
 						mMatchedRecipients.add( r );
 						break;
 					}
 				}
 			}
 		}
+		mLogger.trace( "end" );
 	}
 
 	@Override
@@ -81,6 +87,8 @@ public class EmailNotifierAgent extends ArchiverAgent
 
 		if( mMatchedRecipients.size() == 0 )
 			return;
+
+		mLogger.trace( "there are " + mMatchedRecipients.size() + " recipients" );
 
 		Favorites lFavorites = Favorites.getInstance();
 		for( TravelData_RESULT.TravelData_PossibleTrip lTrip : aResult.mTrips )
