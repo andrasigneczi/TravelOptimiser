@@ -1,6 +1,7 @@
 package Util;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -12,7 +13,7 @@ import java.util.*;
  */
 public class HighChartDataResultComposer extends DataResultComposer
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger(HighChartDataResultComposer.class);
+	private static Logger mLogger = LoggerFactory.getLogger(HighChartDataResultComposer.class);
 
 	//private String mResult = new String();
 	// if 3 or more value one by one are the same in the list, only the first one and the last one will be displayed
