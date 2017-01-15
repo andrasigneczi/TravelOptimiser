@@ -91,6 +91,7 @@ public class EmailNotifierAgent extends ArchiverAgent
 		mLogger.trace( "there are " + mMatchedRecipients.size() + " recipients" );
 
 		Favorites lFavorites = Favorites.getInstance();
+		mLogger.trace( "favourites: " + lFavorites.toString() );
 		for( TravelData_RESULT.TravelData_PossibleTrip lTrip : aResult.mTrips )
 		{
 			// convert from 2017-01-24T14:55:00 to 2017-01-24 14:55
@@ -99,11 +100,13 @@ public class EmailNotifierAgent extends ArchiverAgent
 			OneWayTrip lOneWayTrip = new OneWayTrip( lDepartureDatetime, aResult.mAirline,
 					aResult.mAirportCode_LeavingFrom, aResult.mAirportCode_GoingTo,
 					lTrip.mOutboundTrip );
+			mLogger.trace( "one way trips " + lOneWayTrip.toString() );
 			if( lFavorites.contains( lOneWayTrip, null ))
 			{
 				if( LoadNewestEarlierTripData( lOneWayTrip ))
 				{
 					double lPriceDrop = getPriceDrop( lTrip );
+					mLogger.trace( "mOldPrice: " + mOldPrice + "; mNewPrice: " + mNewPrice );
 					for( Recipient r : mRecipientList )
 					{
 						if( checkPriceDropTreshold( r, lPriceDrop ))
@@ -196,6 +199,9 @@ public class EmailNotifierAgent extends ArchiverAgent
 	{
 		String lPriceDropTreshold = r.get( "PriceDropTreshold" );
 		String lPriceLimit = r.get( "PriceLimit" );
+		mLogger.trace( "lPriceDropTreshold: " + lPriceDropTreshold );
+		mLogger.trace( "lPriceLimit: " + lPriceLimit );
+		mLogger.trace( "lPriceDrop: " + lPriceDrop );
 
 		if( lPriceDropTreshold != null && lPriceDropTreshold.length() >= 0 )
 		{
