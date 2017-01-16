@@ -195,22 +195,27 @@ public class EmailNotifierAgent extends ArchiverAgent
 		return  mOldPrice - mNewPrice;
 	}
 
-	private boolean checkPriceDropTreshold( Recipient r, double lPriceDrop )
+	private boolean checkPriceDropTreshold( Recipient r, double aPriceDrop )
 	{
 		String lPriceDropTreshold = r.get( "PriceDropTreshold" );
 		String lPriceLimit = r.get( "PriceLimit" );
 		mLogger.trace( "lPriceDropTreshold: " + lPriceDropTreshold );
 		mLogger.trace( "lPriceLimit: " + lPriceLimit );
-		mLogger.trace( "lPriceDrop: " + lPriceDrop );
+		mLogger.trace( "lPriceDrop: " + aPriceDrop );
 
 		if( lPriceDropTreshold != null && lPriceDropTreshold.length() >= 0 )
 		{
 			Double lPriceDropTresholdDouble = Double.parseDouble( lPriceDropTreshold );
-			if( lPriceDropTresholdDouble <= lPriceDrop )
+			if( lPriceDropTresholdDouble <= aPriceDrop )
 				return true;
 		}
 
-		return mPriceDropTreshold <= lPriceDrop;
+		if( lPriceLimit != null && lPriceLimit.length() >= 0 ){
+			Double lPriceLimitDouble = Double.parseDouble( lPriceLimit );
+			if( lPriceLimitDouble >= mNewPrice )
+				return true;
+		}
+		return mPriceDropTreshold <= aPriceDrop;
 	}
 
 	private void sendMail( Recipient recipient, OneWayTrip aOWTrip )
