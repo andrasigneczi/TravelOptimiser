@@ -161,4 +161,15 @@ public class Favorites
 	{
 		mTrips = new ArrayList<>();
 	}
+
+	@Override
+	public String toString()
+	{
+		String retValue = "";
+		for( String trip : mTrips )
+		{
+			retValue += trip + "\n";
+		}
+		return retValue;
+	}
 }
