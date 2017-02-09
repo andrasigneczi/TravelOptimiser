@@ -97,7 +97,7 @@ public class Favorites
 
 		for( int i = 0; i < mTrips.size(); i++ )
 		{
-			if( mTrips.get( i ).equals( lTrip ))
+			if( mTrips.get( i ).indexOf( lTrip ) != -1 )
 				return true;
 		}
 		return false;

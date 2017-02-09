@@ -100,9 +100,10 @@ public class EmailNotifierAgent extends ArchiverAgent
 			OneWayTrip lOneWayTrip = new OneWayTrip( lDepartureDatetime, aResult.mAirline,
 					aResult.mAirportCode_LeavingFrom, aResult.mAirportCode_GoingTo,
 					lTrip.mOutboundTrip );
-			mLogger.trace( "one way trips " + lOneWayTrip.toString() );
+			mLogger.trace( "one way trip: " + lOneWayTrip.toString() );
 			if( lFavorites.contains( lOneWayTrip, null ))
 			{
+				mLogger.trace( "one way trip found in the favourites" );
 				if( LoadNewestEarlierTripData( lOneWayTrip ))
 				{
 					double lPriceDrop = getPriceDrop( lTrip );
