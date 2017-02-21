@@ -5,6 +5,7 @@ import Favorites.OneWayTrip;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by Andras on 25/12/2016.
@@ -26,5 +27,20 @@ public class EmailNotifierAgentTest
 		{
 			lEmailNotifierAgent.LoadNewestEarlierTripData( lFavorites.get( i )[0] );
 		}
+	}
+
+	@Test
+	public void PriceTest()
+	{
+		double aPriceDrop = 1.000E-08;
+		double mNewPrice = 34.24345546646;
+		final double mPriceDropTreshold = 10000;
+		Double lPriceDropTresholdDouble = Double.parseDouble( "10" );
+		assertFalse( lPriceDropTresholdDouble <= aPriceDrop );
+
+		Double lPriceLimitDouble = Double.parseDouble( "20" );
+		assertFalse( lPriceLimitDouble >= mNewPrice );
+
+		assertFalse( mPriceDropTreshold <= aPriceDrop );
 	}
 }

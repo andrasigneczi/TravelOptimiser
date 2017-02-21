@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Properties;
 
 import Configuration.Recipient;
@@ -37,10 +38,13 @@ public class EmailNotifierAgent extends ArchiverAgent
 	private double mOldPrice;
 	private double mNewPrice;
 
+	private HashSet<String> mMatchedTrips;
+
 	public EmailNotifierAgent( SQLiteAgent agent )
 	{
 		mSQLiteAgent = agent;
 		mRecipientList = Configuration.getInstance().getRecipientList();
+		mMatchedTrips = new HashSet<>(  );
 	}
 
 	private void initMatchedRecipients( TravelData_RESULT aResult )
@@ -100,8 +104,10 @@ public class EmailNotifierAgent extends ArchiverAgent
 			OneWayTrip lOneWayTrip = new OneWayTrip( lDepartureDatetime, aResult.mAirline,
 					aResult.mAirportCode_LeavingFrom, aResult.mAirportCode_GoingTo,
 					lTrip.mOutboundTrip );
-			mLogger.trace( "one way trip: " + lOneWayTrip.toString() );
-			if( lFavorites.contains( lOneWayTrip, null ))
+			String oneWayTripString = lOneWayTrip.toString();
+			mLogger.trace( "one way trip: " + oneWayTripString );
+			if( !mMatchedTrips.contains( oneWayTripString )
+					&& lFavorites.contains( lOneWayTrip, null ))
 			{
 				mLogger.trace( "one way trip found in the favourites" );
 				if( LoadNewestEarlierTripData( lOneWayTrip ))
@@ -111,7 +117,10 @@ public class EmailNotifierAgent extends ArchiverAgent
 					for( Recipient r : mRecipientList )
 					{
 						if( checkPriceDropTreshold( r, lPriceDrop ))
+						{
 							sendMailSSL( r, lOneWayTrip );
+							mMatchedTrips.add( oneWayTripString );
+						}
 					}
 				}
 			}

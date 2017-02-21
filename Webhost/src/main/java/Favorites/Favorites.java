@@ -112,14 +112,42 @@ public class Favorites
 		if( lSeparatorIndex != -1 )
 		{
 			OneWayTrip lTrip1 = OneWayTrip.fromString( aTripString.substring( 0, lSeparatorIndex ));
-			OneWayTrip lTrip2 = OneWayTrip.fromString( aTripString.substring( lSeparatorIndex + 1 ));
+
+			// beginning of the extra info
+			int lSeparatorIndex2 = aTripString.indexOf( "#", lSeparatorIndex + 1 );
+			OneWayTrip lTrip2;
+
+			if( lSeparatorIndex2 == -1 )
+			{
+				lTrip2 = OneWayTrip.fromString( aTripString.substring( lSeparatorIndex + 1 ) );
+			}
+			else
+			{
+				lTrip2 = OneWayTrip.fromString( aTripString.substring( lSeparatorIndex + 1, lSeparatorIndex2 ) );
+				parseExtraInfo( aTripString.substring( lSeparatorIndex2 + 1 );
+			}
 			return new OneWayTrip[] { lTrip1, lTrip2 };
 		}
 		else
 		{
-			OneWayTrip lTrip = OneWayTrip.fromString( aTripString );
+			OneWayTrip lTrip;
+			int lSeparatorIndex2 = aTripString.indexOf( "#" );
+			if( lSeparatorIndex2 == -1 )
+			{
+				lTrip = OneWayTrip.fromString( aTripString );
+			}
+			else
+			{
+				lTrip = OneWayTrip.fromString( aTripString.substring( 0, lSeparatorIndex2 ) );
+				parseExtraInfo( aTripString.substring( lSeparatorIndex2 + 1 ));
+			}
 			return new OneWayTrip[] { lTrip };
 		}
+	}
+
+	private void parseExtraInfo( String tripExtraInfo )
+	{
+
 	}
 
 	/**
