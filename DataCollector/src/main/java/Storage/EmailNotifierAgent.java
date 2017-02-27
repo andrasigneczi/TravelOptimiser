@@ -114,7 +114,7 @@ public class EmailNotifierAgent extends ArchiverAgent
 				{
 					double lPriceDrop = getPriceDrop( lTrip );
 					mLogger.trace( "mOldPrice: " + mOldPrice + "; mNewPrice: " + mNewPrice );
-					for( Recipient r : mRecipientList )
+					for( Recipient r : mMatchedRecipients )
 					{
 						if( checkPriceDropTreshold( r, lPriceDrop ))
 						{
