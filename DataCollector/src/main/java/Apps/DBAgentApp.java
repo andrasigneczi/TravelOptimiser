@@ -1,11 +1,13 @@
 package Apps;
 
+import Configuration.Configuration;
 import Favorites.*;
 import PageGuest.TravelData_RESULT;
 import QueueHandlers.ResultQueue;
 import Storage.EmailNotifierAgent;
 import Storage.SQLiteAgent;
 import Util.CurrencyHelper;
+import Util.GMailSender;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
 
@@ -25,6 +27,8 @@ public class DBAgentApp
 	public static void Run()
 	{
 		mLogger.trace( "DBAgentApp start" );
+		EmailNotifierAgent lEmailNotifierAgent = null;
+		SQLiteAgent lSQLiteAgent = null;
 		try
 		{
 			getBrowserLogger().setLevel( Level.WARNING );
@@ -49,10 +53,10 @@ public class DBAgentApp
 			Favorites.getInstance().LoadFavourites();
 
 			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
-			SQLiteAgent lSQLiteAgent = new SQLiteAgent();
+			lSQLiteAgent = new SQLiteAgent();
 			lSQLiteAgent.InitializeDatabase();
 
-			EmailNotifierAgent lEmailNotifierAgent = new EmailNotifierAgent( lSQLiteAgent );
+			lEmailNotifierAgent = new EmailNotifierAgent( lSQLiteAgent );
 			lSQLiteAgent.setNextAgent( lEmailNotifierAgent );
 
 			// the jms listen 1 second before return, so in case of 30 the waiting time will be 60 seconds
@@ -78,6 +82,36 @@ public class DBAgentApp
 		{
 			mLogger.error( "Unhandled exception: " + StringHelper.getTraceInformation( e ));
 		}
+
+		if( lSQLiteAgent != null )
+		{
+			sendSummaryMail( lSQLiteAgent.getWizzAirTripCount(), lSQLiteAgent.getRyanAirTripCount());
+		}
 		mLogger.trace( "DBAgentApp stop" );
+	}
+
+	private static void sendSummaryMail( int ryanAirTripCount, int wizzAirTripCount )
+	{
+		try
+		{
+			Configuration lConfiguration = Configuration.getInstance();
+			String fromAddress = "agent@traveloptimizer.com";
+			String fromName = "Travel Optimizer";
+			String toAddress = lConfiguration.getValue( "/configuration/global/SummaryEmail", "" );
+			String toName = lConfiguration.getValue( "/configuration/global/SummaryName", "" );
+			String subject = "Travel Optimizer DBAgent summary";
+			String msgBody = "Hi " + toName + ",\n" +
+					"the DBAgent saved " +
+					wizzAirTripCount +
+					" wizzair trip data and " +
+					ryanAirTripCount +
+					" ryanair trip data";
+
+			GMailSender.send( fromAddress, fromName, toAddress, toName, subject, msgBody );
+		}
+		catch( Exception e )
+		{
+			mLogger.error( "mail exception: " + StringHelper.getTraceInformation( e ));
+		}
 	}
 }

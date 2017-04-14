@@ -32,11 +32,16 @@ public class SQLiteAgent extends ArchiverAgent
 	private final static String mDatabaseFileExtension = ".db";
 	private final static String mDatabaseFullFileName = mDatabaseFileName + mDatabaseFileExtension;
 	private String mOpenedDatabaseFileName = null;
+	private int mWizzAirTripCount = 0;
+	private int mRyanAirTripCount = 0;
 
 	public void SQLiteAgent()
 	{
 
 	}
+
+	public int getWizzAirTripCount() { return mWizzAirTripCount; }
+	public int getRyanAirTripCount() { return mRyanAirTripCount; }
 
 	private int GetSearchId()
 	{
@@ -159,6 +164,11 @@ public class SQLiteAgent extends ArchiverAgent
 		{
 			lSearchId = InsertNewSearch();
 		}
+
+		if( aResult.mAirline.equalsIgnoreCase( "wizzair" ))
+			mWizzAirTripCount++;
+		else if( aResult.mAirline.equalsIgnoreCase( "ryanair" ))
+			mRyanAirTripCount++;
 
 		int lTravelDataResultId =  GetTravelDataResultId( lSearchId );
 		if( lTravelDataResultId == -1 )

@@ -3,22 +3,15 @@ package Storage;
 import Configuration.Configuration;
 import PageGuest.TravelData_RESULT;
 import Util.CurrencyHelper;
+import Util.GMailSender;
 import org.apache.log4j.Logger;
 
-import java.io.UnsupportedEncodingException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Properties;
 
 import Configuration.Recipient;
-
-import javax.mail.*;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-
 import Favorites.*;
 
 /**
@@ -228,96 +221,22 @@ public class EmailNotifierAgent extends ArchiverAgent
 		return mPriceDropTreshold <= aPriceDrop;
 	}
 
-	private void sendMail( Recipient recipient, OneWayTrip aOWTrip )
-	{
-		// Get system properties
-		Properties properties = System.getProperties();
-
-		// Setup mail server
-		properties.setProperty("mail.smtp.host", "localhost");
-		Session session = Session.getDefaultInstance(properties, null);
-
-		try {
-			Message msg = new MimeMessage(session);
-			msg.setFrom(new InternetAddress("agent@traveloptimizer.com", "Travel Optimizer"));
-			msg.addRecipient(Message.RecipientType.TO,
-					new InternetAddress( recipient.get("email"), recipient.get("name")));
-			msg.setSubject("Travel Optimizer price drop warning");
-
-			String text = "Hi " + recipient.get("name") + ",\n" +
-					"the following trip's price went down:\n" +
-					aOWTrip.getAirline() + "\n" +
-					aOWTrip.getOutboundDepartureAirport() +
-					" - " + aOWTrip.getOutboundArrivalAirport() +
-					" " + aOWTrip.getDatetime() + "\n" +
-					"old price: " + mOldPrice + "\n" +
-					"new price: " + mNewPrice + "\n";
-
-			msg.setText( text );
-			Transport.send(msg);
-		} catch (AddressException e) {
-			mLogger.warn( Util.StringHelper.getTraceInformation( e ) );
-		} catch (MessagingException e) {
-			mLogger.warn( Util.StringHelper.getTraceInformation( e ) );
-		} catch (UnsupportedEncodingException e) {
-			mLogger.warn( Util.StringHelper.getTraceInformation( e ) );
-		}
-	}
-
 	private void sendMailSSL( Recipient recipient, OneWayTrip aOWTrip )
 	{
-		Configuration lConfiguration = Configuration.getInstance();
-		String smtp_host = "smtp.gmail.com";
-		String smtp_port = "465";
-		String smtp_username = lConfiguration.getValue( "/configuration/global/SmtpUserName", "" );
-		String smtp_password = lConfiguration.getValue( "/configuration/global/SmtpPassword", "" );
+		String fromAddress = "agent@traveloptimizer.com";
+		String fromName = "Travel Optimizer";
+		String toAddress = recipient.get( "email" );
+		String toName = recipient.get( "name" );
+		String subject = "Travel Optimizer price drop warning";
+		String msgBody = "Hi " + recipient.get( "name" ) + ",\n" +
+				"the following trip's price went down:\n" +
+				aOWTrip.getAirline() + "\n" +
+				aOWTrip.getOutboundDepartureAirport() +
+				" - " + aOWTrip.getOutboundArrivalAirport() +
+				" " + aOWTrip.getDatetime() + "\n" +
+				"old price: " + mOldPrice + "\n" +
+				"new price: " + mNewPrice + "\n";
 
-		Properties props = new Properties();
-		props.put("mail.smtp.host", smtp_host);
-		props.put("mail.smtp.socketFactory.port", smtp_port);
-		props.put("mail.smtp.socketFactory.class",
-				"javax.net.ssl.SSLSocketFactory");
-		props.put("mail.smtp.auth", "true");
-		props.put("mail.smtp.port", "465");
-		props.put("mail.smtp.starttls.enable","true");
-
-		Session session = Session.getDefaultInstance(props,
-				new javax.mail.Authenticator() {
-					protected PasswordAuthentication getPasswordAuthentication() {
-						return new PasswordAuthentication(smtp_username,smtp_password);
-					}
-				});
-
-		try {
-
-			Message msg = new MimeMessage(session);
-			msg.setFrom(new InternetAddress("agent@traveloptimizer.com", "Travel Optimizer"));
-			msg.addRecipient(Message.RecipientType.TO,
-					new InternetAddress( recipient.get("email"), recipient.get("name")));
-			msg.setSubject("Travel Optimizer price drop warning");
-
-			String text = "Hi " + recipient.get("name") + ",\n" +
-					"the following trip's price went down:\n" +
-					aOWTrip.getAirline() + "\n" +
-					aOWTrip.getOutboundDepartureAirport() +
-					" - " + aOWTrip.getOutboundArrivalAirport() +
-					" " + aOWTrip.getDatetime() + "\n" +
-					"old price: " + mOldPrice + "\n" +
-					"new price: " + mNewPrice + "\n";
-
-			msg.setText( text );
-			//Transport.send(msg);
-			Transport transport = session.getTransport("smtps");
-			transport.connect (smtp_host, Integer.parseInt(smtp_port), smtp_username, smtp_password);
-			transport.sendMessage(msg, msg.getAllRecipients());
-			transport.close();
-
-			System.out.println("Done");
-
-		} catch (MessagingException e) {
-			mLogger.warn( Util.StringHelper.getTraceInformation( e ) );
-		} catch (UnsupportedEncodingException e) {
-			mLogger.warn( Util.StringHelper.getTraceInformation( e ) );
-		}
+		GMailSender.send( fromAddress, fromName, toAddress, toName, subject, msgBody );
 	}
 }
