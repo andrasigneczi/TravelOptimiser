@@ -90,7 +90,7 @@ public class DBAgentApp
 		mLogger.trace( "DBAgentApp stop" );
 	}
 
-	private static void sendSummaryMail( int ryanAirTripCount, int wizzAirTripCount )
+	private static void sendSummaryMail( int wizzAirTripCount, int ryanAirTripCount )
 	{
 		try
 		{
