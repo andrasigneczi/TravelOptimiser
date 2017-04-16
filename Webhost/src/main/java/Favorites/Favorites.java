@@ -124,7 +124,7 @@ public class Favorites
 			else
 			{
 				lTrip2 = OneWayTrip.fromString( aTripString.substring( lSeparatorIndex + 1, lSeparatorIndex2 ) );
-				parseExtraInfo( aTripString.substring( lSeparatorIndex2 + 1 );
+				parseExtraInfo( aTripString.substring( lSeparatorIndex2 + 1 ));
 			}
 			return new OneWayTrip[] { lTrip1, lTrip2 };
 		}

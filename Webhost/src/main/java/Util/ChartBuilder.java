@@ -430,11 +430,13 @@ public class ChartBuilder
 		String lHtml = mHtmlTemplate.replace( "[CHART_SCRIPTS]", lScriptCotent )
 				.replace( "[CHART_DIVS]", lDivContent );
 
-		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance()
-				.GetCollectedDepartureDateList( new HtmlListFormatterButtonList(),
-				mSelectedDepartureAirport, mSelectedArrivalAirport, mReturnCheckboxChecked,
-						mOutboundDate, mInboundDate );
-		lHtml = lHtml.replace( "[AVAILABLE_TRIPS]", lGetCollectedDepartureDateList );
+		// The initial button list is a full list, too many buttons. I don't want to display them,
+		// except if I request it.
+//		String lGetCollectedDepartureDateList = SQLiteDataProvider.getInstance()
+//				.GetCollectedDepartureDateList( new HtmlListFormatterButtonList(),
+//				mSelectedDepartureAirport, mSelectedArrivalAirport, mReturnCheckboxChecked,
+//						mOutboundDate, mInboundDate );
+		//lHtml = lHtml.replace( "[AVAILABLE_TRIPS]", lGetCollectedDepartureDateList );
 
 		String lDepartureAirportSelector = SQLiteDataProvider.getInstance()
 				.GetDepartureAirportList( new HtmlListFormatterSelect( "DepartureAirportList" ),

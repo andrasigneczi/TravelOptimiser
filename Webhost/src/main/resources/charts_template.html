@@ -292,6 +292,16 @@
 
     $(document).ready(function(){
         $('[data-toggle="buttonlist-tooltip"]').tooltip();
+
+        // Button list collapse show callback
+        $("#collapse-at").on("show.bs.collapse", function(){
+            //alert( 1 );
+        });
+
+        // Button list collapse hide callback
+        $("#collapse-at").on("hide.bs.collapse", function(){
+            // alert( 2 )
+        });
     });
 
     $('#sandbox-container div#outbound-date').datepicker()
