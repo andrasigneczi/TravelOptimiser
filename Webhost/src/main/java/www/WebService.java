@@ -2,7 +2,6 @@ package www;
 
 import Util.*;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,12 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Scanner;
 
 /**
  * Created by Andras on 08/04/2016.
@@ -68,15 +61,12 @@ public class WebService
 	@RequestMapping( value = "/DownloadDB", method = { RequestMethod.GET }, params = { } )
 	public String Action_DownloadDb( HttpServletResponse response )
 	{
-		// search the newest db or use the current one?
-		// send the db
 		String fileName = SQLiteDataProvider.getInstance().getOpenedDatabaseFileName();
 
 		if( fileName == null )
 			return "";
 
 		String fileType = "application/octet-stream";
-		// Find this file id in database to get file name, and file type
 
 		// You must tell the browser the file type you are going to send
 		// for example application/pdf, text/plain, text/html, image/jpg
@@ -85,7 +75,24 @@ public class WebService
 		// Make sure to show the download dialog
 		response.setHeader("Content-disposition","attachment; filename=" + fileName.substring( fileName.lastIndexOf( '\\' ) + 1 ));
 
-		sendDb( fileName, response );
+		sendBinaryFile( fileName, response );
+		return "";
+	}
+
+	@RequestMapping( value = "/DownloadFv", method = { RequestMethod.GET }, params = { } )
+	public String Action_DownloadFv( HttpServletResponse response )
+	{
+		final String favouritevFlightsFileName = "favourite_flights.txt";
+		String fileType = "application/octet-stream";
+
+		// You must tell the browser the file type you are going to send
+		// for example application/pdf, text/plain, text/html, image/jpg
+		response.setContentType(fileType);
+
+		// Make sure to show the download dialog
+		response.setHeader("Content-disposition","attachment; filename=" + favouritevFlightsFileName );
+
+		sendBinaryFile( favouritevFlightsFileName, response );
 		return "";
 	}
 
@@ -147,7 +154,7 @@ public class WebService
 		return lGetCollectedDepartureDateList;
 	}
 
-	private void sendDb( String fileName, HttpServletResponse response )
+	private void sendBinaryFile( String fileName, HttpServletResponse response )
 	{
 		try {
 			// get your file as InputStream

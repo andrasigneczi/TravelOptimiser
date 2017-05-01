@@ -72,7 +72,12 @@ img.favoriteadd {
     float: none;
 }
 
-#downloaddb {
+.downloaddb {
     float: right;
     padding-right: 30px;
+    border: 1px gray;
+}
+
+.downloaddb>button {
+    margin: 3px;
 }
