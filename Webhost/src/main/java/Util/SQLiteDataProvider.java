@@ -28,6 +28,8 @@ public class SQLiteDataProvider implements DataProvider
 	private final static String mDatabaseFullFileName = mDatabaseFileName + mDatabaseFileExtension;
 	private String mOpenedDatabaseFileName = null;
 
+	public String getOpenedDatabaseFileName() { return mOpenedDatabaseFileName; }
+
 	private SQLiteDataProvider()
 	{
 		try

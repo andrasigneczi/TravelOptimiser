@@ -1,6 +1,7 @@
 package www;
 
 import Util.*;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -9,7 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -61,8 +65,34 @@ public class WebService
 		return GenHtmlContentUsingConfig();
 	}
 
+	@RequestMapping( value = "/DownloadDB", method = { RequestMethod.GET }, params = { } )
+	public String Action_DownloadDb( HttpServletResponse response )
+	{
+		// search the newest db or use the current one?
+		// send the db
+		String fileName = SQLiteDataProvider.getInstance().getOpenedDatabaseFileName();
+
+		if( fileName == null )
+			return "";
+
+		String fileType = "application/octet-stream";
+		// Find this file id in database to get file name, and file type
+
+		// You must tell the browser the file type you are going to send
+		// for example application/pdf, text/plain, text/html, image/jpg
+		response.setContentType(fileType);
+
+		// Make sure to show the download dialog
+		response.setHeader("Content-disposition","attachment; filename=" + fileName.substring( fileName.lastIndexOf( '\\' ) + 1 ));
+
+		sendDb( fileName, response );
+		return "";
+	}
+
 	@RequestMapping( value = "/ajaxrequest", method = { RequestMethod.POST }, params = { "id", "param" } )
-	public String action1( @RequestParam( "id" ) String aId, @RequestParam( "param" ) String aParam, HttpServletRequest httpRequest, WebRequest request )
+	public String action1( @RequestParam( "id" ) String aId, @RequestParam( "param" ) String aParam,
+	                       HttpServletRequest httpRequest, WebRequest request,
+	                       HttpServletResponse response )
 	{
 		if( aId.equals( "DepartureAirportListChanged" ))
 			mBuilder.setSelectedDepartureAirport( aParam );
@@ -115,5 +145,20 @@ public class WebService
 						mBuilder.isReturnCheckboxChecked(), mBuilder.getOutboundDate(), mBuilder.getInboundDate() );
 
 		return lGetCollectedDepartureDateList;
+	}
+
+	private void sendDb( String fileName, HttpServletResponse response )
+	{
+		try {
+			// get your file as InputStream
+			InputStream is = new FileInputStream( fileName );
+			//InputStream is = getClass().getClassLoader().getResourceAsStream(fileName);
+			// copy it to response's OutputStream
+			IOUtils.copy(is, response.getOutputStream());
+			response.flushBuffer();
+		} catch (IOException ex) {
+			//log.info("Error writing file to output stream. Filename was '{}'", fileName, ex);
+			throw new RuntimeException("IOError writing file to output stream");
+		}
 	}
 }

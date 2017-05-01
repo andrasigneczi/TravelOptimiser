@@ -34,6 +34,7 @@
     <span></span>
     <label>Select arrival airport: </label>
     [ARRIVAL_AIRPORTS]
+    <div id="downloaddb"><button>Download DB</button></div>
     <br/>
     <!--<input type="checkbox" name="ReturnTrip" id="ReturnTrip" value="1"-->
            <!--onchange="TO_ActionName=this.name + 'Changed';TO_ActionWidget=this;$('#ajaxform').submit();"/>-->
@@ -347,6 +348,14 @@ function modalStarOn( bOn )
 function OpenQuestionForm() {
     $("#OpenQuestionForm" ).click();
 }
+
+    $(function() {
+        $('#downloaddb').click(function() {
+          //$('#console-event').html('Toggle: ' + $(this).prop('checked'))
+          //window.location = "data:application/octet-stream," + encodeURIComponent( "/DownloadDB" );
+          window.location = "/DownloadDB";
+        })
+    })
 
 </script>
 </body>

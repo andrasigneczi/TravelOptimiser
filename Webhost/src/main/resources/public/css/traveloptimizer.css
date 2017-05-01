@@ -71,3 +71,8 @@ img.favoriteadd {
     clear: none;
     float: none;
 }
+
+#downloaddb {
+    float: right;
+    padding-right: 30px;
+}
