@@ -96,6 +96,23 @@ public class WebService
 		return "";
 	}
 
+	@RequestMapping( value = "/DownloadCollectorLog", method = { RequestMethod.GET }, params = { } )
+	public String Action_DownloadCollectorLog( HttpServletResponse response )
+	{
+		final String favouritevFlightsFileName = "log4j-datacollector.log";
+		String fileType = "application/octet-stream";
+
+		// You must tell the browser the file type you are going to send
+		// for example application/pdf, text/plain, text/html, image/jpg
+		response.setContentType(fileType);
+
+		// Make sure to show the download dialog
+		response.setHeader("Content-disposition","attachment; filename=" + favouritevFlightsFileName );
+
+		sendBinaryFile( favouritevFlightsFileName, response );
+		return "";
+	}
+
 	@RequestMapping( value = "/ajaxrequest", method = { RequestMethod.POST }, params = { "id", "param" } )
 	public String action1( @RequestParam( "id" ) String aId, @RequestParam( "param" ) String aParam,
 	                       HttpServletRequest httpRequest, WebRequest request,
