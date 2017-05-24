@@ -43,6 +43,7 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 	private boolean mThreadStopped = true;
 	private long mTimeoutStart;
 	private static String mApiSearchUrl = "https://be.wizzair.com/3.3.3/Api/search/search";
+	// https://be.wizzair.com/5.0.1/Api/search/search
 
 	public static void InitApirURL() throws Exception
 	{
@@ -65,14 +66,14 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 		DOMDocument lDocument = lBrowser.getDocument();
 		String lContent = lDocument.getDocumentElement().getInnerHTML();
 
-		Pattern reg = Pattern.compile( "var apiUrl = \"(.*)\";" );
+		Pattern reg = Pattern.compile( "https\\://be\\.wizzair\\.com/(\\d{1,2}\\.\\d{1,2}\\.\\d{1,2})/Api" );
 		Matcher m = reg.matcher( lContent );
-		String lUrl = "";
+		String lVersion = "";
 		if( m.find() )
 		{
-			lUrl = m.group(1).toString().trim();
-			mLogger.info( "WizzAir API URL: " + lUrl );
-			mApiSearchUrl = lUrl + "/search/search";
+			lVersion = m.group(1).toString().trim();
+			mLogger.info( "WizzAir API version: " + lVersion );
+			mApiSearchUrl = "https://be.wizzair.com/" + lVersion + "/Api/search/search";
 		}
 		lBrowser.dispose();
 	}

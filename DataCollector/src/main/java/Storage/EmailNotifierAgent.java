@@ -32,12 +32,14 @@ public class EmailNotifierAgent extends ArchiverAgent
 	private double mNewPrice;
 
 	private HashSet<String> mMatchedTrips;
+	private GMailSender mGmailSender;
 
-	public EmailNotifierAgent( SQLiteAgent agent )
+	public EmailNotifierAgent( SQLiteAgent agent, GMailSender gmailSender )
 	{
 		mSQLiteAgent = agent;
 		mRecipientList = Configuration.getInstance().getRecipientList();
 		mMatchedTrips = new HashSet<>(  );
+		mGmailSender = gmailSender;
 	}
 
 	private void initMatchedRecipients( TravelData_RESULT aResult )
@@ -237,6 +239,7 @@ public class EmailNotifierAgent extends ArchiverAgent
 				"old price: " + mOldPrice + "\n" +
 				"new price: " + mNewPrice + "\n";
 
-		GMailSender.send( fromAddress, fromName, toAddress, toName, subject, msgBody );
+		//GMailSender.send( fromAddress, fromName, toAddress, toName, subject, msgBody );
+		mGmailSender.add( fromAddress, fromName, toAddress, toName, subject, msgBody );
 	}
 }

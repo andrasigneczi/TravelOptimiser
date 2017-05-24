@@ -56,7 +56,8 @@ public class DBAgentApp
 			lSQLiteAgent = new SQLiteAgent();
 			lSQLiteAgent.InitializeDatabase();
 
-			lEmailNotifierAgent = new EmailNotifierAgent( lSQLiteAgent );
+			GMailSender lGmailSender = new GMailSender();
+			lEmailNotifierAgent = new EmailNotifierAgent( lSQLiteAgent, lGmailSender );
 			lSQLiteAgent.setNextAgent( lEmailNotifierAgent );
 
 			// the jms listen 1 second before return, so in case of 30 the waiting time will be 60 seconds
@@ -77,6 +78,7 @@ public class DBAgentApp
 
 			lSQLiteAgent.ConnectionClose();
 			lSQLiteAgent.ArchiveDatabaseFile();
+			lGmailSender.sendAll();
 		}
 		catch (Exception e)
 		{

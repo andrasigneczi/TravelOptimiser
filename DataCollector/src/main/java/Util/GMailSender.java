@@ -9,14 +9,49 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 import java.lang.*;
+import java.util.Comparator;
 import java.util.Properties;
+import java.util.TreeSet;
 
 /**
  * Created by Andras on 12/04/2017.
  */
 public class GMailSender
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger( GMailSender.class);
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger( GMailSender.class );
+	public class Email {
+		public String mFromAddress;
+		public String mFromName;
+		public String mToAddress;
+		public String mToName;
+		public String mSubject;
+		public String mMsgBody;
+
+		public Email( String fromAddress, String fromName,
+		       String toAddress, String toName,
+		       String subject, String msgBody )
+		{
+			mFromAddress = fromAddress;
+			mFromName    = fromName;
+			mToAddress   = toAddress;
+			mToName      = toName;
+			mSubject     = subject;
+			mMsgBody     = msgBody;
+		}
+	}
+
+	public static class EmailComparator implements Comparator<Email>
+	{
+		public int compare( Email s1, Email s2 ) {
+			int r = s1.mFromAddress.compareTo( s2.mFromAddress );
+			if( r != 0 ) return r;
+			r = s1.mToAddress.compareTo( s2.mToAddress );
+			if( r != 0 ) return r;
+			return s1.mSubject.compareTo( s2.mSubject );
+		}
+	}
+
+	private static TreeSet<Email> mEmails = new TreeSet<Email>( new EmailComparator() );
 
 	public static void send( String fromAddress, String fromName,
 	                         String toAddress, String toName,
@@ -37,30 +72,64 @@ public class GMailSender
 		props.put( "mail.smtp.starttls.enable", "true" );
 
 		Session session = Session.getDefaultInstance( props,
-				new javax.mail.Authenticator() {
-					protected PasswordAuthentication getPasswordAuthentication() {
+				new javax.mail.Authenticator()
+				{
+					protected PasswordAuthentication getPasswordAuthentication()
+					{
 						return new PasswordAuthentication( smtp_username, smtp_password );
 					}
-				});
+				}
+		);
 
-		try {
+		try
+		{
 
 			Message msg = new MimeMessage( session );
-			msg.setFrom( new InternetAddress( fromAddress, fromName ));
+			msg.setFrom( new InternetAddress( fromAddress, fromName ) );
 			msg.addRecipient( Message.RecipientType.TO,
-					new InternetAddress( toAddress, toName ));
+					new InternetAddress( toAddress, toName )
+			);
 			msg.setSubject( subject );
 
 			msg.setText( msgBody );
 			//Transport.send(msg);
 			Transport transport = session.getTransport( "smtps" );
 			transport.connect( smtp_host, Integer.parseInt( smtp_port ), smtp_username, smtp_password );
-			transport.sendMessage( msg, msg.getAllRecipients());
+			transport.sendMessage( msg, msg.getAllRecipients() );
 			transport.close();
-		} catch (MessagingException e) {
-			mLogger.warn( Util.StringHelper.getTraceInformation( e ) );
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch( MessagingException e )
+		{
 			mLogger.warn( Util.StringHelper.getTraceInformation( e ) );
 		}
+		catch( UnsupportedEncodingException e )
+		{
+			mLogger.warn( Util.StringHelper.getTraceInformation( e ) );
+		}
+	}
+
+	public void add( String fromAddress, String fromName,
+	                         String toAddress, String toName,
+	                         String subject, String msgBody )
+	{
+		Email emailToFind = new Email( fromAddress, fromName, toAddress, toName, subject, msgBody );
+		if( mEmails.contains( emailToFind ))
+		{
+			Email original = mEmails.floor( emailToFind );
+			original.mMsgBody += "\n" + msgBody;
+		}
+		else
+		{
+			mEmails.add( emailToFind );
+		}
+	}
+
+	public void sendAll()
+	{
+		for( Email email : mEmails )
+		{
+			send( email.mFromAddress, email.mFromName, email.mToAddress, email.mToName, email.mSubject, email.mMsgBody );
+		}
+		mEmails.clear();
 	}
 }
