@@ -40,6 +40,8 @@
         <button id="downloadfavourites">Download Fav.</button>
         <br>
         <button id="downloadcollectorlog">Download CLog.</button>
+        <br>
+        <button id="downloadconfigfile">Download Cfg.</button>
     </div>
     <br/>
     <!--<input type="checkbox" name="ReturnTrip" id="ReturnTrip" value="1"-->
@@ -366,6 +368,9 @@ function OpenQuestionForm() {
         })
         $('#downloadcollectorlog').click(function() {
           window.location = "/DownloadCollectorLog";
+        })
+        $('#downloadconfigfile').click(function() {
+          window.location = "/DownloadConfigFile";
         })
     })
 

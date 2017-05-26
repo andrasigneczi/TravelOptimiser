@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Scanner;
 
 /**
  * Created by Andras on 08/04/2016.
@@ -113,6 +114,23 @@ public class WebService
 		return "";
 	}
 
+	@RequestMapping( value = "/DownloadConfigFile", method = { RequestMethod.GET }, params = { } )
+	public String Action_DownloadConfigFile( HttpServletResponse response )
+	{
+		final String configFileName = "config.xml";
+		String fileType = "application/octet-stream";
+
+		// You must tell the browser the file type you are going to send
+		// for example application/pdf, text/plain, text/html, image/jpg
+		response.setContentType( fileType );
+
+		// Make sure to show the download dialog
+		response.setHeader( "Content-disposition", "attachment; filename=" + configFileName );
+
+		sendBinaryrResourceFile( configFileName, response );
+		return "";
+	}
+
 	@RequestMapping( value = "/ajaxrequest", method = { RequestMethod.POST }, params = { "id", "param" } )
 	public String action1( @RequestParam( "id" ) String aId, @RequestParam( "param" ) String aParam,
 	                       HttpServletRequest httpRequest, WebRequest request,
@@ -179,6 +197,18 @@ public class WebService
 			//InputStream is = getClass().getClassLoader().getResourceAsStream(fileName);
 			// copy it to response's OutputStream
 			IOUtils.copy(is, response.getOutputStream());
+			response.flushBuffer();
+			is.close();
+		} catch (IOException ex) {
+			//log.info("Error writing file to output stream. Filename was '{}'", fileName, ex);
+			throw new RuntimeException("IOError writing file to output stream");
+		}
+	}
+
+	private void sendBinaryrResourceFile( String fileName, HttpServletResponse response )
+	{
+		try {
+			IOUtils.copy(getClass().getClassLoader().getResourceAsStream( fileName ), response.getOutputStream());
 			response.flushBuffer();
 		} catch (IOException ex) {
 			//log.info("Error writing file to output stream. Filename was '{}'", fileName, ex);
