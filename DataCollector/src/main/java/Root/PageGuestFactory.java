@@ -13,9 +13,9 @@ public class PageGuestFactory
 		{
 			return new WizzAirPageGuest201609();
 		}
-		else if( PageType.equalsIgnoreCase( "wizzairv2" ))
+		else if( PageType.equalsIgnoreCase( "wizzairtimetable" ))
 		{
-			return new WizzAirPageGuestV2();
+			return new WizzAirPageGuestTimetable();
 		}
 		else if( PageType.equalsIgnoreCase( "ryanair" ))
 		{

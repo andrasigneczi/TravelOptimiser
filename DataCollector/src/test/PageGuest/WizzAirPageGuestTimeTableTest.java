@@ -5,12 +5,12 @@ import org.junit.Test;
 /**
  * Created by Andras on 19/06/2016.
  */
-public class WizzAirPageGuestV2Test
+public class WizzAirPageGuestTimetableTest
 {
 	@Test
 	public void fillTheForm() throws Exception
 	{
-		WizzAirPageGuestV2 test = new WizzAirPageGuestV2( true );
+		PageGuest.WizzAirPageGuestTimeTable test = new PageGuest.WizzAirPageGuestTimeTable( true );
 		TravelData_INPUT aTravelDataInput = new TravelData_INPUT();
 		aTravelDataInput.mAirline = "wizzair";
 		aTravelDataInput.mAirportCode_LeavingFrom = "CRL";

@@ -36,9 +36,9 @@ public class Main
                 RyanAirApp.Run();
                 break;
             }
-            else if( arg.equals( "-wizzairv2" ))
+            else if( arg.equals( "-wizzairtimetable" ))
             {
-                WizzAirV2App.Run();
+                WizzAirTimetableApp.Run();
                 break;
             }
             else if( arg.equals( "-dbagent" ))

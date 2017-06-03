@@ -1,5 +1,6 @@
 package Apps;
 
+import PageGuest.WizzAirPageGuestTimetable;
 import Root.PageGuestFactory;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
@@ -7,20 +8,20 @@ import org.apache.log4j.Logger;
 /**
  * Created by Andras on 02/08/2016.
  */
-public class WizzAirV2App
+public class WizzAirTimetableApp
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger( WizzAirV2App.class);
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger( WizzAirTimetableApp.class);
 
 	public static void Run()
 	{
 		try
 		{
-			mLogger.trace( "WizzAirV2App start" );
+			mLogger.trace( "WizzAirTimetableApp start" );
 
-			final PageGuest.WizzAirPageGuestV2 lGuestW = (PageGuest.WizzAirPageGuestV2) PageGuestFactory.Create( "WizzAirV2" );
+			final WizzAirPageGuestTimetable lGuestW = (WizzAirPageGuestTimetable) PageGuestFactory.Create( "WizzAirTimetable" );
 			lGuestW.DoSearchFromConfig();
 			lGuestW.WaitForFinish();
-			mLogger.trace( "WizzAirV2App stop" );
+			mLogger.trace( "WizzAirTimetableApp stop" );
 		}
 		catch (Exception e)
 		{

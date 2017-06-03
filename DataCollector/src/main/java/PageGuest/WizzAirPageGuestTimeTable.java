@@ -35,26 +35,26 @@ import static Util.DatetimeHelper.ConvertFromWizzairJSONStoredFormat;
  * 2. How will I handle the different currencies?
  *
  */
-public class WizzAirPageGuestV2 extends PageGuest implements Runnable
+public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuestV2.class);
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger( WizzAirPageGuestTimetable.class);
 
 	private boolean mThreadStopped = true;
 	private long mTimeoutStart;
 
-	public WizzAirPageGuestV2( boolean dummy )
+	public WizzAirPageGuestTimetable( boolean dummy )
 	{
 		super( "wizzair" );
 	}
 
-	public WizzAirPageGuestV2()
+	public WizzAirPageGuestTimetable()
 	{
 		super( "wizzair" );
 		mSearchQueue = new LocalStack<TravelData_INPUT>();
 		mThread = new Thread(this);
 		mThread.setName("WizzAirThread2 " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 		mThread.start();
-		System.out.println("WizzAirPageGuestV2()");
+		System.out.println("WizzAirPageGuestTimetable()");
 	}
 
 	/**
@@ -203,7 +203,17 @@ public class WizzAirPageGuestV2 extends PageGuest implements Runnable
 		SaveMonthlyFlights( lResultList );
 	}
 
-	private void FillTheForm( TravelData_INPUT aTravelDataInput, int aYear, int aMonth, ArrayList<TravelData_RESULT> aResultList, boolean aOutbound ) throws URISyntaxException, IOException
+	private void FillTheFormNew( TravelData_INPUT aTravelDataInput, int aYear, int aMonth, ArrayList<TravelData_RESULT> aResultList, boolean aOutbound ) throws URISyntaxException, IOException
+	{
+		// JSON post
+		// https://be.wizzair.com/5.1.4/Api/search/timetable
+		// request payload: {"flightList":[{"departureStation":"HHN","arrivalStation":"BUD","from":"2017-06-03","to":"2017-07-02"},{"departureStation":"BUD","arrivalStation":"HHN","from":"2017-06-26","to":"2017-08-06"}],"priceType":"regular"}
+
+		// response: {"outboundFlights":[{"departureStation":"HHN","arrivalStation":"BUD","departureDate":"2017-06-06T00:00:00","price":{"amount":64.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-06-06T16:45:00"],"classOfService":"KL","hasMacFlight":false},{"departureStation":"HHN","arrivalStation":"BUD","departureDate":"2017-06-08T00:00:00","price":{"amount":34.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-06-08T16:45:00"],"classOfService":"OP","hasMacFlight":false},{"departureStation":"HHN","arrivalStation":"BUD","departureDate":"2017-06-10T00:00:00","price":{"amount":34.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-06-10T16:45:00"],"classOfService":"OP","hasMacFlight":false},{"departureStation":"HHN","arrivalStation":"BUD","departureDate":"2017-06-13T00:00:00","price":{"amount":34.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-06-13T16:45:00"],"classOfService":"OP","hasMacFlight":false},{"departureStation":"HHN","arrivalStation":"BUD","departureDate":"2017-06-15T00:00:00","price":{"amount":39.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-06-15T16:45:00"],"classOfService":"O","hasMacFlight":false},{"departureStation":"HHN","arrivalStation":"BUD","departureDate":"2017-06-17T00:00:00","price":{"amount":27.49,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-06-17T16:45:00"],"classOfService":"PR","hasMacFlight":false},{"departureStation":"HHN","arrivalStation":"BUD","departureDate":"2017-06-20T00:00:00","price":{"amount":24.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-06-20T16:45:00"],"classOfService":"R","hasMacFlight":false},{"departureStation":"HHN","arrivalStation":"BUD","departureDate":"2017-06-22T00:00:00","price":{"amount":34.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-06-22T16:45:00"],"classOfService":"OP","hasMacFlight":false},{"departureStation":"HHN","arrivalStation":"BUD","departureDate":"2017-06-24T00:00:00","price":{"amount":44.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-06-24T16:45:00"],"classOfService":"BO","hasMacFlight":false},{"departureStation":"HHN","arrivalStation":"BUD","departureDate":"2017-06-27T00:00:00","price":{"amount":22.49,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-06-27T16:45:00"],"classOfService":"RS","hasMacFlight":false},{"departureStation":"HHN","arrivalStation":"BUD","departureDate":"2017-06-29T00:00:00","price":{"amount":22.49,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-06-29T16:45:00"],"classOfService":"RS","hasMacFlight":false},{"departureStation":"HHN","arrivalStation":"BUD","departureDate":"2017-07-01T00:00:00","price":{"amount":59.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-01T16:45:00"],"classOfService":"L","hasMacFlight":false}],"returnFlights":[{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-06-27T00:00:00","price":{"amount":49.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-06-27T14:25:00"],"classOfService":"B","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-06-29T00:00:00","price":{"amount":29.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-06-29T14:25:00"],"classOfService":"P","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-07-01T00:00:00","price":{"amount":49.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-01T14:25:00"],"classOfService":"B","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-07-04T00:00:00","price":{"amount":34.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-04T14:25:00"],"classOfService":"OP","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-07-06T00:00:00","price":{"amount":27.49,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-06T14:25:00"],"classOfService":"PR","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-07-08T00:00:00","price":{"amount":34.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-08T14:25:00"],"classOfService":"OP","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-07-11T00:00:00","price":{"amount":39.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-11T14:25:00"],"classOfService":"O","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-07-13T00:00:00","price":{"amount":24.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-13T14:25:00"],"classOfService":"R","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-07-15T00:00:00","price":{"amount":29.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-15T14:25:00"],"classOfService":"P","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-07-18T00:00:00","price":{"amount":22.49,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-18T14:25:00"],"classOfService":"RS","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-07-20T00:00:00","price":{"amount":22.49,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-20T14:25:00"],"classOfService":"RS","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-07-22T00:00:00","price":{"amount":34.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-22T14:25:00"],"classOfService":"OP","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-07-25T00:00:00","price":{"amount":22.49,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-25T14:25:00"],"classOfService":"RS","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-07-27T00:00:00","price":{"amount":22.49,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-27T14:25:00"],"classOfService":"RS","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-07-29T00:00:00","price":{"amount":44.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-07-29T14:25:00"],"classOfService":"BO","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-08-01T00:00:00","price":{"amount":29.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-08-01T14:25:00"],"classOfService":"P","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-08-03T00:00:00","price":{"amount":44.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-08-03T14:25:00"],"classOfService":"BO","hasMacFlight":false},{"departureStation":"BUD","arrivalStation":"HHN","departureDate":"2017-08-05T00:00:00","price":{"amount":34.99,"currencyCode":"EUR"},"priceType":"price","departureDates":["2017-08-05T14:25:00"],"classOfService":"OP","hasMacFlight":false}]}
+
+	}
+
+		private void FillTheForm( TravelData_INPUT aTravelDataInput, int aYear, int aMonth, ArrayList<TravelData_RESULT> aResultList, boolean aOutbound ) throws URISyntaxException, IOException
 	{
 		// String lUrl = "https://cdn.static.wizzair.com/hu-HU/TimeTableAjax?departureIATA=CRL&arrivalIATA=BUD&year=2016&month=8";
 		String lUrl = "https://cdn.static.wizzair.com/hu-HU/TimeTableAjax?departureIATA="
