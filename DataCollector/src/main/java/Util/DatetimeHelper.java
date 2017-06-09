@@ -214,4 +214,10 @@ public class DatetimeHelper
         }
         return lReturn;
     }
+
+    public static String FormatDate( String aDate )
+    {
+        String[] lParts = aDate.split("\\.", 0 );
+        return String.format( "%s-%s-%s", lParts[ 0 ], lParts[ 1 ], lParts[ 2 ] );
+    }
 }

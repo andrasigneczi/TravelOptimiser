@@ -6,10 +6,7 @@ import QueueHandlers.ResultQueue;
 import Configuration.Configuration;
 import Util.HttpRequest;
 import Util.StringHelper;
-import com.teamdev.jxbrowser.chromium.Browser;
-import com.teamdev.jxbrowser.chromium.Callback;
-import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
-import com.traveloptimizer.browserengine.TeamDevJxBrowser;
+import Util.WizzairHelper;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,14 +21,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static Util.CurrencyHelper.ConvertFrom3Digits;
-import static com.teamdev.jxbrowser.chromium.LoggerProvider.getBrowserLogger;
-import static com.teamdev.jxbrowser.chromium.LoggerProvider.getChromiumProcessLogger;
-import static com.teamdev.jxbrowser.chromium.LoggerProvider.getIPCLogger;
+import static Util.DatetimeHelper.FormatDate;
 
 /**
  * Created by Andras on 02/09/2016.
@@ -47,35 +39,11 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 
 	public static void InitApirURL() throws Exception
 	{
-		//var apiUrl = "https://be.wizzair.com/3.3.3/Api";
-//		HttpRequest lHttpRequest = new HttpRequest();
-//		String lContent = lHttpRequest.sendGet( "https://wizzair.com", 0 );
+		String lApiVersion = WizzairHelper.getApiVersion();
+		if( lApiVersion.length() == 0 )
+			throw new RuntimeException( "Wrong API version!" );
 
-		getBrowserLogger().setLevel( Level.WARNING );
-		getChromiumProcessLogger().setLevel( Level.WARNING );
-		getIPCLogger().setLevel( Level.WARNING );
-
-		Browser lBrowser = TeamDevJxBrowser.getInstance().getJxBrowser("wwwww");
-		Browser.invokeAndWaitFinishLoadingMainFrame(lBrowser, new Callback<Browser>() {
-			@Override
-			public void invoke(Browser browser) {
-				browser.loadURL("https://wizzair.com");
-			}
-		});
-
-		DOMDocument lDocument = lBrowser.getDocument();
-		String lContent = lDocument.getDocumentElement().getInnerHTML();
-
-		Pattern reg = Pattern.compile( "https\\://be\\.wizzair\\.com/(\\d{1,2}\\.\\d{1,2}\\.\\d{1,2})/Api" );
-		Matcher m = reg.matcher( lContent );
-		String lVersion = "";
-		if( m.find() )
-		{
-			lVersion = m.group(1).toString().trim();
-			mLogger.info( "WizzAir API version: " + lVersion );
-			mApiSearchUrl = "https://be.wizzair.com/" + lVersion + "/Api/search/search";
-		}
-		lBrowser.dispose();
+		mApiSearchUrl = "https://be.wizzair.com/" + lApiVersion + "/Api/search/search";
 	}
 
 	public WizzAirPageGuest201609()
@@ -203,12 +171,6 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 			e.printStackTrace();
 		}
 		System.out.println("stop()");
-	}
-
-	private String FormatDate( String aDate )
-	{
-		String[] lParts = aDate.split("\\.", 0 );
-		return String.format( "%s-%s-%s", lParts[ 0 ], lParts[ 1 ], lParts[ 2 ] );
 	}
 
 	private void ParseBundles( JSONArray aBoundles )

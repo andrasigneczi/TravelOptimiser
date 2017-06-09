@@ -1,7 +1,10 @@
-package Storage;
+package StorageTest;
 
 import Favorites.Favorites;
 import Favorites.OneWayTrip;
+import Storage.EmailNotifierAgent;
+import Storage.SQLiteAgent;
+import Util.GMailSender;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -20,8 +23,8 @@ public class EmailNotifierAgentTest
 
 		SQLiteAgent lSQLiteAgent = new SQLiteAgent();
 		lSQLiteAgent.InitializeDatabase();
-
-		EmailNotifierAgent lEmailNotifierAgent = new EmailNotifierAgent( lSQLiteAgent );
+		GMailSender lGmailSender = new GMailSender();
+		EmailNotifierAgent lEmailNotifierAgent = new EmailNotifierAgent( lSQLiteAgent, lGmailSender );
 
 		for( int i = 0; i < lFavorites.size(); i++ )
 		{

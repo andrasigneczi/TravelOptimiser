@@ -17,7 +17,7 @@ public class WizzAirTimetableApp
 		try
 		{
 			mLogger.trace( "WizzAirTimetableApp start" );
-
+			PageGuest.WizzAirPageGuestTimetable.InitApirURL();
 			final WizzAirPageGuestTimetable lGuestW = (WizzAirPageGuestTimetable) PageGuestFactory.Create( "WizzAirTimetable" );
 			lGuestW.DoSearchFromConfig();
 			lGuestW.WaitForFinish();

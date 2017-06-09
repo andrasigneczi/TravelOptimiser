@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Created by Andras on 01/10/2016.

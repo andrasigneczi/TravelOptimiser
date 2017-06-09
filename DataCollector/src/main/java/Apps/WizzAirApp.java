@@ -1,9 +1,7 @@
 package Apps;
 
 import QueueHandlers.ResultQueue;
-import Root.Main;
 import Root.PageGuestFactory;
-import Util.CurrencyHelper;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
 

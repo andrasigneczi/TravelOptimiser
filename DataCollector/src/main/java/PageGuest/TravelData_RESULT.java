@@ -10,8 +10,8 @@ public class TravelData_RESULT implements Serializable
 {
 	public static class TravelData_PossibleTrip implements Cloneable, Serializable
 	{
-		public String  mDepartureDatetime          = "";    // 2017-01-04T17:25
-		public String  mArrivalDatetime            = "";    // 2017-01-04T17:25
+		public String  mDepartureDatetime          = "";    // e.g. 2017-01-04T17:25
+		public String  mArrivalDatetime            = "";    // e.g. 2017-01-04T17:25
 		public String  mPrices_BasicFare_Normal    = "";
 		public String  mPrices_BasicFare_Discount  = "";
 		public String  mPrices_PlusFare_Normal     = "";

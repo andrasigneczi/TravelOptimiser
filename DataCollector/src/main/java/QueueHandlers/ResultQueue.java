@@ -1,14 +1,7 @@
 package QueueHandlers;
 
-import PageGuest.PageGuest;
-import PageGuest.TravelData_INPUT;
 import PageGuest.TravelData_RESULT;
-import Util.StringHelper;
 import org.apache.log4j.Logger;
-
-import javax.jms.JMSException;
-import java.io.Serializable;
-import java.util.ArrayList;
 
 /**
  * Created by andras.igneczi on 17/03/2016.

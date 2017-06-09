@@ -1,17 +1,11 @@
 package Util;
 
-import PageGuest.WizzAirPageGuest201609;
-import com.sun.mail.iap.ByteArray;
-import com.sun.org.apache.xerces.internal.impl.io.UTF8Reader;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONTokener;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import java.io.*;
 import java.lang.*;
-import java.lang.System;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;

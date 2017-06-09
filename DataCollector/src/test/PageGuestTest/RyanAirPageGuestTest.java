@@ -1,6 +1,8 @@
-package PageGuest;
+package PageGuestTest;
 
 import Configuration.Configuration;
+import PageGuest.PageGuest;
+import PageGuest.TravelData_INPUT;
 import Root.PageGuestFactory;
 import Util.CurrencyHelper;
 import org.junit.Test;
