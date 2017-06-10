@@ -311,6 +311,12 @@
         $("#collapse-at").on("hide.bs.collapse", function(){
             // alert( 2 )
         });
+
+        Highcharts.setOptions({
+	        global: {
+		        useUTC: false
+	        }
+        });
     });
 
     $('#sandbox-container div#outbound-date').datepicker()

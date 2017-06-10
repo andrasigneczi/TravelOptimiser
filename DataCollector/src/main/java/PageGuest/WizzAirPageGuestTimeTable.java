@@ -193,7 +193,7 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		// 6 month ahead
 		for( int i = 0; i < lInterval; i++ )
 		{
-			FillTheForm( aTravelDataInput, lYear, lMonth, lDay, lResultList, true );
+			FillTheForm( aTravelDataInput, lYear, lMonth, lDay, lResultList );
 			if( ++lMonth == 13 )
 			{
 				lMonth = 1;
@@ -203,22 +203,22 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		}
 
 		// Return way
-		lYear = lDate.getYear();
-		lMonth = lDate.getMonthValue();
-		TravelData_INPUT lTravelDataInput = (TravelData_INPUT)aTravelDataInput.clone();
-		lTravelDataInput.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_LeavingFrom;
-		lTravelDataInput.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_GoingTo;
-
-		for( int i = 0; i < lInterval; i++ )
-		{
-			FillTheForm( lTravelDataInput, lYear, lMonth, lDay, lResultList, false );
-			if( ++lMonth == 13 )
-			{
-				lMonth = 1;
-				lYear++;
-			}
-			Sleep( 1000 * Integer.parseInt( lSleep ));
-		}
+//		lYear = lDate.getYear();
+//		lMonth = lDate.getMonthValue();
+//		TravelData_INPUT lTravelDataInput = (TravelData_INPUT)aTravelDataInput.clone();
+//		lTravelDataInput.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_LeavingFrom;
+//		lTravelDataInput.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_GoingTo;
+//
+//		for( int i = 0; i < lInterval; i++ )
+//		{
+//			FillTheForm( lTravelDataInput, lYear, lMonth, lDay, lResultList, false );
+//			if( ++lMonth == 13 )
+//			{
+//				lMonth = 1;
+//				lYear++;
+//			}
+//			Sleep( 1000 * Integer.parseInt( lSleep ));
+//		}
 
 		SaveMonthlyFlights( lResultList );
 	}
@@ -326,7 +326,7 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
-	private void FillTheForm( TravelData_INPUT aTravelDataInput, int aYear, int aMonth, int aDay, ArrayList<TravelData_RESULT> aResultList, boolean aOutbound ) throws URISyntaxException, IOException
+	private void FillTheForm( TravelData_INPUT aTravelDataInput, int aYear, int aMonth, int aDay, ArrayList<TravelData_RESULT> aResultList ) throws URISyntaxException, IOException
 	{
 		mLogger.trace( "begin, thread name: " + getThreadName());
 		// JSON post
@@ -336,7 +336,7 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		// request payload: {"flightList":[{"departureStation":"BUD","arrivalStation":"CRL","from":"2017-06-06","to":"2017-07-02"},{"departureStation":"CRL","arrivalStation":"BUD","from":"2017-06-26","to":"2017-08-06"}],"priceType":"regular"}
 
 		LocalDate localDate = LocalDate.of( aYear, aMonth, aDay );
-		localDate.plusMonths( 1 );
+		localDate = localDate.plusMonths( 1 );
 		int lNextMonth = localDate.getMonthValue();
 		int lNextYear = localDate.getYear();
 		int lNextDay = localDate.getDayOfMonth();

@@ -86,7 +86,7 @@ public class CurrencyHelper
         return mCurrencies.get( aCurrency );
     }
 
-    public static boolean DownloadRecentCurrencyPrices()
+    public static boolean DownloadRecentCurrencyPrices() throws InterruptedException
     {
         final java.lang.String lUrlTemplate = "http://www.xe.com/currencyconverter/convert/?Amount=1&From=BGN&To=EUR";
         Browser lBrowser = TeamDevJxBrowser.getInstance().getJxBrowser("wwww");
@@ -99,6 +99,9 @@ public class CurrencyHelper
                     browser.loadURL(lUrl);
                 }
             });
+
+            // Wait until Chromium renders web page content
+            Thread.sleep( 1000 );
 
             DOMDocument lDocument = lBrowser.getDocument();
             //DOMElement lElement = lDocument.findElement( By.xpath( "//*[@id=\"contentL\"]/div[1]/div[1]/div/span/table/tbody/tr[1]/td[3]" ) );

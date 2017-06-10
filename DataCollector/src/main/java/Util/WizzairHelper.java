@@ -23,7 +23,7 @@ public class WizzairHelper
 
 	private static String mApiVersionNumber = new String();
 
-	public static String getApiVersion()
+	public static String getApiVersion() throws InterruptedException
 	{
 		if( mApiVersionNumber.length() > 0 )
 			return mApiVersionNumber;
@@ -39,6 +39,9 @@ public class WizzairHelper
 				browser.loadURL("https://wizzair.com");
 			}
 		});
+
+		// Wait until Chromium renders web page content
+		Thread.sleep( 1000 );
 
 		DOMDocument lDocument = lBrowser.getDocument();
 		String lContent = lDocument.getDocumentElement().getInnerHTML();
