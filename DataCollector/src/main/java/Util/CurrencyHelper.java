@@ -93,12 +93,25 @@ public class CurrencyHelper
         for( Map.Entry<String,String> lItem : mCurrencies.entrySet())
         {
             java.lang.String lUrl = lUrlTemplate.replace( "BGN", lItem.getKey().toString() );
-            Browser.invokeAndWaitFinishLoadingMainFrame(lBrowser, new Callback<Browser>() {
-                @Override
-                public void invoke(Browser browser) {
-                    browser.loadURL(lUrl);
+            for( int i = 0; i < 3; i++ )
+            {
+                try
+                {
+                    Browser.invokeAndWaitFinishLoadingMainFrame(lBrowser, new Callback<Browser>() {
+                        @Override
+                        public void invoke(Browser browser) {
+                            browser.loadURL(lUrl);
+                        }
+                    });
+                    break;
                 }
-            });
+                catch( RuntimeException e )
+                {
+                    mLogger.error( "DownloadRecentCurrencyPrices(" + i + "): " + StringHelper.getTraceInformation( e ));
+                    if( i == 2 )
+                        throw e;
+                }
+            }
 
             // Wait until Chromium renders web page content
             Thread.sleep( 1000 );

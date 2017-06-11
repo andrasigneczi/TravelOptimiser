@@ -33,13 +33,27 @@ public class WizzairHelper
 		getIPCLogger().setLevel( Level.WARNING );
 
 		Browser lBrowser = TeamDevJxBrowser.getInstance().getJxBrowser("wwwww");
-		Browser.invokeAndWaitFinishLoadingMainFrame(lBrowser, new Callback<Browser>() {
-			@Override
-			public void invoke(Browser browser) {
-				browser.loadURL("https://wizzair.com");
+		for( int i = 0; i < 3; i++ )
+		{
+			try
+			{
+				Browser.invokeAndWaitFinishLoadingMainFrame( lBrowser, new Callback<Browser>()
+				{
+					@Override
+					public void invoke( Browser browser )
+					{
+						browser.loadURL( "https://wizzair.com" );
+					}
+				} );
+				break;
 			}
-		});
-
+			catch( RuntimeException e )
+			{
+				mLogger.error( "WizzairHelper(" + i + "): " + StringHelper.getTraceInformation( e ));
+				if( i == 2 )
+					throw e;
+			}
+		}
 		// Wait until Chromium renders web page content
 		Thread.sleep( 1000 );
 

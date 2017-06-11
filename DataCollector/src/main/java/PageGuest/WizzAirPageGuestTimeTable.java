@@ -53,7 +53,7 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		if( dummy )
 		{
 			mThread = new Thread(this);
-			mThread.setName("WizzAirThread2 " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+			mThread.setName("WizzAirTimetableThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 		}
 	}
 
@@ -71,7 +71,7 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		super( "wizzair" );
 		mSearchQueue = new LocalStack<TravelData_INPUT>();
 		mThread = new Thread(this);
-		mThread.setName("WizzAirThread2 " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+		mThread.setName("WizzAirTimetableThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 		mThread.start();
 		System.out.println("WizzAirPageGuestTimetable()");
 	}
