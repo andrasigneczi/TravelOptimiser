@@ -1,6 +1,6 @@
 package Configuration;
 
-import PageGuest.ResultFilterBuilder;
+import ResultFilter.ResultFilterBuilder;
 import PageGuest.TravelData_INPUT;
 import org.xml.sax.Attributes;
 

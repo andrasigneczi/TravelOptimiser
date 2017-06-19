@@ -1,4 +1,4 @@
-package PageGuest;
+package ResultFilter;
 
 /**
  * Created by Andras on 01/10/2016.

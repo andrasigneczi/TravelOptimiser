@@ -25,9 +25,10 @@ public class Configuration
 	private Hashtable<String,String> mConfigValues;
 
 	private HashSet<String> mValidAirlines = new HashSet<String>();
-	private HashSet<String> mValidSearchNodes = new HashSet<String>();
+	private HashSet<String> mValidSearchAirlineNodes = new HashSet<String>();
+	private HashSet<String> mValidSearchAccomodationNodes = new HashSet<String>();
 	private HashSet<String> mValidFlightNodes = new HashSet<String>();
-
+	private HashSet<String> mAccomodationBookings = new HashSet<String>();
 
 	private Configuration()
 	{
@@ -42,20 +43,29 @@ public class Configuration
 		mValidAirlines.add( "wizzair" );
 		mValidAirlines.add( "ryanair" );
 
-		mValidSearchNodes.add( "LeavingFrom" );
-		mValidSearchNodes.add( "GoingTo" );
-		mValidSearchNodes.add( "DepartureDay" );
-		mValidSearchNodes.add( "ReturnDay" );
-		mValidSearchNodes.add( "AdultNumber" );
-		mValidSearchNodes.add( "ChildNumber" );
-		mValidSearchNodes.add( "InfantNumber" );
-		mValidSearchNodes.add( "NearbyAirports" );
-		mValidSearchNodes.add( "ReturnTicket" );
+		mValidSearchAirlineNodes.add( "LeavingFrom" );
+		mValidSearchAirlineNodes.add( "GoingTo" );
+		mValidSearchAirlineNodes.add( "DepartureDay" );
+		mValidSearchAirlineNodes.add( "ReturnDay" );
+		mValidSearchAirlineNodes.add( "AdultNumber" );
+		mValidSearchAirlineNodes.add( "ChildNumber" );
+		mValidSearchAirlineNodes.add( "InfantNumber" );
+		mValidSearchAirlineNodes.add( "NearbyAirports" );
+		mValidSearchAirlineNodes.add( "ReturnTicket" );
+
+		mValidSearchAccomodationNodes.add( "Checkin" );
+		mValidSearchAccomodationNodes.add( "Checkout" );
+		mValidSearchAccomodationNodes.add( "PriceLimit" );
+		mValidSearchAccomodationNodes.add( "City" );
+		mValidSearchAccomodationNodes.add( "filters" );
 
 		mValidFlightNodes.add( "LeavingFrom" );
 		mValidFlightNodes.add( "GoingTo" );
 		mValidFlightNodes.add( "Filter" );
 		mValidFlightNodes.add( "Interval" );
+
+		mAccomodationBookings.add( "bookingdotcom" );
+		mAccomodationBookings.add( "airbnb" );
 
 		ParseConfigurationFile();
 	}
@@ -184,14 +194,22 @@ public class Configuration
 		return mValidAirlines;
 	}
 
-	public HashSet<String> getValidSearchNodes()
+	public HashSet<String> getValidSearchAirlineNodes()
 	{
-		return mValidSearchNodes;
+		return mValidSearchAirlineNodes;
+	}
+	public HashSet<String> getValidSearchAccomodationNodes()
+	{
+		return mValidSearchAccomodationNodes;
 	}
 
 	public HashSet<String> getValidFlightNodes()
 	{
 		return mValidFlightNodes;
+	}
+	public HashSet<String> getValidAccomodationBookings()
+	{
+		return mAccomodationBookings;
 	}
 
 	public void put( String aPath, String aNodeValue )

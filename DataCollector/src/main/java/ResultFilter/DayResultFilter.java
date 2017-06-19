@@ -1,4 +1,4 @@
-package PageGuest;
+package ResultFilter;
 
 import Util.DatetimeHelper;
 import Util.StringHelper;
