@@ -107,7 +107,7 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 	{
 		synchronized (mMutex)
 		{
-			ArrayList<TravelData_INPUT> lSearchList = Configuration.getInstance().getSearchList();
+			ArrayList<TravelData_INPUT> lSearchList = Configuration.getInstance().getSearchListAirlines();
 			for (TravelData_INPUT lTDI : lSearchList)
 			{
 				if (!lTDI.mAirline.equals(getAirline()))

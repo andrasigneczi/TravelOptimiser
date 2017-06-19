@@ -26,7 +26,7 @@ public class InputFeederApp
 		{
 			HashMap<String, JMSPublisher> lPublishers = new HashMap<>();
 
-			ArrayList<TravelData_INPUT> lSearchList = Configuration.getInstance().getSearchList();
+			ArrayList<TravelData_INPUT> lSearchList = Configuration.getInstance().getSearchListAirlines();
 			for( TravelData_INPUT lTDI : lSearchList )
 			{
 				PageGuest.DateValidity lValidity = ValidateDate(lTDI.mDepartureDay, lTDI.mReturnDay);

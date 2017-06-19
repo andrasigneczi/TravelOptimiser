@@ -1,6 +1,5 @@
 package PageGuest;
 
-import QueueHandlers.LocalStack;
 import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.ProductInfo;
 import com.teamdev.jxbrowser.chromium.dom.*;
@@ -120,14 +119,13 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			}
 		});
 
-		//mBrowser.loadURL( "http://localhost:8090" );
 		mBrowser.loadURL( getURL());
 	}
 
 	public BookingDotComPageGuest()
 	{
-		//super( null, "http://www.booking.com" );
-		super( null, "http://localhost:8090" );
+		super( null, "http://www.booking.com" );
+		//super( null, "http://localhost:8090" );
 		mThread = new Thread(this);
 		mThread.setName("BookingDotComPageGuest " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 		mThread.start();
@@ -198,7 +196,19 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		return true;
 	}
 
-	public void FillTheForm( DOMDocument aDOMDocument )
+	private boolean jQuerySetSelect( String id, String value )
+	{
+		mBrowser.executeJavaScript( "$(\"#" + id + "\").val('" + value + "').change();");
+		return true;
+	}
+
+	private boolean jQuerySetSelect2( String jQuery, String value )
+	{
+		mBrowser.executeJavaScript( jQuery + ".val('" + value + "').change();");
+		return true;
+	}
+
+	public void FillTheForm_test( DOMDocument aDOMDocument )
 	{
 		mDOMDocument = aDOMDocument;
 		//MouseMove( 1180, 824 );
@@ -211,7 +221,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	}
 
 	// DEVEL
-	public void FillTheForm_( DOMDocument aDOMDocument )
+	public void FillTheForm( DOMDocument aDOMDocument )
 	{
 		mDOMDocument = aDOMDocument;
 
@@ -219,34 +229,42 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		MouseLeftClick( 120, 326 );
 		Sleep( 500 );
 		TypeText( "Budapest\t" );
-		Sleep( 3000 );
+		Sleep( 1000 );
 
 		// check-in
 		TypeText( "24062017\t" );
-		Sleep( 3000 );
+		Sleep( 1000 );
 
 		// check-out
 		TypeText( "01072017\t" );
-		Sleep( 3000 );
+		Sleep( 1000 );
 
 		// travelling for leisure radio
 		if( !setChecked( "//*[@id=\"frm\"]/div[3]/div/div/fieldset/label[2]/input", true ))
 			setChecked( "//*[@id=\"frm\"]/div[4]/div/div/fieldset/label[2]/input", true );
 
 		// rooms select
-		setSelect( "//*[@id=\"no_rooms\"]", "1" );
+		jQuerySetSelect( "no_rooms", "2" );
 
 		// adults select
-		setSelect( "//*[@id=\"group_adults\"]", "1" );
+		jQuerySetSelect( "group_adults", "3" );
 
 		// children select
-		setSelect( "//*[@id=\"group_children\"]", "2" );
+		//setSelect( "//*[@id=\"group_children\"]", "4" );
+		jQuerySetSelect( "group_children", "4" );
 
 		// age1
-		setSelect( "//*[@id=\"frm\"]/div[5]/div/div[2]/div[4]/select[1]", "8" );
+		jQuerySetSelect2( "$('[data-group-child-age=\"0\"]')", "8" );
 
 		// age2
-		setSelect( "//*[@id=\"frm\"]/div[5]/div/div[2]/div[4]/select[2]", "11" );
+		jQuerySetSelect2( "$('[data-group-child-age=\"1\"]')", "11" );
+		jQuerySetSelect2( "$('[data-group-child-age=\"2\"]')", "10" );
+		jQuerySetSelect2( "$('[data-group-child-age=\"3\"]')", "9" );
+		Sleep( 1000 );
+
+		// search button xpath
+		DOMElement lElement = mDOMDocument.findElement( By.xpath( "//*[@id=\"frm\"]/div[7]/button" ));
+		lElement.click();
 
 		mDOMDocument = null;
 	}

@@ -1,6 +1,7 @@
 package Util;
 
 import Configuration.*;
+import PageGuest.AccomodationData_INPUT;
 import PageGuest.TravelData_INPUT;
 import org.junit.Test;
 
@@ -16,9 +17,9 @@ public class ConfigurationTest
 	@Test
 	public void ParseConfigurationFileTest() throws Exception
 	{
-		CurrencyHelper.Init();
-		ArrayList<TravelData_INPUT> lSearchList = Configuration.getInstance().getSearchList();
-		for( TravelData_INPUT lTDI : lSearchList )
+		//CurrencyHelper.Init();
+		ArrayList<TravelData_INPUT> lSearchListAirlines = Configuration.getInstance().getSearchListAirlines();
+		for( TravelData_INPUT lTDI : lSearchListAirlines )
 		{
 			System.out.println( lTDI.toString());
 		}
@@ -33,6 +34,12 @@ public class ConfigurationTest
 		for( Recipient lRecipient : lRecipientList )
 		{
 			System.out.println( lRecipient.toString());
+		}
+		System.out.println( "3----" );
+		ArrayList<AccomodationData_INPUT> lSearchListAccom = Configuration.getInstance().getSearchListAccom();
+		for( AccomodationData_INPUT lADI : lSearchListAccom )
+		{
+			System.out.println( lADI.toString());
 		}
 	}
 }

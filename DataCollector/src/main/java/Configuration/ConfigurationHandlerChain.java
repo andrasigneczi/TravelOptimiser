@@ -1,5 +1,6 @@
 package Configuration;
 
+import PageGuest.AccomodationData_INPUT;
 import PageGuest.TravelData_INPUT;
 import org.xml.sax.Attributes;
 
@@ -11,6 +12,7 @@ public abstract class ConfigurationHandlerChain
 	private ConfigurationHandlerChain mNext = null;
 	private Configuration mConfiguration;
 	protected TravelData_INPUT mCurrentTravelDataInput;
+	protected AccomodationData_INPUT mCurrentAccomodationDataInput;
 	protected Recipient mRecipient;
 
 	protected OpenedNode mOpenedNode = OpenedNode.NONE;

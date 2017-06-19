@@ -1,5 +1,6 @@
 package Configuration;
 
+import PageGuest.AccomodationData_INPUT;
 import PageGuest.TravelData_INPUT;
 import org.xml.sax.Attributes;
 
@@ -59,6 +60,8 @@ public class ConfigurationHandlerChain_SearchNode extends ConfigurationHandlerCh
 		}
 		else if( mSearchType == SearchType.ST_ACCOMODATION )
 		{
+			mCurrentAccomodationDataInput = new AccomodationData_INPUT();
+			mCurrentAccomodationDataInput.mSite = AccomodationData_INPUT.siteFromXmlName( aName );
 			mOpenedNode = OpenedNode.SEARCH_NODE;
 		}
 		else
@@ -79,6 +82,8 @@ public class ConfigurationHandlerChain_SearchNode extends ConfigurationHandlerCh
 		}
 		else if( mSearchType == SearchType.ST_ACCOMODATION )
 		{
+			getConfiguration().addShearchItem( mCurrentAccomodationDataInput );
+			mCurrentAccomodationDataInput = null;
 			mOpenedNode = OpenedNode.NONE;
 		}
 		return true;
@@ -112,6 +117,7 @@ public class ConfigurationHandlerChain_SearchNode extends ConfigurationHandlerCh
 		}
 		else if( mSearchType == SearchType.ST_ACCOMODATION )
 		{
+			mCurrentAccomodationDataInput.set( aNodeName, aNodeValue );
 		}
 		return true;
 	}

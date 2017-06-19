@@ -1,5 +1,6 @@
 package Configuration;
 
+import PageGuest.AccomodationData_INPUT;
 import PageGuest.TravelData_INPUT;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
@@ -19,8 +20,9 @@ public class Configuration
 	private Object mMutex  = null;
 	private static Configuration mInstance = null;
 
-	private ArrayList<TravelData_INPUT> mSearchList = null;
-	private ArrayList<TravelData_INPUT> mFlightList = null;
+	private ArrayList<TravelData_INPUT> mSearchListAirlines = null; // <searches><wizzair></wizzair><ryanair></ryanair>...</searches>
+	private ArrayList<TravelData_INPUT> mFlightList = null; // <flights>...</flights>
+	private ArrayList<AccomodationData_INPUT> mSearchListAccom = null; // <searches><bookingdotcom></bookingdotcom><airbnb></airbnb>...</searches>
 	private ArrayList<Recipient> mRecipientList = null;
 	private Hashtable<String,String> mConfigValues;
 
@@ -34,7 +36,8 @@ public class Configuration
 	{
 		mMutex = new Object();
 
-		mSearchList = new ArrayList<TravelData_INPUT>();
+		mSearchListAirlines = new ArrayList<TravelData_INPUT>();
+		mSearchListAccom = new ArrayList<AccomodationData_INPUT>();
 		mFlightList = new ArrayList<TravelData_INPUT>();
 		mRecipientList = new ArrayList<Recipient>();
 
@@ -57,7 +60,7 @@ public class Configuration
 		mValidSearchAccomodationNodes.add( "Checkout" );
 		mValidSearchAccomodationNodes.add( "PriceLimit" );
 		mValidSearchAccomodationNodes.add( "City" );
-		mValidSearchAccomodationNodes.add( "filters" );
+		mValidSearchAccomodationNodes.add( "Filters" );
 
 		mValidFlightNodes.add( "LeavingFrom" );
 		mValidFlightNodes.add( "GoingTo" );
@@ -132,15 +135,35 @@ public class Configuration
 		}
 
 	}
-	public ArrayList<TravelData_INPUT> getSearchList()
+
+	public ArrayList<TravelData_INPUT> getSearchListAirlines()
 	{
 		ArrayList<TravelData_INPUT> lSearchList = new ArrayList<TravelData_INPUT>();
-		for( TravelData_INPUT lTDI : mSearchList )
+		for( TravelData_INPUT lTDI : mSearchListAirlines )
 		{
 			TravelData_INPUT lClone = null;
 			try
 			{
 				lClone = (TravelData_INPUT)lTDI.clone();
+			}
+			catch( CloneNotSupportedException e )
+			{
+				e.printStackTrace();
+			}
+			lSearchList.add( lClone );
+		}
+		return lSearchList;
+	}
+
+	public ArrayList<AccomodationData_INPUT> getSearchListAccom()
+	{
+		ArrayList<AccomodationData_INPUT> lSearchList = new ArrayList<AccomodationData_INPUT>();
+		for( AccomodationData_INPUT lADI : mSearchListAccom )
+		{
+			AccomodationData_INPUT lClone = null;
+			try
+			{
+				lClone = (AccomodationData_INPUT) lADI.clone();
 			}
 			catch( CloneNotSupportedException e )
 			{
@@ -219,7 +242,12 @@ public class Configuration
 
 	public void addShearchItem( TravelData_INPUT aTDI )
 	{
-		mSearchList.add( aTDI );
+		mSearchListAirlines.add( aTDI );
+	}
+
+	public void addShearchItem( AccomodationData_INPUT aADI )
+	{
+		mSearchListAccom.add( aADI );
 	}
 	public void addFlightItem( TravelData_INPUT aTDI )
 	{
