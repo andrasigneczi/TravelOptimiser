@@ -1,21 +1,22 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
 
 import com.teamdev.jxbrowser.chromium.Browser;
+import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
+import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This sample demonstrates how to scroll document programmatically.
  */
 public class ScrollDocumentSample {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         Browser browser = new Browser();
         BrowserView view = new BrowserView(browser);
 
@@ -26,12 +27,16 @@ public class ScrollDocumentSample {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
+        browser.addLoadListener(new LoadAdapter() {
+            @Override
+            public void onFinishLoadingFrame(FinishLoadingEvent event) {
+                if (event.isMainFrame()) {
+                    event.getBrowser().executeJavaScript(
+                            "window.scrollTo(document.body.scrollWidth, " +
+                            "document.body.scrollHeight);");
+                }
+            }
+        });
         browser.loadURL("http://www.teamdev.com");
-        while (browser.isLoading()) {
-            TimeUnit.MILLISECONDS.sleep(50);
-        }
-
-        browser.executeJavaScript("window.scrollTo(document.body.scrollWidth, " +
-                "document.body.scrollHeight);");
     }
 }

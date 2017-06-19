@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -25,8 +25,6 @@ public class CustomCursorSample {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
-        browser.loadHTML("<html><body><a href=\"\" style=\"cursor: " +
-                "url(http://www.kyrnin.com/about/redball.cur),default;\">" +
-                "cursor: url(redball.cur);</a></body></html>");
+        browser.loadURL("http://elektronotdienst-nuernberg.de/bugs/cursor.html");
     }
 }

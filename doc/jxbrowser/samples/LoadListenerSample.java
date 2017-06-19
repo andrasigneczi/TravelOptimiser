@@ -1,15 +1,17 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
 
 import com.teamdev.jxbrowser.chromium.Browser;
+import com.teamdev.jxbrowser.chromium.LoggerProvider;
 import com.teamdev.jxbrowser.chromium.events.*;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.logging.Level;
 
 /**
  * The sample demonstrates how to listen to different load events such as
@@ -18,6 +20,8 @@ import java.awt.*;
  */
 public class LoadListenerSample {
     public static void main(String[] args) {
+        LoggerProvider.setLevel(Level.OFF);
+
         Browser browser = new Browser();
         BrowserView view = new BrowserView(browser);
 
@@ -32,21 +36,21 @@ public class LoadListenerSample {
             @Override
             public void onStartLoadingFrame(StartLoadingEvent event) {
                 if (event.isMainFrame()) {
-                    System.out.println("Main frame has started loading");
+                    System.out.println("Main frame has started loading.");
                 }
             }
 
             @Override
             public void onProvisionalLoadingFrame(ProvisionalLoadingEvent event) {
                 if (event.isMainFrame()) {
-                    System.out.println("Provisional load was committed for a frame");
+                    System.out.println("Provisional load was committed for a frame.");
                 }
             }
 
             @Override
             public void onFinishLoadingFrame(FinishLoadingEvent event) {
                 if (event.isMainFrame()) {
-                    System.out.println("Main frame has finished loading");
+                    System.out.println("Main frame has finished loading.");
                 }
             }
 

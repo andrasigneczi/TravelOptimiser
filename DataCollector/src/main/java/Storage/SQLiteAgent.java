@@ -322,6 +322,21 @@ public class SQLiteAgent extends ArchiverAgent
 
 			ExecuteStatement( aSql );
 
+			aSql = "CREATE TABLE IF NOT EXISTS Flat (\n" +
+					"ID       INTEGER PRIMARY KEY NOT NULL,\n" +
+					"Type     CHAR, /*room=R,apartment=A,hotelroom=H*/\n" +
+					"Name     CHAR(128) UNIQUE,\n" +
+					"Site     CHAR, /*booking.com=B, airbnb.com=A*/\n" +
+					"URL      CHAR(1024),\n" +
+					"CheckIn  CHAR(50),\n" +
+					"CheckOut CHAR(50),\n" +
+					"Price    FLOAT,\n" +
+					"Adult    TINYINT,\n" +
+					"Children TINYINT\n" +
+					");";
+
+			ExecuteStatement( aSql );
+
 		} catch ( Exception e ) {
 			//System.err.println( e.getClass().getName() + ": " + e.getMessage() );
 			mLogger.error( StringHelper.getTraceInformation( e ) );

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -36,6 +36,10 @@ public class NavigatorLanguageSample {
         frame.setVisible(true);
 
         browser.setPopupHandler(new DefaultPopupHandler());
-        browser.loadURL("http://www.w3schools.com/jsref/prop_nav_language.asp");
+        browser.loadHTML("<!DOCTYPE html><html><body><p id=\"demo\"></p>\n" +
+                "<script>\n" +
+                "    var x = \"Language of the browser: \" + navigator.language;\n" +
+                "    document.getElementById(\"demo\").innerHTML = x;\n" +
+                "</script></body></html>");
     }
 }

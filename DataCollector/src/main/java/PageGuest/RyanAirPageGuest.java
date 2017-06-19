@@ -32,7 +32,6 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
 {
     private static org.apache.log4j.Logger mLogger = Logger.getLogger(RyanAirPageGuest.class);
 
-    private boolean mThreadStopped = true;
     private long mTimeoutStart;
 
     public RyanAirPageGuest()
@@ -147,20 +146,6 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
             mSearchQueue.setQueueName( getAirline() );
         }
         mLogger.trace( "end, thread name: " + getThreadName());
-    }
-
-    public void stop()
-    {
-        mThreadStopped = true;
-        try
-        {
-            mThread.join();
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
-        System.out.println("stop()");
     }
 
     private void ConvertToWizzairFormatAndStore( TravelData_RESULT.TravelData_PossibleTrip aTrip )
@@ -352,19 +337,5 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         {
             mLogger.error( "Exception in Ryanair.run: " + StringHelper.getTraceInformation( e ) );
         }
-    }
-
-    public void WaitForFinish()
-    {
-        mLogger.trace( "begin, thread name: " + getThreadName());
-        try
-        {
-            mThread.join();
-        }
-        catch( InterruptedException e )
-        {
-            mLogger.error( StringHelper.getTraceInformation( e ));
-        }
-        mLogger.trace( "end, thread name: " + getThreadName());
     }
 }

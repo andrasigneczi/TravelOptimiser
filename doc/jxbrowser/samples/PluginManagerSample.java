@@ -1,18 +1,16 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
 
-import com.teamdev.jxbrowser.chromium.Browser;
-import com.teamdev.jxbrowser.chromium.PluginFilter;
-import com.teamdev.jxbrowser.chromium.PluginInfo;
-import com.teamdev.jxbrowser.chromium.PluginManager;
+import com.teamdev.jxbrowser.chromium.*;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * This sample demonstrates how to work with plugin manager to get a list
@@ -21,6 +19,8 @@ import java.util.List;
  */
 public class PluginManagerSample {
     public static void main(String[] args) {
+        LoggerProvider.setLevel(Level.OFF);
+
         Browser browser = new Browser();
         BrowserView view = new BrowserView(browser);
 
@@ -52,6 +52,6 @@ public class PluginManagerSample {
                 return pluginInfo.getMimeTypes().contains("application/pdf");
             }
         });
-        browser.loadURL("http://www.education.gov.yk.ca/pdf/pdf-test.pdf");
+        browser.loadURL("http://www.orimi.com/pdf-test.pdf");
     }
 }

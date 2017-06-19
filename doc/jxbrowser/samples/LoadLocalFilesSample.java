@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -16,7 +16,9 @@ import java.awt.*;
  */
 public class LoadLocalFilesSample {
     public static void main(String[] args) {
-        BrowserPreferences.setChromiumSwitches("--disable-web-security", "--allow-file-access-from-files");
+        BrowserPreferences.setChromiumSwitches(
+                "--disable-web-security",
+                "--allow-file-access-from-files");
 
         Browser browser = new Browser();
         BrowserView view = new BrowserView(browser);

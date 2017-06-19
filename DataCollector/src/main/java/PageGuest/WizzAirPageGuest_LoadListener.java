@@ -1,3 +1,4 @@
+/*
 package PageGuest;
 
 import BrowserState.BrowserStateReadyToSearch;
@@ -8,9 +9,9 @@ import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
 import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
 import org.apache.log4j.Logger;
 
-/**
+/ **
  * Created by Andras on 22/06/2016.
- */
+ * /
 public class WizzAirPageGuest_LoadListener extends LoadAdapter
 {
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuest_LoadListener.class);
@@ -154,3 +155,4 @@ public class WizzAirPageGuest_LoadListener extends LoadAdapter
 		return true;
 	}
 }
+*/

@@ -1,14 +1,10 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
 
-import com.teamdev.jxbrowser.chromium.Browser;
-import com.teamdev.jxbrowser.chromium.Certificate;
-import com.teamdev.jxbrowser.chromium.CertificateErrorParams;
-import com.teamdev.jxbrowser.chromium.DefaultLoadHandler;
-import com.teamdev.jxbrowser.chromium.events.NetError;
+import com.teamdev.jxbrowser.chromium.*;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 
 import javax.swing.*;
@@ -33,11 +29,38 @@ public class CertificateErrorSample {
             @Override
             public boolean onCertificateError(CertificateErrorParams params) {
                 Certificate certificate = params.getCertificate();
-                System.out.println("certificate.getSubjectName() = " + certificate.getSubjectName());
-                System.out.println("certificate.getIssuerName() = " + certificate.getIssuerName());
-                System.out.println("certificate.hasExpired() = " + certificate.hasExpired());
-                NetError errorCode = params.getCertificateError();
-                System.out.println("errorCode = " + errorCode);
+
+                System.out.println("ErrorCode = " + params.getCertificateError());
+                System.out.println("SerialNumber = " + certificate.getSerialNumber());
+                System.out.println("FingerPrint = " + certificate.getFingerPrint());
+                System.out.println("CAFingerPrint = " + certificate.getCAFingerPrint());
+
+                Principal subject = certificate.getSubject();
+                System.out.println("Subject CommonName = " + subject.getCommonName());
+                System.out.println("Subject LocalityName = " + subject.getLocalityName());
+                System.out.println("Subject StateOrProvinceName = " + subject.getStateOrProvinceName());
+                System.out.println("Subject CountryName = " + subject.getCountryName());
+                System.out.println("Subject StreetAddress = " + subject.getStreetAddress());
+                System.out.println("Subject OrganizationName = " + subject.getOrganizationName());
+                System.out.println("Subject OrganizationUnitName = " + subject.getOrganizationUnitName());
+                System.out.println("Subject DomainComponent = " + subject.getDomainComponent());
+
+                Principal issuer = certificate.getIssuer();
+                System.out.println("Issuer CommonName = " + issuer.getCommonName());
+                System.out.println("Issuer LocalityName = " + issuer.getLocalityName());
+                System.out.println("Issuer StateOrProvinceName = " + issuer.getStateOrProvinceName());
+                System.out.println("Issuer CountryName = " + issuer.getCountryName());
+                System.out.println("Issuer StreetAddress = " + issuer.getStreetAddress());
+                System.out.println("Issuer OrganizationName = " + issuer.getOrganizationName());
+                System.out.println("Issuer OrganizationUnitName = " + issuer.getOrganizationUnitName());
+                System.out.println("Issuer DomainComponent = " + issuer.getDomainComponent());
+
+                System.out.println("SubjectAlternativeNames = " + certificate.getSubjectAlternativeNames());
+                System.out.println("KeyUsages = " + certificate.getKeyUsages());
+                System.out.println("ExtendedKeyUsages = " + certificate.getExtendedKeyUsages());
+
+                System.out.println("HasExpired = " + certificate.hasExpired());
+
                 // Return false to ignore certificate error.
                 return false;
             }

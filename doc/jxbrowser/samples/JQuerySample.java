@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -39,6 +39,6 @@ public class JQuerySample {
         });
         // Load local *.html file that uses local JQuery jquery.min.js file. Path
         // to the local jquery.min.js file must be relative.
-        browser.loadURL("d:\\jquery.html");
+        browser.loadURL("jquery.html");
     }
 }

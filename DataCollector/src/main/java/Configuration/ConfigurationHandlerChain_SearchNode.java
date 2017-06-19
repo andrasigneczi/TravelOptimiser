@@ -9,6 +9,12 @@ import org.xml.sax.Attributes;
 public class ConfigurationHandlerChain_SearchNode extends ConfigurationHandlerChain
 {
 	private String mSearchPath;
+	enum SearchType {
+		ST_AIRLINE,
+		ST_ACCOMODATION
+	};
+	private SearchType mSearchType;
+
 	public ConfigurationHandlerChain_SearchNode( Configuration aConfiguration, String aSearchPath )
 	{
 		super( aConfiguration );
@@ -18,7 +24,22 @@ public class ConfigurationHandlerChain_SearchNode extends ConfigurationHandlerCh
 	@Override
 	protected boolean conditionFunction( String aName, String aPath )
 	{
-		return getConfiguration().getValidAirlines().contains( aName ) && aPath.equals( mSearchPath + aName );
+		if( !aPath.equals( mSearchPath + aName ))
+			return false;
+
+		if( getConfiguration().getValidAirlines().contains( aName ))
+		{
+			mSearchType = SearchType.ST_AIRLINE;
+		}
+		else if( getConfiguration().getValidAccomodationBookings().contains( aName ))
+		{
+			mSearchType = SearchType.ST_ACCOMODATION;
+		}
+		else
+		{
+			return false;
+		}
+		return true;
 	}
 
 	@Override
@@ -30,31 +51,68 @@ public class ConfigurationHandlerChain_SearchNode extends ConfigurationHandlerCh
 	@Override
 	protected boolean doReaction( String aName, Attributes attributes )
 	{
-		mCurrentTravelDataInput = new TravelData_INPUT();
-		mCurrentTravelDataInput.mAirline = aName;
-		mOpenedNode = OpenedNode.SEARCH_NODE;
+		if( mSearchType == SearchType.ST_AIRLINE )
+		{
+			mCurrentTravelDataInput = new TravelData_INPUT();
+			mCurrentTravelDataInput.mAirline = aName;
+			mOpenedNode = OpenedNode.SEARCH_NODE;
+		}
+		else if( mSearchType == SearchType.ST_ACCOMODATION )
+		{
+			mOpenedNode = OpenedNode.SEARCH_NODE;
+		}
+		else
+		{
+			return false;
+		}
 		return true;
 	}
 
 	@Override
 	protected boolean doReaction2( String aName )
 	{
-		getConfiguration().addShearchItem( mCurrentTravelDataInput );
-		mCurrentTravelDataInput = null;
-		mOpenedNode = OpenedNode.NONE;
+		if( mSearchType == SearchType.ST_AIRLINE )
+		{
+			getConfiguration().addShearchItem( mCurrentTravelDataInput );
+			mCurrentTravelDataInput = null;
+			mOpenedNode = OpenedNode.NONE;
+		}
+		else if( mSearchType == SearchType.ST_ACCOMODATION )
+		{
+			mOpenedNode = OpenedNode.NONE;
+		}
 		return true;
 	}
 
 	@Override
 	protected boolean conditionFunction3( String aNodeName )
 	{
-		return mOpenedNode == OpenedNode.SEARCH_NODE && getConfiguration().getValidSearchNodes().contains( aNodeName );
+		if( mOpenedNode != OpenedNode.SEARCH_NODE )
+		{
+			return false;
+		}
+
+		if( getConfiguration().getValidSearchAirlineNodes().contains( aNodeName ))
+		{
+			return true;
+		}
+		else if( getConfiguration().getValidSearchAccomodationNodes().contains( aNodeName ))
+		{
+			return true;
+		}
+		return false;
 	}
 
 	@Override
 	protected boolean doReaction3( String aNodeName, String aNodeValue )
 	{
-		mCurrentTravelDataInput.set( aNodeName, aNodeValue );
+		if( mSearchType == SearchType.ST_AIRLINE )
+		{
+			mCurrentTravelDataInput.set( aNodeName, aNodeValue );
+		}
+		else if( mSearchType == SearchType.ST_ACCOMODATION )
+		{
+		}
 		return true;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -9,6 +9,7 @@ import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.logging.Level;
 
 /**
  * This sample demonstrates how to handle all resources such as
@@ -18,6 +19,8 @@ import java.awt.*;
  */
 public class ResourceHandlerSample {
     public static void main(String[] args) {
+        LoggerProvider.setLevel(Level.OFF);
+
         Browser browser = new Browser();
         BrowserView view = new BrowserView(browser);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -23,6 +23,7 @@ public class TabbedPaneSample {
         tabbedPane.addTab("Browser Two", new BrowserView(browserTwo));
 
         JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
         frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);

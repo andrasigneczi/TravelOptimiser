@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -32,9 +32,10 @@ public class SaveWebPageSample {
             @Override
             public void onFinishLoadingFrame(FinishLoadingEvent event) {
                 if (event.isMainFrame()) {
-                    String filePath = "D:\\Test\\index.html";
-                    String dirPath = "D:\\Test\\resources";
-                    event.getBrowser().saveWebPage(filePath, dirPath, SavePageType.COMPLETE_HTML);
+                    String filePath = "index.html";
+                    String dirPath = "resources";
+                    Browser browser = event.getBrowser();
+                    browser.saveWebPage(filePath, dirPath, SavePageType.COMPLETE_HTML);
                 }
             }
         });

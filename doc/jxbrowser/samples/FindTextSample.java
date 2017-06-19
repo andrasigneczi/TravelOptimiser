@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -33,7 +33,7 @@ public class FindTextSample {
             @Override
             public void onFinishLoadingFrame(FinishLoadingEvent event) {
                 if (event.isMainFrame()) {
-                    SearchParams request = new SearchParams("find me");
+                    SearchParams request = new SearchParams("Find me");
                     // Find text from the beginning of the loaded web page.
                     SearchResult result = browser.findText(request);
                     System.out.println(result.indexOfSelectedMatch() + "/" + result.getNumberOfMatches());

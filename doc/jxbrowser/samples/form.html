@@ -5,10 +5,9 @@
           function sendFormData() {
             var firstNameValue = myForm.elements['firstName'].value;
             var lastNameValue = myForm.elements['lastName'].value;
-            // Invoke the 'save' Java callback
-            save(firstNameValue, lastNameValue);
+            // Invoke the 'save' method of the 'Account' Java object.
+            Account.save(firstNameValue, lastNameValue);
           }
-
     </script>
 </head>
 <body>

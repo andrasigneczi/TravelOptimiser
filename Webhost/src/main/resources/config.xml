@@ -4,48 +4,258 @@
         <ArchivedDatabaseFolder>c:\\tmp</ArchivedDatabaseFolder>
     </global>
     <charts>
-        <wizzair>
-            <LeavingFrom>SOF</LeavingFrom>
-            <GoingTo>HHN</GoingTo>
-            <DepartureDatetime>2016-09-27 06:30</DepartureDatetime>
-            <AdultNumber>1</AdultNumber>
-            <ChildNumber>0</ChildNumber>
-            <InfantNumber>0</InfantNumber>
-            <NearbyAirports>false</NearbyAirports>
-            <Currency>lv</Currency>
-        </wizzair>
-        <wizzair>
-            <LeavingFrom>SOF</LeavingFrom>
-            <GoingTo>HHN</GoingTo>
-            <DepartureDatetime>2016-07-16 06:30</DepartureDatetime>
-            <ReturnDatetime>2016-07-19 08:30</ReturnDatetime>
-            <AdultNumber>1</AdultNumber>
-            <ChildNumber>0</ChildNumber>
-            <InfantNumber>0</InfantNumber>
-            <NearbyAirports>false</NearbyAirports>
-            <Currency>lv</Currency>
-            <BoughtTicket
-                    Name="SOF-HHN"
-                    Datetime="2016-05-27 19:23"
-                    Price="59.99 lv"
-            />
-            <BoughtTicket
-                    Name="HHN-SOF (89.99 €)"
-                    Datetime="2016-06-17 06:49"
-                    Price="175.73 lv"
-            />
-            <Discount
-                    Name="20% discount"
-                    Beginning="2016-05-03 00:00"
-                    Ending="2016-05-04 00:00"
-                    Percentage="20"
-            />
-        </wizzair>
+        <Discount
+                Name="30% discount wizz. club. memb. until 31st March"
+                Airline="Wizzair"
+                Beginning="2017-02-25 00:00"
+                Ending="2017-02-27 00:00"
+                Percentage="30"
+        />
+        <Discount
+                Name="30% discount wizz. club. memb. until 31st March"
+                Airline="Wizzair"
+                Beginning="2017-02-08 00:00"
+                Ending="2017-02-10 00:00"
+                Percentage="30"
+        />
+        <Discount
+                Name="20% discount until 31st March"
+                Airline="Wizzair"
+                Beginning="2017-02-01 00:00"
+                Ending="2017-02-03 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount from/to Bulgaria"
+                Airline="Wizzair"
+                Beginning="2017-01-19 00:00"
+                Ending="2017-01-20 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2017-01-13 00:00"
+                Ending="2017-01-16 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2017-01-06 00:00"
+                Ending="2017-01-09 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount wizz. club. memb."
+                Airline="Wizzair"
+                Beginning="2017-01-05 00:00"
+                Ending="2017-01-06 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="30% discount"
+                Airline="Wizzair"
+                Beginning="2016-12-27 00:00"
+                Ending="2016-12-30 00:00"
+                Percentage="30"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-12-19 00:00"
+                Ending="2016-12-20 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount from/to Budapest"
+                Airline="Wizzair"
+                Beginning="2016-12-15 00:00"
+                Ending="2016-12-16 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount from/to Bulgaria"
+                Airline="Wizzair"
+                Beginning="2016-12-12 00:00"
+                Ending="2016-12-15 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-12-10 00:00"
+                Ending="2016-12-13 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-11-26 00:00"
+                Ending="2016-11-29 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-11-21 00:00"
+                Ending="2016-11-22 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-11-14 00:00"
+                Ending="2016-11-15 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-10-17 00:00"
+                Ending="2016-10-18 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-10-05 00:00"
+                Ending="2016-10-06 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount wizz. club. memb."
+                Airline="Wizzair"
+                Beginning="2016-10-04 00:00"
+                Ending="2016-10-05 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount from/to Bulgaria"
+                Airline="Wizzair"
+                Beginning="2016-09-19 00:00"
+                Ending="2016-09-20 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-09-06 00:00"
+                Ending="2016-09-07 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount wizz. club. memb."
+                Airline="Wizzair"
+                Beginning="2016-09-05 00:00"
+                Ending="2016-09-06 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount from/to Bulgaria"
+                Airline="Wizzair"
+                Beginning="2016-08-24 00:00"
+                Ending="2016-08-25 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-07-27 00:00"
+                Ending="2016-07-28 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount with wizz. app"
+                Airline="Wizzair"
+                Beginning="2016-05-10 00:00"
+                Ending="2016-05-11 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-05-03 00:00"
+                Ending="2016-05-04 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-03-31 00:00"
+                Ending="2016-04-01 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount with wizz. app"
+                Airline="Wizzair"
+                Beginning="2016-03-17 00:00"
+                Ending="2016-03-18 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-03-01 00:00"
+                Ending="2016-03-02 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-02-11 00:00"
+                Ending="2016-02-12 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount"
+                Airline="Wizzair"
+                Beginning="2016-01-05 00:00"
+                Ending="2016-01-07 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount for wizz. disc. club"
+                Airline="Wizzair"
+                Beginning="2015-11-25 00:00"
+                Ending="2015-11-27 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount for wizz. disc. club"
+                Airline="Wizzair"
+                Beginning="2015-11-12 00:00"
+                Ending="2015-11-13 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount for wizz. disc. club"
+                Airline="Wizzair"
+                Beginning="2015-10-20 00:00"
+                Ending="2015-10-22 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount for wizz. disc. club"
+                Airline="Wizzair"
+                Beginning="2015-08-31 00:00"
+                Ending="2015-09-01 00:00"
+                Percentage="20"
+        />
+        <Discount
+                Name="20% discount for wizz. disc. club"
+                Airline="Wizzair"
+                Beginning="2015-06-18 00:00"
+                Ending="2015-06-19 00:00"
+                Percentage="20"
+        />
+
+<!--
         <wizzair>
             <LeavingFrom>CRL</LeavingFrom>
             <GoingTo>BUD</GoingTo>
-            <DepartureDatetime>2016-09-23 20:45</DepartureDatetime>
-            <ReturnDatetime>2016-09-26 06:10</ReturnDatetime>
+            <DepartureDatetime>2016-10-21 20:45</DepartureDatetime>
+            <ReturnDatetime>2016-10-24 06:10</ReturnDatetime>
             <AdultNumber>1</AdultNumber>
             <ChildNumber>0</ChildNumber>
             <InfantNumber>0</InfantNumber>
@@ -53,176 +263,43 @@
             <Currency>€</Currency>
             <BoughtTicket
                     Name="BUD-CRL"
-                    Datetime="2016-06-07 20:00"
-                    Price="15.07 €"
-            />
-            <BoughtTicket
-                    Name="CRL-BUD"
-                    Datetime="2016-06-16 08:30"
-                    Price="39.99 lv"
+                    Datetime="2016-07-07 08:00"
+                    Price="14.99 €"
             />
             <Discount
                     Name="20% discount"
                     Beginning="2016-05-03 00:00"
                     Ending="2016-05-04 00:00"
                     Percentage="20"
+            />
+            <BoughtTicket
+                    Name="CRL-BUD"
+                    Datetime="2016-08-27 09:45"
+                    Price="59.99 €"
             />
         </wizzair>
         <wizzair>
             <LeavingFrom>CRL</LeavingFrom>
             <GoingTo>BUD</GoingTo>
-            <DepartureDatetime>2016-07-22 20:45</DepartureDatetime>
-            <ReturnDatetime>2016-07-25 06:10</ReturnDatetime>
+            <DepartureDatetime>2016-11-18 21:00</DepartureDatetime>
+            <ReturnDatetime>2016-11-21 06:30</ReturnDatetime>
             <AdultNumber>1</AdultNumber>
             <ChildNumber>0</ChildNumber>
             <InfantNumber>0</InfantNumber>
             <NearbyAirports>false</NearbyAirports>
             <Currency>€</Currency>
-            <BoughtTicket
-                    Name="CRL-BUD return"
-                    Datetime="2016-04-02 00:00"
-                    Price="71.98 €"
-            />
-            <Discount
-                    Name="20% discount"
-                    Beginning="2016-05-03 00:00"
-                    Ending="2016-05-04 00:00"
-                    Percentage="20"
-            />
-        </wizzair>
-        <wizzair>
-            <LeavingFrom>SOF</LeavingFrom>
-            <GoingTo>HHN</GoingTo>
-            <DepartureDatetime>2016-07-02 06:30</DepartureDatetime>
-            <ReturnDatetime>2016-07-05 08:30</ReturnDatetime>
-            <AdultNumber>1</AdultNumber>
-            <ChildNumber>0</ChildNumber>
-            <InfantNumber>0</InfantNumber>
-            <NearbyAirports>false</NearbyAirports>
-            <Currency>lv</Currency>
-            <BoughtTicket
-                    Name="SOF-HHN"
-                    Datetime="2016-04-01 15:45"
-                    Price="29.99 lv"
-            />
-            <BoughtTicket
-                    Name="HHN-SOF"
-                    Datetime="2016-04-18 22:30"
-                    Price="97.78 lv"
-            />
-            <Discount
-                    Name="20% discount"
-                    Beginning="2016-05-03 00:00"
-                    Ending="2016-05-04 00:00"
-                    Percentage="20"
-            />
-        </wizzair>
-        <wizzair>
-            <LeavingFrom>SOF</LeavingFrom>
-            <GoingTo>HHN</GoingTo>
-            <DepartureDatetime>2016-08-06 06:30</DepartureDatetime>
-            <ReturnDatetime>2016-08-09 08:30</ReturnDatetime>
-            <AdultNumber>1</AdultNumber>
-            <ChildNumber>0</ChildNumber>
-            <InfantNumber>0</InfantNumber>
-            <NearbyAirports>false</NearbyAirports>
-            <Currency>lv</Currency>
-            <BoughtTicket
-                    Name="SOF-HHN"
-                    Datetime="2016-04-27 22:28"
-                    Price="79.99 lv"
-            />
-            <BoughtTicket
-                    Name="HHN-SOF"
-                    Datetime="2016-05-27 19:26"
-                    Price="117.15 lv"
-            />
-            <Discount
-                    Name="20% discount"
-                    Beginning="2016-05-03 00:00"
-                    Ending="2016-05-04 00:00"
-                    Percentage="20"
-            />
-        </wizzair>
-        <wizzair>
-            <LeavingFrom>CRL</LeavingFrom>
-            <GoingTo>BUD</GoingTo>
-            <DepartureDatetime>2016-07-08 20:45</DepartureDatetime>
-            <ReturnDatetime>2016-07-11 06:10</ReturnDatetime>
-            <AdultNumber>1</AdultNumber>
-            <ChildNumber>0</ChildNumber>
-            <InfantNumber>0</InfantNumber>
-            <NearbyAirports>false</NearbyAirports>
-            <Currency>€</Currency>
-            <BoughtTicket
-                    Name="CRL-BUD"
-                    Datetime="2016-04-02 00:00"
-                    Price="29.99 €"
-            />
             <BoughtTicket
                     Name="BUD-CRL"
-                    Datetime="2016-04-13 00:00"
-                    Price="63.08 €"
+                    Datetime="2016-07-27 16:30"
+                    Price="19.46 €"
             />
             <Discount
                     Name="20% discount"
-                    Beginning="2016-05-03 00:00"
-                    Ending="2016-05-04 00:00"
+                    Beginning="2016-07-27 00:00"
+                    Ending="2016-07-28 00:00"
                     Percentage="20"
             />
         </wizzair>
-        <wizzair>
-            <LeavingFrom>CRL</LeavingFrom>
-            <GoingTo>BUD</GoingTo>
-            <DepartureDatetime>2016-09-09 20:45</DepartureDatetime>
-            <ReturnDatetime>2016-09-12 06:10</ReturnDatetime>
-            <AdultNumber>1</AdultNumber>
-            <ChildNumber>0</ChildNumber>
-            <InfantNumber>0</InfantNumber>
-            <NearbyAirports>false</NearbyAirports>
-            <Currency>€</Currency>
-            <BoughtTicket
-                    Name="CRL-BUD"
-                    Datetime="2016-05-20 09:00"
-                    Price="19.99 €"
-            />
-            <BoughtTicket
-                    Name="BUD-CRL"
-                    Datetime="2016-05-20 09:00"
-                    Price="19.99 €"
-            />
-            <BoughtTicket
-                    Name="Dessy BUD-CRL"
-                    Datetime="2016-06-23 20:35"
-                    Price="13.08 €"
-            />
-            <Discount
-                    Name="20% discount"
-                    Beginning="2016-05-03 00:00"
-                    Ending="2016-05-04 00:00"
-                    Percentage="20"
-            />
-        </wizzair>
-        <ryanair>
-            <LeavingFrom>HHN</LeavingFrom>
-            <GoingTo>SKG</GoingTo>
-            <DepartureDatetime>2016-09-03 17:55</DepartureDatetime>
-            <ReturnDatetime>2016-09-06 21:55</ReturnDatetime>
-            <AdultNumber>1</AdultNumber>
-            <ChildNumber>0</ChildNumber>
-            <InfantNumber>0</InfantNumber>
-            <NearbyAirports>false</NearbyAirports>
-            <Currency>€</Currency>
-            <BoughtTicket
-                    Name="HHN-SKG"
-                    Datetime="2016-04-27 22:00"
-                    Price="40.00 €"
-            />
-            <BoughtTicket
-                    Name="SKG-HHN"
-                    Datetime="2016-04-27 22:00"
-                    Price="150.00 €"
-            />
-        </ryanair>
+-->
     </charts>
 </configuration>

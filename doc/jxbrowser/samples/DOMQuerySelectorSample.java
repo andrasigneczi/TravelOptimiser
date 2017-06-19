@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -41,7 +41,7 @@ public class DOMQuerySelectorSample {
                 List<DOMElement> paragraphs = divRoot.findElements(By.cssSelector("p"));
                 for (DOMElement paragraph : paragraphs) {
                     System.out.println("paragraph.getNodeValue() = " +
-                            paragraph.getNodeValue());
+                            paragraph.getChildren().get(0).getNodeValue());
                 }
             }
         });

@@ -1,15 +1,19 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
 
-import com.teamdev.jxbrowser.chromium.*;
+import com.teamdev.jxbrowser.chromium.Browser;
+import com.teamdev.jxbrowser.chromium.Certificate;
+import com.teamdev.jxbrowser.chromium.CertificatesDialogParams;
+import com.teamdev.jxbrowser.chromium.CloseStatus;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 import com.teamdev.jxbrowser.chromium.swing.DefaultDialogHandler;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 /**
  * The sample demonstrates how to display Select SSL Certificate dialog where
@@ -30,12 +34,14 @@ public class SelectSSLCertificateSample {
         browser.setDialogHandler(new DefaultDialogHandler(view) {
             @Override
             public CloseStatus onSelectCertificate(CertificatesDialogParams params) {
-                String message = "Select a certificate to authenticate yourself to " + params.getHostPortPair().getHostPort();
-                java.util.List<Certificate> certificates = params.getCertificates();
+                String message = "Select a certificate to authenticate yourself to "
+                        + params.getHostPortPair().getHostPort();
+                List<Certificate> certificates = params.getCertificates();
                 if (!certificates.isEmpty()) {
                     Object[] selectionValues = certificates.toArray();
-                    Object selectedValue = JOptionPane.showInputDialog(view, message, "Select a certificate",
-                            JOptionPane.PLAIN_MESSAGE, null, selectionValues, selectionValues[0]);
+                    Object selectedValue = JOptionPane.showInputDialog(view, message,
+                            "Select a certificate", JOptionPane.PLAIN_MESSAGE,
+                            null, selectionValues, selectionValues[0]);
                     if (selectedValue != null) {
                         params.setSelectedCertificate((Certificate) selectedValue);
                         return CloseStatus.OK;

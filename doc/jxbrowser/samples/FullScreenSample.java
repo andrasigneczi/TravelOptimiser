@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -28,7 +28,7 @@ public class FullScreenSample {
 
         browser.setFullScreenHandler(new MyFullScreenHandler(frame, view));
 
-        browser.loadURL("https://developer.mozilla.org/samples/domref/fullscreen.html");
+        browser.loadURL("http://www.quirksmode.org/html5/tests/video.html");
     }
 
     private static class MyFullScreenHandler implements FullScreenHandler {

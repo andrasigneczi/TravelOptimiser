@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
 
 import com.teamdev.jxbrowser.chromium.Browser;
-import com.teamdev.jxbrowser.chromium.JSFunction;
-import com.teamdev.jxbrowser.chromium.JSObject;
 import com.teamdev.jxbrowser.chromium.JSValue;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 
@@ -28,18 +26,15 @@ public class JavaScriptObjectsSample {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
-        JSValue value = browser.executeJavaScriptAndReturnValue("document");
-        if (value.isObject() && value instanceof JSObject) {
-            JSObject document = (JSObject) value;
-            // Call document.title = "New Document Title";
-            boolean success = document.set("title", JSValue.create("New Document Title"));
-            System.out.println("Title has been updated successfully: " + success);
+        JSValue document = browser.executeJavaScriptAndReturnValue("document");
+        if (document.isObject()) {
+            // document.title = "New Title"
+            document.asObject().setProperty("title", "New Title");
 
-            // Call document.write("Hello World!");
-            JSValue method = document.get("write");
-            if (method.isFunction() && method instanceof JSFunction) {
-                JSFunction documentWrite = (JSFunction) method;
-                documentWrite.invoke(document, JSValue.create("Hello World!"));
+            // document.write("Hello World!")
+            JSValue write = document.asObject().getProperty("write");
+            if (write.isFunction()) {
+                write.asFunction().invoke(document.asObject(), "Hello World!");
             }
         }
     }

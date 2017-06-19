@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -8,9 +8,10 @@ import com.teamdev.jxbrowser.chromium.*;
 import com.teamdev.jxbrowser.chromium.swing.DefaultNetworkDelegate;
 
 /**
- * This sample demonstrates how to read and modify POST parameters using NetworkDelegate.
+ * This sample demonstrates how to read and modify POST data of
+ * HTTP request using NetworkDelegate.
  */
-public class PostDataSample {
+public class POSTDataSample {
     public static void main(String[] args) {
         Browser browser = new Browser();
         BrowserContext browserContext = browser.getContext();
@@ -19,22 +20,26 @@ public class PostDataSample {
             @Override
             public void onBeforeURLRequest(BeforeURLRequestParams params) {
                 if ("POST".equals(params.getMethod())) {
-                    PostData post = params.getPostData();
-                    PostDataContentType contentType = post.getContentType();
-                    if (contentType == PostDataContentType.FORM_URL_ENCODED) {
-                        FormData postData = (FormData) post;
-                        postData.setPair("key1", "value1", "value2");
-                        postData.setPair("key2", "value2");
-                    } else if (contentType == PostDataContentType.MULTIPART_FORM_DATA) {
-                        MultipartFormData postData = (MultipartFormData) post;
-                        postData.setPair("key1", "value1", "value2");
-                        postData.setPair("key2", "value2");
-                        postData.setFilePair("file3", "C:\\Test.zip");
-                    } else if (contentType == PostDataContentType.PLAIN_TEXT) {
-                        RawData postData = (RawData) post;
-                        postData.setData("raw data");
+                    UploadData uploadData = params.getUploadData();
+                    UploadDataType dataType = uploadData.getType();
+                    if (dataType == UploadDataType.FORM_URL_ENCODED) {
+                        FormData data = (FormData) uploadData;
+                        data.setPair("key1", "value1", "value2");
+                        data.setPair("key2", "value2");
+                    } else if (dataType == UploadDataType.MULTIPART_FORM_DATA) {
+                        MultipartFormData data = (MultipartFormData) uploadData;
+                        data.setPair("key1", "value1", "value2");
+                        data.setPair("key2", "value2");
+                        data.setFilePair("file3", "C:\\Test.zip");
+                    } else if (dataType == UploadDataType.PLAIN_TEXT) {
+                        TextData data = (TextData) uploadData;
+                        data.setText("My data");
+                    } else if (dataType == UploadDataType.BYTES) {
+                        BytesData data = (BytesData) uploadData;
+                        data.setData("My data".getBytes());
                     }
-                    params.setPostData(post);
+                    // Apply modified upload data that will be sent to a web server.
+                    params.setUploadData(uploadData);
                 }
             }
         });

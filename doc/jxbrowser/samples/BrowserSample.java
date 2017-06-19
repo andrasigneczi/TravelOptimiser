@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -16,6 +16,7 @@ import java.awt.*;
  * navigate to the "www.google.com" web site.
  */
 public class BrowserSample {
+
     public static void main(String[] args) {
         Browser browser = new Browser();
         BrowserView view = new BrowserView(browser);
@@ -27,6 +28,6 @@ public class BrowserSample {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
-        browser.loadURL("http://google.com");
+        browser.loadURL("https://google.com");
     }
 }

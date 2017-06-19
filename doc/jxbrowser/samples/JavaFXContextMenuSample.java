@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -18,7 +18,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
@@ -76,11 +76,11 @@ public class JavaFXContextMenuSample extends Application {
         private void createAndDisplayContextMenu(final ContextMenuParams params) {
             final ContextMenu contextMenu = new ContextMenu();
 
-            // Since context menu doesn't auto hide, listen mouse press events
-            // on BrowserView and hide context menu on mouse press
-            pane.getChildren().get(0).setOnMousePressed(new EventHandler<MouseEvent>() {
+            // Since context menu doesn't auto hide, listen mouse scroll events
+            // on BrowserView and hide context menu on mouse click
+            pane.setOnScroll(new EventHandler<ScrollEvent>() {
                 @Override
-                public void handle(MouseEvent event) {
+                public void handle(ScrollEvent event) {
                     contextMenu.hide();
                 }
             });

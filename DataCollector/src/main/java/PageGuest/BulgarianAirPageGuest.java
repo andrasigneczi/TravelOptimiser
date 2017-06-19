@@ -24,10 +24,4 @@ public class BulgarianAirPageGuest extends WebPageGuest
 	{
 
 	}
-
-	@Override
-	public void stop()
-	{
-
-	}
 }

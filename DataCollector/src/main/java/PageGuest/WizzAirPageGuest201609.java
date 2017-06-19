@@ -32,7 +32,6 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 {
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuest201609.class);
 
-	private boolean mThreadStopped = true;
 	private long mTimeoutStart;
 	private static String mApiSearchUrl = "https://be.wizzair.com/3.3.3/Api/search/search";
 	// https://be.wizzair.com/5.0.1/Api/search/search
@@ -157,20 +156,6 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 			mSearchQueue.setQueueName( getAirline() );
 		}
 		mLogger.trace( "end, thread name: " + getThreadName());
-	}
-
-	public void stop()
-	{
-		mThreadStopped = true;
-		try
-		{
-			mThread.join();
-		}
-		catch (InterruptedException e)
-		{
-			e.printStackTrace();
-		}
-		System.out.println("stop()");
 	}
 
 	private void ParseBundles( JSONArray aBoundles )
@@ -459,20 +444,6 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 		{
 			mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
 		}
-	}
-
-	public void WaitForFinish()
-	{
-		mLogger.trace( "begin, thread name: " + getThreadName());
-		try
-		{
-			mThread.join();
-		}
-		catch( InterruptedException e )
-		{
-			mLogger.error( StringHelper.getTraceInformation( e ));
-		}
-		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 }
 

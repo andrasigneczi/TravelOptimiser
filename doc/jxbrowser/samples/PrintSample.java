@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -60,13 +60,14 @@ public class PrintSample {
                 printJob.addPrintJobListener(new PrintJobListener() {
                     @Override
                     public void onPrintingDone(PrintJobEvent event) {
-                        System.out.println("Printing is finished successfully: " + event.isSuccess());
+                        System.out.println("Printing is finished successfully: " +
+                                event.isSuccess());
                     }
                 });
                 return PrintStatus.CONTINUE;
             }
         });
 
-        browser.loadURL("http://www.teamdev.com/services");
+        browser.loadURL("http://www.teamdev.com");
     }
 }

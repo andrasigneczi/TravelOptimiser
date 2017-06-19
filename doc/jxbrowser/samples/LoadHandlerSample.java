@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -29,9 +29,7 @@ public class LoadHandlerSample {
 
         browser.setLoadHandler(new DefaultLoadHandler() {
             public boolean onLoad(LoadParams params) {
-                String url = params.getURL();
-                boolean cancel = url.startsWith("http://www.google");
-                return cancel;
+                return params.getURL().startsWith("http://www.google");
             }
         });
         browser.loadURL("http://www.google.com");

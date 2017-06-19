@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -45,7 +45,7 @@ public class LoginFacebookSample {
         Browser.invokeAndWaitFinishLoadingMainFrame(browser, new Callback<Browser>() {
             @Override
             public void invoke(Browser browser) {
-                browser.getDocument().findElement(By.id("u_0_1")).click();
+                browser.getDocument().findElement(By.id("u_0_2")).click();
             }
         });
     }

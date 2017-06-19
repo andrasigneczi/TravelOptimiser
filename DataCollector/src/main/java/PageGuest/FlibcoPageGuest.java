@@ -24,10 +24,4 @@ public class FlibcoPageGuest extends WebPageGuest
 	{
 
 	}
-
-	@Override
-	public void stop()
-	{
-
-	}
 }

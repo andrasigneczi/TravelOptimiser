@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -11,7 +11,7 @@ import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Set;
+import java.util.List;
 
 /**
  * The sample demonstrates how to get a list of available frame IDs on
@@ -35,16 +35,19 @@ public class GetFrameIDsSample {
             @Override
             public void onFinishLoadingFrame(FinishLoadingEvent event) {
                 if (event.isMainFrame()) {
-                    Browser browser = event.getBrowser();
-                    // Get HTML of each frame on the web page
-                    Set<Long> framesIds = browser.getFramesIds();
-                    for (Long framesId : framesIds) {
-                        String html = browser.getHTML(framesId);
-                        System.out.println(framesId + " HTML = " + html);
-                    }
+                    printFramesHierarchy(event.getBrowser(), Browser.MAIN_FRAME_ID);
                 }
             }
         });
         browser.loadURL("http://docs.oracle.com/javase/8/docs/api/");
+    }
+
+    public static void printFramesHierarchy(Browser browser, long parentFrameId) {
+        List<Long> childFrameIds = browser.getFramesIds(parentFrameId);
+        for (Long childFrameId : childFrameIds) {
+            System.out.println("Child Frame: " + childFrameId +
+                    ", HTML: " + browser.getHTML(childFrameId));
+            printFramesHierarchy(browser, childFrameId);
+        }
     }
 }

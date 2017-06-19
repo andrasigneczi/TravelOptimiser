@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -17,7 +17,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 /**
- * Demonstrates how to switch between fullscreen mode and window mode.
+ * Demonstrates how to switch between full screen mode and window mode.
  */
 public class JavaFXFullScreenSample extends Application {
 
@@ -40,7 +40,7 @@ public class JavaFXFullScreenSample extends Application {
         primaryStage.show();
 
         browser.setFullScreenHandler(new MyFullScreenHandler(primaryStage, border, view));
-        browser.loadURL("https://developer.mozilla.org/samples/domref/fullscreen.html");
+        browser.loadURL("http://www.quirksmode.org/html5/tests/video.html");
     }
 
     public static void main(String[] args) {

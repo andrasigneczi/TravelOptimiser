@@ -24,10 +24,4 @@ public class MomondoPageGuest extends WebPageGuest
 	{
 
 	}
-
-	@Override
-	public void stop()
-	{
-
-	}
 }

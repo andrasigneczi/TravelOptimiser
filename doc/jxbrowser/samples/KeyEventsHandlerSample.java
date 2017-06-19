@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
 
 import com.teamdev.jxbrowser.chromium.Browser;
-import com.teamdev.jxbrowser.chromium.KeyEventsHandler;
+import com.teamdev.jxbrowser.chromium.InputEventsHandler;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 
 import javax.swing.*;
@@ -28,9 +28,8 @@ public class KeyEventsHandlerSample {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
-        view.setKeyEventsHandler(KeyEventsHandler.KeyEventType.ANY, new KeyEventsHandler<KeyEvent>() {
+        view.setKeyEventsHandler(new InputEventsHandler<KeyEvent>() {
             public boolean handle(KeyEvent event) {
-                // Suppress Ctrl+A
                 return event.isControlDown() && event.getKeyCode() == KeyEvent.VK_A;
             }
         });

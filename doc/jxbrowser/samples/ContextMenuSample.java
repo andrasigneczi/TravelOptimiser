@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -20,6 +20,8 @@ import java.awt.event.ActionListener;
  */
 public class ContextMenuSample {
     public static void main(String[] args) {
+        JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+
         Browser browser = new Browser();
         BrowserView view = new BrowserView(browser);
 

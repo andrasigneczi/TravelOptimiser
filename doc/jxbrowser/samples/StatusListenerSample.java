@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -19,7 +19,8 @@ import java.util.logging.Level;
  */
 public class StatusListenerSample {
     public static void main(String[] args) {
-        LoggerProvider.getIPCLogger().setLevel(Level.SEVERE);
+        LoggerProvider.setLevel(Level.OFF);
+
         Browser browser = new Browser();
         BrowserView view = new BrowserView(browser);
 

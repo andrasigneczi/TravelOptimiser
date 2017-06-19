@@ -1,6 +1,5 @@
 package PageGuest;
 
-import BrowserState.BrowserState;
 import com.teamdev.jxbrowser.chromium.Browser;
 
 import java.awt.*;
@@ -12,14 +11,12 @@ import java.awt.event.KeyEvent;
  */
 public abstract class WebPageGuest extends PageGuest
 {
-    protected BrowserState  mBrowserState     = null;
+//    protected BrowserState  mBrowserState     = null;
     protected Robot         mRobot            = null;
     protected Insets        mInsets;
     private   String        mURL;
 
     final protected String mGetElementByXPathPattern = "document.evaluate('%s', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue";
-
-    public abstract void stop();
 
     public WebPageGuest(String aAirline, String aURL)
     {
@@ -39,19 +36,17 @@ public abstract class WebPageGuest extends PageGuest
         mInsets = new Insets(0, 0, 0, 0);
     }
 
-    public void setBrowserState(BrowserState aBrowserState)
-    {
-        mBrowserState = aBrowserState;
-    }
-
-    public BrowserState getBrowserState()
-    {
-        return mBrowserState;
-    }
-
     public void MouseMove( int aX, int aY)
     {
         mRobot.mouseMove( aX + mInsets.left, aY + mInsets.top );
+    }
+    public void MouseMoveAround( int aX, int aY)
+    {
+        MouseMove( aX - 1, aY - 1);
+        Sleep( 100 );
+        MouseMove( aX, aY - 1);
+        Sleep( 100 );
+        MouseMove( aX, aY );
     }
 
     public void MouseLeftClick( int aX, int aY)
@@ -124,6 +119,7 @@ public abstract class WebPageGuest extends PageGuest
 
         for (int i = 0; i < aText.length(); i++)
         {
+            Sleep( 100 );
             char lC = aText.charAt(i);
             if (lC >= 'A' && lC <= 'Z')
             {

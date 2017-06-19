@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -39,7 +39,7 @@ public class RestoreBrowserSample {
 
         browser.loadURL("http://www.google.com");
 
-        System.out.println("Run 'Task Manager' app and kill the 'jxbrowser-chromium.exe' " +
+        System.out.println("Run 'Task Manager' app and kill the 'chromium.exe' " +
                 "process with the '--type=renderer' command line argument.");
     }
 }

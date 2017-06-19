@@ -3,6 +3,7 @@ package PageGuest;
 import Configuration.Configuration;
 import QueueHandlers.JMSPublisher;
 import QueueHandlers.LocalStack;
+import ResultFilter.ResultFilter;
 import Util.HttpRequest;
 import Util.StringHelper;
 import Util.WizzairHelper;
@@ -43,7 +44,6 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 {
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger( WizzAirPageGuestTimetable.class);
 
-	private boolean mThreadStopped = true;
 	private long mTimeoutStart;
 	private static String mApiTimetableUrl = "https://be.wizzair.com/5.1.4/Api/search/timetable";
 
@@ -531,20 +531,6 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		return lComposedTrips;
 	}
 
-	public void stop()
-	{
-		mThreadStopped = true;
-		try
-		{
-			mThread.join();
-		}
-		catch (InterruptedException e)
-		{
-			mLogger.error( StringHelper.getTraceInformation( e ) );
-		}
-		System.out.println("stop()");
-	}
-
 	private void TimeoutTest()
 	{
 		Sleep( 100 );
@@ -605,19 +591,5 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 			mLogger.error( StringHelper.getTraceInformation( aException ) );
 		}
 		mLogger.trace( "end, thread name: " + getThreadName());
-	}
-
-	public void WaitForFinish()
-	{
-		mLogger.trace( "begin, thread name: " + getThreadName() );
-		try
-		{
-			mThread.join();
-		}
-		catch( InterruptedException e )
-		{
-			mLogger.error( StringHelper.getTraceInformation( e ) );
-		}
-		mLogger.trace( "end, thread name: " + getThreadName() );
 	}
 }

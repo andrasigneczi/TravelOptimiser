@@ -22,6 +22,7 @@ public abstract class PageGuest
 	protected      StackIF<TravelData_INPUT>   mSearchQueue;
 	protected      Object                      mMutex = new Object();
 	protected      Thread                      mThread;
+	protected      boolean                     mThreadStopped = true;
 
 	public enum FareType
 	{
@@ -39,7 +40,8 @@ public abstract class PageGuest
 	public PageGuest(String aAirline)
 	{
 		mAirline = aAirline;
-		InitAirportList();
+		if( mAirline != null )
+			InitAirportList();
 	}
 
 	private void InitAirportList()
@@ -143,7 +145,20 @@ public abstract class PageGuest
 	}
 
 	public abstract void DoSearchFromConfig();
-	public abstract void stop();
+
+	public void stop()
+	{
+		mThreadStopped = true;
+		try
+		{
+			mThread.join();
+		}
+		catch (InterruptedException e)
+		{
+			mLogger.error( StringHelper.getTraceInformation( e ) );
+		}
+		System.out.println("stop()");
+	}
 
 	public static DateValidity ValidateDate( String aDepartureDay, String aReturnDay )
 	{
@@ -185,5 +200,19 @@ public abstract class PageGuest
 	public TravelData_INPUT popSearchQueue()
 	{
 		return mSearchQueue.pop();
+	}
+
+	public void WaitForFinish()
+	{
+		mLogger.trace( "begin, thread name: " + getThreadName());
+		try
+		{
+			mThread.join();
+		}
+		catch( InterruptedException e )
+		{
+			mLogger.error( StringHelper.getTraceInformation( e ));
+		}
+		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 }

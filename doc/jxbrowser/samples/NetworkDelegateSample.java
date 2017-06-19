@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2015 TeamDev Ltd. All rights reserved.
+ * Copyright (c) 2000-2017 TeamDev Ltd. All rights reserved.
  * TeamDev PROPRIETARY and CONFIDENTIAL.
  * Use is subject to license terms.
  */
@@ -10,12 +10,15 @@ import com.teamdev.jxbrowser.chromium.swing.DefaultNetworkDelegate;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.logging.Level;
 
 /**
  * This sample demonstrates how to use request handler.
  */
 public class NetworkDelegateSample {
     public static void main(String[] args) {
+        LoggerProvider.setLevel(Level.OFF);
+
         BrowserContext browserContext = BrowserContext.defaultContext();
         browserContext.getNetworkService().setNetworkDelegate(new DefaultNetworkDelegate() {
             @Override
@@ -30,7 +33,7 @@ public class NetworkDelegateSample {
             public void onBeforeSendHeaders(BeforeSendHeadersParams params) {
                 // If navigate to google.com, then print User-Agent header value.
                 if (params.getURL().equals("http://www.google.com/")) {
-                    HttpHeaders headers = params.getHeaders();
+                    HttpHeadersEx headers = params.getHeadersEx();
                     System.out.println("User-Agent: " + headers.getHeader("User-Agent"));
                 }
             }
