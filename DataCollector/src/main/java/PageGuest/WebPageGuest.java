@@ -68,6 +68,26 @@ public abstract class WebPageGuest extends PageGuest
         mRobot.keyRelease(KeyEvent.VK_CONTROL);
     }
 
+    public void PressUp()
+    {
+        if (mRobot == null)
+        {
+            return;
+        }
+        mRobot.keyPress(KeyEvent.VK_UP);
+        mRobot.keyRelease(KeyEvent.VK_UP);
+    }
+
+    public void PressDown()
+    {
+        if (mRobot == null)
+        {
+            return;
+        }
+        mRobot.keyPress(KeyEvent.VK_DOWN);
+        mRobot.keyRelease(KeyEvent.VK_DOWN);
+    }
+
     public void PressTab()
     {
         if (mRobot == null)
@@ -119,7 +139,7 @@ public abstract class WebPageGuest extends PageGuest
 
         for (int i = 0; i < aText.length(); i++)
         {
-            Sleep( 100 );
+            Sleep( 200 );
             char lC = aText.charAt(i);
             if (lC >= 'A' && lC <= 'Z')
             {
@@ -149,6 +169,18 @@ public abstract class WebPageGuest extends PageGuest
             {
                 mRobot.keyPress(KeyEvent.VK_SPACE);
                 mRobot.keyRelease(KeyEvent.VK_SPACE);
+            }
+
+            if (lC == ',')
+            {
+                mRobot.keyPress(KeyEvent.VK_COMMA);
+                mRobot.keyRelease(KeyEvent.VK_COMMA);
+            }
+
+            if (lC == '.')
+            {
+                mRobot.keyPress(KeyEvent.VK_COLON);
+                mRobot.keyRelease(KeyEvent.VK_COLON);
             }
 
             if (lC == '(')

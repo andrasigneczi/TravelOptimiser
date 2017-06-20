@@ -228,7 +228,17 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		// destination
 		MouseLeftClick( 120, 326 );
 		Sleep( 500 );
-		TypeText( "Budapest\t" );
+		PressCtrlA();
+		Sleep( 500 );
+		PressDelete();
+		Sleep( 500 );
+		TypeText( "Budapest, Pest, Hungary" );
+		Sleep( 1000 );
+		PressDown();
+		Sleep( 1000 );
+		TypeText( "\n" );
+		Sleep( 1000 );
+		TypeText( "\t" );
 		Sleep( 1000 );
 
 		// check-in
@@ -243,28 +253,47 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		if( !setChecked( "//*[@id=\"frm\"]/div[3]/div/div/fieldset/label[2]/input", true ))
 			setChecked( "//*[@id=\"frm\"]/div[4]/div/div/fieldset/label[2]/input", true );
 
+		Sleep( 1000 );
+
 		// rooms select
 		jQuerySetSelect( "no_rooms", "2" );
 
+		Sleep( 1000 );
+
 		// adults select
-		jQuerySetSelect( "group_adults", "3" );
+		jQuerySetSelect( "group_adults", "2" );
+
+		Sleep( 1000 );
 
 		// children select
 		//setSelect( "//*[@id=\"group_children\"]", "4" );
-		jQuerySetSelect( "group_children", "4" );
+		jQuerySetSelect( "group_children", "2" );
+
+		Sleep( 1000 );
 
 		// age1
 		jQuerySetSelect2( "$('[data-group-child-age=\"0\"]')", "8" );
 
+		Sleep( 1000 );
+
 		// age2
 		jQuerySetSelect2( "$('[data-group-child-age=\"1\"]')", "11" );
-		jQuerySetSelect2( "$('[data-group-child-age=\"2\"]')", "10" );
-		jQuerySetSelect2( "$('[data-group-child-age=\"3\"]')", "9" );
+		//jQuerySetSelect2( "$('[data-group-child-age=\"2\"]')", "10" );
+		//jQuerySetSelect2( "$('[data-group-child-age=\"3\"]')", "9" );
 		Sleep( 1000 );
 
 		// search button xpath
-		DOMElement lElement = mDOMDocument.findElement( By.xpath( "//*[@id=\"frm\"]/div[7]/button" ));
-		lElement.click();
+		//DOMElement lElement = mDOMDocument.findElement( By.xpath( "" ));
+		//if( lElement != null )
+		//	lElement.click();
+
+
+		//mBrowser.executeJavaScript( "$('[data-sb-id=\"main\"]').click();" );
+		//mBrowser.executeJavaScript( "$('[data-sb-id=\"main\"]').submit();" );
+		MouseLeftClick( 120, 326 );
+		Sleep( 500 );
+		TypeText( "\n" );
+		Sleep( 1000 );
 
 		mDOMDocument = null;
 	}
