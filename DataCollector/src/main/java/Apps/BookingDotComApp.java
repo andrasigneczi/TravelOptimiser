@@ -20,7 +20,7 @@ public class BookingDotComApp
 			mLogger.trace( "BookingDotComApp start" );
 			final BookingDotComPageGuest lGuest = (BookingDotComPageGuest) PageGuestFactory.Create( "booking" );
 			lGuest.DoSearchFromConfig();
-			lGuest.join();
+			lGuest.WaitForFinish();
 			mLogger.trace( "BookingDotComApp stop" );
 		}
 		catch (Exception e)

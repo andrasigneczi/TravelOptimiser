@@ -321,6 +321,7 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 			catch (JSONException e)
 			{
 				mLogger.error( "Exception in ParseTheResponse: " + StringHelper.getTraceInformation( e ) );
+				mLogger.error( "Response string: " + aResponse );
 			}
 		}
 		mLogger.trace( "end, thread name: " + getThreadName());

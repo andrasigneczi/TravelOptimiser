@@ -15,7 +15,7 @@ public class BookingDotComPageGuestTest
 	{
 		BookingDotComPageGuest test = new BookingDotComPageGuest();
 		test.Init();
-		test.join();
+		test.WaitForFinish();
 	}
 
 }

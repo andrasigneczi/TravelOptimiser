@@ -23,21 +23,84 @@ import java.util.logging.Level;
 /**
  * Created by Andras on 15/03/2016.
  */
+
 public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 {
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger(BookingDotComPageGuest.class);
 	private Browser mBrowser = null;
 	private BrowserView mBrowserView = null;
 	private JTabbedPane mTabbedPane = null;
-	private Thread mThread = null;
 
 	private long mTimeoutStart;
 	private boolean mThreadStopped = true;
 	DOMDocument mDOMDocument;
-	private boolean mAlreadyProcessed = false;
+	private BookingDotComStatus mStatus = new BookingDotComStatus();
+
+	public class BrowserLoadAdapter extends LoadAdapter
+	{
+		private BookingDotComPageGuest mGuest;
+		public BrowserLoadAdapter( BookingDotComPageGuest guest )
+		{
+			mGuest = guest;
+		}
+
+		@Override
+		public void onStartLoadingFrame(StartLoadingEvent event) {
+			if (event.isMainFrame()) {
+				System.out.println("Main frame has started loading");
+			}
+		}
+
+		@Override
+		public void onProvisionalLoadingFrame(ProvisionalLoadingEvent event) {
+			if (event.isMainFrame()) {
+				System.out.println("Provisional load was committed for a frame");
+			}
+		}
+
+		@Override
+		public void onFinishLoadingFrame(FinishLoadingEvent event) {
+			// A click után újra bejövök ide, erre ügyelni kell!!!!
+			synchronized( this )
+			{
+				if( event.isMainFrame())
+				{
+					System.out.println( "Main frame has finished loading" );
+					System.out.println( "Status: " + mGuest.mStatus.getStatus());
+					mGuest.mStatus.mainFrameLoaded( mGuest, event.getBrowser().getDocument());
+				}
+			}
+		}
+
+		@Override
+		public void onFailLoadingFrame(FailLoadingEvent event) {
+			NetError errorCode = event.getErrorCode();
+			if (event.isMainFrame()) {
+				System.out.println("Main frame has failed loading: " + errorCode);
+			}
+		}
+
+		@Override
+		public void onDocumentLoadedInFrame(FrameLoadEvent event) {
+			System.out.println("Frame document is loaded." );
+			if( /*false &&*/ mGuest.mStatus.getStatus() == BookingDotComStatus.Status.NEXT_PAGE_LOADING
+					&& mGuest.isResultPage( event.getBrowser().getDocument()))
+			{
+				System.out.println( "Status: " + mGuest.mStatus.getStatus());
+				mGuest.mStatus.mainFrameLoaded( mGuest, event.getBrowser().getDocument());
+			}
+		}
+
+		@Override
+		public void onDocumentLoadedInMainFrame(LoadEvent event) {
+			System.out.println("Main frame document is loaded.");
+		}
+
+	}
 
 	public void Init()
 	{
+		mStatus.starting( this );
 		getBrowserLogger().setLevel( Level.WARNING );
 		getChromiumProcessLogger().setLevel( Level.WARNING );
 		getIPCLogger().setLevel( Level.WARNING );
@@ -70,55 +133,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mBrowserView = new BrowserView( mBrowser );
 		mTabbedPane.addTab( "Browser", mBrowserView );
 		//mBrowser.addLoadListener( new WizzAirPageGuest_LoadListener(this));
-		mBrowser.addLoadListener(new LoadAdapter() {
-			@Override
-			public void onStartLoadingFrame(StartLoadingEvent event) {
-				if (event.isMainFrame()) {
-					System.out.println("Main frame has started loading");
-				}
-			}
-
-			@Override
-			public void onProvisionalLoadingFrame(ProvisionalLoadingEvent event) {
-				if (event.isMainFrame()) {
-					System.out.println("Provisional load was committed for a frame");
-				}
-			}
-
-			@Override
-			public void onFinishLoadingFrame(FinishLoadingEvent event) {
-				// A click után újra bejövök ide, erre ügyelni kell!!!!
-				synchronized( this )
-				{
-					if( event.isMainFrame() && !mAlreadyProcessed )
-					{
-						mAlreadyProcessed = true;
-						System.out.println( "Main frame has finished loading" );
-
-						FillTheForm( event.getBrowser().getDocument() );
-					}
-				}
-			}
-
-			@Override
-			public void onFailLoadingFrame(FailLoadingEvent event) {
-				NetError errorCode = event.getErrorCode();
-				if (event.isMainFrame()) {
-					System.out.println("Main frame has failed loading: " + errorCode);
-				}
-			}
-
-			@Override
-			public void onDocumentLoadedInFrame(FrameLoadEvent event) {
-				System.out.println("Frame document is loaded.");
-			}
-
-			@Override
-			public void onDocumentLoadedInMainFrame(LoadEvent event) {
-				System.out.println("Main frame document is loaded.");
-			}
-		});
-
+		mBrowser.addLoadListener(new BrowserLoadAdapter( this ));
 		mBrowser.loadURL( getURL());
 	}
 
@@ -208,21 +223,10 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		return true;
 	}
 
-	public void FillTheForm_test( DOMDocument aDOMDocument )
-	{
-		mDOMDocument = aDOMDocument;
-		//MouseMove( 1180, 824 );
-		MouseLeftClick( 1180, 824 );
-		Sleep( 500 );
-		MouseLeftClick( 1180, 824 );
-		Sleep( 500 );
-		MouseMoveAround( 812, 592 );
-		mDOMDocument = null;
-	}
-
 	// DEVEL
 	public void FillTheForm( DOMDocument aDOMDocument )
 	{
+		mStatus.fillingTheForm( this );
 		mDOMDocument = aDOMDocument;
 
 		// destination
@@ -287,6 +291,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		//if( lElement != null )
 		//	lElement.click();
 
+		mStatus.formIsFilled( this );
 
 		//mBrowser.executeJavaScript( "$('[data-sb-id=\"main\"]').click();" );
 		//mBrowser.executeJavaScript( "$('[data-sb-id=\"main\"]').submit();" );
@@ -296,53 +301,79 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		Sleep( 1000 );
 
 		mDOMDocument = null;
+		mStatus.searching( this );
 	}
 
-	public void FillTheForm1( DOMDocument aDOMDocument )
+	void ParseTheResult( DOMDocument aDOMDocument )
 	{
+		mStatus.parsingTheResult( this );
 		mDOMDocument = aDOMDocument;
 
-		// destination input field
-		setTextField( "//*[@id=\"ss\"]", "Budapest" );
+		java.util.List<DOMElement> lElements = mDOMDocument.findElements( By.className( "sr_item" ));
+		if( lElements != null )
+		{
+			for( DOMElement lElement : lElements )
+			{
+				java.util.List<DOMElement> lNames = lElement.findElements( By.className( "sr-hotel__name" ));
+				if( lNames != null )
+				{
+					for( DOMElement lName : lNames )
+					{
+						System.out.println( "Name: " + lName.getInnerText());
+					}
+				}
+			}
+		}
 
-		// rooms select
-		setSelect( "//*[@id=\"no_rooms\"]", "1" );
+		// Name : <span class="sr-hotel__name">Corvin Plaza Apartments &amp; Suites</span>
 
-		// adults select
-		setSelect( "//*[@id=\"group_adults\"]", "1" );
+		// Review text:
+		// <span class="review-score-widget__text">Very good</span>
 
-		// children select
-		setSelect( "//*[@id=\"group_children\"]", "2" );
+		// Score:
+		// <span class="review-score-badge">8<span class="review-score__decimal-separator">.</span>2</span>
 
-		// age1
-		setSelect( "//*[@id=\"frm\"]/div[5]/div/div[2]/div[4]/select[1]", "8" );
+		// Number of reviewers: <span class="review-score-widget__subtext">1,621 reviews</span>
 
-		// age2
-		setSelect( "//*[@id=\"frm\"]/div[5]/div/div[2]/div[4]/select[2]", "11" );
+		// Price: <b class="sr_gs_price_total">€&nbsp;183</b>
 
-		// travelling for leisure radio
-		setChecked( "//*[@id=\"frm\"]/div[3]/div/div/fieldset/label[2]/input", true );
+		// Starting block:
+		// <div class="sr_item sr_item_new sr_item_default sr_property_block  sr_flex_layout                 genius_highlight " data-hotelid="367832" data-class="0" data-score="8.5">
 
-		// check-in div: //*[@id="frm"]/div[4]/div/div[1]/div[1]/div/div/div[1]/div/div[2]
-		// check-out div: //*[@id="frm"]/div[4]/div/div[1]/div[2]/div/div/div[1]/div/div[2]
+		// pagination: <a class="sr_pagination_link" href="/searchresults.en-gb.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaIkBiAEBmAEuwgEKd2luZG93cyAxMMgBDNgBAegBAfgBC5ICAXmoAgM;sid=9e8e9e2e4a5ee51cd4367961239c350d;age=11;age=8;checkin_month=7;checkin_monthday=23;checkin_year=2017;checkout_month=7;checkout_monthday=24;checkout_year=2017;class_interval=1;dest_id=-850553;dest_type=city;dtdisc=0;group_adults=2;group_children=2;inac=0;index_postcard=0;label_click=undef;mih=0;no_rooms=1;postcard=0;raw_dest_type=city;room1=A%2CA%2C8%2C11;sb_price_type=total;sb_travel_purpose=leisure;src=index;src_elem=sb;ss=Budapest;ss_all=0;ssb=empty;sshis=0;ssne=Budapest;ssne_untouched=Budapest;rows=25">1</a>
 
-		// search button xpath
-		DOMElement lElement = mDOMDocument.findElement( By.xpath( "//*[@id=\"frm\"]/div[7]/button" ));
-		lElement.click();
+		// filter 0-50€: //*[@id="filter_price"]/div[2]/a[1]
+		// filter 50-100€: //*[@id="filter_price"]/div[2]/a[2]
+		// filter 24h reception: //*[@id="filter_24hr_reception"]/div[2]/a
+		// filter free cancellation: //*[@id="filter_fc"]/div[2]/a[1]
+		// filter apartment: //*[@id="filter_hoteltype"]/div[2]/a[1]
+		// filter hotels: //*[@id="filter_hoteltype"]/div[2]/a[2]
+		// filter free wifi: //*[@id="filter_facilities"]/div[2]/a[7]
+		// filter restaurant: //*[@id="filter_facilities"]/div[2]/a[4]
+		// filter AC: //*[@id="filter_roomfacilities"]/div[2]/a[1]
+		// filter batch: //*[@id="filter_roomfacilities"]/div[2]/a[3]
+		// filter disctict 8: //*[@id="filter_district"]/div[2]/a[6]
+		// filter disctrict 13: //*[@id="filter_district"]/div[2]/a[9]
+		// filter disctrict 19: //*[@id="filter_district"]/div[2]/a[20]
 
+		mStatus.parsingFinished( this );
 		mDOMDocument = null;
 	}
 
-	public void join()
+	public boolean pageNext()
 	{
-		try
-		{
-			mThread.join();
-		}
-		catch( InterruptedException e )
-		{
-			e.printStackTrace();
-		}
+		// <a class="paging-next ga_sr_gotopage_2_18" data-page-next="" href="...">Next page</a>
+		java.util.List<DOMElement> lElements = mDOMDocument.findElements( By.className( "paging-next" ));
+		if( lElements == null || lElements.size() == 0 )
+			return false;
+		lElements.get( 0 ).click();
+		return true;
+	}
+
+	public boolean isResultPage( DOMDocument aDOMDocument )
+	{
+		java.util.List<DOMElement> lElements = aDOMDocument.findElements( By.className( "sr_item" ));
+		return lElements != null;
 	}
 }
 
