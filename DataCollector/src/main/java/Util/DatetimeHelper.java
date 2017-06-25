@@ -215,9 +215,20 @@ public class DatetimeHelper
         return lReturn;
     }
 
+	/**
+     * Change the separator of the date
+     * @param aDate string, format: %s.%s.%s
+     * @return %s-%s-%s
+     */
     public static String FormatDate( String aDate )
     {
         String[] lParts = aDate.split("\\.", 0 );
         return String.format( "%s-%s-%s", lParts[ 0 ], lParts[ 1 ], lParts[ 2 ] );
+    }
+
+    public static String ReverseDate( String aDate )
+    {
+        String[] lParts = aDate.split("\\.", 0 );
+        return String.format( "%s%s%s", lParts[ 2 ], lParts[ 1 ], lParts[ 0 ] );
     }
 }

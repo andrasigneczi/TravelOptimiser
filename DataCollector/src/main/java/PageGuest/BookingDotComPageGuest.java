@@ -1,6 +1,8 @@
 package PageGuest;
 
+import Configuration.Configuration;
 import Util.CurrencyHelper;
+import Util.DatetimeHelper;
 import com.teamdev.jxbrowser.chromium.*;
 import com.teamdev.jxbrowser.chromium.dom.*;
 import com.teamdev.jxbrowser.chromium.events.*;
@@ -37,8 +39,15 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	private boolean mThreadStopped = true;
 	DOMDocument mDOMDocument;
 	private BookingDotComStatus mStatus = new BookingDotComStatus();
+
 	ArrayList<AccomodationData_RESULT> mAccomodationDataResults = new ArrayList<>(  );
 	int mLastOpenedAccomodation = -1;
+
+	ArrayList<AccomodationData_INPUT> mInputList = new ArrayList<>();
+	int mInputListIndex = -1;
+
+	String[] mFilters = null;
+	int mFilterIndex = -1;
 
 	public class BrowserLoadAdapter extends LoadAdapter
 	{
@@ -87,7 +96,8 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		@Override
 		public void onDocumentLoadedInFrame(FrameLoadEvent event) {
 			System.out.println("Frame document is loaded." );
-			if( mGuest.mStatus.getStatus() == BookingDotComStatus.Status.NEXT_PAGE_LOADING
+			if(( mGuest.mStatus.getStatus() == BookingDotComStatus.Status.NEXT_PAGE_LOADING ||
+				 mGuest.mStatus.getStatus() == BookingDotComStatus.Status.APPLYING_A_FILTER )
 					&& mGuest.isResultPage( event.getBrowser().getDocument()))
 			{
 				System.out.println( "Status: " + mGuest.mStatus.getStatus());
@@ -105,6 +115,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	public void Init()
 	{
 		mStatus.starting( this );
+		DoSearchFromConfig();
 		getBrowserLogger().setLevel( Level.WARNING );
 		getChromiumProcessLogger().setLevel( Level.WARNING );
 		getIPCLogger().setLevel( Level.WARNING );
@@ -125,7 +136,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		});
 
 		frame.getContentPane().add( mTabbedPane, BorderLayout.CENTER );
-		frame.setSize( 1152, 864 );
+		frame.setSize( 1152, 964 );
 		//frame.setLocationRelativeTo( null );
 		frame.setLocation( 50, 50 );
 		frame.setVisible( true );
@@ -156,7 +167,26 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	public void DoSearchFromConfig()
 	{
+		ArrayList<AccomodationData_INPUT> lSearchList = Configuration.getInstance().getSearchListAccom();
+		for( AccomodationData_INPUT lADI : lSearchList )
+		{
+			if( lADI.mSite != 'B' )
+				continue;
 
+			PageGuest.DateValidity lValidity = ValidateDate(lADI.mCheckIn, lADI.mCheckOut);
+
+			if( lValidity == PageGuest.DateValidity.INVALID_COMBINATION )
+			{
+				mLogger.warn( "DoSearch: the departure date (" + lADI.mCheckIn + ") and/or the return date " +
+						lADI.mCheckOut + " is/are invalid!" );
+				continue;
+			}
+
+			if( lValidity == PageGuest.DateValidity.BOTH_OF_THEM_VALID )
+			{
+				mInputList.add( lADI );
+			}
+		}
 	}
 
 	@Override
@@ -230,8 +260,17 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	// DEVEL
 	public void FillTheForm( DOMDocument aDOMDocument )
 	{
+		if( mInputListIndex + 1 >= mInputList.size())
+		{
+			mStatus.Done( this );
+			return;
+		}
+
 		mStatus.fillingTheForm( this );
 		mDOMDocument = aDOMDocument;
+
+		AccomodationData_INPUT lADI = mInputList.get( ++mInputListIndex );
+
 
 		// destination
 		MouseLeftClick( 120, 326 );
@@ -240,7 +279,8 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		Sleep( 500 );
 		PressDelete();
 		Sleep( 500 );
-		TypeText( "Budapest, Pest, Hungary" );
+		//TypeText( "Budapest, Pest, Hungary" );
+		TypeText( lADI.mCity );
 		Sleep( 1000 );
 		PressDown();
 		Sleep( 1000 );
@@ -250,11 +290,15 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		Sleep( 1000 );
 
 		// check-in
-		TypeText( "24072017\t" );
+		//TypeText( "24072017\t" );
+		System.out.println( lADI.mCheckIn );
+		TypeText( DatetimeHelper.ReverseDate( lADI.mCheckIn ) + "\t" );
 		Sleep( 1000 );
 
 		// check-out
-		TypeText( "01082017\t" );
+		//TypeText( "01082017\t" );
+		System.out.println( lADI.mCheckOut );
+		TypeText( DatetimeHelper.ReverseDate( lADI.mCheckOut ) + "\t" );
 		Sleep( 1000 );
 
 		// travelling for leisure radio
@@ -264,36 +308,49 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		Sleep( 1000 );
 
 		// rooms select
-		jQuerySetSelect( "no_rooms", "2" );
+		jQuerySetSelect( "no_rooms", String.valueOf( lADI.mRoomNumber ));
 
 		Sleep( 1000 );
 
 		// adults select
-		jQuerySetSelect( "group_adults", "2" );
+		jQuerySetSelect( "group_adults", String.valueOf( lADI.mAdultNumber ));
 
 		Sleep( 1000 );
 
 		// children select
 		//setSelect( "//*[@id=\"group_children\"]", "4" );
-		jQuerySetSelect( "group_children", "2" );
+		jQuerySetSelect( "group_children", String.valueOf( lADI.mChildrenNumber ));
 
 		Sleep( 1000 );
 
-		// age1
-		jQuerySetSelect2( "$('[data-group-child-age=\"0\"]')", "8" );
 
-		Sleep( 1000 );
+		for( int i = 0; i < lADI.mChildrenAge.size(); i++ )
+		{
+			jQuerySetSelect2( "$('[data-group-child-age=\"" + i + "\"]')", String.valueOf( lADI.mChildrenAge.get( i )));
+			Sleep( 1000 );
+		}
 
-		// age2
-		jQuerySetSelect2( "$('[data-group-child-age=\"1\"]')", "11" );
-		//jQuerySetSelect2( "$('[data-group-child-age=\"2\"]')", "10" );
-		//jQuerySetSelect2( "$('[data-group-child-age=\"3\"]')", "9" );
-		Sleep( 1000 );
+//		// age1
+//		jQuerySetSelect2( "$('[data-group-child-age=\"0\"]')", "8" );
+//
+//		Sleep( 1000 );
+//
+//		// age2
+//		jQuerySetSelect2( "$('[data-group-child-age=\"1\"]')", "11" );
+//		//jQuerySetSelect2( "$('[data-group-child-age=\"2\"]')", "10" );
+//		//jQuerySetSelect2( "$('[data-group-child-age=\"3\"]')", "9" );
+//		Sleep( 1000 );
 
 		// search button xpath
 		//DOMElement lElement = mDOMDocument.findElement( By.xpath( "" ));
 		//if( lElement != null )
 		//	lElement.click();
+
+		if( lADI.mFilters != null && lADI.mFilters.length() > 0 )
+		{
+			mFilters = lADI.mFilters.split("\\,", 0 );
+			mFilterIndex = -1;
+		}
 
 		mStatus.formIsFilled( this );
 
@@ -308,6 +365,60 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mStatus.searching( this );
 	}
 
+	String getNextFilter()
+	{
+		if( mFilters == null || mFilters.length <= mFilterIndex + 1 )
+		{
+			return null;
+		}
+
+		return mFilters[ ++mFilterIndex ].trim();
+	}
+
+	void ApplyFilter( DOMDocument aDOMDocument )
+	{
+		for( String filter = getNextFilter(); filter != null; filter = getNextFilter())
+		{
+			if( filter.equals( "price_0-50" ))
+			{
+				System.out.println( "FILTER: " + filter );
+				mStatus.ApplyAFilter( this );
+				DOMElement lFilter = aDOMDocument.findElement( By.xpath( "//*[@id=\"filter_price\"]/div[2]/a[1]" ));
+				lFilter.click();
+				Sleep( 7000 );
+				return;
+			}
+			else if( filter.equals( "price_50-100" ))
+			{
+				System.out.println( "FILTER: " + filter );
+				mStatus.ApplyAFilter( this );
+				DOMElement lFilter = aDOMDocument.findElement( By.xpath( "//*[@id=\"filter_price\"]/div[2]/a[2]" ));
+				lFilter.click();
+				Sleep( 7000 );
+				return;
+			}
+			else
+			{
+				mLogger.warn( "Illegal filter: " + filter );
+			}
+		}
+
+		ParseTheResult( aDOMDocument );
+
+		// filter 24h reception: //*[@id="filter_24hr_reception"]/div[2]/a
+		// filter free cancellation: //*[@id="filter_fc"]/div[2]/a[1]
+		// filter apartment: //*[@id="filter_hoteltype"]/div[2]/a[1]
+		// filter hotels: //*[@id="filter_hoteltype"]/div[2]/a[2]
+		// filter free wifi: //*[@id="filter_facilities"]/div[2]/a[7]
+		// filter restaurant: //*[@id="filter_facilities"]/div[2]/a[4]
+		// filter AC: //*[@id="filter_roomfacilities"]/div[2]/a[1]
+		// filter batch: //*[@id="filter_roomfacilities"]/div[2]/a[3]
+		// filter disctict 8: //*[@id="filter_district"]/div[2]/a[6]
+		// filter disctrict 13: //*[@id="filter_district"]/div[2]/a[9]
+		// filter disctrict 19: //*[@id="filter_district"]/div[2]/a[20]
+
+	}
+
 	void ParseTheResult( DOMDocument aDOMDocument )
 	{
 		mStatus.parsingTheResult( this );
@@ -318,6 +429,12 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		{
 			for( DOMElement lElement : lElements )
 			{
+				if( lElement.getAttribute( "class" ).contains( "sr_item--soldout" ))
+					continue;
+
+				if( lElement.getAttribute( "class" ).contains( "sr_separator" ))
+					break;
+
 				AccomodationData_RESULT lResult = new AccomodationData_RESULT();
 
 				DOMElement lName = lElement.findElement( By.className( "sr-hotel__name" ));
@@ -375,20 +492,6 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 		// hotel link: <a class="hotel_name_link url" href="..." target="_blank" rel="noopener" data-et-mouseenter="customGoal:eWKLfCcADDbdEHBNKNMC:1" data-et-click="">...</a>
 
-		// filter 0-50€: //*[@id="filter_price"]/div[2]/a[1]
-		// filter 50-100€: //*[@id="filter_price"]/div[2]/a[2]
-		// filter 24h reception: //*[@id="filter_24hr_reception"]/div[2]/a
-		// filter free cancellation: //*[@id="filter_fc"]/div[2]/a[1]
-		// filter apartment: //*[@id="filter_hoteltype"]/div[2]/a[1]
-		// filter hotels: //*[@id="filter_hoteltype"]/div[2]/a[2]
-		// filter free wifi: //*[@id="filter_facilities"]/div[2]/a[7]
-		// filter restaurant: //*[@id="filter_facilities"]/div[2]/a[4]
-		// filter AC: //*[@id="filter_roomfacilities"]/div[2]/a[1]
-		// filter batch: //*[@id="filter_roomfacilities"]/div[2]/a[3]
-		// filter disctict 8: //*[@id="filter_district"]/div[2]/a[6]
-		// filter disctrict 13: //*[@id="filter_district"]/div[2]/a[9]
-		// filter disctrict 19: //*[@id="filter_district"]/div[2]/a[20]
-
 		mStatus.parsingFinished( this );
 		mDOMDocument = null;
 	}
@@ -434,8 +537,11 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		// <span class="hp_address_subtitle jq_tooltip" rel="14" data-source="top_link" data-coords="," data-node_tt_id="location_score_tooltip" data-bbox="19.0532273054123,47.4821070329846,19.1041785478592,47.506432153588" data-width="350" id="b_tt_holder_1" data-title="">			1081 Budapest, Népszínház u. 39-41, Hungary			</span>
 
 		DOMElement lAddress = mDOMDocument.findElement( By.className( "hp_address_subtitle" ));
-		lAccomodation.mAddress = lAddress.getInnerText();
-		System.out.println( "Address: " + lAccomodation.mAddress );
+		if( lAddress != null )
+		{
+			lAccomodation.mAddress = lAddress.getInnerText();
+			System.out.println( "Address: " + lAccomodation.mAddress );
+		}
 
 		// map link
 		// <a data-source="top_link" class="show_map jq_tooltip  show_map_with_endorsements " href="javascript:void(0);" data-bbox="19.0532273054123,47.4821070329846,19.1041785478592,47.506432153588" data-coords="," rel="" data-node_tt_id="show_map_endorsements_tooltip" data-width="300" id="show_id75172" style="white-space:nowrap" data-title="Atlas City Hotel, Budapest - Check location">Show map</a>

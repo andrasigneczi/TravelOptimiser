@@ -17,5 +17,4 @@ public class BookingDotComPageGuestTest
 		test.Init();
 		test.WaitForFinish();
 	}
-
 }

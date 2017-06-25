@@ -61,6 +61,10 @@ public class Configuration
 		mValidSearchAccomodationNodes.add( "PriceLimit" );
 		mValidSearchAccomodationNodes.add( "City" );
 		mValidSearchAccomodationNodes.add( "Filters" );
+		mValidSearchAccomodationNodes.add( "RoomNumber" );
+		mValidSearchAccomodationNodes.add( "AdultNumber" );
+		mValidSearchAccomodationNodes.add( "ChildrenNumber" );
+		mValidSearchAccomodationNodes.add( "ChildrenAges" );
 
 		mValidFlightNodes.add( "LeavingFrom" );
 		mValidFlightNodes.add( "GoingTo" );
