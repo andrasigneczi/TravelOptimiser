@@ -2,8 +2,6 @@ package PageGuest;
 
 import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
 
-import java.util.Stack;
-
 /**
  * Created by Andras on 22/06/2017.
  */
@@ -54,7 +52,7 @@ public class BookingDotComStatus
 			case STARTING:              mStatus = Status.START_PAGE_LOADED;  guest.FillTheForm( aDocument ); break;
 			case SEARCHING:             mStatus = Status.RESULT_PAGE_LOADED; guest.ParseTheResult( aDocument ); break;
 			case NEXT_PAGE_LOADING:     mStatus = Status.NEXT_PAGE_LOADED;   guest.ParseTheResult( aDocument ); break;
-			case OPENING_A_HOTEL_PAGE:  mStatus = Status.HOTEL_PAGE_LOADED;  break;
+			case OPENING_A_HOTEL_PAGE:  mStatus = Status.HOTEL_PAGE_LOADED;  guest.ParseAHotelPage( aDocument ); break;
 			default:
 				throw new RuntimeException( "Illegal status!" );
 		}
@@ -108,10 +106,34 @@ public class BookingDotComStatus
 			case PARSING_THE_RESULTS:
 				mStatus = Status.PARSING_HAS_FINISHED;
 				if( guest.pageNext())
+				{
 					mStatus = Status.NEXT_PAGE_LOADING;
+				}
+				else
+				{
+					if( guest.openTheNextHotel())
+						mStatus = Status.OPENING_A_HOTEL_PAGE;
+					else
+						mStatus = Status.THE_SEARCHING_READY;
+				}
+				break;
+			case PARSING_A_HOTEL_PAGE:
+				mStatus = Status.HOTEL_PAGE_IS_PARSED;
+				if( guest.openTheNextHotel())
+					mStatus = Status.OPENING_A_HOTEL_PAGE;
 				else
 					mStatus = Status.THE_SEARCHING_READY;
 				break;
+			default:
+				throw new RuntimeException( "Illegal status!" );
+		}
+	}
+
+	public void parsingAHotelPage( BookingDotComPageGuest guest )
+	{
+		switch( mStatus )
+		{
+			case HOTEL_PAGE_LOADED: mStatus = Status.PARSING_A_HOTEL_PAGE;  break;
 			default:
 				throw new RuntimeException( "Illegal status!" );
 		}

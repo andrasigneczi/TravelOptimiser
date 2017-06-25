@@ -1,5 +1,7 @@
 package PageGuest;
 
+import java.util.ArrayList;
+
 /**
  * Created by Andras on 16/06/2017.
  */
@@ -21,9 +23,18 @@ public class AccomodationData_RESULT
 	public String  mName;
 	public char    mSite;
 	public String  mURL;
-	public String  mCheckIn;
-	public String  mCheckOut;
-	public Float   mPrice;
+	public String  mCheckInDate;
+	public String  mCheckOutDate;
+	public String  mCheckInPolicy;
+	public String  mCheckOutPolicy;
+	public Double  mPrice;
 	public Integer mAdult;
 	public Integer mChildren;
+	public Double  mScore;
+	public String  mAddress;
+	public String  mGMapURL;
+	public String  mMaxOccupancy;
+	public boolean mBreakfastIncluded;
+
+	ArrayList<AccomodationData_RESULT> mAvailableRooms = new ArrayList<>(  );
 }

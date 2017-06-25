@@ -195,7 +195,7 @@ public class EmailNotifierAgent extends ArchiverAgent
 		String lPrice = aTrip.mPrices_BasicFare_Discount;
 		if( lPrice.length() == 0 )
 			lPrice = aTrip.mPrices_BasicFare_Normal;
-		mNewPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice );
+		mNewPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice, true );
 
 		return  mOldPrice - mNewPrice;
 	}

@@ -1,7 +1,7 @@
 package PageGuest;
 
-import com.teamdev.jxbrowser.chromium.Browser;
-import com.teamdev.jxbrowser.chromium.ProductInfo;
+import Util.CurrencyHelper;
+import com.teamdev.jxbrowser.chromium.*;
 import com.teamdev.jxbrowser.chromium.dom.*;
 import com.teamdev.jxbrowser.chromium.events.*;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
@@ -18,6 +18,8 @@ import java.time.format.DateTimeFormatter;
 import static com.teamdev.jxbrowser.chromium.LoggerProvider.getBrowserLogger;
 import static com.teamdev.jxbrowser.chromium.LoggerProvider.getChromiumProcessLogger;
 import static com.teamdev.jxbrowser.chromium.LoggerProvider.getIPCLogger;
+
+import java.util.ArrayList;
 import java.util.logging.Level;
 
 /**
@@ -35,6 +37,8 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	private boolean mThreadStopped = true;
 	DOMDocument mDOMDocument;
 	private BookingDotComStatus mStatus = new BookingDotComStatus();
+	ArrayList<AccomodationData_RESULT> mAccomodationDataResults = new ArrayList<>(  );
+	int mLastOpenedAccomodation = -1;
 
 	public class BrowserLoadAdapter extends LoadAdapter
 	{
@@ -83,7 +87,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		@Override
 		public void onDocumentLoadedInFrame(FrameLoadEvent event) {
 			System.out.println("Frame document is loaded." );
-			if( /*false &&*/ mGuest.mStatus.getStatus() == BookingDotComStatus.Status.NEXT_PAGE_LOADING
+			if( mGuest.mStatus.getStatus() == BookingDotComStatus.Status.NEXT_PAGE_LOADING
 					&& mGuest.isResultPage( event.getBrowser().getDocument()))
 			{
 				System.out.println( "Status: " + mGuest.mStatus.getStatus());
@@ -139,7 +143,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	public BookingDotComPageGuest()
 	{
-		super( null, "http://www.booking.com" );
+		super( null, "https://www.booking.com" );
 		//super( null, "http://localhost:8090" );
 		mThread = new Thread(this);
 		mThread.setName("BookingDotComPageGuest " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME));
@@ -246,11 +250,11 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		Sleep( 1000 );
 
 		// check-in
-		TypeText( "24062017\t" );
+		TypeText( "24072017\t" );
 		Sleep( 1000 );
 
 		// check-out
-		TypeText( "01072017\t" );
+		TypeText( "01082017\t" );
 		Sleep( 1000 );
 
 		// travelling for leisure radio
@@ -314,14 +318,41 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		{
 			for( DOMElement lElement : lElements )
 			{
-				java.util.List<DOMElement> lNames = lElement.findElements( By.className( "sr-hotel__name" ));
-				if( lNames != null )
+				AccomodationData_RESULT lResult = new AccomodationData_RESULT();
+
+				DOMElement lName = lElement.findElement( By.className( "sr-hotel__name" ));
+				DOMElement lURL = lElement.findElement( By.className( "hotel_name_link url" ));
+				DOMElement lPrice = lElement.findElement( By.className( "sr_gs_price_total" ));
+				if( lName != null )
 				{
-					for( DOMElement lName : lNames )
+					lResult.mName = lName.getInnerText();
+					System.out.println( "Name: " + lResult.mName );
+				}
+
+				if( lURL != null )
+				{
+					lResult.mURL = lURL.getAttribute( "href" );
+					System.out.println( "URL: " + getURL() + lResult.mURL );
+				}
+
+				if( lPrice != null )
+				{
+					lResult.mPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice.getInnerText(), false );
+					System.out.println( "Price: " + lResult.mPrice );
+				}
+
+				if( lElement.hasAttribute( "data-score" ))
+				{
+					try
 					{
-						System.out.println( "Name: " + lName.getInnerText());
+						lResult.mScore = Double.parseDouble( lElement.getAttribute( "data-score" ) );
+						System.out.println( "Score: " + lResult.mScore );
+					}
+					catch( java.lang.NumberFormatException e )
+					{
 					}
 				}
+				mAccomodationDataResults.add( lResult );
 			}
 		}
 
@@ -341,6 +372,8 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		// <div class="sr_item sr_item_new sr_item_default sr_property_block  sr_flex_layout                 genius_highlight " data-hotelid="367832" data-class="0" data-score="8.5">
 
 		// pagination: <a class="sr_pagination_link" href="/searchresults.en-gb.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaIkBiAEBmAEuwgEKd2luZG93cyAxMMgBDNgBAegBAfgBC5ICAXmoAgM;sid=9e8e9e2e4a5ee51cd4367961239c350d;age=11;age=8;checkin_month=7;checkin_monthday=23;checkin_year=2017;checkout_month=7;checkout_monthday=24;checkout_year=2017;class_interval=1;dest_id=-850553;dest_type=city;dtdisc=0;group_adults=2;group_children=2;inac=0;index_postcard=0;label_click=undef;mih=0;no_rooms=1;postcard=0;raw_dest_type=city;room1=A%2CA%2C8%2C11;sb_price_type=total;sb_travel_purpose=leisure;src=index;src_elem=sb;ss=Budapest;ss_all=0;ssb=empty;sshis=0;ssne=Budapest;ssne_untouched=Budapest;rows=25">1</a>
+
+		// hotel link: <a class="hotel_name_link url" href="..." target="_blank" rel="noopener" data-et-mouseenter="customGoal:eWKLfCcADDbdEHBNKNMC:1" data-et-click="">...</a>
 
 		// filter 0-50€: //*[@id="filter_price"]/div[2]/a[1]
 		// filter 50-100€: //*[@id="filter_price"]/div[2]/a[2]
@@ -363,20 +396,126 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	public boolean pageNext()
 	{
 		// <a class="paging-next ga_sr_gotopage_2_18" data-page-next="" href="...">Next page</a>
-		java.util.List<DOMElement> lElements = mDOMDocument.findElements( By.className( "paging-next" ));
-		if( lElements == null || lElements.size() == 0 )
+		DOMElement lElement = mDOMDocument.findElement( By.className( "paging-next" ));
+		if( lElement == null )
 			return false;
-		lElements.get( 0 ).click();
+		lElement.click();
 		return true;
 	}
 
 	public boolean isResultPage( DOMDocument aDOMDocument )
 	{
-		java.util.List<DOMElement> lElements = aDOMDocument.findElements( By.className( "sr_item" ));
-		return lElements != null;
+		DOMElement lElement = aDOMDocument.findElement( By.className( "sr_item" ));
+		return lElement != null;
+	}
+
+	public boolean openTheNextHotel()
+	{
+		if( mLastOpenedAccomodation + 1 < mAccomodationDataResults.size())
+		{
+			++mLastOpenedAccomodation;
+			mBrowser.loadURL( getURL() + mAccomodationDataResults.get( mLastOpenedAccomodation ).mURL );
+			return true;
+		}
+		return false;
+	}
+
+	public void ParseAHotelPage( DOMDocument aDOMDocument )
+	{
+		mStatus.parsingAHotelPage( this );
+		mDOMDocument = aDOMDocument;
+
+		System.out.println( "***************************************************************" );
+		System.out.println( "******************** HOTEL ************************************" );
+		System.out.println( "***************************************************************" );
+		AccomodationData_RESULT lAccomodation = mAccomodationDataResults.get( mLastOpenedAccomodation );
+
+		// Address
+		// <span class="hp_address_subtitle jq_tooltip" rel="14" data-source="top_link" data-coords="," data-node_tt_id="location_score_tooltip" data-bbox="19.0532273054123,47.4821070329846,19.1041785478592,47.506432153588" data-width="350" id="b_tt_holder_1" data-title="">			1081 Budapest, Népszínház u. 39-41, Hungary			</span>
+
+		DOMElement lAddress = mDOMDocument.findElement( By.className( "hp_address_subtitle" ));
+		lAccomodation.mAddress = lAddress.getInnerText();
+		System.out.println( "Address: " + lAccomodation.mAddress );
+
+		// map link
+		// <a data-source="top_link" class="show_map jq_tooltip  show_map_with_endorsements " href="javascript:void(0);" data-bbox="19.0532273054123,47.4821070329846,19.1041785478592,47.506432153588" data-coords="," rel="" data-node_tt_id="show_map_endorsements_tooltip" data-width="300" id="show_id75172" style="white-space:nowrap" data-title="Atlas City Hotel, Budapest - Check location">Show map</a>
+
+		// room link: <a href="#RD7517221" class="jqrt togglelink js-track-hp-rt-room-name" data-room-name-en="Family Room" title="" aria-haspopup="true"><i class="rt_room_type_ico bicon-triangleright"></i>Family Room</a>
+		// room link: <a href="#RD7517204" class="jqrt togglelink js-track-hp-rt-room-name" data-room-name-en="Quadruple Room" title="" aria-haspopup="true"><i class="rt_room_type_ico bicon-triangleright"></i>Quadruple Room</a>
+
+		// room block:
+		// class="room_loop_counterX", ahol X egy index >=1. Azok a <tr> tagok, amelyek az adott szobához tartoznak, azonos indexel szerepelnek.
+		// Különböző lehet az ágyak száma és az ár is.
+		// Ezen belül az ár: <strong data-price-without-addons="€&nbsp;92.70" data-price-with-parking="" data-price-with-internet="" data-price-with-internet-parking="" class=" js-track-hp-rt-room-price b-tooltip-with-price-breakdown-tracker   rooms-table-room-price" title="">
+
+		// Link a szobára: <tr id="7517222_93706251_2_1_0" data-breakfast-included="1" data-occupancy="2" class="room_loop_counter6">...</tr>
+		// room name: <a href="#RD7517222" class="jqrt togglelink js-track-hp-rt-room-name" data-room-name-en="Comfort Double or Twin Room" title="" aria-haspopup="true"><i class="rt_room_type_ico bicon-triangleright"></i>Comfort Double or Twin Room</a>
+
+		for( int i = 1; ; i++ )
+		{
+			java.util.List<DOMElement> lRooms = aDOMDocument.findElements( By.className( "room_loop_counter" + i ));
+			if( lRooms == null || lRooms.size() == 0 )
+				break;
+
+			String roomName = "";
+			for( DOMElement lRoom : lRooms )
+			{
+				DOMElement lRoomName = lRoom.findElement( By.className( "js-track-hp-rt-room-name" ));
+				if( lRoomName != null )
+				{
+					roomName = lRoomName.getAttribute( "data-room-name-en" );
+				}
+
+				AccomodationData_RESULT lRoomResult = new AccomodationData_RESULT();
+				lRoomResult.mName = roomName;
+				lRoomResult.mMaxOccupancy = lRoom.getAttribute( "data-occupancy" );
+				lRoomResult.mBreakfastIncluded = "1".equals( lRoom.getAttribute( "data-breakfast-included" ));
+
+				DOMElement lPrice = lRoom.findElement( By.className( "js-track-hp-rt-room-price" ));
+				if( lPrice == null )
+					continue;
+
+				lRoomResult.mPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice.getInnerText(), false );
+				lAccomodation.mAvailableRooms.add( lRoomResult );
+
+				System.out.println( "Room: " + lRoomResult.mName );
+				System.out.println( "     MaxOccupancy: " + lRoomResult.mMaxOccupancy );
+				System.out.println( "     BreakfastIncluded: " + lRoomResult.mBreakfastIncluded );
+				System.out.println( "     Price: " + lRoomResult.mPrice );
+			}
+		}
+		// check-in policy:
+		// <div class="description" id="checkin_policy"><p class="policy_name"><span>Check-in</span></p><p>From 14:00 hours</p><div style="clear:both"></div></div>
+
+		DOMElement lCheckinPolicy = mDOMDocument.findElement( By.id( "checkin_policy" ));
+		if( lCheckinPolicy != null )
+		{
+			lAccomodation.mCheckInPolicy = lCheckinPolicy.getInnerText();
+			if( lAccomodation.mCheckInPolicy.startsWith( "Check-in\n" ))
+				lAccomodation.mCheckInPolicy = lAccomodation.mCheckInPolicy.substring( "Check-in\n".length());
+			lAccomodation.mCheckInPolicy = lAccomodation.mCheckInPolicy.trim();
+			System.out.println( "CheckInPolicy: " + lAccomodation.mCheckInPolicy );
+		}
+
+		// check-out policy:
+		// <div class="description" id="checkout_policy"><p class="policy_name"><span>Check-out</span></p><p>Until 11:00 hours</p><div style="clear:both"></div></div>
+
+		DOMElement lCheckoutPolicy = mDOMDocument.findElement( By.id( "checkout_policy" ));
+		if( lCheckoutPolicy != null )
+		{
+			lAccomodation.mCheckOutPolicy = lCheckoutPolicy.getInnerText();
+			if( lAccomodation.mCheckOutPolicy.startsWith( "Check-out\n" ))
+				lAccomodation.mCheckOutPolicy = lAccomodation.mCheckOutPolicy.substring( "Check-out\n".length());
+			lAccomodation.mCheckOutPolicy = lAccomodation.mCheckOutPolicy.trim();
+			System.out.println( "CheckOutPolicy: " + lAccomodation.mCheckOutPolicy );
+		}
+
+		mStatus.parsingFinished( this );
+		mDOMDocument = null;
 	}
 }
 
+// SEARCH FORM
 // search button xpath: //*[@id="frm"]/div[7]/button
 // destination input field: //*[@id="ss"]
 // travelling for work radio: //*[@id="frm"]/div[3]/div/div/fieldset/label[2]/input
