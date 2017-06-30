@@ -54,11 +54,12 @@ public class BookingDotComStatus
 	{
 		switch( mStatus )
 		{
-			case STARTING:              mStatus = Status.START_PAGE_LOADED;   guest.FillTheForm( aDocument ); break;
-			case SEARCHING:             mStatus = Status.RESULT_PAGE_LOADED;  guest.ApplyFilter( aDocument ); break;
-			case APPLYING_A_FILTER:     mStatus = Status.FILTERED_PAGE_LOADED; guest.ApplyFilter( aDocument ); break;
-			case NEXT_PAGE_LOADING:     mStatus = Status.NEXT_PAGE_LOADED;    guest.ParseTheResult( aDocument ); break;
-			case OPENING_A_HOTEL_PAGE:  mStatus = Status.HOTEL_PAGE_LOADED;   guest.ParseAHotelPage( aDocument ); break;
+			case STARTING:             mStatus = Status.START_PAGE_LOADED;   guest.FillTheForm( aDocument ); break;
+			case SEARCHING:            mStatus = Status.RESULT_PAGE_LOADED;  guest.ApplyFilter( aDocument ); break;
+			case APPLYING_A_FILTER:    mStatus = Status.FILTERED_PAGE_LOADED; guest.ApplyFilter( aDocument ); break;
+			case NEXT_PAGE_LOADING:    mStatus = Status.NEXT_PAGE_LOADED;    guest.ParseTheResult( aDocument ); break;
+			case OPENING_A_HOTEL_PAGE: mStatus = Status.HOTEL_PAGE_LOADED;   guest.ParseAHotelPage( aDocument ); break;
+			case THE_SEARCHING_READY:  break;
 			default:
 				throw new RuntimeException( "Illegal status: " + mStatus );
 		}

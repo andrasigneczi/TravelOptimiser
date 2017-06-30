@@ -49,6 +49,9 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	String[] mFilters = null;
 	int mFilterIndex = -1;
 
+	Integer mLoadReadyTimeout = -1;
+	boolean mSeparatorFound = false;
+
 	public class BrowserLoadAdapter extends LoadAdapter
 	{
 		private BookingDotComPageGuest mGuest;
@@ -60,14 +63,14 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		@Override
 		public void onStartLoadingFrame(StartLoadingEvent event) {
 			if (event.isMainFrame()) {
-				System.out.println("Main frame has started loading");
+				//System.out.println("Main frame has started loading");
 			}
 		}
 
 		@Override
 		public void onProvisionalLoadingFrame(ProvisionalLoadingEvent event) {
 			if (event.isMainFrame()) {
-				System.out.println("Provisional load was committed for a frame");
+				//System.out.println("Provisional load was committed for a frame");
 			}
 		}
 
@@ -78,8 +81,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			{
 				if( event.isMainFrame())
 				{
-					System.out.println( "Main frame has finished loading" );
-					System.out.println( "Status: " + mGuest.mStatus.getStatus());
+					System.out.println( "Main frame has finished loading, status: " + mGuest.mStatus.getStatus());
 					mGuest.mStatus.mainFrameLoaded( mGuest, event.getBrowser().getDocument());
 				}
 			}
@@ -95,19 +97,22 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 		@Override
 		public void onDocumentLoadedInFrame(FrameLoadEvent event) {
-			System.out.println("Frame document is loaded." );
-			if(( mGuest.mStatus.getStatus() == BookingDotComStatus.Status.NEXT_PAGE_LOADING ||
-				 mGuest.mStatus.getStatus() == BookingDotComStatus.Status.APPLYING_A_FILTER )
+			synchronized( mLoadReadyTimeout )
+			{
+				mLoadReadyTimeout = 100;
+			}
+			if(( mGuest.mStatus.getStatus() == BookingDotComStatus.Status.NEXT_PAGE_LOADING /*||
+				 mGuest.mStatus.getStatus() == BookingDotComStatus.Status.APPLYING_A_FILTER*/ )
 					&& mGuest.isResultPage( event.getBrowser().getDocument()))
 			{
-				System.out.println( "Status: " + mGuest.mStatus.getStatus());
+				System.out.println("Frame document is loaded, status: " + mGuest.mStatus.getStatus());
 				mGuest.mStatus.mainFrameLoaded( mGuest, event.getBrowser().getDocument());
 			}
 		}
 
 		@Override
 		public void onDocumentLoadedInMainFrame(LoadEvent event) {
-			System.out.println("Main frame document is loaded.");
+			//System.out.println("Main frame document is loaded.");
 		}
 
 	}
@@ -198,6 +203,22 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			try
 			{
 				Thread.sleep( 100 );
+				synchronized( mLoadReadyTimeout )
+				{
+					if( mLoadReadyTimeout > 0 )
+					{
+						--mLoadReadyTimeout;
+						if( mLoadReadyTimeout == 0 )
+						{
+							if( mStatus.getStatus() == BookingDotComStatus.Status.APPLYING_A_FILTER && isResultPage( mBrowser.getDocument()))
+							{
+								System.out.println( "run Status: " + mStatus.getStatus());
+								mStatus.mainFrameLoaded( this, mBrowser.getDocument());
+							}
+						}
+					}
+				}
+
 			}
 			catch( InterruptedException e )
 			{
@@ -266,6 +287,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			return;
 		}
 
+		mSeparatorFound = false;
 		mStatus.fillingTheForm( this );
 		mDOMDocument = aDOMDocument;
 
@@ -385,7 +407,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 				mStatus.ApplyAFilter( this );
 				DOMElement lFilter = aDOMDocument.findElement( By.xpath( "//*[@id=\"filter_price\"]/div[2]/a[1]" ));
 				lFilter.click();
-				Sleep( 7000 );
+				//Sleep( 7000 );
 				return;
 			}
 			else if( filter.equals( "price_50-100" ))
@@ -394,7 +416,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 				mStatus.ApplyAFilter( this );
 				DOMElement lFilter = aDOMDocument.findElement( By.xpath( "//*[@id=\"filter_price\"]/div[2]/a[2]" ));
 				lFilter.click();
-				Sleep( 7000 );
+				//Sleep( 7000 );
 				return;
 			}
 			else
@@ -419,6 +441,26 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	}
 
+	boolean testSoldOut( DOMElement element )
+	{
+		if( element.getAttribute( "class" ).contains( "sr_item--soldout" ))
+			return true;
+
+		if( element.findElement( By.className( "sold_out_msg" )) != null )
+			return true;
+
+		if( element.findElement( By.className( "sold_out_property" )) != null )
+			return true;
+
+		if( element.findElement( By.className( "sold_out_msg" )) != null )
+			return true;
+
+		if( element.getInnerHTML().contains( "You missed it!" ))
+			return true;
+
+		return false;
+	}
+
 	void ParseTheResult( DOMDocument aDOMDocument )
 	{
 		mStatus.parsingTheResult( this );
@@ -429,17 +471,21 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		{
 			for( DOMElement lElement : lElements )
 			{
-				if( lElement.getAttribute( "class" ).contains( "sr_item--soldout" ))
+				if( testSoldOut( lElement ))
 					continue;
 
 				if( lElement.getAttribute( "class" ).contains( "sr_separator" ))
+				{
+					mSeparatorFound = true;
 					break;
+				}
 
 				AccomodationData_RESULT lResult = new AccomodationData_RESULT();
 
 				DOMElement lName = lElement.findElement( By.className( "sr-hotel__name" ));
 				DOMElement lURL = lElement.findElement( By.className( "hotel_name_link url" ));
 				DOMElement lPrice = lElement.findElement( By.className( "sr_gs_price_total" ));
+
 				if( lName != null )
 				{
 					lResult.mName = lName.getInnerText();
@@ -498,6 +544,9 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	public boolean pageNext()
 	{
+		if( mSeparatorFound )
+			return false;
+
 		// <a class="paging-next ga_sr_gotopage_2_18" data-page-next="" href="...">Next page</a>
 		DOMElement lElement = mDOMDocument.findElement( By.className( "paging-next" ));
 		if( lElement == null )
@@ -528,10 +577,11 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mStatus.parsingAHotelPage( this );
 		mDOMDocument = aDOMDocument;
 
-		System.out.println( "***************************************************************" );
-		System.out.println( "******************** HOTEL ************************************" );
-		System.out.println( "***************************************************************" );
 		AccomodationData_RESULT lAccomodation = mAccomodationDataResults.get( mLastOpenedAccomodation );
+
+		System.out.println( "***************************************************************" );
+		System.out.println( "******************** HOTEL: " + lAccomodation.mName );
+		System.out.println( "***************************************************************" );
 
 		// Address
 		// <span class="hp_address_subtitle jq_tooltip" rel="14" data-source="top_link" data-coords="," data-node_tt_id="location_score_tooltip" data-bbox="19.0532273054123,47.4821070329846,19.1041785478592,47.506432153588" data-width="350" id="b_tt_holder_1" data-title="">			1081 Budapest, Népszínház u. 39-41, Hungary			</span>
