@@ -212,6 +212,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 						{
 							if( mStatus.getStatus() == BookingDotComStatus.Status.APPLYING_A_FILTER && isResultPage( mBrowser.getDocument()))
 							{
+								//mBrowser.saveWebPage( "filtered_result.html", "c:\\temp", SavePageType.ONLY_HTML);
 								System.out.println( "run Status: " + mStatus.getStatus());
 								mStatus.mainFrameLoaded( this, mBrowser.getDocument());
 							}
@@ -295,7 +296,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 
 		// destination
-		MouseLeftClick( 120, 326 );
+		MouseLeftClick( 120, 466 );
 		Sleep( 500 );
 		PressCtrlA();
 		Sleep( 500 );
@@ -303,7 +304,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		Sleep( 500 );
 		//TypeText( "Budapest, Pest, Hungary" );
 		TypeText( lADI.mCity );
-		Sleep( 1000 );
+		Sleep( 5000 ); // lassú internetnél jobb mint 1000
 		PressDown();
 		Sleep( 1000 );
 		TypeText( "\n" );
@@ -378,7 +379,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 		//mBrowser.executeJavaScript( "$('[data-sb-id=\"main\"]').click();" );
 		//mBrowser.executeJavaScript( "$('[data-sb-id=\"main\"]').submit();" );
-		MouseLeftClick( 120, 326 );
+		MouseLeftClick( 120, 466 );
 		Sleep( 500 );
 		TypeText( "\n" );
 		Sleep( 1000 );
@@ -461,6 +462,13 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		return false;
 	}
 
+	boolean testRecommendation( DOMElement element )
+	{
+		if( element.getInnerHTML().contains( "We recommend this property in" ))
+			return true;
+		return false;
+	}
+
 	void ParseTheResult( DOMDocument aDOMDocument )
 	{
 		mStatus.parsingTheResult( this );
@@ -471,7 +479,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		{
 			for( DOMElement lElement : lElements )
 			{
-				if( testSoldOut( lElement ))
+				if( testSoldOut( lElement ) || testRecommendation( lElement ))
 					continue;
 
 				if( lElement.getAttribute( "class" ).contains( "sr_separator" ))
