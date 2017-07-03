@@ -14,6 +14,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -23,6 +25,8 @@ import static com.teamdev.jxbrowser.chromium.LoggerProvider.getIPCLogger;
 
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Andras on 15/03/2016.
@@ -51,6 +55,13 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	Integer mLoadReadyTimeout = -1;
 	boolean mSeparatorFound = false;
+
+	String mSearchURL = "https://www.booking.com/searchresults.en-gb.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaGeIAQGYAS7CAQp3aW5kb3dzIDEwyAEM2AEB6AEB-AELkgIBeagCAw&" +
+			"lang=en-gb&sid=[SID]&sb=1&src=index&src_elem=sb&error_url=https%3A%2F%2Fwww.booking.com%2Findex.en-gb.html%3Flabel%3Dgen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaGeIAQGYAS7CAQp3aW5kb3dzIDEwyAEM2AEB6AEB-AELkgIBeagCAw%3Bsid%3D0f4b4bdf3191a7a580feb8b757e70fa4%3Bsb_price_type%3Dtotal%26%3B&" +
+			"ss=[SS]&ssne=Cegl%C3%A9d&ssne_untouched=Cegl%C3%A9d&checkin_monthday=[CHECKIN_MONTHDAY]&checkin_month=[CHECKIN_MONTH]&checkin_year=[CHECKIN_YEAR]&checkout_monthday=[CHECKOUT_MONTHDAY]&checkout_month=[CHECKOUT_MONTH]&checkout_year=[CHECKOUT_YEAR]&" +
+			"sb_travel_purpose=[TRAVEL_PURPOSE]&room1=[ROOM1]&no_rooms=[NO_ROOMS]&group_adults=[GROUP_ADULTS]&group_children=[GROUP_CHILDREN][CHILDREN_AGES]&ss_raw=Buda&" +
+			"ac_position=0&ac_langcode=en&dest_id=-850553&dest_type=city&search_pageview_id=15523d122cec0313&search_selected=true&" +
+			"search_pageview_id=15523d122cec0313&ac_suggestion_list_length=5&ac_suggestion_theme_list_length=0";
 
 	public class BrowserLoadAdapter extends LoadAdapter
 	{
@@ -281,6 +292,91 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	// DEVEL
 	public void FillTheForm( DOMDocument aDOMDocument )
+	{
+		if( mInputListIndex + 1 >= mInputList.size())
+		{
+			mStatus.Done( this );
+			return;
+		}
+
+		mSeparatorFound = false;
+		mStatus.fillingTheForm( this );
+		mDOMDocument = aDOMDocument;
+
+		AccomodationData_INPUT lADI = mInputList.get( ++mInputListIndex );
+
+
+		Pattern lReg = Pattern.compile( "^sid: '(.+)',$", Pattern.MULTILINE );
+		Matcher lMatch = lReg.matcher( aDOMDocument.getDocumentElement().getInnerHTML());
+		String lSID = "_UNKNOWN_";
+		while( lMatch.find() )
+		{
+			lSID = lMatch.group(1).toString().trim();
+			System.out.println( lSID );
+		}
+
+		String lSearchURL = mSearchURL.replace( "[SID]", lSID );
+
+		// checkin_monthday=[CHECKIN_MONTHDAY]&checkin_month=[CHECKIN_MONTH]&checkin_year=[CHECKIN_YEAR]&checkout_monthday=[CHECKOUT_MONTHDAY]&checkout_month=[CHECKOUT_MONTH]&checkout_year=[CHECKOUT_YEAR]
+		ArrayList<Integer> lDateComponents = DatetimeHelper.getDateItems( lADI.mCheckIn );
+		lSearchURL = lSearchURL.replace( "[CHECKIN_MONTHDAY]", String.valueOf( lDateComponents.get( 2 )));
+		lSearchURL = lSearchURL.replace( "[CHECKIN_MONTH]", String.valueOf( lDateComponents.get( 1 )));
+		lSearchURL = lSearchURL.replace( "[CHECKIN_YEAR]", String.valueOf( lDateComponents.get( 0 )));
+
+		ArrayList<Integer> lDateComponents2 = DatetimeHelper.getDateItems( lADI.mCheckOut );
+		lSearchURL = lSearchURL.replace( "[CHECKOUT_MONTHDAY]", String.valueOf( lDateComponents2.get( 2 )));
+		lSearchURL = lSearchURL.replace( "[CHECKOUT_MONTH]", String.valueOf( lDateComponents2.get( 1 )));
+		lSearchURL = lSearchURL.replace( "[CHECKOUT_YEAR]", String.valueOf( lDateComponents2.get( 0 )));
+
+		lSearchURL = lSearchURL.replace( "[TRAVEL_PURPOSE]", "leisure" );
+		lSearchURL = lSearchURL.replace( "[NO_ROOMS]", String.valueOf( lADI.mRoomNumber ));
+
+		lSearchURL = lSearchURL.replace( "[GROUP_ADULTS]", String.valueOf( lADI.mAdultNumber ));
+		lSearchURL = lSearchURL.replace( "[GROUP_CHILDREN]", String.valueOf( lADI.mChildrenNumber ));
+
+		String lChildrenAges = "";
+		for( int i = 0; i < lADI.mChildrenAge.size(); i++ )
+		{
+			lChildrenAges += "&age=" + String.valueOf( lADI.mChildrenAge.get( i ));
+		}
+		lSearchURL = lSearchURL.replace( "[CHILDREN_AGES]", lChildrenAges );
+
+		try
+		{
+			// Budapest%2C+Pest%2C+Hungary
+			lSearchURL = lSearchURL.replace( "[SS]", URLEncoder.encode( "Budapest, Pest, Hungary", "UTF-8" ));
+			// A%2C11%2C8
+			lSearchURL = lSearchURL.replace( "[ROOM1]", URLEncoder.encode( "A,11,8", "UTF-8" ));
+		}
+		catch( UnsupportedEncodingException e )
+		{
+			e.printStackTrace();
+		}
+
+		if( lADI.mFilters != null && lADI.mFilters.length() > 0 )
+		{
+			mFilters = lADI.mFilters.split("\\,", 0 );
+			mFilterIndex = -1;
+		}
+
+		mStatus.formIsFilled( this );
+
+		mBrowser.loadURL( lSearchURL );
+
+		// https://www.booking.com/searchresults.en-gb.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaGeIAQGYAS7CAQp3aW5kb3dzIDEwyAEM2AEB6AEB-AELkgIBeagCAw&
+		// lang=en-gb&sid=0f4b4bdf3191a7a580feb8b757e70fa4&sb=1&src=index&src_elem=sb&
+		// error_url=https%3A%2F%2Fwww.booking.com%2Findex.en-gb.html%3Flabel%3Dgen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaGeIAQGYAS7CAQp3aW5kb3dzIDEwyAEM2AEB6AEB-AELkgIBeagCAw%3Bsid%3D0f4b4bdf3191a7a580feb8b757e70fa4%3Bsb_price_type%3Dtotal%26%3B&
+		// ss=Budapest%2C+Pest%2C+Hungary&ssne=Cegl%C3%A9d&ssne_untouched=Cegl%C3%A9d&checkin_monthday=[CHECKIN_MONTHDAY]&checkin_month=[CHECKIN_MONTH]&checkin_year=[CHECKIN_YEAR]&
+		// checkout_monthday=[CHECKOUT_MONTHDAY]&checkout_month=[CHECKOUT_MONTH]&checkout_year=[CHECKOUT_YEAR]&sb_travel_purpose=leisure&room1=A%2C11%2C8&no_rooms=2&group_adults=1&group_children=2&
+		// age=11&age=8&ss_raw=Buda&ac_position=0&ac_langcode=en&dest_id=-850553&dest_type=city&search_pageview_id=15523d122cec0313&
+		// search_selected=true&search_pageview_id=15523d122cec0313&ac_suggestion_list_length=5&ac_suggestion_theme_list_length=0
+
+		mDOMDocument = null;
+		mStatus.searching( this );
+	}
+
+	// DEVEL
+	public void FillTheForm__( DOMDocument aDOMDocument )
 	{
 		if( mInputListIndex + 1 >= mInputList.size())
 		{

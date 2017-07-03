@@ -226,9 +226,29 @@ public class DatetimeHelper
         return String.format( "%s-%s-%s", lParts[ 0 ], lParts[ 1 ], lParts[ 2 ] );
     }
 
+    /**
+     * Change the separator of the date and the order or the year, month, day
+     * @param aDate string, format: %s.%s.%s
+     * @return %s-%s-%s
+     */
     public static String ReverseDate( String aDate )
     {
         String[] lParts = aDate.split("\\.", 0 );
         return String.format( "%s%s%s", lParts[ 2 ], lParts[ 1 ], lParts[ 0 ] );
+    }
+
+    public static ArrayList<Integer> getDateItems( String aDate )
+    {
+        String[] lParts = aDate.split("\\.", 0 );
+        ArrayList<Integer> lResult = new ArrayList<>();
+        for( String item : lParts )
+        {
+            while( item.length() > 0 && item.charAt( 0 ) == '0' )
+            {
+                item = item.substring( 1 );
+            }
+            lResult.add( Integer.parseInt( item ));
+        }
+        return lResult;
     }
 }
