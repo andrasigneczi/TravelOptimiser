@@ -553,9 +553,13 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	// DEVEL
 	public void FillTheForm( DOMDocument aDOMDocument )
 	{
+		//System.out.println( "FillTheForm: " + mInputListIndex + "; mInputList.size: " + mInputList.size());
 		if( mInputListIndex + 1 >= mInputList.size())
 		{
 			mStatus.Done( this );
+			mThreadStopped = true;
+			mBrowser.dispose();
+			//System.exit( -1 );
 			return;
 		}
 
@@ -750,6 +754,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 		// hotel link: <a class="hotel_name_link url" href="..." target="_blank" rel="noopener" data-et-mouseenter="customGoal:eWKLfCcADDbdEHBNKNMC:1" data-et-click="">...</a>
 
+		// The mDOMDocument mustn't be null, because the pageNext will be called from the parsingFinished.
 		mStatus.parsingFinished( this );
 		mDOMDocument = null;
 	}
