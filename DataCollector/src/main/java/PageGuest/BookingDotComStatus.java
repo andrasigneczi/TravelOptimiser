@@ -44,7 +44,8 @@ public class BookingDotComStatus
 	{
 		switch( mStatus )
 		{
-			case EMPTY: mStatus = Status.STARTING;  break;
+			case EMPTY:
+			case THE_SEARCHING_READY: mStatus = Status.STARTING;  break;
 			default:
 				throw new RuntimeException( "Illegal status: " + mStatus );
 		}
@@ -54,12 +55,12 @@ public class BookingDotComStatus
 	{
 		switch( mStatus )
 		{
-			case STARTING:             mStatus = Status.START_PAGE_LOADED;   guest.FillTheForm( aDocument ); break;
-			case SEARCHING:            mStatus = Status.RESULT_PAGE_LOADED;  guest.ApplyFilter( aDocument ); break;
-			case APPLYING_A_FILTER:    mStatus = Status.FILTERED_PAGE_LOADED; guest.ApplyFilter( aDocument ); break;
-			case NEXT_PAGE_LOADING:    mStatus = Status.NEXT_PAGE_LOADED;    guest.ParseTheResult( aDocument ); break;
-			case OPENING_A_HOTEL_PAGE: mStatus = Status.HOTEL_PAGE_LOADED;   guest.ParseAHotelPage( aDocument ); break;
-			case THE_SEARCHING_READY:  break;
+			case STARTING:              mStatus = Status.START_PAGE_LOADED;   guest.FillTheForm( aDocument ); break;
+			case SEARCHING:             mStatus = Status.RESULT_PAGE_LOADED;  guest.ApplyFilter( aDocument ); break;
+			case APPLYING_A_FILTER:     mStatus = Status.FILTERED_PAGE_LOADED; guest.ApplyFilter( aDocument ); break;
+			case NEXT_PAGE_LOADING:     mStatus = Status.NEXT_PAGE_LOADED;    guest.ParseTheResult( aDocument ); break;
+			case OPENING_A_HOTEL_PAGE:  mStatus = Status.HOTEL_PAGE_LOADED;   guest.ParseAHotelPage( aDocument ); break;
+			//case THE_SEARCHING_READY:  break;
 			default:
 				throw new RuntimeException( "Illegal status: " + mStatus );
 		}
@@ -120,17 +121,30 @@ public class BookingDotComStatus
 				else
 				{
 					if( guest.openTheNextHotel())
+					{
 						mStatus = Status.OPENING_A_HOTEL_PAGE;
+					}
 					else
+					{
 						mStatus = Status.THE_SEARCHING_READY;
+						//starting( guest );
+						guest.startANewSearch();
+					}
 				}
 				break;
 			case PARSING_A_HOTEL_PAGE:
 				mStatus = Status.HOTEL_PAGE_IS_PARSED;
 				if( guest.openTheNextHotel())
+				{
 					mStatus = Status.OPENING_A_HOTEL_PAGE;
+				}
 				else
+				{
 					mStatus = Status.THE_SEARCHING_READY;
+					guest.printTheMatches();
+					//starting( guest );
+					guest.startANewSearch();
+				}
 				break;
 			default:
 				throw new RuntimeException( "Illegal status: " + mStatus );

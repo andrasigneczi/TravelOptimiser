@@ -69,13 +69,14 @@ public class ConfigurationHandler extends DefaultHandler
 	public void characters(char ch[], int start, int length)
 			throws SAXException {
 
-		//System.out.println(new String(ch, start, length));
+		//System.out.println("'" + new String(ch, start, length) + "'");
 
 		String lNodeName = mCurrentPath.get( mCurrentPath.size() - 1 );
 		String lNodeValue = new String(ch, start, length).trim();
 		
 		if( !mCHChain_FlightNode.handleEvent3( lNodeName, lNodeValue ))
 		{
+			//System.out.println("'" + getPath() + "': " + "'" + lNodeValue + "'");
 			mConfiguration.put( getPath(), lNodeValue );
 		}
 	}

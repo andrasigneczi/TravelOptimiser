@@ -118,6 +118,8 @@ public class ConfigurationHandlerChain_SearchNode extends ConfigurationHandlerCh
 		else if( mSearchType == SearchType.ST_ACCOMODATION )
 		{
 			mCurrentAccomodationDataInput.set( aNodeName, aNodeValue );
+			//System.out.println( "doReaction3: " + aNodeName + "; " + aNodeValue );
+
 		}
 		return true;
 	}

@@ -27,7 +27,8 @@ public class TeamDevJxBrowser
 				return mInstance;
 			}
 			mInstance = new TeamDevJxBrowser();
-			BrowserPreferences.setChromiumSwitches("--lang=HU");
+			String[] switches = { "--lang=HU", "--remote-debugging-port=9222", "--user-data-dir=remote-profile" };
+			BrowserPreferences.setChromiumSwitches( switches );
 		}
 		return mInstance;
 	}

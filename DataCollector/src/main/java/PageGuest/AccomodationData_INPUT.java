@@ -17,6 +17,7 @@ public class AccomodationData_INPUT implements Cloneable, Serializable
 	public Integer mPriceLimit;
 	public String  mCity;
 	public String  mFilters; // checklist, e.g. apartment,free wifi,parking place
+	public String  mSearchURL;
 	public int     mRoomNumber;
 	public int     mAdultNumber;
 	public int     mChildrenNumber;
@@ -71,6 +72,16 @@ public class AccomodationData_INPUT implements Cloneable, Serializable
 				break setvalues;
 			}
 
+			if( aName.equals( "SearchURL" ))
+			{
+				if( mSearchURL != null )
+					mSearchURL += aValue;
+				else
+					mSearchURL = aValue;
+				lReturnValue = true;
+				break setvalues;
+			}
+
 			if( aName.equals( "RoomNumber" ))
 			{
 				mRoomNumber = Integer.parseInt( aValue );
@@ -113,6 +124,7 @@ public class AccomodationData_INPUT implements Cloneable, Serializable
 		out.writeObject( mPriceLimit );
 		out.writeObject( mCity );
 		out.writeObject( mFilters );
+		out.writeObject( mSearchURL );
 		out.writeObject( mRoomNumber );
 		out.writeObject( mAdultNumber );
 		out.writeObject( mChildrenNumber );
@@ -130,6 +142,7 @@ public class AccomodationData_INPUT implements Cloneable, Serializable
 		mPriceLimit = (Integer)in.readObject();
 		mCity       = (String)in.readObject();
 		mFilters    = (String)in.readObject();
+		mSearchURL  = (String)in.readObject();
 		mRoomNumber = (int)in.readObject();
 		mAdultNumber = (int)in.readObject();
 		mChildrenNumber = (int)in.readObject();
@@ -155,6 +168,7 @@ public class AccomodationData_INPUT implements Cloneable, Serializable
 		lReturn += "Price limit: " + mPriceLimit + "\n";
 		lReturn += "City: " + mCity + "\n";
 		lReturn += "Filters: " + mFilters + "\n";
+		lReturn += "SearchURL: " + mSearchURL + "\n";
 
 		lReturn += "RoomNumber: " + mRoomNumber;
 		lReturn += "AdultNumber: " + mAdultNumber;

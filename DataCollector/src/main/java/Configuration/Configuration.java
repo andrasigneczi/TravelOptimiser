@@ -61,6 +61,7 @@ public class Configuration
 		mValidSearchAccomodationNodes.add( "PriceLimit" );
 		mValidSearchAccomodationNodes.add( "City" );
 		mValidSearchAccomodationNodes.add( "Filters" );
+		mValidSearchAccomodationNodes.add( "SearchURL" );
 		mValidSearchAccomodationNodes.add( "RoomNumber" );
 		mValidSearchAccomodationNodes.add( "AdultNumber" );
 		mValidSearchAccomodationNodes.add( "ChildrenNumber" );
@@ -241,7 +242,16 @@ public class Configuration
 
 	public void put( String aPath, String aNodeValue )
 	{
-		mConfigValues.put( aPath, aNodeValue );
+		if( mConfigValues.containsKey( aPath ))
+		{
+			// if there is an & character in the string, the xml parser gives the parts one by one
+			mConfigValues.put( aPath, mConfigValues.get( aPath ) + aNodeValue );
+			//System.out.println( aPath + ":" + mConfigValues.get( aPath ));
+		}
+		else
+		{
+			mConfigValues.put( aPath, aNodeValue );
+		}
 	}
 
 	public void addShearchItem( TravelData_INPUT aTDI )

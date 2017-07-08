@@ -136,4 +136,21 @@ public class StringHelper {
 
 		return lValue;
 	}
+
+	public static String escapeXML( String s )
+	{
+		/*
+			"   &quot;
+			'   &apos;
+			<   &lt;
+			>   &gt;
+			&   &amp;
+		 */
+
+		return s.replaceAll( "\"", "&quot;" )
+				.replaceAll( "'", "&apos;" )
+				.replaceAll( "<", "&lt;" )
+				.replaceAll( ">", "&gt;" )
+				.replaceAll( "&", "&amp;" );
+	}
 }
