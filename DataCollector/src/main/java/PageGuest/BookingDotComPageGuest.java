@@ -905,6 +905,9 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	public void printTheMatches()
 	{
+		mLogger.info( "******************************************************************************************" );
+		mLogger.info( mADI.toString());
+
 		for( AccomodationData_RESULT lAccomodation : mAccomodationDataResults )
 		{
 			if( lAccomodation.mAvailableRooms.size() == 0 )
@@ -912,7 +915,6 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 			mLogger.info( "******************************************************************************************" );
 			mLogger.info( "******************** HOTEL: " + lAccomodation.mName + "; Score: " + lAccomodation.mScore );
-			mLogger.info( "******************************************************************************************" );
 			mLogger.info( getURL() + lAccomodation.mURL );
 			mLogger.info( "Address: " + lAccomodation.mAddress );
 			for( AccomodationData_RESULT lRoom : lAccomodation.mAvailableRooms )

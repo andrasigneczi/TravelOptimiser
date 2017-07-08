@@ -33,7 +33,7 @@ public class PageGuestFactory
 		{
 			return new BulgarianAirPageGuest();
 		}
-		else if( PageType.equalsIgnoreCase( "booking" ))
+		else if( PageType.equalsIgnoreCase( "booking.com" ))
 		{
 			return new BookingDotComPageGuest();
 		}

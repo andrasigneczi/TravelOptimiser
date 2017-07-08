@@ -18,7 +18,8 @@ public class BookingDotComApp
 		try
 		{
 			mLogger.trace( "BookingDotComApp start" );
-			final BookingDotComPageGuest lGuest = (BookingDotComPageGuest) PageGuestFactory.Create( "booking" );
+			final BookingDotComPageGuest lGuest = (BookingDotComPageGuest) PageGuestFactory.Create( "booking.com" );
+			lGuest.Init();
 			lGuest.DoSearchFromConfig();
 			lGuest.WaitForFinish();
 			mLogger.trace( "BookingDotComApp stop" );

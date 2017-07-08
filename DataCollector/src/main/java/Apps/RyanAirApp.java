@@ -20,6 +20,7 @@ public class RyanAirApp
 			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
 	        final PageGuest.RyanAirPageGuest lGuestR = (PageGuest.RyanAirPageGuest)PageGuestFactory.Create( "RyanAir" );
 			lGuestR.InitJMS();
+			lGuestR.DoSearchFromConfig();
 			lGuestR.WaitForFinish();
 			//lGuestR.stop();
 		}
