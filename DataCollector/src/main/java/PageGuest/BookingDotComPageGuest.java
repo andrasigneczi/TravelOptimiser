@@ -41,6 +41,9 @@ import java.util.regex.Pattern;
 public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 {
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger(BookingDotComPageGuest.class);
+
+	private static boolean mSTOP_AT_THE_FIRST_PAGE = false;
+
 	private Browser mBrowser = null;
 	private BrowserView mBrowserView = null;
 	private JTabbedPane mTabbedPane = null;
@@ -113,7 +116,8 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 				if( event.isMainFrame())
 				{
 					//System.out.println( "Main frame has finished loading, status: " + mGuest.mStatus.getStatus());
-					mGuest.mStatus.mainFrameLoaded( mGuest, event.getBrowser().getDocument());
+					if( !mSTOP_AT_THE_FIRST_PAGE )
+						mGuest.mStatus.mainFrameLoaded( mGuest, event.getBrowser().getDocument());
 				}
 			}
 		}
@@ -234,6 +238,8 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mFilterMap.put( "parking_place",         new FilterAttribs( "data-id", "hotelfacility-2" ));
 		mFilterMap.put( "free_cancellation",     new FilterAttribs( "data-id", "fc-1" ));
 		mFilterMap.put( "24h_reception",         new FilterAttribs( "data-id", "hr_24-8" ));
+		mFilterMap.put( "private_bathroom",      new FilterAttribs( "data-id", "roomfacility-800038" ));
+
 		startANewSearch();
 	}
 
