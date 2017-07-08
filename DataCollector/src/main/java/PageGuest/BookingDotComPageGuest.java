@@ -35,7 +35,8 @@ import java.util.regex.Pattern;
  * Created by Andras on 15/03/2016.
  */
 
-// TODO: filter: shared something(bathroom); size (10m2)
+// TODO: filter: shared something(bathroom); size (10m2); review score (8+); exclude solde out;
+// cheapest properties first
 
 public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 {
@@ -121,7 +122,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		public void onFailLoadingFrame(FailLoadingEvent event) {
 			NetError errorCode = event.getErrorCode();
 			if (event.isMainFrame()) {
-				System.out.println("Main frame has failed loading: " + errorCode);
+				mLogger.error("Main frame has failed loading: " + errorCode);
 			}
 		}
 
@@ -163,7 +164,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			@Override
 			public void windowClosing(WindowEvent e)
 			{
-				System.out.println("Closed");
+				mLogger.info( "Window is closing" );
 				mThreadStopped = true;
 				e.getWindow().dispose();
 			}
@@ -180,24 +181,24 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		boolean lNewWindow = false;
 
 		mBrowserView = new BrowserView( mBrowser );
-		String remoteDebuggingURL = mBrowser.getRemoteDebuggingURL();
+		//String remoteDebuggingURL = mBrowser.getRemoteDebuggingURL();
 
 		mBrowserView.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked( java.awt.event.MouseEvent e) {
 				//System.out.println("e = " + e);
-				System.out.println( "x:" + e.getXOnScreen() + "; y:" + e.getYOnScreen());
+				//System.out.println( "x:" + e.getXOnScreen() + "; y:" + e.getYOnScreen());
 			}
 		});
 
 
-//		mBrowserView.addMouseMotionListener(new MouseAdapter() {
-//			@Override
-//			public void mouseMoved( java.awt.event.MouseEvent e) {
-//				//System.out.println("e = " + e);
-//				System.out.println( "x:" + e.getXOnScreen() + "; y:" + e.getYOnScreen());
-//			}
-//		});
+		mBrowserView.addMouseMotionListener(new MouseAdapter() {
+			@Override
+			public void mouseMoved( java.awt.event.MouseEvent e) {
+				//System.out.println("e = " + e);
+				//System.out.println( "x:" + e.getXOnScreen() + "; y:" + e.getYOnScreen());
+			}
+		});
 
 		mTabbedPane.addTab( "Browser", mBrowserView );
 		//mBrowser.addLoadListener( new WizzAirPageGuest_LoadListener(this));
@@ -298,13 +299,13 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 							if( mStatus.getStatus() == BookingDotComStatus.Status.APPLYING_A_FILTER && isResultPage( mBrowser.getDocument()))
 							{
 								//mBrowser.saveWebPage( "filtered_result.html", "c:\\temp", SavePageType.ONLY_HTML);
-								System.out.println( "run Status: " + mStatus.getStatus());
+								mLogger.info( "run Status: " + mStatus.getStatus());
 								mStatus.mainFrameLoaded( this, mBrowser.getDocument());
 							}
 							else if(( mStatus.getStatus() == BookingDotComStatus.Status.NEXT_PAGE_LOADING )
 									&& isResultPage( mBrowser.getDocument()))
 							{
-								System.out.println("run Status: " + mStatus.getStatus());
+								mLogger.info("run Status: " + mStatus.getStatus());
 								mStatus.mainFrameLoaded( this, mBrowser.getDocument());
 							}
 						}
@@ -378,7 +379,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		while( lMatch.find() )
 		{
 			lSID = lMatch.group(1).toString().trim();
-			System.out.println( lSID );
+			mLogger.info( lSID );
 		}
 
 		String lSearchURL = mSearchURL.replace( "[SID]", lSID );
@@ -429,7 +430,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			}
 
 			lSearchURL = lSearchURL.replace( "[ROOM1]", URLEncoder.encode( lRoom1, "UTF-8" ));
-			System.out.println( lSearchURL );
+			mLogger.info( lSearchURL );
 		}
 		catch( UnsupportedEncodingException e )
 		{
@@ -474,13 +475,13 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 		// check-in
 		//TypeText( "24072017\t" );
-		System.out.println( mADI.mCheckIn );
+		//System.out.println( mADI.mCheckIn );
 		TypeText( DatetimeHelper.ReverseDate( mADI.mCheckIn ) + "\t" );
 		Sleep( 1000 );
 
 		// check-out
 		//TypeText( "01082017\t" );
-		System.out.println( mADI.mCheckOut );
+		//System.out.println( mADI.mCheckOut );
 		TypeText( DatetimeHelper.ReverseDate( mADI.mCheckOut ) + "\t" );
 		Sleep( 1000 );
 
@@ -558,7 +559,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 		mADI = mInputList.get( ++mInputListIndex );
 
-		System.out.println( mADI.mSearchURL );
+		mLogger.info( mADI.mSearchURL );
 		if( mADI.mSearchURL != null && mADI.mSearchURL.length() > 0 )
 		{
 			// The filters won't be applied, they must be in the URL
@@ -591,7 +592,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		FilterAttribs f = mFilterMap.get( filter );
 		if( f != null )
 		{
-			System.out.println( "FILTER: " + filter );
+			mLogger.info( "FILTER: " + filter );
 			if( filter.equals( "checkin_no_till_limit" ))
 			{
 				mCheckinNoTillLimitation = true;
@@ -629,8 +630,8 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 				return;
 		}
 
-		System.out.println( mBrowser.getURL());
-		System.out.println( escapeXML( mBrowser.getURL()));
+		mLogger.info( "mBrowser.getURL: " + mBrowser.getURL());
+		mLogger.info( "escaped URL: " + escapeXML( mBrowser.getURL()));
 		ParseTheResult( aDOMDocument );
 	}
 
@@ -903,20 +904,20 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			if( lAccomodation.mAvailableRooms.size() == 0 )
 				continue;
 
-			System.out.println( "******************************************************************************************" );
-			System.out.println( "******************** HOTEL: " + lAccomodation.mName + "; Score: " + lAccomodation.mScore );
-			System.out.println( "******************************************************************************************" );
-			System.out.println( getURL() + lAccomodation.mURL );
-			System.out.println( "Address: " + lAccomodation.mAddress );
+			mLogger.info( "******************************************************************************************" );
+			mLogger.info( "******************** HOTEL: " + lAccomodation.mName + "; Score: " + lAccomodation.mScore );
+			mLogger.info( "******************************************************************************************" );
+			mLogger.info( getURL() + lAccomodation.mURL );
+			mLogger.info( "Address: " + lAccomodation.mAddress );
 			for( AccomodationData_RESULT lRoom : lAccomodation.mAvailableRooms )
 			{
-				System.out.println( "Room: " + lRoom.mName );
-				System.out.println( "     MaxOccupancy: " + lRoom.mMaxOccupancy );
-				System.out.println( "     BreakfastIncluded: " + lRoom.mBreakfastIncluded );
-				System.out.println( "     Price: " + lRoom.mPrice );
+				mLogger.info( "Room: " + lRoom.mName );
+				mLogger.info( "     MaxOccupancy: " + lRoom.mMaxOccupancy );
+				mLogger.info( "     BreakfastIncluded: " + lRoom.mBreakfastIncluded );
+				mLogger.info( "     Price: " + lRoom.mPrice );
 			}
-			System.out.println( "CheckInPolicy: " + lAccomodation.mCheckInPolicy );
-			System.out.println( "CheckOutPolicy: " + lAccomodation.mCheckOutPolicy );
+			mLogger.info( "CheckInPolicy: " + lAccomodation.mCheckInPolicy );
+			mLogger.info( "CheckOutPolicy: " + lAccomodation.mCheckOutPolicy );
 		}
 	}
 }
