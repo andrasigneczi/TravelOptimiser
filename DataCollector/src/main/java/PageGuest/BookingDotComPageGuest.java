@@ -240,6 +240,15 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mFilterMap.put( "24h_reception",         new FilterAttribs( "data-id", "hr_24-8" ));
 		mFilterMap.put( "private_bathroom",      new FilterAttribs( "data-id", "roomfacility-800038" ));
 
+		mFilterMap.put( "score_9+", new FilterAttribs( "data-id", "review_score-90" ));
+		mFilterMap.put( "score_8+", new FilterAttribs( "data-id", "review_score-80" ));
+		mFilterMap.put( "score_7+", new FilterAttribs( "data-id", "review_score-70" ));
+		mFilterMap.put( "score_6+", new FilterAttribs( "data-id", "review_score-60" ));
+		mFilterMap.put( "score_no", new FilterAttribs( "data-id", "review_score-999" ));
+
+		mFilterMap.put( "exclude_sold_out", new FilterAttribs( "data-id", "oos-1" ));
+
+
 		startANewSearch();
 	}
 
@@ -550,6 +559,69 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		Sleep( 1000 );
 	}
 
+	public void FillTheFormByJQuery()
+	{
+		// mukodik
+		//mBrowser.executeJavaScript( "$(\"#frm\").submit();");
+
+		// mukodik
+		//mBrowser.executeJavaScript( "$('[data-sb-id=\"main\"]').click();" );
+
+		//mBrowser.executeJavaScript( "$(\"#ss\").val(\"Moscow, Russia\").change();");
+		mBrowser.executeJavaScript( "$(\"#ss\").val(\"" + mADI.mCity + "\").change();");
+
+		String[] dateA = mADI.mCheckIn.split("\\.", 0 );
+		mBrowser.executeJavaScript( "$('[name=\"checkin_monthday\"]').val(\"" + dateA[2] + "\").change();");
+		mBrowser.executeJavaScript( "$('[name=\"checkin_month\"]').val(\"" + dateA[1] + "\").change();");
+		mBrowser.executeJavaScript( "$('[name=\"checkin_year\"]').val(\"" + dateA[0] + "\").change();");
+
+		dateA = mADI.mCheckOut.split("\\.", 0 );
+		mBrowser.executeJavaScript( "$('[name=\"checkout_monthday\"]').val(\"" + dateA[2] + "\").change();");
+		mBrowser.executeJavaScript( "$('[name=\"checkout_month\"]').val(\"" + dateA[1] + "\").change();");
+		mBrowser.executeJavaScript( "$('[name=\"checkout_year\"]').val(\"" + dateA[0] + "\").change();");
+
+
+
+		// travelling for leisure radio
+		mBrowser.executeJavaScript( "$('[name=\"sb_travel_purpose\"]').attr('checked', true);");
+		//[0].checked = true
+		//.attr('checked', true);
+		//.prop('checked', true);
+
+		Sleep( 2000 );
+
+		// rooms select
+		jQuerySetSelect( "no_rooms", String.valueOf( mADI.mRoomNumber ));
+
+		Sleep( 2000 );
+
+		// adults select
+		jQuerySetSelect( "group_adults", String.valueOf( mADI.mAdultNumber ));
+
+		Sleep( 2000 );
+
+		// children select
+		//setSelect( "//*[@id=\"group_children\"]", "4" );
+		jQuerySetSelect( "group_children", String.valueOf( mADI.mChildrenNumber ));
+
+		Sleep( 2000 );
+
+
+		for( int i = 0; i < mADI.mChildrenAge.size(); i++ )
+		{
+			jQuerySetSelect2( "$('[data-group-child-age=\"" + i + "\"]')", String.valueOf( mADI.mChildrenAge.get( i )));
+			Sleep( 1000 );
+		}
+
+		if( mADI.mFilters != null && mADI.mFilters.length() > 0 )
+		{
+			mFilters = mADI.mFilters.split("\\,", 0 );
+			mFilterIndex = -1;
+		}
+
+		mBrowser.executeJavaScript( "$(\"#frm\").submit();");
+	}
+
 	// DEVEL
 	public void FillTheForm( DOMDocument aDOMDocument )
 	{
@@ -579,7 +651,8 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		}
 		else
 		{
-			FillTheFormByRobot();
+			//FillTheFormByRobot();
+			FillTheFormByJQuery();
 		}
 
 		mStatus.formIsFilled( this );

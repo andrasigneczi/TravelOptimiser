@@ -237,6 +237,7 @@ public class DatetimeHelper
         return String.format( "%s%s%s", lParts[ 2 ], lParts[ 1 ], lParts[ 0 ] );
     }
 
+    // remove the leading zero
     public static ArrayList<Integer> getDateItems( String aDate )
     {
         String[] lParts = aDate.split("\\.", 0 );
