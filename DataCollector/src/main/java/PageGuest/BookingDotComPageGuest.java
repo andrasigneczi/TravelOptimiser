@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  * Created by Andras on 15/03/2016.
  */
 
-// TODO: filter: shared something(bathroom); size (10m2); review score (8+); exclude solde out;
+// TODO: filter: size (10m2);
 // cheapest properties first
 
 public class BookingDotComPageGuest extends WebPageGuest implements Runnable
@@ -48,13 +48,12 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	private BrowserView mBrowserView = null;
 	private JTabbedPane mTabbedPane = null;
 
-	private long mTimeoutStart;
 	private boolean mThreadStopped = true;
 	private DOMDocument mDOMDocument;
 	private BookingDotComStatus mStatus = new BookingDotComStatus();
 
 	private AccomodationData_INPUT mADI;
-	private ArrayList<AccomodationData_RESULT> mAccomodationDataResults = new ArrayList<>(  );
+	private ArrayList<AccomodationData_RESULT> mAccomodationDataResults = new ArrayList<>();
 	private int mLastOpenedAccomodation = -1;
 
 	private ArrayList<AccomodationData_INPUT> mInputList = new ArrayList<>();
@@ -65,15 +64,8 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	private Integer mLoadReadyTimeout = -1;
 	private boolean mSeparatorFound = false;
-	private HashSet<String> mHotelNames = new HashSet<>(  );
+	private HashSet<String> mHotelNames = new HashSet<>();
 	boolean mCheckinNoTillLimitation = false;
-
-	private String mSearchURL = "https://www.booking.com/searchresults.en-gb.html?&" +
-			"lang=en-gb&sid=[SID]&sb=1&src=index&src_elem=sb&" +
-			"ss=[SS]&ssne=Cegl%C3%A9d&ssne_untouched=Cegl%C3%A9d&checkin_monthday=[CHECKIN_MONTHDAY]&checkin_month=[CHECKIN_MONTH]&checkin_year=[CHECKIN_YEAR]&checkout_monthday=[CHECKOUT_MONTHDAY]&checkout_month=[CHECKOUT_MONTH]&checkout_year=[CHECKOUT_YEAR]&" +
-			"sb_travel_purpose=[TRAVEL_PURPOSE]&room1=[ROOM1]&no_rooms=[NO_ROOMS]&group_adults=[GROUP_ADULTS]&group_children=[GROUP_CHILDREN][CHILDREN_AGES]&" +
-			"ac_position=0&ac_langcode=en&ddest_type=city&search_pageview_id=15523d122cec0313&search_selected=true&" +
-			"ac_suggestion_list_length=5&ac_suggestion_theme_list_length=0";
 
 	class FilterAttribs {
 		public FilterAttribs( String name, String value )
@@ -136,13 +128,6 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			{
 				mLoadReadyTimeout = 50;
 			}
-//			if(( mGuest.mStatus.getStatus() == BookingDotComStatus.Status.NEXT_PAGE_LOADING /*||
-//				 mGuest.mStatus.getStatus() == BookingDotComStatus.Status.APPLYING_A_FILTER*/ )
-//					&& mGuest.isResultPage( event.getBrowser().getDocument()))
-//			{
-//				System.out.println("Frame document is loaded, status: " + mGuest.mStatus.getStatus());
-//				mGuest.mStatus.mainFrameLoaded( mGuest, event.getBrowser().getDocument());
-//			}
 		}
 
 		@Override
@@ -161,7 +146,6 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 		mTabbedPane = new JTabbedPane();
 		JFrame frame = new JFrame( "Travel Optimizer - Booking.com - jxBrowser " + ProductInfo.getVersion());
-		//frame.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
 
 		frame.addWindowListener(new WindowAdapter()
 		{
@@ -176,54 +160,15 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 		frame.getContentPane().add( mTabbedPane, BorderLayout.CENTER );
 		frame.setSize( 1152, 964 );
-		//frame.setLocationRelativeTo( null );
 		frame.setLocation( 50, 50 );
 		frame.setVisible( true );
 
 		mBrowser = TeamDevJxBrowser.getInstance().getJxBrowser( "Booking.com" );
-
-		boolean lNewWindow = false;
-
 		mBrowserView = new BrowserView( mBrowser );
-		//String remoteDebuggingURL = mBrowser.getRemoteDebuggingURL();
-
-		mBrowserView.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked( java.awt.event.MouseEvent e) {
-				//System.out.println("e = " + e);
-				//System.out.println( "x:" + e.getXOnScreen() + "; y:" + e.getYOnScreen());
-			}
-		});
-
-
-		mBrowserView.addMouseMotionListener(new MouseAdapter() {
-			@Override
-			public void mouseMoved( java.awt.event.MouseEvent e) {
-				//System.out.println("e = " + e);
-				//System.out.println( "x:" + e.getXOnScreen() + "; y:" + e.getYOnScreen());
-			}
-		});
 
 		mTabbedPane.addTab( "Browser", mBrowserView );
-		//mBrowser.addLoadListener( new WizzAirPageGuest_LoadListener(this));
 		mBrowser.addLoadListener(new BrowserLoadAdapter( this ));
 		//mBrowser.loadURL( "http://localhost:9222");
-
-
-
-		// Creates another Browser instance and loads the remote Developer
-		// Tools URL to access HTML inspector.
-//		Browser browser2 = TeamDevJxBrowser.getInstance().getJxBrowser( "Booking.com debug" );
-//		BrowserView browserView2 = new BrowserView(browser2);
-//
-//		JFrame frame2 = new JFrame();
-//		frame2.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-//		frame2.add(browserView2, BorderLayout.CENTER);
-//		frame2.setSize(700, 500);
-//		frame2.setLocationRelativeTo(null);
-//		frame2.setVisible(true);
-//
-//		browser2.loadURL(remoteDebuggingURL);
 
 		mFilterMap.put( "price_0-50",    new FilterAttribs( "data-id", "pri-1"));
 		mFilterMap.put( "price_50-100",  new FilterAttribs( "data-id", "pri-2") );
@@ -231,14 +176,24 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mFilterMap.put( "price_150-200", new FilterAttribs( "data-id", "pri-4") );
 		mFilterMap.put( "price_200+",    new FilterAttribs( "data-id", "pri-5") );
 
+		mFilterMap.put( "free_wifi",             new FilterAttribs( "data-id", "hotelfacility-107" ));
+		mFilterMap.put( "parking_place",         new FilterAttribs( "data-id", "hotelfacility-2" ));
+		mFilterMap.put( "non_smoking_rooms",     new FilterAttribs( "data-id", "hotelfacility-16" ));
+		mFilterMap.put( "restaurant",            new FilterAttribs( "data-id", "hotelfacility-3" ));
+
 		mFilterMap.put( "checkin_no_till_limit", new FilterAttribs( "", "" ));
 		mFilterMap.put( "apartments",            new FilterAttribs( "data-id", "ht_id-201" ));
 		mFilterMap.put( "hotels",                new FilterAttribs( "data-id", "ht_id-204" ));
-		mFilterMap.put( "free_wifi",             new FilterAttribs( "data-id", "hotelfacility-107" ));
-		mFilterMap.put( "parking_place",         new FilterAttribs( "data-id", "hotelfacility-2" ));
 		mFilterMap.put( "free_cancellation",     new FilterAttribs( "data-id", "fc-1" ));
 		mFilterMap.put( "24h_reception",         new FilterAttribs( "data-id", "hr_24-8" ));
+
 		mFilterMap.put( "private_bathroom",      new FilterAttribs( "data-id", "roomfacility-800038" ));
+		mFilterMap.put( "air_conditioning",      new FilterAttribs( "data-id", "roomfacility-800011" ));
+		mFilterMap.put( "bath",                  new FilterAttribs( "data-id", "roomfacility-80005" ));
+		mFilterMap.put( "electric_kettle",       new FilterAttribs( "data-id", "roomfacility-800086" ));
+		mFilterMap.put( "washing_machine",       new FilterAttribs( "data-id", "roomfacility-800034" ));
+
+
 
 		mFilterMap.put( "score_9+", new FilterAttribs( "data-id", "review_score-90" ));
 		mFilterMap.put( "score_8+", new FilterAttribs( "data-id", "review_score-80" ));
@@ -255,6 +210,8 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	public void startANewSearch()
 	{
 		mStatus.starting( this );
+		mAccomodationDataResults = new ArrayList<>();
+		mHotelNames = new HashSet<>();
 		mBrowser.loadURL( getURL());
 	}
 
@@ -335,34 +292,6 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		}
 	}
 
-	private boolean setTextField( String path, String value )
-	{
-		DOMElement lElement = mDOMDocument.findElement( By.xpath( path ));
-		if( lElement == null )
-			return false;
-		DOMInputElement lTextField = (DOMInputElement)lElement;
-		lTextField.setValue( value );
-		return true;
-	}
-
-	private boolean setSelect( String path, String value )
-	{
-		DOMElement lElement = mDOMDocument.findElement( By.xpath( path ));
-		if( lElement == null )
-			return false;
-		DOMSelectElement lSelect = (DOMSelectElement)lElement;
-		java.util.List<DOMOptionElement> lOptions = lSelect.getOptions();
-		for( DOMOptionElement lDOMOptionElement : lOptions )
-		{
-			if( lDOMOptionElement.getAttribute("value").equals( value ))
-			{
-				lDOMOptionElement.setSelected( true );
-				return true;
-			}
-		}
-		return false;
-	}
-
 	private boolean setChecked( String path, boolean checked )
 	{
 		DOMElement lElement = mDOMDocument.findElement( By.xpath( path ));
@@ -384,89 +313,6 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	{
 		mBrowser.executeJavaScript( jQuery + ".val('" + value + "').change();");
 		return true;
-	}
-
-	public void FillTheFormByURLPreparation( DOMDocument aDOMDocument )
-	{
-		Pattern lReg = Pattern.compile( "^sid: '(.+)',$", Pattern.MULTILINE );
-		Matcher lMatch = lReg.matcher( aDOMDocument.getDocumentElement().getInnerHTML());
-		String lSID = "_UNKNOWN_";
-		while( lMatch.find() )
-		{
-			lSID = lMatch.group(1).toString().trim();
-			mLogger.info( lSID );
-		}
-
-		String lSearchURL = mSearchURL.replace( "[SID]", lSID );
-
-		// checkin_monthday=[CHECKIN_MONTHDAY]&checkin_month=[CHECKIN_MONTH]&checkin_year=[CHECKIN_YEAR]&checkout_monthday=[CHECKOUT_MONTHDAY]&checkout_month=[CHECKOUT_MONTH]&checkout_year=[CHECKOUT_YEAR]
-		ArrayList<Integer> lDateComponents = DatetimeHelper.getDateItems( mADI.mCheckIn );
-		lSearchURL = lSearchURL.replace( "[CHECKIN_MONTHDAY]", String.valueOf( lDateComponents.get( 2 )));
-		lSearchURL = lSearchURL.replace( "[CHECKIN_MONTH]", String.valueOf( lDateComponents.get( 1 )));
-		lSearchURL = lSearchURL.replace( "[CHECKIN_YEAR]", String.valueOf( lDateComponents.get( 0 )));
-
-		ArrayList<Integer> lDateComponents2 = DatetimeHelper.getDateItems( mADI.mCheckOut );
-		lSearchURL = lSearchURL.replace( "[CHECKOUT_MONTHDAY]", String.valueOf( lDateComponents2.get( 2 )));
-		lSearchURL = lSearchURL.replace( "[CHECKOUT_MONTH]", String.valueOf( lDateComponents2.get( 1 )));
-		lSearchURL = lSearchURL.replace( "[CHECKOUT_YEAR]", String.valueOf( lDateComponents2.get( 0 )));
-
-		lSearchURL = lSearchURL.replace( "[TRAVEL_PURPOSE]", "leisure" );
-		lSearchURL = lSearchURL.replace( "[NO_ROOMS]", String.valueOf( mADI.mRoomNumber ));
-
-		lSearchURL = lSearchURL.replace( "[GROUP_ADULTS]", String.valueOf( mADI.mAdultNumber ));
-		lSearchURL = lSearchURL.replace( "[GROUP_CHILDREN]", String.valueOf( mADI.mChildrenNumber ));
-
-		String lChildrenAges = "";
-		for( int i = 0; i < mADI.mChildrenAge.size(); i++ )
-		{
-			lChildrenAges += "&age=" + String.valueOf( mADI.mChildrenAge.get( i ));
-		}
-		lSearchURL = lSearchURL.replace( "[CHILDREN_AGES]", lChildrenAges );
-
-		try
-		{
-			// Budapest%2C+Pest%2C+Hungary
-			//lSearchURL = lSearchURL.replace( "[SS]", URLEncoder.encode( "Budapest, Pest, Hungary", "UTF-8" ));
-			lSearchURL = lSearchURL.replace( "[SS]", URLEncoder.encode( mADI.mCity, "UTF-8" ));
-			// A%2C11%2C8
-			// room1=A%2CA%2C8%2C11
-			String lRoom1 = "";
-			for( int i = 0; i < mADI.mAdultNumber; i++ )
-			{
-				if( i > 0 )
-					lRoom1 += ",";
-				lRoom1 += "A";
-			}
-			for( int i = 0; i < mADI.mChildrenAge.size(); i++ )
-			{
-				if( i > 0 )
-					lRoom1 += ",";
-				lRoom1 += mADI.mChildrenAge.get( i );
-			}
-
-			lSearchURL = lSearchURL.replace( "[ROOM1]", URLEncoder.encode( lRoom1, "UTF-8" ));
-			mLogger.info( lSearchURL );
-		}
-		catch( UnsupportedEncodingException e )
-		{
-			e.printStackTrace();
-		}
-
-		if( mADI.mFilters != null && mADI.mFilters.length() > 0 )
-		{
-			mFilters = mADI.mFilters.split("\\,", 0 );
-			mFilterIndex = -1;
-		}
-
-		mBrowser.loadURL( lSearchURL );
-
-		// https://www.booking.com/searchresults.en-gb.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaGeIAQGYAS7CAQp3aW5kb3dzIDEwyAEM2AEB6AEB-AELkgIBeagCAw&
-		// lang=en-gb&sid=0f4b4bdf3191a7a580feb8b757e70fa4&sb=1&src=index&src_elem=sb&
-		// error_url=https%3A%2F%2Fwww.booking.com%2Findex.en-gb.html%3Flabel%3Dgen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaGeIAQGYAS7CAQp3aW5kb3dzIDEwyAEM2AEB6AEB-AELkgIBeagCAw%3Bsid%3D0f4b4bdf3191a7a580feb8b757e70fa4%3Bsb_price_type%3Dtotal%26%3B&
-		// ss=Budapest%2C+Pest%2C+Hungary&ssne=Cegl%C3%A9d&ssne_untouched=Cegl%C3%A9d&checkin_monthday=[CHECKIN_MONTHDAY]&checkin_month=[CHECKIN_MONTH]&checkin_year=[CHECKIN_YEAR]&
-		// checkout_monthday=[CHECKOUT_MONTHDAY]&checkout_month=[CHECKOUT_MONTH]&checkout_year=[CHECKOUT_YEAR]&sb_travel_purpose=leisure&room1=A%2C11%2C8&no_rooms=2&group_adults=1&group_children=2&
-		// age=11&age=8&ss_raw=Buda&ac_position=0&ac_langcode=en&dest_id=-850553&dest_type=city&search_pageview_id=15523d122cec0313&
-		// search_selected=true&search_pageview_id=15523d122cec0313&ac_suggestion_list_length=5&ac_suggestion_theme_list_length=0
 	}
 
 	public void FillTheFormByRobot()
@@ -529,30 +375,12 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			Sleep( 1000 );
 		}
 
-//		// age1
-//		jQuerySetSelect2( "$('[data-group-child-age=\"0\"]')", "8" );
-//
-//		Sleep( 1000 );
-//
-//		// age2
-//		jQuerySetSelect2( "$('[data-group-child-age=\"1\"]')", "11" );
-//		//jQuerySetSelect2( "$('[data-group-child-age=\"2\"]')", "10" );
-//		//jQuerySetSelect2( "$('[data-group-child-age=\"3\"]')", "9" );
-//		Sleep( 1000 );
-
-		// search button xpath
-		//DOMElement lElement = mDOMDocument.findElement( By.xpath( "" ));
-		//if( lElement != null )
-		//	lElement.click();
-
 		if( mADI.mFilters != null && mADI.mFilters.length() > 0 )
 		{
 			mFilters = mADI.mFilters.split("\\,", 0 );
 			mFilterIndex = -1;
 		}
 
-		//mBrowser.executeJavaScript( "$('[data-sb-id=\"main\"]').click();" );
-		//mBrowser.executeJavaScript( "$('[data-sb-id=\"main\"]').submit();" );
 		MouseLeftClick( 120, 440 );
 		Sleep( 500 );
 		TypeText( "\n" );
@@ -808,25 +636,6 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			}
 		}
 
-		// Name : <span class="sr-hotel__name">Corvin Plaza Apartments &amp; Suites</span>
-
-		// Review text:
-		// <span class="review-score-widget__text">Very good</span>
-
-		// Score:
-		// <span class="review-score-badge">8<span class="review-score__decimal-separator">.</span>2</span>
-
-		// Number of reviewers: <span class="review-score-widget__subtext">1,621 reviews</span>
-
-		// Price: <b class="sr_gs_price_total">€&nbsp;183</b>
-
-		// Starting block:
-		// <div class="sr_item sr_item_new sr_item_default sr_property_block  sr_flex_layout                 genius_highlight " data-hotelid="367832" data-class="0" data-score="8.5">
-
-		// pagination: <a class="sr_pagination_link" href="/searchresults.en-gb.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaIkBiAEBmAEuwgEKd2luZG93cyAxMMgBDNgBAegBAfgBC5ICAXmoAgM;sid=9e8e9e2e4a5ee51cd4367961239c350d;age=11;age=8;checkin_month=7;checkin_monthday=23;checkin_year=2017;checkout_month=7;checkout_monthday=24;checkout_year=2017;class_interval=1;dest_id=-850553;dest_type=city;dtdisc=0;group_adults=2;group_children=2;inac=0;index_postcard=0;label_click=undef;mih=0;no_rooms=1;postcard=0;raw_dest_type=city;room1=A%2CA%2C8%2C11;sb_price_type=total;sb_travel_purpose=leisure;src=index;src_elem=sb;ss=Budapest;ss_all=0;ssb=empty;sshis=0;ssne=Budapest;ssne_untouched=Budapest;rows=25">1</a>
-
-		// hotel link: <a class="hotel_name_link url" href="..." target="_blank" rel="noopener" data-et-mouseenter="customGoal:eWKLfCcADDbdEHBNKNMC:1" data-et-click="">...</a>
-
 		// The mDOMDocument mustn't be null, because the pageNext will be called from the parsingFinished.
 		mStatus.parsingFinished( this );
 		mDOMDocument = null;
@@ -983,16 +792,17 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	public void printTheMatches()
 	{
-		mLogger.info( "******************************************************************************************" );
-		mLogger.info( mADI.toString());
+		mLogger.info( "**************************************************************" );
+		mLogger.info( "**************************** MATCHES *************************" );
+		mLogger.info( "**************************************************************" );
+		mLogger.info( "Search data:\n" + mADI.toString());
 
 		for( AccomodationData_RESULT lAccomodation : mAccomodationDataResults )
 		{
 			if( lAccomodation.mAvailableRooms.size() == 0 )
 				continue;
 
-			mLogger.info( "******************************************************************************************" );
-			mLogger.info( "******************** HOTEL: " + lAccomodation.mName + "; Score: " + lAccomodation.mScore );
+			mLogger.info( "HOTEL: " + lAccomodation.mName + "; Score: " + lAccomodation.mScore );
 			mLogger.info( getURL() + lAccomodation.mURL );
 			mLogger.info( "Address: " + lAccomodation.mAddress );
 			for( AccomodationData_RESULT lRoom : lAccomodation.mAvailableRooms )
@@ -1007,15 +817,3 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		}
 	}
 }
-
-// SEARCH FORM
-// search button xpath: //*[@id="frm"]/div[7]/button
-// destination input field: //*[@id="ss"]
-// travelling for work radio: //*[@id="frm"]/div[3]/div/div/fieldset/label[2]/input
-// check-in div: //*[@id="frm"]/div[4]/div/div[1]/div[1]/div/div/div[1]/div/div[2]
-// check-out div: //*[@id="frm"]/div[4]/div/div[1]/div[2]/div/div/div[1]/div/div[2]
-// rooms select: //*[@id="no_rooms"]
-// adults select: //*[@id="group_adults"]
-// children select: //*[@id="group_children"]
-// age1: //*[@id="frm"]/div[5]/div/div[2]/div[4]/select[1]
-// age2: //*[@id="frm"]/div[5]/div/div[2]/div[4]/select[2]
