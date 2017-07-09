@@ -35,8 +35,7 @@ import java.util.regex.Pattern;
  * Created by Andras on 15/03/2016.
  */
 
-// TODO: filter: size (10m2);
-// cheapest properties first
+// TODO: filter: cheapest properties first
 
 public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 {
@@ -65,7 +64,23 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	private Integer mLoadReadyTimeout = -1;
 	private boolean mSeparatorFound = false;
 	private HashSet<String> mHotelNames = new HashSet<>();
-	boolean mCheckinNoTillLimitation = false;
+	//boolean mCheckinNoTillLimitation = false;
+
+	enum MyFilterIds
+	{
+		checkin_no_till_limit,
+		room_size_15p,
+		room_size_20p,
+		room_size_25p,
+		room_size_30p,
+		room_size_35p,
+		room_size_50p,
+		room_size_60p,
+		room_size_70p,
+		room_size_80p,
+		room_size_90p,
+		room_size_100p,
+	};
 
 	class FilterAttribs {
 		public FilterAttribs( String name, String value )
@@ -76,7 +91,10 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		public String mName;
 		public String mValue;
 	}
-	private HashMap<String,FilterAttribs> mFilterMap = new HashMap<>(  );
+
+	private HashMap<String,FilterAttribs> mFilterMap = new HashMap<>();
+	private HashMap<String,MyFilterIds>   mMyFilterMap = new HashMap<>();
+	private HashMap<MyFilterIds,Boolean>  mMyFilterMap2 = new HashMap<>();
 
 	public class BrowserLoadAdapter extends LoadAdapter
 	{
@@ -109,7 +127,10 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 				{
 					//System.out.println( "Main frame has finished loading, status: " + mGuest.mStatus.getStatus());
 					if( !mSTOP_AT_THE_FIRST_PAGE )
-						mGuest.mStatus.mainFrameLoaded( mGuest, event.getBrowser().getDocument());
+					{
+						Sleep( 2000 );
+						mGuest.mStatus.mainFrameLoaded( mGuest, event.getBrowser().getDocument() );
+					}
 				}
 			}
 		}
@@ -170,6 +191,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mBrowser.addLoadListener(new BrowserLoadAdapter( this ));
 		//mBrowser.loadURL( "http://localhost:9222");
 
+		// booking.com filters
 		mFilterMap.put( "price_0-50",    new FilterAttribs( "data-id", "pri-1"));
 		mFilterMap.put( "price_50-100",  new FilterAttribs( "data-id", "pri-2") );
 		mFilterMap.put( "price_100-150", new FilterAttribs( "data-id", "pri-3") );
@@ -181,7 +203,6 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mFilterMap.put( "non_smoking_rooms",     new FilterAttribs( "data-id", "hotelfacility-16" ));
 		mFilterMap.put( "restaurant",            new FilterAttribs( "data-id", "hotelfacility-3" ));
 
-		mFilterMap.put( "checkin_no_till_limit", new FilterAttribs( "", "" ));
 		mFilterMap.put( "apartments",            new FilterAttribs( "data-id", "ht_id-201" ));
 		mFilterMap.put( "hotels",                new FilterAttribs( "data-id", "ht_id-204" ));
 		mFilterMap.put( "free_cancellation",     new FilterAttribs( "data-id", "fc-1" ));
@@ -193,8 +214,6 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mFilterMap.put( "electric_kettle",       new FilterAttribs( "data-id", "roomfacility-800086" ));
 		mFilterMap.put( "washing_machine",       new FilterAttribs( "data-id", "roomfacility-800034" ));
 
-
-
 		mFilterMap.put( "score_9+", new FilterAttribs( "data-id", "review_score-90" ));
 		mFilterMap.put( "score_8+", new FilterAttribs( "data-id", "review_score-80" ));
 		mFilterMap.put( "score_7+", new FilterAttribs( "data-id", "review_score-70" ));
@@ -203,6 +222,24 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 		mFilterMap.put( "exclude_sold_out", new FilterAttribs( "data-id", "oos-1" ));
 
+		// My filters
+		mMyFilterMap.put( "checkin_no_till_limit", MyFilterIds.checkin_no_till_limit );
+		mMyFilterMap.put( "room_size_15+", MyFilterIds.room_size_15p );
+		mMyFilterMap.put( "room_size_20+", MyFilterIds.room_size_20p );
+		mMyFilterMap.put( "room_size_25+", MyFilterIds.room_size_25p );
+		mMyFilterMap.put( "room_size_30+", MyFilterIds.room_size_30p );
+		mMyFilterMap.put( "room_size_35+", MyFilterIds.room_size_35p );
+
+		mMyFilterMap.put( "room_size_50+", MyFilterIds.room_size_50p );
+		mMyFilterMap.put( "room_size_60+", MyFilterIds.room_size_60p );
+		mMyFilterMap.put( "room_size_70+", MyFilterIds.room_size_70p );
+		mMyFilterMap.put( "room_size_80+", MyFilterIds.room_size_80p );
+		mMyFilterMap.put( "room_size_90+", MyFilterIds.room_size_90p );
+		mMyFilterMap.put( "room_size_100+", MyFilterIds.room_size_100p );
+
+
+		for( MyFilterIds id : MyFilterIds.values())
+			mMyFilterMap2.put( id, false );
 
 		startANewSearch();
 	}
@@ -473,8 +510,13 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		if( mADI.mSearchURL != null && mADI.mSearchURL.length() > 0 )
 		{
 			// The filters won't be applied, they must be in the URL
-			if( mADI.mFilters != null && mADI.mFilters.contains( "checkin_no_till_limit" ))
-				mCheckinNoTillLimitation = true;
+			// I will set my filters
+			if( mADI.mFilters != null && mADI.mFilters.length() > 0 )
+			{
+				String[] filters = mADI.mFilters.split( "\\,", 0 );
+				for( int i = 0; i < filters.length; i++ )
+					ApplyMyFilters( filters[ i ] );
+			}
 			mBrowser.loadURL( mADI.mSearchURL );
 		}
 		else
@@ -492,41 +534,64 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	String getNextFilter()
 	{
 		if( mFilters == null || mFilters.length <= mFilterIndex + 1 )
-		{
 			return null;
-		}
 
 		return mFilters[ ++mFilterIndex ].trim();
 	}
 
-	boolean ApplyFilter( DOMDocument aDOMDocument, String filter ) {
-		FilterAttribs f = mFilterMap.get( filter );
-		if( f != null )
+	/**
+	 *
+	 * @param filter
+	 * @return true, if my filter was applied, otherwise false
+	 */
+	boolean ApplyMyFilters( String filter )
+	{
+		if( mMyFilterMap.containsKey( filter ))
 		{
-			mLogger.info( "FILTER: " + filter );
-			if( filter.equals( "checkin_no_till_limit" ))
-			{
-				mCheckinNoTillLimitation = true;
-				return false;
-			}
-			else
-			{
-				java.util.List<DOMElement> lFilters = aDOMDocument.findElements( By.className( "filterelement" ));
-				for( DOMElement lElement : lFilters )
-				{
+			mMyFilterMap2.put( mMyFilterMap.get( filter ), true );
+			//mCheckinNoTillLimitation = true;
+			return true;
+		}
+		return false;
+	}
+
+	boolean ApplyBookingFilters( DOMDocument aDOMDocument, String filter )
+	{
+		FilterAttribs f = mFilterMap.get( filter );
+		if( f == null )
+			return false;
+
+		java.util.List<DOMElement> lFilters = aDOMDocument.findElements( By.className( "filterelement" ));
+		for( DOMElement lElement : lFilters )
+		{
 //					System.out.println( f.mName );
 //					System.out.println( f.mValue );
 //					System.out.println( "'" + lElement.getAttribute( f.mName ) + "'" );
-					if( lElement.getAttribute( f.mName ).equals( f.mValue ))
-					{
-						mStatus.ApplyAFilter( this );
-						//Sleep( 7000 );
-						lElement.click();
-						return true;
-					}
-				}
+			if( lElement.getAttribute( f.mName ).equals( f.mValue ))
+			{
+				mStatus.ApplyAFilter( this );
+				//Sleep( 7000 );
+				lElement.click();
+				return true;
 			}
 		}
+		return false;
+	}
+
+	/**
+	 *
+	 * @param aDOMDocument
+	 * @param filter
+	 * @return true, if a booking filter was applied, otherwise false (if it was my filter or illegal filter name)
+	 */
+	boolean ApplyFilter( DOMDocument aDOMDocument, String filter ) {
+		mLogger.info( "FILTER: " + filter );
+		if( ApplyMyFilters( filter ))
+			return false;
+
+		if( ApplyBookingFilters( aDOMDocument, filter ))
+			return true;
+
 		mLogger.warn( "Illegal filter: " + filter );
 		return false;
 	}
@@ -673,7 +738,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	boolean testCheckinPolicy( String checkinPolicy )
 	{
-		if( !mCheckinNoTillLimitation )
+		if( !mMyFilterMap2.getOrDefault( MyFilterIds.checkin_no_till_limit, false ))
 			return true;
 
 		if( checkinPolicy.length() == 0 || checkinPolicy.startsWith( "From" ))
@@ -681,6 +746,64 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 		// CheckInPolicy: 15:00 - 23:00
 		return false;
+	}
+
+	private String getRoomSize( String roomMetaId )
+	{
+		String roomSize = "";
+		if( roomMetaId != null )
+		{
+			// cutting the starting #
+			roomMetaId = roomMetaId.substring( 1 );
+
+			// blocktoggle #RD17925503
+			DOMElement lRoomMetaBlock = mDOMDocument.findElement( By.id( "blocktoggle" + roomMetaId ));
+			if( lRoomMetaBlock != null )
+			{
+				DOMElement lRoomInfo = lRoomMetaBlock.findElement( By.className( "info" ));
+				if( lRoomInfo != null )
+				{
+					roomSize = lRoomInfo.getInnerText()
+							.replaceAll( "\n", "" )
+							.replace( "Room size:", "" )
+							.replace( "Apartment size:", "" )
+							.trim();
+				}
+			}
+		}
+		return roomSize;
+	}
+
+	boolean testRoomSize( String roomSize )
+	{
+		if( roomSize == null )
+			return true;
+
+		int size = Integer.parseInt( roomSize.substring( 0, roomSize.indexOf( " " )));
+		if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_15p, false ) && size < 15 )
+			return false;
+		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_20p, false ) && size < 20 )
+			return false;
+		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_25p, false ) && size < 25 )
+			return false;
+		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_30p, false ) && size < 30 )
+			return false;
+		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_35p, false ) && size < 35 )
+			return false;
+		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_50p, false ) && size < 50 )
+			return false;
+		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_60p, false ) && size < 60 )
+			return false;
+		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_70p, false ) && size < 70 )
+			return false;
+		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_80p, false ) && size < 80 )
+			return false;
+		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_90p, false ) && size < 90 )
+			return false;
+		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_100p, false ) && size < 100 )
+			return false;
+
+		return true;
 	}
 
 	private void ParseAHotelPage_S( AccomodationData_RESULT lAccomodation )
@@ -719,6 +842,9 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		// Link a szobára: <tr id="7517222_93706251_2_1_0" data-breakfast-included="1" data-occupancy="2" class="room_loop_counter6">...</tr>
 		// room name: <a href="#RD7517222" class="jqrt togglelink js-track-hp-rt-room-name" data-room-name-en="Comfort Double or Twin Room" title="" aria-haspopup="true"><i class="rt_room_type_ico bicon-triangleright"></i>Comfort Double or Twin Room</a>
 
+		//mStatus.Done( this );
+
+
 		for( int i = 1; ; i++ )
 		{
 			java.util.List<DOMElement> lRooms = mDOMDocument.findElements( By.className( "room_loop_counter" + i ));
@@ -726,42 +852,62 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 				break;
 
 			String roomName = "";
+			String roomSize = "";
+			AccomodationData_RESULT lRoomResult = new AccomodationData_RESULT();
+			boolean successful = false;
 			for( DOMElement lRoom : lRooms )
 			{
 				String cssClassName = lRoom.getAttribute( "class" );
-				if( cssClassName.contains( "maintr" ) || cssClassName.contains( "extendedRow" ))
-					continue;
-
-				DOMElement lRoomName = lRoom.findElement( By.className( "js-track-hp-rt-room-name" ));
-				if( lRoomName != null )
+				if( cssClassName.contains( "extendedRow" ))
 				{
-					roomName = lRoomName.getAttribute( "data-room-name-en" );
+					successful = true;
+					break;
 				}
 
-				AccomodationData_RESULT lRoomResult = new AccomodationData_RESULT();
-				lRoomResult.mName = roomName;
-				lRoomResult.mMaxOccupancy = lRoom.getAttribute( "data-occupancy" );
-				try
+				if( cssClassName.contains( "maintr" ))
 				{
-					//System.out.println( "lRoomResult.mMaxOccupancy: '" + lRoomResult.mMaxOccupancy + "'" );
-					if( Integer.parseInt( lRoomResult.mMaxOccupancy ) < mADI.mAdultNumber + mADI.mChildrenNumber )
-						continue;
+					DOMElement lRoomName = lRoom.findElement( By.className( "js-track-hp-rt-room-name" ));
+					if( lRoomName != null )
+					{
+						lRoomResult.mName = lRoomName.getAttribute( "data-room-name-en" );
+						lRoomResult.mRoomHook = lRoomName.getAttribute( "href" );
+						lRoomResult.mRoomSize = getRoomSize( lRoomResult.mRoomHook );
+						if( !testRoomSize( lRoomResult.mRoomSize ))
+							break;
+					}
 				}
-				catch( NumberFormatException e )
+				else
 				{
-					e.printStackTrace();
+					String maxOccupancy = lRoom.getAttribute( "data-occupancy" );
+					if( maxOccupancy != null && maxOccupancy.length() > 0 )
+						lRoomResult.mMaxOccupancy = maxOccupancy;
+					try
+					{
+						//System.out.println( "lRoomResult.mMaxOccupancy: '" + lRoomResult.mMaxOccupancy + "'" );
+						if( Integer.parseInt( lRoomResult.mMaxOccupancy ) < mADI.mAdultNumber + mADI.mChildrenNumber )
+							break;
+					}
+					catch( NumberFormatException e )
+					{
+						e.printStackTrace();
+					}
+					lRoomResult.mBreakfastIncluded = "1".equals( lRoom.getAttribute( "data-breakfast-included" ));
+
+					DOMElement lPrice = lRoom.findElement( By.className( "js-track-hp-rt-room-price" ));
+					if( lPrice == null && mADI.mPriceLimit != null )
+						break;
+
+					if( lPrice != null)
+					{
+						lRoomResult.mPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice.getInnerText(), false );
+						if( mADI.mPriceLimit != null && lRoomResult.mPrice > (double) mADI.mPriceLimit )
+							break;
+					}
 				}
-				lRoomResult.mBreakfastIncluded = "1".equals( lRoom.getAttribute( "data-breakfast-included" ));
-
-				DOMElement lPrice = lRoom.findElement( By.className( "js-track-hp-rt-room-price" ));
-				if( lPrice == null )
-					continue;
-
-				lRoomResult.mPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice.getInnerText(), false );
-				if( lRoomResult.mPrice > (double)mADI.mPriceLimit )
-					continue;
-				lAccomodation.mAvailableRooms.add( lRoomResult );
 			}
+
+			if( successful)
+				lAccomodation.mAvailableRooms.add( lRoomResult );
 		}
 	}
 
@@ -808,6 +954,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			for( AccomodationData_RESULT lRoom : lAccomodation.mAvailableRooms )
 			{
 				mLogger.info( "Room: " + lRoom.mName );
+				mLogger.info( "     Size: " + lRoom.mRoomSize );
 				mLogger.info( "     MaxOccupancy: " + lRoom.mMaxOccupancy );
 				mLogger.info( "     BreakfastIncluded: " + lRoom.mBreakfastIncluded );
 				mLogger.info( "     Price: " + lRoom.mPrice );

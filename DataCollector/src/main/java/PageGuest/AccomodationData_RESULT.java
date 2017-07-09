@@ -35,6 +35,8 @@ public class AccomodationData_RESULT
 	public String  mGMapURL;
 	public String  mMaxOccupancy;
 	public boolean mBreakfastIncluded;
+	public String  mRoomSize;
+	public String  mRoomHook;
 
 	ArrayList<AccomodationData_RESULT> mAvailableRooms = new ArrayList<>(  );
 }
