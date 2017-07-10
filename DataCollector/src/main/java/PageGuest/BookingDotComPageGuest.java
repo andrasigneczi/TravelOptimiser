@@ -95,6 +95,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	private HashMap<String,FilterAttribs> mFilterMap = new HashMap<>();
 	private HashMap<String,MyFilterIds>   mMyFilterMap = new HashMap<>();
 	private HashMap<MyFilterIds,Boolean>  mMyFilterMap2 = new HashMap<>();
+	private boolean mResultSorted = false;
 
 	public class BrowserLoadAdapter extends LoadAdapter
 	{
@@ -222,6 +223,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 		mFilterMap.put( "exclude_sold_out", new FilterAttribs( "data-id", "oos-1" ));
 
+
 		// My filters
 		mMyFilterMap.put( "checkin_no_till_limit", MyFilterIds.checkin_no_till_limit );
 		mMyFilterMap.put( "room_size_15+", MyFilterIds.room_size_15p );
@@ -249,6 +251,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mStatus.starting( this );
 		mAccomodationDataResults = new ArrayList<>();
 		mHotelNames = new HashSet<>();
+		mResultSorted = false;
 		mBrowser.loadURL( getURL());
 	}
 
@@ -555,6 +558,34 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		return false;
 	}
 
+	boolean ApplySortingFilter( DOMDocument aDOMDocument )
+	{
+		// sort_by_price
+		// <div id="sort_by" class=" hilite  ">
+		// ....
+		// <li class=" sort_category   sort_price sort_category__button ">
+		// <a href="/searchresults.en-gb.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmaDuIAQGYAS7CAQNhYm7IAQzYAQPoAQGSAgF5qAIE;sid=bb513d800525df12982c6f7fd2158280;age=11;age=8;checkin_month=9;checkin_monthday=8;checkin_year=2017;checkout_month=9;checkout_monthday=11;checkout_year=2017;class_interval=1;dest_id=-850553;dest_type=city;dtdisc=0;group_adults=1;group_children=2;inac=0;index_postcard=0;label_click=undef;no_rooms=1;postcard=0;raw_dest_type=city;req_age=11;req_age=8;room1=A%2C8%2C11;sb_price_type=total;sb_travel_purpose=leisure;src_elem=sb;ss=Budapest;ss_all=0;ssb=empty;sshis=0;ssne=Budapest;ssne_untouched=Budapest&amp;;order=price" class="sort_option sort_options__button">
+		// Cheapest properties first
+		//	</a>
+		// </li>
+
+		DOMElement sortBar = aDOMDocument.findElement( By.id( "sort_by" ));
+		if( sortBar == null )
+			return false;
+
+		DOMElement priceLi = sortBar.findElement( By.className( "sort_price" ));
+		if( priceLi == null )
+			return false;
+
+		DOMElement priceA = priceLi.findElement( By.tagName( "a" ));
+		if( priceA == null )
+			return false;
+
+		priceA.click();
+
+		return true;
+	}
+
 	boolean ApplyBookingFilters( DOMDocument aDOMDocument, String filter )
 	{
 		FilterAttribs f = mFilterMap.get( filter );
@@ -575,6 +606,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -598,6 +630,12 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	void ApplyFilter( DOMDocument aDOMDocument )
 	{
+		if( !mResultSorted )
+		{
+			if( ApplySortingFilter( aDOMDocument ))
+				mResultSorted = true;
+		}
+
 		// if the form was not filled, because the rearch result was loaded from url, then
 		// the getNextFilter returns with null
 		for( String filter = getNextFilter(); filter != null; filter = getNextFilter())
