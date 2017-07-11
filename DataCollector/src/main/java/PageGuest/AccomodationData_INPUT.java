@@ -10,15 +10,15 @@ import java.util.List;
  */
 public class AccomodationData_INPUT implements Cloneable, Serializable
 {
-	public char    mSite;      // booking.com=B, airbnb.com=A, unknown=U
-	public char    mType;      // room=R,apartment=A,hotelroom=H
-	public String  mCheckIn;   // e.g. 2017.06.28.
-	public String  mCheckOut;  // e.g. 2017.06.29.
-	public Integer mPriceLimit;
-	public String  mCity;
-	public String  mFilters; // checklist, e.g. apartment,free wifi,parking place
+	public char    mSite;           // booking.com=B, airbnb.com=A, unknown=U
+	public char    mType;           // room=R,apartment=A,hotelroom=H
+	public String  mCheckIn;        // e.g. 2017.06.28.
+	public String  mCheckOut;       // e.g. 2017.06.29.
+	public Integer mPriceLimit;     // e.g. (max) 140
+	public String  mCity;           // Moscow, Russia (as the booking.com expect)
+	public String  mFilters;        // checklist, e.g. apartment,free wifi,parking place
 	public String  mSearchURL;
-	public int     mRoomNumber;
+	public int     mRoomNumber;     // how many room do I want to book?
 	public int     mAdultNumber;
 	public int     mChildrenNumber;
 	public ArrayList<Integer> mChildrenAge = new ArrayList<>();

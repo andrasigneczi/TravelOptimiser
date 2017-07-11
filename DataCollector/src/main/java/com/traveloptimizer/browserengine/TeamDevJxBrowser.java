@@ -39,6 +39,6 @@ public class TeamDevJxBrowser
 //		BrowserContext lBrowserContext =
 //				new BrowserContext(new BrowserContextParams(".\\cache\\" + aContext ));
 //		return new Browser(lBrowserContext);
-		return new Browser( BrowserType.LIGHTWEIGHT );
+		return new Browser( BrowserType.HEAVYWEIGHT );
 	}
 }

@@ -3,6 +3,7 @@ package PageGuest;
 import Configuration.Configuration;
 import Util.CurrencyHelper;
 import Util.DatetimeHelper;
+import Util.StringHelper;
 import com.teamdev.jxbrowser.chromium.*;
 import com.teamdev.jxbrowser.chromium.dom.*;
 import com.teamdev.jxbrowser.chromium.dom.internal.MouseEvent;
@@ -34,8 +35,6 @@ import java.util.regex.Pattern;
 /**
  * Created by Andras on 15/03/2016.
  */
-
-// TODO: filter: cheapest properties first
 
 public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 {
@@ -327,7 +326,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			}
 			catch( InterruptedException e )
 			{
-				e.printStackTrace();
+				mLogger.warn( StringHelper.getTraceInformation( e ));
 			}
 		}
 	}
@@ -814,33 +813,41 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	boolean testRoomSize( String roomSize )
 	{
-		if( roomSize == null )
+		if( roomSize == null || roomSize.length() == 0 )
 			return true;
 
-		int size = Integer.parseInt( roomSize.substring( 0, roomSize.indexOf( " " )));
-		if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_15p, false ) && size < 15 )
-			return false;
-		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_20p, false ) && size < 20 )
-			return false;
-		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_25p, false ) && size < 25 )
-			return false;
-		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_30p, false ) && size < 30 )
-			return false;
-		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_35p, false ) && size < 35 )
-			return false;
-		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_50p, false ) && size < 50 )
-			return false;
-		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_60p, false ) && size < 60 )
-			return false;
-		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_70p, false ) && size < 70 )
-			return false;
-		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_80p, false ) && size < 80 )
-			return false;
-		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_90p, false ) && size < 90 )
-			return false;
-		else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_100p, false ) && size < 100 )
-			return false;
-
+		try
+		{
+			int size = Integer.parseInt( roomSize.substring( 0, roomSize.indexOf( " " ) ) );
+			if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_15p, false ) && size < 15 )
+				return false;
+			else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_20p, false ) && size < 20 )
+				return false;
+			else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_25p, false ) && size < 25 )
+				return false;
+			else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_30p, false ) && size < 30 )
+				return false;
+			else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_35p, false ) && size < 35 )
+				return false;
+			else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_50p, false ) && size < 50 )
+				return false;
+			else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_60p, false ) && size < 60 )
+				return false;
+			else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_70p, false ) && size < 70 )
+				return false;
+			else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_80p, false ) && size < 80 )
+				return false;
+			else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_90p, false ) && size < 90 )
+				return false;
+			else if( mMyFilterMap2.getOrDefault( MyFilterIds.room_size_100p, false ) && size < 100 )
+				return false;
+		}
+		catch( NumberFormatException e )
+		{
+			mLogger.warn( StringHelper.getTraceInformation( e ));
+			mLogger.warn( "roomSize: '" + roomSize + "'" );
+			return true;
+		}
 		return true;
 	}
 
@@ -927,7 +934,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 					}
 					catch( NumberFormatException e )
 					{
-						e.printStackTrace();
+						mLogger.warn( StringHelper.getTraceInformation( e ));
 					}
 					lRoomResult.mBreakfastIncluded = "1".equals( lRoom.getAttribute( "data-breakfast-included" ));
 
@@ -935,7 +942,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 					if( lPrice == null && mADI.mPriceLimit != null )
 						break;
 
-					if( lPrice != null)
+					if( lPrice != null && mADI.mPriceLimit != null )
 					{
 						lRoomResult.mPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice.getInnerText(), false );
 						if( mADI.mPriceLimit != null && lRoomResult.mPrice > (double) mADI.mPriceLimit )
@@ -955,6 +962,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mDOMDocument = aDOMDocument;
 
 		AccomodationData_RESULT lAccomodation = mAccomodationDataResults.get( mLastOpenedAccomodation );
+		lAccomodation.mSite = 'B';
 
 		// check-in policy:
 		// <div class="description" id="checkin_policy"><p class="policy_name"><span>Check-in</span></p><p>From 14:00 hours</p><div style="clear:both"></div></div>

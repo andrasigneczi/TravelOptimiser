@@ -23,13 +23,13 @@ public class AccomodationData_RESULT
 	public String  mName;
 	public char    mSite;
 	public String  mURL;
-	public String  mCheckInDate;
-	public String  mCheckOutDate;
+	//public String  mCheckInDate;
+	//public String  mCheckOutDate;
 	public String  mCheckInPolicy;
 	public String  mCheckOutPolicy;
 	public Double  mPrice;
-	public Integer mAdult;
-	public Integer mChildren;
+	//public Integer mAdult;
+	//public Integer mChildren;
 	public Double  mScore;
 	public String  mAddress;
 	public String  mGMapURL;
