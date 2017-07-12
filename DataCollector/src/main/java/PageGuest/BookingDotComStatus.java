@@ -127,7 +127,7 @@ public class BookingDotComStatus
 					else
 					{
 						mStatus = Status.THE_SEARCHING_READY;
-						//starting( guest );
+						guest.printTheMatches();
 						guest.startANewSearch();
 					}
 				}
@@ -142,7 +142,6 @@ public class BookingDotComStatus
 				{
 					mStatus = Status.THE_SEARCHING_READY;
 					guest.printTheMatches();
-					//starting( guest );
 					guest.startANewSearch();
 				}
 				break;

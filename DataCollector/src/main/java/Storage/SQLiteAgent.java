@@ -322,18 +322,43 @@ public class SQLiteAgent extends ArchiverAgent
 
 			ExecuteStatement( aSql );
 
-			aSql = "CREATE TABLE IF NOT EXISTS Flat (\n" +
+			aSql =
+					"CREATE TABLE IF NOT EXISTS AccomodationSearch (\n" +
 					"ID       INTEGER PRIMARY KEY NOT NULL,\n" +
-					"Type     CHAR, /*room=R,apartment=A,hotelroom=H*/\n" +
-					"Name     CHAR(128) UNIQUE,\n" +
-					"Site     CHAR, /*booking.com=B, airbnb.com=A*/\n" +
+					"Type     CHAR, / *room=R,apartment=A,hotelroom=H* /\n" +
+					"Site     CHAR, / *booking.com=B, airbnb.com=A* /\n" +
+					"SearchURL   CHAR(1024),\n" +
+					"CheckIn     CHAR(11),\n" +
+					"CheckOut    CHAR(11),\n" +
+					"PriceLimit  INTEGER,\n" +
+					"City        CHAR(100),\n" +
+					"Filters     CHAR(100),\n" +
+					"RoomNumber  TINYINT,\n" +
+					"AdultNumber TINYINT,\n" +
+					"ChildrenNumber TINYINT,\n" +
+					"ChildrenAge    CHAR(50)\n" +
+					");\n";
+			ExecuteStatement( aSql );
+
+			aSql =
+					"CREATE TABLE IF NOT EXISTS Accomodation (\n" +
+					"ID       INTEGER PRIMARY KEY NOT NULL,\n" +
+					"Type     CHAR, / *room=R,apartment=A,hotelroom=H* /\n" +
+					"Name     CHAR(128),\n" +
+					"Site     CHAR, / *booking.com=B, airbnb.com=A* /\n" +
 					"URL      CHAR(1024),\n" +
-					"CheckIn  CHAR(50),\n" +
-					"CheckOut CHAR(50),\n" +
 					"Price    FLOAT,\n" +
-					"Adult    TINYINT,\n" +
-					"Children TINYINT\n" +
-					");";
+					"Score    CHAR(10),\n" +
+					"Address  CHAR(256),\n" +
+					"RoomSize CHAR(7),\n" +
+					"RoomHook CHAR(10),\n" +
+					"CheckInPolicy  CHAR(256),\n" +
+					"CheckOutPolicy CHAR(256),\n" +
+					"MaxOccupancy   TINYINT,\n" +
+					"BreakfastIncluded CHAR,\n" +
+					"AccomodationSearch_ID INTEGER NOT NULL,\n" +
+					"FOREIGN KEY(AccomodationSearch_ID) REFERENCES AccomodationSearch(ID)\n" +
+					");\n";
 
 			ExecuteStatement( aSql );
 

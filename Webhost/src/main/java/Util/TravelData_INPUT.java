@@ -123,9 +123,9 @@ public class TravelData_INPUT implements Cloneable
 	{
 		TravelData_INPUT lRet = (TravelData_INPUT)super.clone();
 		if( this.mBoughtTickets != null )
-			lRet.mBoughtTickets = new ArrayList<>( this.mBoughtTickets );
+			lRet.mBoughtTickets = (ArrayList<BoughtTicket>)this.mBoughtTickets.clone();
 		if( this.mDiscounts != null )
-			lRet.mDiscounts = new ArrayList<>( this.mDiscounts );
+			lRet.mDiscounts = (ArrayList<Discount>)this.mDiscounts.clone();
 		return lRet;
 	}
 

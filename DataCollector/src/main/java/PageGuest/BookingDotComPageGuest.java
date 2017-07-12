@@ -1,6 +1,7 @@
 package PageGuest;
 
 import Configuration.Configuration;
+import QueueHandlers.JMSStack;
 import Util.CurrencyHelper;
 import Util.DatetimeHelper;
 import Util.StringHelper;
@@ -63,7 +64,8 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	private Integer mLoadReadyTimeout = -1;
 	private boolean mSeparatorFound = false;
 	private HashSet<String> mHotelNames = new HashSet<>();
-	//boolean mCheckinNoTillLimitation = false;
+	private int mHigherPriceCounter; // if 5 consecutive accomodation have only higher price than my limit, I stop the parsing.
+	private static final int HIGH_PRICE_FLAT_COUNT = 5;
 
 	enum MyFilterIds
 	{
@@ -158,6 +160,17 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	}
 
+	public void InitJMS()
+	{
+		mLogger.trace( "begin, thread name: " + getThreadName());
+		synchronized (mMutex)
+		{
+			mSearchQueue = new JMSStack<TravelData_INPUT>();
+			mSearchQueue.setQueueName( getAirline() );
+		}
+		mLogger.trace( "end, thread name: " + getThreadName());
+	}
+
 	public void Init()
 	{
 		DoSearchFromConfig();
@@ -242,6 +255,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		for( MyFilterIds id : MyFilterIds.values())
 			mMyFilterMap2.put( id, false );
 
+		//InitJMS();
 		startANewSearch();
 	}
 
@@ -251,6 +265,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mAccomodationDataResults = new ArrayList<>();
 		mHotelNames = new HashSet<>();
 		mResultSorted = false;
+		mHigherPriceCounter = HIGH_PRICE_FLAT_COUNT;
 		mBrowser.loadURL( getURL());
 	}
 
@@ -764,12 +779,16 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	public boolean openTheNextHotel()
 	{
-		if( mLastOpenedAccomodation + 1 < mAccomodationDataResults.size())
+		if( mHigherPriceCounter >= 0 && mLastOpenedAccomodation + 1 < mAccomodationDataResults.size())
 		{
 			++mLastOpenedAccomodation;
 			mBrowser.loadURL( getURL() + mAccomodationDataResults.get( mLastOpenedAccomodation ).mURL );
 			return true;
 		}
+
+		if( mHigherPriceCounter < 0 )
+			mLogger.info( "The last 5 accomodation haven't had lower price than the limit." );
+		
 		return false;
 	}
 
@@ -889,6 +908,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 		//mStatus.Done( this );
 
+		boolean foundLowerPrice = false;
 
 		for( int i = 1; ; i++ )
 		{
@@ -899,18 +919,18 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			String roomName = "";
 			String roomSize = "";
 			AccomodationData_RESULT lRoomResult = new AccomodationData_RESULT();
-			boolean successful = false;
 			for( DOMElement lRoom : lRooms )
 			{
 				String cssClassName = lRoom.getAttribute( "class" );
 				if( cssClassName.contains( "extendedRow" ))
 				{
-					successful = true;
-					break;
+					// this is the very last row without valueable information
+					continue;
 				}
 
 				if( cssClassName.contains( "maintr" ))
 				{
+					// here are the main information, which can be common among more rooms
 					DOMElement lRoomName = lRoom.findElement( By.className( "js-track-hp-rt-room-name" ));
 					if( lRoomName != null )
 					{
@@ -918,11 +938,28 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 						lRoomResult.mRoomHook = lRoomName.getAttribute( "href" );
 						lRoomResult.mRoomSize = getRoomSize( lRoomResult.mRoomHook );
 						if( !testRoomSize( lRoomResult.mRoomSize ))
-							break;
+							continue;
 					}
 				}
 				else
 				{
+					// PRICE
+					DOMElement lPrice = lRoom.findElement( By.className( "js-track-hp-rt-room-price" ));
+					if( lPrice == null && mADI.mPriceLimit != null )
+						continue;
+
+					if( lPrice != null && mADI.mPriceLimit != null )
+					{
+						lRoomResult.mPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice.getInnerText(), false );
+						if( mADI.mPriceLimit != null )
+						{
+							if( lRoomResult.mPrice > (double) mADI.mPriceLimit )
+								continue;
+							foundLowerPrice = true;
+						}
+					}
+
+					// MAX OCCUPAMCY
 					String maxOccupancy = lRoom.getAttribute( "data-occupancy" );
 					if( maxOccupancy != null && maxOccupancy.length() > 0 )
 						lRoomResult.mMaxOccupancy = maxOccupancy;
@@ -930,29 +967,35 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 					{
 						//System.out.println( "lRoomResult.mMaxOccupancy: '" + lRoomResult.mMaxOccupancy + "'" );
 						if( Integer.parseInt( lRoomResult.mMaxOccupancy ) < mADI.mAdultNumber + mADI.mChildrenNumber )
-							break;
+							continue;
 					}
 					catch( NumberFormatException e )
 					{
 						mLogger.warn( StringHelper.getTraceInformation( e ));
 					}
+
+					// BREAKFAST
 					lRoomResult.mBreakfastIncluded = "1".equals( lRoom.getAttribute( "data-breakfast-included" ));
 
-					DOMElement lPrice = lRoom.findElement( By.className( "js-track-hp-rt-room-price" ));
-					if( lPrice == null && mADI.mPriceLimit != null )
-						break;
-
-					if( lPrice != null && mADI.mPriceLimit != null )
+					lAccomodation.mAvailableRooms.add( lRoomResult );
+					try
 					{
-						lRoomResult.mPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice.getInnerText(), false );
-						if( mADI.mPriceLimit != null && lRoomResult.mPrice > (double) mADI.mPriceLimit )
-							break;
+						lRoomResult = (AccomodationData_RESULT) lRoomResult.clone();
+					}
+					catch( CloneNotSupportedException e )
+					{
+						e.printStackTrace();
 					}
 				}
 			}
+		}
 
-			if( successful)
-				lAccomodation.mAvailableRooms.add( lRoomResult );
+		if( mADI.mPriceLimit != null )
+		{
+			if( foundLowerPrice )
+				mHigherPriceCounter = HIGH_PRICE_FLAT_COUNT;
+			else
+				--mHigherPriceCounter;
 		}
 	}
 
@@ -964,6 +1007,11 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		AccomodationData_RESULT lAccomodation = mAccomodationDataResults.get( mLastOpenedAccomodation );
 		lAccomodation.mSite = 'B';
 
+		if( lAccomodation.mName.contains( "Erkel" ) )
+		{
+			int debug = 10;
+
+		}
 		// check-in policy:
 		// <div class="description" id="checkin_policy"><p class="policy_name"><span>Check-in</span></p><p>From 14:00 hours</p><div style="clear:both"></div></div>
 		DOMElement lCheckinPolicy = mDOMDocument.findElement( By.id( "checkin_policy" ));

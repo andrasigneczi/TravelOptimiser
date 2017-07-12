@@ -149,7 +149,9 @@ public class TravelData_INPUT implements Cloneable, Serializable
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
-		return super.clone();
+		TravelData_INPUT ret = (TravelData_INPUT)super.clone();
+		ret.mFilters = (ArrayList<ResultFilter>)mFilters.clone();
+		return ret;
 	}
 
 	@Override

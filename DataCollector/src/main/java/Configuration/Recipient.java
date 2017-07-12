@@ -1,6 +1,7 @@
 package Configuration;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -17,7 +18,9 @@ public class Recipient implements Cloneable
 
 	public Object clone() throws CloneNotSupportedException
 	{
-		return super.clone();
+		Recipient ret = (Recipient)super.clone();
+		ret.mAttributes = (HashMap<String, String>)mAttributes.clone();
+		return ret;
 	}
 
 	public String get( String key )

@@ -154,7 +154,9 @@ public class AccomodationData_INPUT implements Cloneable, Serializable
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
-		return super.clone();
+		AccomodationData_INPUT ret = (AccomodationData_INPUT) super.clone();
+		ret.mChildrenAge = (ArrayList<Integer>)mChildrenAge.clone();
+		return ret;
 	}
 
 	@Override
