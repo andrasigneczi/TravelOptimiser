@@ -788,7 +788,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 		if( mHigherPriceCounter < 0 )
 			mLogger.info( "The last 5 accomodation haven't had lower price than the limit." );
-		
+
 		return false;
 	}
 
@@ -1007,11 +1007,6 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		AccomodationData_RESULT lAccomodation = mAccomodationDataResults.get( mLastOpenedAccomodation );
 		lAccomodation.mSite = 'B';
 
-		if( lAccomodation.mName.contains( "Erkel" ) )
-		{
-			int debug = 10;
-
-		}
 		// check-in policy:
 		// <div class="description" id="checkin_policy"><p class="policy_name"><span>Check-in</span></p><p>From 14:00 hours</p><div style="clear:both"></div></div>
 		DOMElement lCheckinPolicy = mDOMDocument.findElement( By.id( "checkin_policy" ));

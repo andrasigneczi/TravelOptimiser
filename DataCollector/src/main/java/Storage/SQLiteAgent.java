@@ -325,8 +325,8 @@ public class SQLiteAgent extends ArchiverAgent
 			aSql =
 					"CREATE TABLE IF NOT EXISTS AccomodationSearch (\n" +
 					"ID       INTEGER PRIMARY KEY NOT NULL,\n" +
-					"Type     CHAR, / *room=R,apartment=A,hotelroom=H* /\n" +
-					"Site     CHAR, / *booking.com=B, airbnb.com=A* /\n" +
+					"Type     CHAR, \n" + /*room=R,apartment=A,hotelroom=H*/
+					"Site     CHAR, \n" + /*booking.com=B, airbnb.com=A*/
 					"SearchURL   CHAR(1024),\n" +
 					"CheckIn     CHAR(11),\n" +
 					"CheckOut    CHAR(11),\n" +
@@ -343,9 +343,9 @@ public class SQLiteAgent extends ArchiverAgent
 			aSql =
 					"CREATE TABLE IF NOT EXISTS Accomodation (\n" +
 					"ID       INTEGER PRIMARY KEY NOT NULL,\n" +
-					"Type     CHAR, / *room=R,apartment=A,hotelroom=H* /\n" +
+					"Type     CHAR, \n" + /*room=R,apartment=A,hotelroom=H*/
 					"Name     CHAR(128),\n" +
-					"Site     CHAR, / *booking.com=B, airbnb.com=A* /\n" +
+					"Site     CHAR, \n" + /*booking.com=B, airbnb.com=A*/
 					"URL      CHAR(1024),\n" +
 					"Price    FLOAT,\n" +
 					"Score    CHAR(10),\n" +
