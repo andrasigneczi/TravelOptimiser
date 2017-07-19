@@ -19,7 +19,7 @@ public abstract class PageGuest
 	private final  String                      mAirline;
 	private        Hashtable<String, String>   mAirports;
 	protected      TravelData_RESULT           mTravelDataResult = null;
-	protected      StackIF<TravelData_INPUT>   mSearchQueue;
+	protected      StackIF<Object>             mSearchQueue;
 	protected      Object                      mMutex = new Object();
 	protected      Thread                      mThread;
 	protected      boolean                     mThreadStopped = true;
@@ -197,7 +197,7 @@ public abstract class PageGuest
 		return mThread.getName();
 	}
 
-	public TravelData_INPUT popSearchQueue()
+	public Object popSearchQueue()
 	{
 		return mSearchQueue.pop();
 	}

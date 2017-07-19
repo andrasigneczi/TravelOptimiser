@@ -7,7 +7,6 @@ import Util.DatetimeHelper;
 import Util.StringHelper;
 import com.teamdev.jxbrowser.chromium.*;
 import com.teamdev.jxbrowser.chromium.dom.*;
-import com.teamdev.jxbrowser.chromium.dom.internal.MouseEvent;
 import com.teamdev.jxbrowser.chromium.events.*;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 import com.traveloptimizer.browserengine.TeamDevJxBrowser;
@@ -15,11 +14,8 @@ import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -30,8 +26,6 @@ import static com.teamdev.jxbrowser.chromium.LoggerProvider.getIPCLogger;
 
 import java.util.*;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by Andras on 15/03/2016.
@@ -165,8 +159,8 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mLogger.trace( "begin, thread name: " + getThreadName());
 		synchronized (mMutex)
 		{
-			mSearchQueue = new JMSStack<TravelData_INPUT>();
-			mSearchQueue.setQueueName( getAirline() );
+			mSearchQueue = new JMSStack<>();
+			mSearchQueue.setQueueName( "booking.com" );
 		}
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
@@ -255,7 +249,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		for( MyFilterIds id : MyFilterIds.values())
 			mMyFilterMap2.put( id, false );
 
-		//InitJMS();
+		InitJMS();
 		startANewSearch();
 	}
 
@@ -734,7 +728,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 				if( lPrice != null )
 				{
-					lResult.mPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice.getInnerText(), false );
+					//lResult.mPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice.getInnerText(), false );
 					//System.out.println( "Price: " + lResult.mPrice );
 				}
 
@@ -918,7 +912,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 			String roomName = "";
 			String roomSize = "";
-			AccomodationData_RESULT lRoomResult = new AccomodationData_RESULT();
+			AccomodationData_RESULT.Room lRoomResult = new AccomodationData_RESULT.Room();
 			for( DOMElement lRoom : lRooms )
 			{
 				String cssClassName = lRoom.getAttribute( "class" );
@@ -977,10 +971,15 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 					// BREAKFAST
 					lRoomResult.mBreakfastIncluded = "1".equals( lRoom.getAttribute( "data-breakfast-included" ));
 
+					// Cancellation
+					DOMElement lCancellation = lRoom.findElement( By.id( "cancel_policy_first" ));
+					if( lCancellation != null )
+						lRoomResult.mCancellationPolicy = lCancellation.getInnerText();
+
 					lAccomodation.mAvailableRooms.add( lRoomResult );
 					try
 					{
-						lRoomResult = (AccomodationData_RESULT) lRoomResult.clone();
+						lRoomResult = (AccomodationData_RESULT.Room) lRoomResult.clone();
 					}
 					catch( CloneNotSupportedException e )
 					{
@@ -1040,7 +1039,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			mLogger.info( "HOTEL: " + lAccomodation.mName + "; Score: " + lAccomodation.mScore );
 			mLogger.info( getURL() + lAccomodation.mURL );
 			mLogger.info( "Address: " + lAccomodation.mAddress );
-			for( AccomodationData_RESULT lRoom : lAccomodation.mAvailableRooms )
+			for( AccomodationData_RESULT.Room lRoom : lAccomodation.mAvailableRooms )
 			{
 				mLogger.info( "Room: " + lRoom.mName );
 				mLogger.info( "     Size: " + lRoom.mRoomSize );

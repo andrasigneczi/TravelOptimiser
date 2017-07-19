@@ -1,6 +1,6 @@
 package Storage;
 
-import PageGuest.TravelDataResultComposer;
+import PageGuest.AccomodationData_RESULT;
 import PageGuest.TravelData_RESULT;
 import Configuration.Configuration;
 import Util.StringHelper;
@@ -25,47 +25,35 @@ public class SQLiteAgent extends ArchiverAgent
 {
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger(SQLiteAgent.class);
 
+	private SQLiteAgent_TravelData mAgentTravelData;
+	private SQLiteAgent_AccomodationData mAgentAccomodationData;
+
 	private Connection mConnection = null;
-	private TravelData_RESULT mResult;
-	private TravelDataResultComposer_SQLite mComposer;
 	private final static String mDatabaseFileName = "database";
 	private final static String mDatabaseFileExtension = ".db";
 	private final static String mDatabaseFullFileName = mDatabaseFileName + mDatabaseFileExtension;
 	private String mOpenedDatabaseFileName = null;
-	private int mWizzAirTripCount = 0;
-	private int mRyanAirTripCount = 0;
 
 	public void SQLiteAgent()
 	{
 
 	}
 
-	public int getWizzAirTripCount() { return mWizzAirTripCount; }
-	public int getRyanAirTripCount() { return mRyanAirTripCount; }
+	public int getWizzAirTripCount() { return mAgentTravelData.getWizzAirTripCount(); }
+	public int getRyanAirTripCount() { return mAgentTravelData.getRyanAirTripCount(); }
 
-	private int GetSearchId()
-	{
-		return GetSearchId( null );
-	}
-
-	private int GetSearchId( String aQuery )
+	public int GetSearchId( String aQuery )
 	{
 		mLogger.trace( "begin" );
 
-		String lQuery;
-		if( aQuery == null )
-			lQuery = mComposer.getSearchRecordIdString();
-		else
-			lQuery = aQuery;
-
-		mLogger.trace( lQuery );
+		mLogger.trace( aQuery );
 
 		Statement lStmt = null;
 		try
 		{
 			int lID = -1;
 			lStmt = mConnection.createStatement();
-			ResultSet lResultSet = lStmt.executeQuery( lQuery );
+			ResultSet lResultSet = lStmt.executeQuery( aQuery );
 			while ( lResultSet.next() ) {
 				lID = lResultSet.getInt("ID");
 			}
@@ -84,107 +72,27 @@ public class SQLiteAgent extends ArchiverAgent
 		return -1;
 	}
 
-	private int GetTravelDataResultId( int aSearchId )
-	{
-		mLogger.trace( "begin" );
-		String lQuery = mComposer.getTravelDataResultRecordIdString( aSearchId );
-		Statement lStmt = null;
-
-		mLogger.trace( lQuery );
-
-		try
-		{
-			int lID = -1;
-			lStmt = mConnection.createStatement();
-			ResultSet lResultSet = lStmt.executeQuery( lQuery );
-			while ( lResultSet.next() ) {
-				lID = lResultSet.getInt("ID");
-			}
-			lResultSet.close();
-			lStmt.close();
-			mLogger.trace( "return" );
-			return lID;
-		}
-		catch ( Exception e ) {
-			//System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-			mLogger.error( StringHelper.getTraceInformation( e ) );
-			System.exit( 0 );
-		}
-
-		mLogger.trace( "end" );
-		return -1;
-	}
-
-	private int InsertNewSearch()
-	{
-		mLogger.trace( "begin" );
-		String lQuery = mComposer.insertNewSearchString();
-
-		mLogger.trace( lQuery );
-
-		mLogger.trace( "end" );
-		return ExecuteStatement( lQuery, Statement.RETURN_GENERATED_KEYS );
-	}
-
-	private int InsertTravelDataResult( int aSearchId )
-	{
-		mLogger.trace( "begin" );
-		String lQuery = mComposer.insertTravelDataResultString( aSearchId );
-
-		mLogger.trace( lQuery );
-
-		mLogger.trace( "end" );
-		return ExecuteStatement( lQuery, Statement.RETURN_GENERATED_KEYS );
-	}
-
-	private void InsertTravelDataResult_PossibleTrips( int aTravelDataResultId, String recordedDatetime )
-	{
-		mLogger.trace( "begin" );
-		for( int i = 0; i < mResult.mTrips.size(); i++ )
-		{
-			String lQuery = mComposer.insertTravelDataResult_PossibleTrips( mResult.mTrips.get( i ),
-					aTravelDataResultId,
-					recordedDatetime );
-
-			mLogger.trace( lQuery );
-
-			ExecuteStatement( lQuery );
-		}
-		mLogger.trace( "end" );
-	}
 
 	protected void WriteData( TravelData_RESULT aResult )
 	{
 		mLogger.trace( "begin" );
-		mComposer = (TravelDataResultComposer_SQLite)TravelDataResultComposer.Create( aResult, "sqlite" );
-		mResult = aResult;
-
-		int lSearchId = GetSearchId();
-		if( lSearchId == -1 )
-		{
-			lSearchId = InsertNewSearch();
-		}
-
-		if( aResult.mAirline.equalsIgnoreCase( "wizzair" ))
-			mWizzAirTripCount++;
-		else if( aResult.mAirline.equalsIgnoreCase( "ryanair" ))
-			mRyanAirTripCount++;
-
-		int lTravelDataResultId =  GetTravelDataResultId( lSearchId );
-		if( lTravelDataResultId == -1 )
-		{
-			lTravelDataResultId = InsertTravelDataResult( lSearchId );
-		}
-		InsertTravelDataResult_PossibleTrips( lTravelDataResultId, aResult.mRecordedDatetime );
+		mAgentTravelData.WriteData( aResult );
 		mLogger.trace( "end" );
 	}
 
-	private int ExecuteStatement( String aSql )
+	protected void WriteData( AccomodationData_RESULT aResult )
+	{
+		mLogger.trace( "begin" );
+		mAgentAccomodationData.WriteData( aResult );
+		mLogger.trace( "end" );
+	}
+
+	public int ExecuteStatement( String aSql )
 	{
 		return ExecuteStatement( aSql, Statement.EXECUTE_FAILED );
 	}
 
-	private int ExecuteStatement( String aSql, int aReturnValueType )
+	public int ExecuteStatement( String aSql, int aReturnValueType )
 	{
 		mLogger.trace( "begin" );
 		Statement lStmt = null;
@@ -347,17 +255,28 @@ public class SQLiteAgent extends ArchiverAgent
 					"Name     CHAR(128),\n" +
 					"Site     CHAR, \n" + /*booking.com=B, airbnb.com=A*/
 					"URL      CHAR(1024),\n" +
-					"Price    FLOAT,\n" +
 					"Score    CHAR(10),\n" +
 					"Address  CHAR(256),\n" +
-					"RoomSize CHAR(7),\n" +
-					"RoomHook CHAR(10),\n" +
 					"CheckInPolicy  CHAR(256),\n" +
 					"CheckOutPolicy CHAR(256),\n" +
-					"MaxOccupancy   TINYINT,\n" +
-					"BreakfastIncluded CHAR,\n" +
 					"AccomodationSearch_ID INTEGER NOT NULL,\n" +
 					"FOREIGN KEY(AccomodationSearch_ID) REFERENCES AccomodationSearch(ID)\n" +
+					");\n";
+
+			ExecuteStatement( aSql );
+
+			aSql =
+					"CREATE TABLE IF NOT EXISTS Room (\n" +
+					"ID       INTEGER PRIMARY KEY NOT NULL,\n" +
+					"Name     CHAR(128),\n" +
+					"Price    FLOAT,\n" +
+					"RoomSize CHAR(7),\n" +
+					"RoomHook CHAR(10),\n" +
+					"MaxOccupancy   TINYINT,\n" +
+					"BreakfastIncluded CHAR,\n" +
+					"CancellationPolicy CHAR(256),\n" +
+					"Accomodation_ID INTEGER NOT NULL,\n" +
+					"FOREIGN KEY(Accomodation_ID) REFERENCES Accomodation(ID)\n" +
 					");\n";
 
 			ExecuteStatement( aSql );
@@ -375,6 +294,8 @@ public class SQLiteAgent extends ArchiverAgent
 		Class.forName("org.sqlite.JDBC");
 		mConnection = DriverManager.getConnection( "jdbc:sqlite:" + aDatabaseFileName );
 		mOpenedDatabaseFileName = aDatabaseFileName;
+		mAgentTravelData = new SQLiteAgent_TravelData( mConnection, this );
+		mAgentAccomodationData = new SQLiteAgent_AccomodationData( mConnection, this );
 	}
 
 	public void ConnectionClose()

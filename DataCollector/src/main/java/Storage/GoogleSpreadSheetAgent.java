@@ -1,5 +1,6 @@
 package Storage;
 
+import PageGuest.AccomodationData_RESULT;
 import PageGuest.TravelData_RESULT;
 
 /**
@@ -9,6 +10,12 @@ public class GoogleSpreadSheetAgent extends ArchiverAgent
 {
 	@Override
 	protected void WriteData( TravelData_RESULT aResult )
+	{
+
+	}
+
+	@Override
+	protected void WriteData( AccomodationData_RESULT aResult )
 	{
 
 	}

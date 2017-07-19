@@ -1,6 +1,7 @@
 package Storage;
 
 import Configuration.Configuration;
+import PageGuest.AccomodationData_RESULT;
 import PageGuest.TravelData_RESULT;
 import Util.CurrencyHelper;
 import Util.GMailSender;
@@ -70,6 +71,12 @@ public class EmailNotifierAgent extends ArchiverAgent
 			}
 		}
 		mLogger.trace( "end" );
+	}
+
+	@Override
+	protected void WriteData( AccomodationData_RESULT aResult )
+	{
+
 	}
 
 	@Override

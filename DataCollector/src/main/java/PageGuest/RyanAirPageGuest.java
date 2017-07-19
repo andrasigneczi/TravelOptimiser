@@ -142,7 +142,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         mLogger.trace( "begin, thread name: " + getThreadName());
         synchronized (mMutex)
         {
-            mSearchQueue = new JMSStack<TravelData_INPUT>();
+            mSearchQueue = new JMSStack<>();
             mSearchQueue.setQueueName( getAirline() );
         }
         mLogger.trace( "end, thread name: " + getThreadName());
@@ -312,7 +312,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
                 TravelData_INPUT lTravelDataInput = null;
                 synchronized (mMutex)
                 {
-                    lTravelDataInput = mSearchQueue.pop();
+                    lTravelDataInput = (TravelData_INPUT) mSearchQueue.pop();
                 }
 
                 try

@@ -1,5 +1,6 @@
 package Storage;
 
+import PageGuest.AccomodationData_RESULT;
 import PageGuest.TravelData_RESULT;
 
 /**
@@ -11,5 +12,11 @@ public class ConsoleAgent extends ArchiverAgent
 	protected void WriteData( TravelData_RESULT aResult )
 	{
 		System.out.println( aResult );
+	}
+
+	@Override
+	protected void WriteData( AccomodationData_RESULT aResult )
+	{
+
 	}
 }

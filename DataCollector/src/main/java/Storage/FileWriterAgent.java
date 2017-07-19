@@ -1,5 +1,6 @@
 package Storage;
 
+import PageGuest.AccomodationData_RESULT;
 import PageGuest.TravelDataResultComposer;
 import PageGuest.TravelData_RESULT;
 
@@ -54,5 +55,10 @@ public class FileWriterAgent extends ArchiverAgent
 		{
 			e.printStackTrace();
 		}
+	}
+	@Override
+	protected void WriteData( AccomodationData_RESULT aResult )
+	{
+
 	}
 }
