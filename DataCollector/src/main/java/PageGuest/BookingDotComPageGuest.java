@@ -2,6 +2,7 @@ package PageGuest;
 
 import Configuration.Configuration;
 import QueueHandlers.JMSStack;
+import QueueHandlers.ResultQueue;
 import Util.CurrencyHelper;
 import Util.DatetimeHelper;
 import Util.StringHelper;
@@ -154,16 +155,16 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	}
 
-	public void InitJMS()
-	{
-		mLogger.trace( "begin, thread name: " + getThreadName());
-		synchronized (mMutex)
-		{
-			mSearchQueue = new JMSStack<>();
-			mSearchQueue.setQueueName( "booking.com" );
-		}
-		mLogger.trace( "end, thread name: " + getThreadName());
-	}
+//	public void InitJMS()
+//	{
+//		mLogger.trace( "begin, thread name: " + getThreadName());
+//		synchronized (mMutex)
+//		{
+//			mSearchQueue = new JMSStack<>();
+//			mSearchQueue.setQueueName( "booking.com" );
+//		}
+//		mLogger.trace( "end, thread name: " + getThreadName());
+//	}
 
 	public void Init()
 	{
@@ -249,7 +250,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		for( MyFilterIds id : MyFilterIds.values())
 			mMyFilterMap2.put( id, false );
 
-		InitJMS();
+		//InitJMS();
 		startANewSearch();
 	}
 
@@ -1035,6 +1036,8 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		{
 			if( lAccomodation.mAvailableRooms.size() == 0 )
 				continue;
+
+			ResultQueue.getInstance().push( lAccomodation );
 
 			mLogger.info( "HOTEL: " + lAccomodation.mName + "; Score: " + lAccomodation.mScore );
 			mLogger.info( getURL() + lAccomodation.mURL );

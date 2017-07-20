@@ -10,7 +10,7 @@ public class ResultQueue
 {
     private static org.apache.log4j.Logger mLogger = Logger.getLogger( ResultQueue.class);
 
-    private StackIF<TravelData_RESULT> mResultList = null;
+    private StackIF<Object> mResultList = null;
     private static ResultQueue mInstance = null;
 
     public enum RESULT_QUEUE_TYPE {
@@ -59,12 +59,12 @@ public class ResultQueue
         mQueueName = aQueueName.toLowerCase();
     }
 
-    public void push( TravelData_RESULT aResult )
+    public void push( Object aResult )
     {
         mResultList.push( aResult );
     }
 
-    public TravelData_RESULT pop()
+    public Object pop()
     {
         return mResultList.pop();
     }

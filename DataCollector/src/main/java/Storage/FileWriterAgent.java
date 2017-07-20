@@ -30,9 +30,15 @@ public class FileWriterAgent extends ArchiverAgent
 	}
 
 	@Override
-	protected void WriteData( TravelData_RESULT aResult )
+	protected void WriteData( Object aResultObject )
 	{
-		TravelDataResultComposer_HTML lComposer = (TravelDataResultComposer_HTML)TravelDataResultComposer.Create( aResult, "html" );
+		TravelData_RESULT lResult;
+		if( aResultObject instanceof TravelData_RESULT )
+			lResult = (TravelData_RESULT)aResultObject;
+		else
+			return;
+
+		TravelDataResultComposer_HTML lComposer = (TravelDataResultComposer_HTML)TravelDataResultComposer.Create( lResult, "html" );
 		try
 		{
 			String lTableBodyAndClosingTags = lComposer.toFormattedString() + lComposer.getClosingTags();
@@ -55,10 +61,5 @@ public class FileWriterAgent extends ArchiverAgent
 		{
 			e.printStackTrace();
 		}
-	}
-	@Override
-	protected void WriteData( AccomodationData_RESULT aResult )
-	{
-
 	}
 }

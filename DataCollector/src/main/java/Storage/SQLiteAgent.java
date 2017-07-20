@@ -73,17 +73,14 @@ public class SQLiteAgent extends ArchiverAgent
 	}
 
 
-	protected void WriteData( TravelData_RESULT aResult )
+	protected void WriteData( Object aResultObject )
 	{
 		mLogger.trace( "begin" );
-		mAgentTravelData.WriteData( aResult );
-		mLogger.trace( "end" );
-	}
-
-	protected void WriteData( AccomodationData_RESULT aResult )
-	{
-		mLogger.trace( "begin" );
-		mAgentAccomodationData.WriteData( aResult );
+		TravelData_RESULT lResult;
+		if( aResultObject instanceof TravelData_RESULT )
+			mAgentTravelData.WriteData( (TravelData_RESULT)aResultObject );
+		else
+			mAgentAccomodationData.WriteData( (AccomodationData_RESULT)aResultObject );
 		mLogger.trace( "end" );
 	}
 

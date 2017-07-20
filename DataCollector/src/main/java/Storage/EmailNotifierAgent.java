@@ -74,13 +74,7 @@ public class EmailNotifierAgent extends ArchiverAgent
 	}
 
 	@Override
-	protected void WriteData( AccomodationData_RESULT aResult )
-	{
-
-	}
-
-	@Override
-	protected void WriteData( TravelData_RESULT aResult )
+	protected void WriteData( Object aResultObject )
 	{
 		// Convert the possible trips to OneWayTrip and search the same trips in the Favorites.
 		// Send e-mail about a trip, if it is in the TravelData_REULT and in the Favorites too, a price drop was detected.
@@ -88,8 +82,14 @@ public class EmailNotifierAgent extends ArchiverAgent
 		// Question: how can I detect the price drop in case of a possible trip?
 		// Answer: I have to compare the price of this and price of the earlier newest trip.
 
+		TravelData_RESULT lResult;
+		if( aResultObject instanceof TravelData_RESULT )
+			lResult = (TravelData_RESULT)aResultObject;
+		else
+			return;
+
 		mLogger.trace( "begin" );
-		initMatchedRecipients( aResult );
+		initMatchedRecipients( lResult );
 
 		if( mMatchedRecipients.size() == 0 )
 			return;
@@ -98,13 +98,13 @@ public class EmailNotifierAgent extends ArchiverAgent
 
 		Favorites lFavorites = Favorites.getInstance();
 		mLogger.trace( "favourites: " + lFavorites.toString() );
-		for( TravelData_RESULT.TravelData_PossibleTrip lTrip : aResult.mTrips )
+		for( TravelData_RESULT.TravelData_PossibleTrip lTrip : lResult.mTrips )
 		{
 			// convert from 2017-01-24T14:55:00 to 2017-01-24 14:55
 			String lDepartureDatetime = lTrip.mDepartureDatetime.replace( "T", " " );
 			lDepartureDatetime = lDepartureDatetime.substring( 0, lDepartureDatetime.length() - 3 );
-			OneWayTrip lOneWayTrip = new OneWayTrip( lDepartureDatetime, aResult.mAirline,
-					aResult.mAirportCode_LeavingFrom, aResult.mAirportCode_GoingTo,
+			OneWayTrip lOneWayTrip = new OneWayTrip( lDepartureDatetime, lResult.mAirline,
+					lResult.mAirportCode_LeavingFrom, lResult.mAirportCode_GoingTo,
 					lTrip.mOutboundTrip );
 			String oneWayTripString = lOneWayTrip.toString();
 			mLogger.trace( "one way trip: " + oneWayTripString );
@@ -128,7 +128,6 @@ public class EmailNotifierAgent extends ArchiverAgent
 			}
 		}
 		mLogger.trace( "end" );
-
 	}
 
 	public boolean LoadNewestEarlierTripData( final OneWayTrip aTrip )

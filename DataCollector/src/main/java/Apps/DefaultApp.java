@@ -66,7 +66,7 @@ public class DefaultApp
 			int i = WaitBeforeStop;
 			while( i > 0 )
 			{
-				TravelData_RESULT lResult = ResultQueue.getInstance().pop();
+				Object lResult = ResultQueue.getInstance().pop();
 				if (lResult != null)
 				{
 					lSQLiteAgent.Archive(lResult);

@@ -14,19 +14,9 @@ public abstract class ArchiverAgent
 		mNextAgent = aAgent;
 	}
 
-	abstract protected void WriteData( TravelData_RESULT aResult );
-	abstract protected void WriteData( AccomodationData_RESULT aResult );
+	abstract protected void WriteData( Object aResult );
 
-	public void Archive( final TravelData_RESULT aResult )
-	{
-		if( aResult == null )
-			return;
-		WriteData( aResult );
-		if( mNextAgent != null )
-			mNextAgent.Archive( aResult );
-	}
-
-	public void Archive( final AccomodationData_RESULT aResult )
+	public void Archive( final Object aResult )
 	{
 		if( aResult == null )
 			return;

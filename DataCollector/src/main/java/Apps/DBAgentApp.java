@@ -65,10 +65,11 @@ public class DBAgentApp
 			int i = WaitBeforeStop;
 			while( i > 0 )
 			{
-				TravelData_RESULT lResult = ResultQueue.getInstance().pop();
-				if (lResult != null)
+				Object lResultObject = ResultQueue.getInstance().pop();
+
+				if (lResultObject != null)
 				{
-					lSQLiteAgent.Archive(lResult);
+					lSQLiteAgent.Archive(lResultObject);
 					i = WaitBeforeStop;
 					continue;
 				}
