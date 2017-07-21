@@ -123,4 +123,9 @@ public class SQLiteAgent_AccomodationData
 		InsertAccomodationDataResult_AvailableRooms( lAccomodationDataResultId, aResult.mRecordedDatetime );
 		mLogger.trace( "end" );
 	}
+
+	public int getBookingDotComAccomodationCount()
+	{
+		return mBookingComCount;
+	}
 }

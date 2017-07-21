@@ -88,12 +88,13 @@ public class DBAgentApp
 
 		if( lSQLiteAgent != null )
 		{
-			sendSummaryMail( lSQLiteAgent.getWizzAirTripCount(), lSQLiteAgent.getRyanAirTripCount());
+			sendSummaryMail( lSQLiteAgent.getWizzAirTripCount(), lSQLiteAgent.getRyanAirTripCount(),
+					lSQLiteAgent.getBookingDotComAccomodationCount());
 		}
 		mLogger.trace( "DBAgentApp stop" );
 	}
 
-	private static void sendSummaryMail( int wizzAirTripCount, int ryanAirTripCount )
+	private static void sendSummaryMail( int wizzAirTripCount, int ryanAirTripCount, int bookingDotComAccomodationCount )
 	{
 		try
 		{
@@ -106,9 +107,11 @@ public class DBAgentApp
 			String msgBody = "Hi " + toName + ",\n" +
 					"the DBAgent saved " +
 					wizzAirTripCount +
-					" wizzair trip data and " +
+					" wizzair trip data, " +
 					ryanAirTripCount +
-					" ryanair trip data";
+					" ryanair trip data and " +
+					bookingDotComAccomodationCount +
+					" booking.com accomodataion.";
 
 			GMailSender.send( fromAddress, fromName, toAddress, toName, subject, msgBody );
 		}

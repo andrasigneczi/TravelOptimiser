@@ -41,6 +41,7 @@ public class SQLiteAgent extends ArchiverAgent
 
 	public int getWizzAirTripCount() { return mAgentTravelData.getWizzAirTripCount(); }
 	public int getRyanAirTripCount() { return mAgentTravelData.getRyanAirTripCount(); }
+	public int getBookingDotComAccomodationCount() { return mAgentAccomodationData.getBookingDotComAccomodationCount(); }
 
 	public int GetSearchId( String aQuery )
 	{

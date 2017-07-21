@@ -316,9 +316,12 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 
 				//JSONArray outboundBundles = jobj.getJSONArray( "outboundBundles" );
 				//JSONArray returnBundles = jobj.getJSONArray( "returnBundles" );
-				JSONArray outboundFlights = jobj.getJSONArray( "outboundFlights" );
+				if( !jobj.isNull( "outboundFlights" ))
+				{
+					JSONArray outboundFlights = jobj.getJSONArray( "outboundFlights" );
+					ParseFlights( outboundFlights, true, aResultList, aTravelDataInput );
+				}
 
-				ParseFlights( outboundFlights, true, aResultList, aTravelDataInput );
 				if( returnFlights != null )
 					ParseFlights( returnFlights, false, aResultList, aTravelDataInput );
 			}
