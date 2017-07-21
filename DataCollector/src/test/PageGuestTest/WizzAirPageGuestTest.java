@@ -29,7 +29,7 @@ public class WizzAirPageGuestTest
 		// by name
 		lGuestW.DoSearchByAirportName( "bari", "Brüsszel",
 				"2017.01.01.", "2017.02.02." );
-		TravelData_INPUT lResult = lGuestW.popSearchQueue();
+		TravelData_INPUT lResult = (TravelData_INPUT)lGuestW.popSearchQueue();
 
 		assertNotNull( "The search request isn't in the queue", lResult );
 		assertTrue( "Outbound airport is wrong 1", lResult.mAirportCode_LeavingFrom.equals( "BRI" ));
@@ -37,7 +37,7 @@ public class WizzAirPageGuestTest
 
 		lGuestW.DoSearchByAirportName( "palma", "Párizs",
 				"2017.01.01.", "2017.02.02." );
-		lResult = lGuestW.popSearchQueue();
+		lResult = (TravelData_INPUT)lGuestW.popSearchQueue();
 		assertNotNull( "The search request isn't in the queue", lResult );
 		assertTrue( "Outbound airport is wrong 2", lResult.mAirportCode_LeavingFrom.equals( "PMI" ));
 		assertTrue( "Inbound airport is wrong 2", lResult.mAirportCode_GoingTo.equals( "BVA" ));

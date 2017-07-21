@@ -61,6 +61,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	private HashSet<String> mHotelNames = new HashSet<>();
 	private int mHigherPriceCounter; // if 5 consecutive accomodation have only higher price than my limit, I stop the parsing.
 	private static final int HIGH_PRICE_FLAT_COUNT = 5;
+	private int mMatchedAccomodationCounter = 0;
 
 	enum MyFilterIds
 	{
@@ -261,6 +262,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mHotelNames = new HashSet<>();
 		mResultSorted = false;
 		mHigherPriceCounter = HIGH_PRICE_FLAT_COUNT;
+		mMatchedAccomodationCounter = 0;
 		mBrowser.loadURL( getURL());
 	}
 
@@ -705,6 +707,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 				}
 
 				AccomodationData_RESULT lResult = new AccomodationData_RESULT();
+				lResult.mAccomodationData_INPUT = mADI;
 
 				DOMElement lName = lElement.findElement( By.className( "sr-hotel__name" ));
 				DOMElement lURL = lElement.findElement( By.className( "hotel_name_link url" ));
@@ -774,6 +777,12 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 
 	public boolean openTheNextHotel()
 	{
+		if( mADI.mAccomodationLimit != 0 && mMatchedAccomodationCounter == mADI.mAccomodationLimit )
+		{
+			mLogger.info( "We have reached the accomodation limit." );
+			return false;
+		}
+
 		if( mHigherPriceCounter >= 0 && mLastOpenedAccomodation + 1 < mAccomodationDataResults.size())
 		{
 			++mLastOpenedAccomodation;
@@ -940,13 +949,13 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 				{
 					// PRICE
 					DOMElement lPrice = lRoom.findElement( By.className( "js-track-hp-rt-room-price" ));
-					if( lPrice == null && mADI.mPriceLimit != null )
+					if( lPrice == null && mADI.mPriceLimit != 0 )
 						continue;
 
-					if( lPrice != null && mADI.mPriceLimit != null )
+					if( lPrice != null )
 					{
 						lRoomResult.mPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice.getInnerText(), false );
-						if( mADI.mPriceLimit != null )
+						if( mADI.mPriceLimit != 0 )
 						{
 							if( lRoomResult.mPrice > (double) mADI.mPriceLimit )
 								continue;
@@ -990,13 +999,16 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			}
 		}
 
-		if( mADI.mPriceLimit != null )
+		if( mADI.mPriceLimit > 0 )
 		{
 			if( foundLowerPrice )
 				mHigherPriceCounter = HIGH_PRICE_FLAT_COUNT;
 			else
 				--mHigherPriceCounter;
 		}
+
+		if( lAccomodation.mAvailableRooms.size() > 0 )
+			++mMatchedAccomodationCounter;
 	}
 
 	public void ParseAHotelPage( DOMDocument aDOMDocument )

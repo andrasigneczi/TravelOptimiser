@@ -66,6 +66,7 @@ public class Configuration
 		mValidSearchAccomodationNodes.add( "AdultNumber" );
 		mValidSearchAccomodationNodes.add( "ChildrenNumber" );
 		mValidSearchAccomodationNodes.add( "ChildrenAges" );
+		mValidSearchAccomodationNodes.add( "AccomodationLimit" );
 
 		mValidFlightNodes.add( "LeavingFrom" );
 		mValidFlightNodes.add( "GoingTo" );

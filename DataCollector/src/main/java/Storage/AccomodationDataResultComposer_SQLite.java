@@ -38,18 +38,18 @@ public class AccomodationDataResultComposer_SQLite extends AccomodationDataResul
 				Util.StringHelper.escapeSQL( mResult.mAccomodationData_INPUT.mCheckOut ) + "' " +
 				"AND PriceLimit=" +
 				Util.StringHelper.escapeSQL( String.valueOf( mResult.mAccomodationData_INPUT.mPriceLimit )) + " " +
-				"AND City=" +
-				Util.StringHelper.escapeSQL( mResult.mAccomodationData_INPUT.mCity ) + " " +
-				"AND Filters=" +
-				Util.StringHelper.escapeSQL( mResult.mAccomodationData_INPUT.mFilters ) + " " +
+				"AND City='" +
+				Util.StringHelper.escapeSQL( mResult.mAccomodationData_INPUT.mCity ) + "' " +
+				"AND Filters='" +
+				Util.StringHelper.escapeSQL( mResult.mAccomodationData_INPUT.mFilters ) + "' " +
 				"AND RoomNumber=" +
 				Util.StringHelper.escapeSQL( String.valueOf( mResult.mAccomodationData_INPUT.mRoomNumber )) + " " +
 				"AND AdultNumber=" +
 				Util.StringHelper.escapeSQL( String.valueOf( mResult.mAccomodationData_INPUT.mAdultNumber )) + " " +
 				"AND ChildrenNumber=" +
 				Util.StringHelper.escapeSQL( String.valueOf( mResult.mAccomodationData_INPUT.mChildrenNumber )) + " " +
-				"AND ChildrenAge=" +
-				Util.StringHelper.escapeSQL( mResult.mAccomodationData_INPUT.mChildrenAge.toString()) + ";\n";
+				"AND ChildrenAge='" +
+				Util.StringHelper.escapeSQL( mResult.mAccomodationData_INPUT.mChildrenAge.toString()) + "';\n";
 
 		return lSql;
 	}
@@ -69,19 +69,19 @@ public class AccomodationDataResultComposer_SQLite extends AccomodationDataResul
 				"AdultNumber," +
 				"ChildrenNumber," +
 				"ChildrenAge)\n" +
-				"VALUES(\n'" +
-				Util.StringHelper.escapeSQL( "'" + mResult.mAccomodationData_INPUT.mType ) + "', '" +
-				Util.StringHelper.escapeSQL( "'" + mResult.mAccomodationData_INPUT.mSite ) + "', '" +
-				Util.StringHelper.escapeSQL( "'" + mResult.mAccomodationData_INPUT.mSearchURL ) + "', '"+
-				Util.StringHelper.escapeSQL( "'" + mResult.mAccomodationData_INPUT.mCheckIn ) + "', " +
-				Util.StringHelper.escapeSQL( "'" + mResult.mAccomodationData_INPUT.mCheckOut ) + ", " +
+				"VALUES(\n" +
+				"'" + Util.StringHelper.escapeSQL( "" + mResult.mAccomodationData_INPUT.mType ) + "', " +
+				"'" + Util.StringHelper.escapeSQL( "" + mResult.mAccomodationData_INPUT.mSite ) + "', " +
+				"'" + Util.StringHelper.escapeSQL( mResult.mAccomodationData_INPUT.mSearchURL ) + "', "+
+				"'" + Util.StringHelper.escapeSQL( mResult.mAccomodationData_INPUT.mCheckIn ) + "', " +
+				"'" + Util.StringHelper.escapeSQL( mResult.mAccomodationData_INPUT.mCheckOut ) + "', " +
 				Util.StringHelper.escapeSQL( String.valueOf( mResult.mAccomodationData_INPUT.mPriceLimit )) + ", " +
-				Util.StringHelper.escapeSQL( "'" + mResult.mAccomodationData_INPUT.mCity ) + "', " +
-				Util.StringHelper.escapeSQL( "'" + mResult.mAccomodationData_INPUT.mFilters ) + "', " +
+				"'" + Util.StringHelper.escapeSQL( mResult.mAccomodationData_INPUT.mCity ) + "', " +
+				"'" + Util.StringHelper.escapeSQL( mResult.mAccomodationData_INPUT.mFilters ) + "', " +
 				Util.StringHelper.escapeSQL( String.valueOf( mResult.mAccomodationData_INPUT.mRoomNumber )) + ", " +
 				Util.StringHelper.escapeSQL( String.valueOf( mResult.mAccomodationData_INPUT.mAdultNumber )) + ", " +
 				Util.StringHelper.escapeSQL( String.valueOf( mResult.mAccomodationData_INPUT.mChildrenNumber )) + ", " +
-				Util.StringHelper.escapeSQL( "'" + mResult.mAccomodationData_INPUT.mChildrenAge.toString() ) + "');\n";
+				"'" + Util.StringHelper.escapeSQL( mResult.mAccomodationData_INPUT.mChildrenAge.toString() ) + "');\n";
 		return lSQL;
 	}
 
@@ -107,7 +107,7 @@ public class AccomodationDataResultComposer_SQLite extends AccomodationDataResul
 				"', '" + mResult.mSite +
 				"', '" + Util.StringHelper.escapeSQL( mResult.mURL ) +
 				"', " + mResult.mScore +
-				"', '" + Util.StringHelper.escapeSQL( mResult.mAddress ) +
+				", '" + Util.StringHelper.escapeSQL( mResult.mAddress ) +
 				"', '" + Util.StringHelper.escapeSQL( mResult.mCheckInPolicy ) +
 				"', '" + Util.StringHelper.escapeSQL( mResult.mCheckOutPolicy ) +
 				"', " + aSearchId + ");\n";
@@ -119,16 +119,16 @@ public class AccomodationDataResultComposer_SQLite extends AccomodationDataResul
 	                                                    String recordedDatetime )
 	{
 		String lSQL = "INSERT INTO Room (\n" +
-				"\tName         ,\n" +     // 2016.03.25 17:10
-				"\tPrice           ,\n" +     // 2016.03.25 22:10
+				"\tName         ,\n" +
+				"\tPrice           ,\n" +
 				"\tRoomSize   ,\n" +
 				"\tRoomHook ,\n" +
 				"\tMaxOccupancy    ,\n" +
 				"\tBreakfastIncluded  ,\n" +
 				"\tCancellationPolicy    ,\n" +
 				"\tAccomodation_ID       )\n" +
-				"VALUES(\n'" + Util.StringHelper.escapeSQL( aRoom.mName )+ "', '" +
-				String.valueOf( aRoom.mPrice ) + "', '" +
+				"VALUES(\n'" + Util.StringHelper.escapeSQL( aRoom.mName )+ "', " +
+				String.valueOf( aRoom.mPrice ) + ", '" +
 				Util.StringHelper.escapeSQL( aRoom.mRoomSize ) + "', '" +
 				Util.StringHelper.escapeSQL( aRoom.mRoomHook ) + "', " +
 				aRoom.mMaxOccupancy + ", '" +

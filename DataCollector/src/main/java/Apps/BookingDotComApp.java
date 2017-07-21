@@ -2,6 +2,7 @@ package Apps;
 
 import PageGuest.BookingDotComPageGuest;
 import PageGuest.WizzAirPageGuestTimetable;
+import QueueHandlers.ResultQueue;
 import Root.PageGuestFactory;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
@@ -18,6 +19,7 @@ public class BookingDotComApp
 		try
 		{
 			mLogger.trace( "BookingDotComApp start" );
+			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
 			final BookingDotComPageGuest lGuest = (BookingDotComPageGuest) PageGuestFactory.Create( "booking.com" );
 			lGuest.Init();
 			lGuest.WaitForFinish();

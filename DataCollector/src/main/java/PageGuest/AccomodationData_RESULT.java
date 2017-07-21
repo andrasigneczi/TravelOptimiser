@@ -11,25 +11,25 @@ import java.util.ArrayList;
  */
 public class AccomodationData_RESULT implements Cloneable, Serializable
 {
-	public char    mType;
-	public String  mName;
-	public char    mSite;
-	public String  mURL;
-	public String  mCheckInPolicy;
-	public String  mCheckOutPolicy;
-	public Double  mScore;
-	public String  mAddress;
+	public char    mType = 'A';
+	public String  mName = "";
+	public char    mSite = 'B';
+	public String  mURL  = "";
+	public String  mCheckInPolicy = "";
+	public String  mCheckOutPolicy = "";
+	public Double  mScore = 0.;
+	public String  mAddress = "";
 
 
 	public static class Room implements Cloneable, Serializable
 	{
-		public String  mName;
-		public Double  mPrice;
-		public String  mMaxOccupancy;
-		public boolean mBreakfastIncluded;
-		public String  mRoomSize;
-		public String  mRoomHook;
-		public String  mCancellationPolicy;
+		public String  mName = "";
+		public Double  mPrice = 0.;
+		public String  mMaxOccupancy = "";
+		public boolean mBreakfastIncluded = false;
+		public String  mRoomSize = "";
+		public String  mRoomHook = "";
+		public String  mCancellationPolicy = "";
 
 		@Override
 		public Object clone() throws CloneNotSupportedException
@@ -83,10 +83,10 @@ public class AccomodationData_RESULT implements Cloneable, Serializable
 		out.writeObject( mScore );
 		out.writeObject( mAddress );
 		out.writeObject( mAccomodationData_INPUT );
-		out.writeObject( mAvailableRooms.size());
-		for( Room result : mAvailableRooms )
-			out.writeObject( result );
 		out.writeObject( mRecordedDatetime );
+		out.writeObject( mAvailableRooms );
+		//for( Room result : mAvailableRooms )
+		//	out.writeObject( result );
 	}
 
 	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
@@ -100,9 +100,11 @@ public class AccomodationData_RESULT implements Cloneable, Serializable
 		mScore = (Double)in.readObject();
 		mAddress = (String)in.readObject();
 		mAccomodationData_INPUT = (AccomodationData_INPUT) in.readObject();
-		mAvailableRooms = new ArrayList<>((int)in.readObject());
-		for( int i = 0; i < mAvailableRooms.size(); ++i )
-			mAvailableRooms.set( i, (Room)in.readObject());
 		mRecordedDatetime = (String)in.readObject();
+		mAvailableRooms = (ArrayList<Room>)in.readObject();
+		//mAvailableRooms = new ArrayList<>();
+//		int lSize = in.readInt();
+//		for( int i = 0; i < lSize; ++i )
+//			mAvailableRooms.add((Room)in.readObject());
 	}
 }

@@ -29,7 +29,7 @@ public class RyanAirPageGuestTest
 		// by name
 		lGuestR.DoSearchByAirportName( "bari", "paris (",
 				"2017.01.01.", "2017.02.02." );
-		TravelData_INPUT lResult = lGuestR.popSearchQueue();
+		TravelData_INPUT lResult = (TravelData_INPUT)lGuestR.popSearchQueue();
 
 		assertNotNull( "The search request isn't in the queue", lResult );
 		assertTrue( "Outbound airport is wrong 1", lResult.mAirportCode_LeavingFrom.equals( "BRI" ));
@@ -37,7 +37,7 @@ public class RyanAirPageGuestTest
 
 		lGuestR.DoSearchByAirportName( "Prag", "Rome (C",
 				"2017.01.01.", "2017.02.02." );
-		lResult = lGuestR.popSearchQueue();
+		lResult = (TravelData_INPUT)lGuestR.popSearchQueue();
 		assertNotNull( "The search request isn't in the queue", lResult );
 		assertTrue( "Outbound airport is wrong 2", lResult.mAirportCode_LeavingFrom.equals( "PRG" ));
 		assertTrue( "Inbound airport is wrong 2", lResult.mAirportCode_GoingTo.equals( "CIA" ));
