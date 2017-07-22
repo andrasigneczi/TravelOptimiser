@@ -947,6 +947,21 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 				}
 				else
 				{
+					// MAX OCCUPAMCY
+					String maxOccupancy = lRoom.getAttribute( "data-occupancy" );
+					if( maxOccupancy != null && maxOccupancy.length() > 0 )
+						lRoomResult.mMaxOccupancy = maxOccupancy;
+					try
+					{
+						//System.out.println( "lRoomResult.mMaxOccupancy: '" + lRoomResult.mMaxOccupancy + "'" );
+						if( Integer.parseInt( lRoomResult.mMaxOccupancy ) < mADI.mAdultNumber + mADI.mChildrenNumber )
+							continue;
+					}
+					catch( NumberFormatException e )
+					{
+						mLogger.warn( StringHelper.getTraceInformation( e ));
+					}
+
 					// PRICE
 					DOMElement lPrice = lRoom.findElement( By.className( "js-track-hp-rt-room-price" ));
 					if( lPrice == null && mADI.mPriceLimit != 0 )
@@ -961,21 +976,6 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 								continue;
 							foundLowerPrice = true;
 						}
-					}
-
-					// MAX OCCUPAMCY
-					String maxOccupancy = lRoom.getAttribute( "data-occupancy" );
-					if( maxOccupancy != null && maxOccupancy.length() > 0 )
-						lRoomResult.mMaxOccupancy = maxOccupancy;
-					try
-					{
-						//System.out.println( "lRoomResult.mMaxOccupancy: '" + lRoomResult.mMaxOccupancy + "'" );
-						if( Integer.parseInt( lRoomResult.mMaxOccupancy ) < mADI.mAdultNumber + mADI.mChildrenNumber )
-							continue;
-					}
-					catch( NumberFormatException e )
-					{
-						mLogger.warn( StringHelper.getTraceInformation( e ));
 					}
 
 					// BREAKFAST
