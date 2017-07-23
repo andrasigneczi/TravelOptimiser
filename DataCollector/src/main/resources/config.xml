@@ -54,19 +54,23 @@
     <searches>
 
         <bookingdotcom>
-            <Checkin>2017.07.28.</Checkin>
-            <Checkout>2017.07.31.</Checkout>
-            <PriceLimit>140</PriceLimit>
-            <City>Budapest</City>
-            <filters>apartment,free wifi,parking place</filters>
+            <Checkin>2017.09.08.</Checkin>
+            <Checkout>2017.09.11.</Checkout>
+            <City>Budapest, Pest, Hungary</City>
+            <RoomNumber>1</RoomNumber>
+            <AdultNumber>1</AdultNumber>
+            <ChildrenNumber>2</ChildrenNumber>
+            <ChildrenAges>8,11</ChildrenAges>
+            <AccomodationLimit>120</AccomodationLimit>
+            <Filters>price_0-50</Filters>
         </bookingdotcom>
 
         <airbnb>
-            <Checkin>2017.07.28.</Checkin>
-            <Checkout>2017.07.31.</Checkout>
-            <PriceLimit>140</PriceLimit>
+            <Checkin>2017.08.28.</Checkin>
+            <Checkout>2017.08.31.</Checkout>
+            <PriceLimit>150</PriceLimit>
             <City>Budapest</City>
-            <filters>apartment,free wifi,parking place</filters>
+            <Filters>apartment,free wifi,parking place</Filters>
         </airbnb>
 
         <wizzair>
@@ -84,11 +88,11 @@
         <!-- ******* -->
 
         <ryanair>
-            <LeavingFrom>BUD</LeavingFrom>
-            <GoingTo>DUB</GoingTo>
-            <DepartureDay>2017.04.14.</DepartureDay>
-            <ReturnDay>2017.04.20.</ReturnDay>
-            <AdultNumber>1</AdultNumber>
+            <LeavingFrom>FRA</LeavingFrom>
+            <GoingTo>AGP</GoingTo>
+            <DepartureDay>2017.09.01.</DepartureDay>
+            <ReturnDay>2017.09.03.</ReturnDay>
+            <AdultNumber>2</AdultNumber>
             <ChildNumber>0</ChildNumber>
             <InfantNumber>0</InfantNumber>
             <NearbyAirports>false</NearbyAirports>
