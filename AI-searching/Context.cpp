@@ -19,6 +19,11 @@ void Context::createNode( Connection c ) {
 		}
     }
     
+	if (c.mConnectionType == Connection::stay) {
+		it->second->mLinks.push_back({ c.mConnectionType, it->second, c.mTimeConsuming, c.mDistance, c.mCost });
+		return;
+	}
+
     auto it2 = mNodes.find( c.mNode2 );
     if( it2 == mNodes.end()) {
         CtNode* node = new CtNode( c.mNode2 );

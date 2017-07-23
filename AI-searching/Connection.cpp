@@ -38,3 +38,41 @@ Connection Connection::createTaxi( std::string node1, std::string node2, double 
 Connection Connection::createOnFoot( std::string node1, std::string node2, double timeConsuming ) {
     return Connection( node1, node2, car, timeConsuming, 0, 0 );
 }
+
+Connection::Type Connection::getType(std::string name) {
+	if (name.compare("car") == 0) {
+		return car;
+	}
+	else if (name.compare("bus") == 0) {
+		return bus;
+	}
+	else if (name.compare("taxi") == 0) {
+		return taxi;
+	}
+	else if (name.compare("airplane") == 0) {
+		return airplane;
+	}
+	else if (name.compare("on_foot") == 0) {
+		return on_foot;
+	}
+	else if (name.compare("stay") == 0) {
+		return stay;
+	}
+	//else if (name.compare("unknown") == 0) {
+	//	return unknown;
+	//}
+	return unknown;
+}
+
+std::string Connection::typeToString(Connection::Type type) {
+	switch (type) {
+	case car: return "car"; break;
+	case bus: return "bus"; break;
+	case taxi: return "taxi"; break;
+	case airplane: return "airplane"; break;
+	case on_foot: return "on_foot"; break;
+	case stay: return "stay"; break;
+	case unknown: return "unknown"; break;
+	}
+	return "";
+}

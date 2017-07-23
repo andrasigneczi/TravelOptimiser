@@ -40,7 +40,7 @@ Context* createContext() {
     
     // how will I define, that if I departed from Igel to BUD, I have to come back with that?
     // Maybe I should prepare a different search for this scenario
-    context->setGoal( { "Igel", "BUD", "Igel" } );
+    context->setGoal( { "Igel", "BUD:stay", "Igel" } );
     return context;
 }
 

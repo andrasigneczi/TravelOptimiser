@@ -2,6 +2,7 @@
 #define _BACKTRACK_H
 
 #include "AI.h"
+#include <set>
 
 class Backtrack : public AI {
 
@@ -20,11 +21,13 @@ private:
     bool genNextPath();
 
 	void printPath();
-	bool checkIfAlreadyInserted(const Context::CtNode* ctNode, int index);
+	bool isMatch(int pathIndex, std::string goal, Connection::Type linkType);
+	void deleteLastPathItem();
 
     std::vector<Backtrack::BtNode> mPath;
 	std::vector<Backtrack::BtNode> mAlreadyUsedPath;
     bool mTerminated;
+	std::set<std::string> mInserted;
 };
 
 #endif // BACKTRACK

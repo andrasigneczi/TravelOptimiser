@@ -17,7 +17,8 @@ public:
         taxi,
         airplane,
         on_foot,
-        stay // in a city, in a hotel, at the airport, etc.
+        stay, // in a city, in a hotel, at the airport, etc.
+		unknown
     };
     
     // cost calculated from the distance and the fuel price/km
@@ -37,6 +38,9 @@ public:
     
     // frobably it's free of charge
     static Connection createOnFoot( std::string node1, std::string node2, double timeConsuming );
+
+	static Type getType(std::string name);
+	static std::string typeToString(Connection::Type type);
 
 	std::string mNode1; // name, e.g. Igel
 	std::string mNode2; // name, e.g. Luxmbourg

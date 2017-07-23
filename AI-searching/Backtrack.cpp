@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <iostream>
 
+#define MAXPATHLENGTH 4
+
 std::vector<Connection> Backtrack::seachTheBestWay( Context* context ) {
     mContext.reset( context );
     
@@ -31,6 +33,14 @@ void Backtrack::init() {
     }
 }
 
+bool Backtrack::isMatch(int pathIndex, std::string goal, Connection::Type linkType) {
+	bool match = mPath[pathIndex].mCtNode->mName.compare(goal) == 0; // name is equal
+	if (match && linkType != Connection::unknown && 
+		mPath[pathIndex].mIndex >= 0 && linkType != mPath[pathIndex].mCtNode->mLinks[mPath[pathIndex].mIndex].mType)
+		match = false;
+	return match;
+}
+
 bool Backtrack::isGoal() {
     if( mPath.size() <  mContext->getGoalSize())
         return false;
@@ -50,7 +60,14 @@ bool Backtrack::isGoal() {
 	int goalIndex = 1;
 	while(pathIndex < (int)(mPath.size()) - 1 && goalIndex < (int)(mContext->getGoalSize()) - 1 ) {
         std::string goal =  mContext->getGoalItem(goalIndex);
-		while (mPath[pathIndex].mCtNode->mName.compare(goal) != 0) {
+		int separator = goal.find(":");
+		Connection::Type linkType = Connection::unknown;
+		if (separator != std::string::npos) {
+			linkType = Connection::getType(goal.substr(separator + 1));
+			goal = goal.substr(0, separator);
+		}
+
+		while (!isMatch( pathIndex, goal, linkType)) {
 			++pathIndex;
 			if (pathIndex == (int)mPath.size())
 				return false;
@@ -61,18 +78,31 @@ bool Backtrack::isGoal() {
 	return true;
 }
 
-bool Backtrack::checkIfAlreadyInserted(const Context::CtNode* ctNode, int index ) {
-	for (size_t i = 0; i < mPath.size(); ++i) {
-		if (mPath[i].mCtNode == ctNode && mPath[i].mIndex <= index) {
-			return true;
-		}
+void Backtrack::deleteLastPathItem() {
+	if (mPath.size() >= 2) {
+		Backtrack::BtNode* btNode1 = &mPath[mPath.size() - 2];
+		Backtrack::BtNode* btNode2 = &mPath[mPath.size() - 1];
+
+		std::string tripName = btNode1->mCtNode->mName + ":" + Connection::typeToString(btNode1->mCtNode->mLinks[btNode1->mIndex].mType) + ":" + 
+			btNode2->mCtNode->mName;
+		
+		mInserted.erase(tripName);
 	}
-	return false;
+
+	mPath.erase(mPath.end() - 1);
 }
 
 bool Backtrack::genNextPath() {
+	// I have to handle the car parking
+
 	if (mPath.size() == 0) {
 		return false;
+	}
+
+	if (mPath.size() == MAXPATHLENGTH) {
+		// step back
+		deleteLastPathItem();
+		return genNextPath();
 	}
 
 	Backtrack::BtNode* btNode = &mPath[mPath.size() - 1];
@@ -80,52 +110,39 @@ bool Backtrack::genNextPath() {
 		// step right
 		btNode->mIndex += 1;
 		Context::CtNode* ctNode = btNode->mCtNode->mLinks[btNode->mIndex].mNode;
-		if (checkIfAlreadyInserted(ctNode, btNode->mIndex)) {
+
+		// generating the name of the from-type-to trip
+		std::string tripName = btNode->mCtNode->mName + ":" + Connection::typeToString(btNode->mCtNode->mLinks[btNode->mIndex].mType) + ":" + ctNode->mName;
+
+		if ( mInserted.find(tripName) != mInserted.end()) {
 			return genNextPath();
 		}
+
+		mInserted.emplace(tripName);
+
 		mPath.push_back(Backtrack::BtNode(ctNode, -1));
 		return true;
 	}
 
 	// step back
-	mPath.erase(mPath.end() - 1);
+	deleteLastPathItem();
 	return genNextPath();
 }
-/*
-bool Backtrack::genNextPath() {
-	Backtrack::BtNode* btNode = &mPath[mPath.size() - 1];
-	if (btNode->mCtNode->mLinks.size() > 0) {
-		btNode->mIndex += 1;
-		Context::CtNode* ctNode = btNode->mCtNode->mLinks[btNode->mIndex].mNode;
-		mPath.push_back(Backtrack::BtNode(ctNode, -1));
-		return true;
-	} 
-
-	while (true) {
-		// step back and ...
-		mPath.erase(mPath.end() - 1);
-
-		if (mPath.size() == 0)
-			return false;
-
-		// step right
-		btNode = &mPath[mPath.size() - 1];
-		if (btNode->mIndex < btNode->mCtNode->mLinks.size() - 1) {
-			btNode->mIndex += 1;
-			Context::CtNode* ctNode = btNode->mCtNode->mLinks[btNode->mIndex].mNode;
-			mPath.push_back(Backtrack::BtNode(ctNode, -1));
-			break;
-		}
-	}
-
-	return true;
-}
-*/
 
 void Backtrack::printPath() {
 	for (size_t i = 0; i < mPath.size(); ++i) {
 		Backtrack::BtNode* btNode = &mPath[i];
-		std::cout << btNode->mCtNode->mName << " (" << btNode->mIndex << ")" << "\n---------------\n";
+
+		if (btNode->mIndex >= 0) {
+			std::cout << btNode->mCtNode->mName << " ("
+				<< Connection::typeToString(btNode->mCtNode->mLinks[btNode->mIndex].mType) << ")" 
+				<< "\n---------------\n";
+		}
+		else {
+			std::cout << btNode->mCtNode->mName << " ("
+				<< btNode->mIndex << ")" 
+				<< "\n---------------\n";
+		}
 	}
 
 	std::cout << std::string( 30, '=');
