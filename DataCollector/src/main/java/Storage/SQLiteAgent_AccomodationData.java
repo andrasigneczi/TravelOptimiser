@@ -110,9 +110,9 @@ public class SQLiteAgent_AccomodationData
 			lSearchId = InsertNewSearch();
 		}
 
-		if( aResult.mType == 'B' )
+		if( aResult.mSite == 'B' )
 			mBookingComCount++;
-		else if( aResult.mType == 'A' )
+		else if( aResult.mSite == 'A' )
 			mAirbnbComCount++;
 
 		int lAccomodationDataResultId =  GetAccomodationDataResultId( lSearchId );

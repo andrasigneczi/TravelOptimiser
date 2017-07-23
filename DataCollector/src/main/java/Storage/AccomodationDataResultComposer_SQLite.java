@@ -126,6 +126,7 @@ public class AccomodationDataResultComposer_SQLite extends AccomodationDataResul
 				"\tMaxOccupancy    ,\n" +
 				"\tBreakfastIncluded  ,\n" +
 				"\tCancellationPolicy    ,\n" +
+				"\tSearchDatetime    ,\n" +
 				"\tAccomodation_ID       )\n" +
 				"VALUES(\n'" + Util.StringHelper.escapeSQL( aRoom.mName )+ "', " +
 				String.valueOf( aRoom.mPrice ) + ", '" +
@@ -134,6 +135,7 @@ public class AccomodationDataResultComposer_SQLite extends AccomodationDataResul
 				aRoom.mMaxOccupancy + ", '" +
 				( aRoom.mBreakfastIncluded ? "Y" : "N" ) + "', '" +
 				Util.StringHelper.escapeSQL( aRoom.mCancellationPolicy ) + "', " +
+				"datetime('" + recordedDatetime + "')," +
 				aAccomodationDataResultId + ");\n";
 		return lSQL;
 	}

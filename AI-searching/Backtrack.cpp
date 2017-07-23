@@ -2,17 +2,19 @@
 #include <algorithm>
 #include <iostream>
 
-#define MAXPATHLENGTH 4
+#define MAXPATHLENGTH 8
 
 std::vector<Connection> Backtrack::seachTheBestWay( Context* context ) {
     mContext.reset( context );
     
     init();
-	printPath();
-    while( !mTerminated && !isGoal()) {
+
+    while( !mTerminated ) {
+		if (isGoal())
+			savePath();
 		mTerminated = !genNextPath();
-		printPath();
     }
+	printAllPaths();
 
 	std::string str;
 	std::getline(std::cin, str );
@@ -129,9 +131,9 @@ bool Backtrack::genNextPath() {
 	return genNextPath();
 }
 
-void Backtrack::printPath() {
-	for (size_t i = 0; i < mPath.size(); ++i) {
-		Backtrack::BtNode* btNode = &mPath[i];
+void Backtrack::printPath( const std::vector<Backtrack::BtNode>& path ) {
+	for (size_t i = 0; i < path.size(); ++i) {
+		const Backtrack::BtNode* btNode = &path[i];
 
 		if (btNode->mIndex >= 0) {
 			std::cout << btNode->mCtNode->mName << " ("
@@ -147,4 +149,17 @@ void Backtrack::printPath() {
 
 	std::cout << std::string( 30, '=');
 	std::cout << std::endl;
+}
+
+void Backtrack::printAllPaths() {
+	for (const auto& path : mMatches ) {
+		printPath(path);
+		std::string str;
+		std::getline(std::cin, str);
+	}
+}
+
+void Backtrack::savePath() {
+	std::vector<Backtrack::BtNode> path = mPath;
+	mMatches.push_back(path);
 }

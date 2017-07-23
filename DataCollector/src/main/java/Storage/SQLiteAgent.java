@@ -273,6 +273,7 @@ public class SQLiteAgent extends ArchiverAgent
 					"MaxOccupancy   TINYINT,\n" +
 					"BreakfastIncluded CHAR,\n" +
 					"CancellationPolicy CHAR(256),\n" +
+					"SearchDatetime CHAR(19) NOT NULL,\n" +
 					"Accomodation_ID INTEGER NOT NULL,\n" +
 					"FOREIGN KEY(Accomodation_ID) REFERENCES Accomodation(ID)\n" +
 					");\n";

@@ -20,11 +20,14 @@ private:
     bool isGoal();
     bool genNextPath();
 
-	void printPath();
+	void printPath(const std::vector<Backtrack::BtNode>& path );
+	void printAllPaths();
+	void savePath();
 	bool isMatch(int pathIndex, std::string goal, Connection::Type linkType);
 	void deleteLastPathItem();
 
     std::vector<Backtrack::BtNode> mPath;
+	std::vector<std::vector<Backtrack::BtNode>> mMatches;
 	std::vector<Backtrack::BtNode> mAlreadyUsedPath;
     bool mTerminated;
 	std::set<std::string> mInserted;
