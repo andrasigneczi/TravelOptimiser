@@ -18,18 +18,22 @@ public:
         airplane,
         on_foot,
         stay, // in a city, in a hotel, at the airport, etc.
+		parking,
+		carpool,
 		unknown
     };
     
     // cost calculated from the distance and the fuel price/km
-    static Connection createCar( std::string node1, std::string node2, double timeConsuming, double distance );
-    
+	static Connection createCar(std::string node1, std::string node2, double timeConsuming, double distance);
+	static Connection createCarpool(std::string node1, std::string node2, double timeConsuming, double cost);
+
     // cost is the ticket and additional prices
     static Connection createAirplane( std::string node1, std::string node2, double timeConsuming, double cost );
     
     // e.g. staying in a hotel or waiting at the airport
-    static Connection createStay( std::string node, double timeConsuming, double cost );
-    
+	static Connection createStay(std::string node, double timeConsuming, double cost);
+	static Connection createParking(std::string node, double timeConsuming, double cost);
+
     // the distance doesn't matter
     static Connection createBus( std::string node1, std::string node2, double timeConsuming, double cost );
 

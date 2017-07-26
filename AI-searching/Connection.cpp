@@ -14,6 +14,10 @@ Connection Connection::createCar( std::string node1, std::string node2, double t
     return Connection( node1, node2, car, timeConsuming, distance, 0 );
 }
 
+Connection Connection::createCarpool(std::string node1, std::string node2, double timeConsuming, double cost) {
+	return Connection(node1, node2, carpool, timeConsuming, 0, cost);
+}
+
 // cost is the ticket and additional prices
 Connection Connection::createAirplane( std::string node1, std::string node2, double timeConsuming, double cost ) {
     return Connection( node1, node2, airplane, timeConsuming, 0, cost );
@@ -22,6 +26,10 @@ Connection Connection::createAirplane( std::string node1, std::string node2, dou
 // e.g. staying in a hotel or waiting at the airport
 Connection Connection::createStay( std::string node, double timeConsuming, double cost ) {
     return Connection( node, "", stay, timeConsuming, 0, cost );
+}
+
+Connection Connection::createParking(std::string node, double timeConsuming, double cost) {
+	return Connection(node, "", parking, timeConsuming, 0, cost);
 }
 
 // the distance doesn't matter
@@ -58,6 +66,12 @@ Connection::Type Connection::getType(std::string name) {
 	else if (name.compare("stay") == 0) {
 		return stay;
 	}
+	else if (name.compare("parking") == 0) {
+		return parking;
+	}
+	else if (name.compare("carpool") == 0) {
+		return carpool;
+	}
 	//else if (name.compare("unknown") == 0) {
 	//	return unknown;
 	//}
@@ -73,6 +87,8 @@ std::string Connection::typeToString(Connection::Type type) {
 	case on_foot: return "on_foot"; break;
 	case stay: return "stay"; break;
 	case unknown: return "unknown"; break;
+	case parking: return "parking"; break;
+	case carpool: return "carpool"; break;
 	}
 	return "";
 }

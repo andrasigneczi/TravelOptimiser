@@ -19,12 +19,16 @@ private:
 	void init();
     bool isGoal();
     bool genNextPath();
+	bool isValidPath();
 
 	void printPath(const std::vector<Backtrack::BtNode>& path );
 	void printAllPaths();
 	void savePath();
 	bool isMatch(int pathIndex, std::string goal, Connection::Type linkType);
 	void deleteLastPathItem();
+
+	const std::string& pathNodeName(int pathIndex) { return mPath[ pathIndex ].mCtNode->mName;  }
+	const Context::CtNode::Link& pathNodeLink(int pathIndex) { return mPath[pathIndex].mCtNode->mLinks[mPath[pathIndex].mIndex];  }
 
     std::vector<Backtrack::BtNode> mPath;
 	std::vector<std::vector<Backtrack::BtNode>> mMatches;

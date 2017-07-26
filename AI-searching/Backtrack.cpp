@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <iostream>
 
-#define MAXPATHLENGTH 8
+#define MAXPATHLENGTH 10
 
 std::vector<Connection> Backtrack::seachTheBestWay( Context* context ) {
     mContext.reset( context );
@@ -43,6 +43,70 @@ bool Backtrack::isMatch(int pathIndex, std::string goal, Connection::Type linkTy
 	return match;
 }
 
+bool Backtrack::isValidPath() {
+	if (mPath.size() < 3)
+		return true;
+
+	// 1) If I depart by car, I have to arrive by car
+	if ((pathNodeLink(0).mType == Connection::car &&  pathNodeLink(mPath.size() - 2).mType != Connection::car) ||
+		(pathNodeLink(0).mType != Connection::car &&  pathNodeLink(mPath.size() - 2).mType == Connection::car)) {
+		return false;
+	}
+
+	// 2) I can use the car link type in the following cases:
+	//		* between the first and the second node
+	//		* in a connection following a car connection. Actually I must use it in this case.
+	//		* in a connection following a parking connection.
+	// 3) I can change from car to anything else, if I have a 'parking' connection.
+	// 4) I can change to car only at a 'parking' connection.
+	// 5) Every even parking must be the same, then the prevoius one.
+
+	std::string parkingPlace;
+
+#if 1
+	for (size_t i = 1; i < mPath.size() - 1; ++i) {
+		if (pathNodeLink(i).mType == Connection::car) {
+			if (pathNodeLink(i - 1).mType != Connection::car && pathNodeLink(i - 1).mType != Connection::parking) {
+//				printPath(mPath);
+				return false;
+			}
+		}
+
+		// car parking allowed after a car link or before a car link
+		if (pathNodeLink(i).mType == Connection::parking) {
+			if (parkingPlace.length() == 0) {
+				parkingPlace = pathNodeName(i);
+			}
+			else {
+				if (parkingPlace.compare(pathNodeName(i)) != 0)
+					return false;
+				parkingPlace = "";
+			}
+
+			if (i < mPath.size() - 1) {
+				// if this link is parking, the previous or the next one must be car
+				if (pathNodeLink(i - 1).mType != Connection::car && pathNodeLink(i + 1).mType != Connection::car) {
+					return false;
+				}
+			}
+			else {
+				// if this link is parking, the previous one must be car
+				if (pathNodeLink(i - 1).mType != Connection::car) {
+					return false;
+				}
+			}
+		}
+		else {
+			// if this link isn't parking, nor car, then the previos musn't be car
+			if (pathNodeLink(i).mType != Connection::car && pathNodeLink(i - 1).mType == Connection::car) {
+				return false;
+			}
+		}
+	}
+#endif
+	return true;
+}
+
 bool Backtrack::isGoal() {
     if( mPath.size() <  mContext->getGoalSize())
         return false;
@@ -55,6 +119,9 @@ bool Backtrack::isGoal() {
 
 	// the last item, ...
 	if (mPath[mPath.size() - 1].mCtNode->mName.compare(mContext->getLastGoalItem()) != 0)
+		return false;
+
+	if (!isValidPath())
 		return false;
 
 	// and the others
@@ -82,7 +149,9 @@ bool Backtrack::isGoal() {
 
 void Backtrack::deleteLastPathItem() {
 	if (mPath.size() >= 2) {
+		// before last item
 		Backtrack::BtNode* btNode1 = &mPath[mPath.size() - 2];
+		// last item
 		Backtrack::BtNode* btNode2 = &mPath[mPath.size() - 1];
 
 		std::string tripName = btNode1->mCtNode->mName + ":" + Connection::typeToString(btNode1->mCtNode->mLinks[btNode1->mIndex].mType) + ":" + 
@@ -95,8 +164,6 @@ void Backtrack::deleteLastPathItem() {
 }
 
 bool Backtrack::genNextPath() {
-	// I have to handle the car parking
-
 	if (mPath.size() == 0) {
 		return false;
 	}
@@ -113,15 +180,15 @@ bool Backtrack::genNextPath() {
 		btNode->mIndex += 1;
 		Context::CtNode* ctNode = btNode->mCtNode->mLinks[btNode->mIndex].mNode;
 
-		// generating the name of the from-type-to trip
+		// generating the name of the from:type:to trip
 		std::string tripName = btNode->mCtNode->mName + ":" + Connection::typeToString(btNode->mCtNode->mLinks[btNode->mIndex].mType) + ":" + ctNode->mName;
 
-		if ( mInserted.find(tripName) != mInserted.end()) {
+		// we don't want to make more than one circle, except parking
+		if ( pathNodeLink(mPath.size() - 1).mType != Connection::parking && mInserted.find(tripName) != mInserted.end()) {
 			return genNextPath();
 		}
 
 		mInserted.emplace(tripName);
-
 		mPath.push_back(Backtrack::BtNode(ctNode, -1));
 		return true;
 	}
@@ -132,8 +199,12 @@ bool Backtrack::genNextPath() {
 }
 
 void Backtrack::printPath( const std::vector<Backtrack::BtNode>& path ) {
+	int parkingCounter = 0;
 	for (size_t i = 0; i < path.size(); ++i) {
 		const Backtrack::BtNode* btNode = &path[i];
+
+		if (btNode->mIndex >= 0 && btNode->mCtNode->mLinks[btNode->mIndex].mType == Connection::parking && btNode->mCtNode->mName.compare( "CRL" ) == 0 )
+			parkingCounter++;
 
 		if (btNode->mIndex >= 0) {
 			std::cout << btNode->mCtNode->mName << " ("
@@ -147,15 +218,18 @@ void Backtrack::printPath( const std::vector<Backtrack::BtNode>& path ) {
 		}
 	}
 
+	std::cout << "parking counter: " << parkingCounter << std::endl;
 	std::cout << std::string( 30, '=');
 	std::cout << std::endl;
 }
 
 void Backtrack::printAllPaths() {
+	std::cout << "results:\n";
+
 	for (const auto& path : mMatches ) {
 		printPath(path);
-		std::string str;
-		std::getline(std::cin, str);
+		//std::string str;
+		//std::getline(std::cin, str);
 	}
 }
 

@@ -13,14 +13,22 @@ Context* createContext() {
     // 3 hours
     context->addConnection( Connection::createCar( "Luxembourg", "CRL", 3., 215 ));
     context->addConnection( Connection::createCar( "CRL", "Luxembourg", 3., 215 ));
-    
+	
+	// 3 hours, 10 €
+	context->addConnection(Connection::createCarpool("Luxembourg", "CRL", 3., 10));
+	context->addConnection(Connection::createCarpool("CRL", "Luxembourg", 3., 10));
+	
+	// 4 hours, 25 €
+	context->addConnection(Connection::createBus("Luxembourg", "CRL", 4., 25));
+	context->addConnection(Connection::createBus("CRL", "Luxembourg", 4., 25));
+
     // I added the extra time (1.25h), what we have to spend at the airports
     context->addConnection( Connection::createAirplane( "CRL", "BUD", 1 + 5./6. + 1.25, 23 )); 
     context->addConnection( Connection::createAirplane( "BUD", "CRL", 2 + 1./6. + 1.25, 23 ));
     // 55 hours
     context->addConnection( Connection::createStay( "BUD", 55, 250 )); // spent time and money in Budapest
-    context->addConnection( Connection::createStay( "CRL", 0, 33 )); // car parking in CRL
-    context->addConnection( Connection::createStay( "HHN", 0, 23 )); // car parking in HHN
+    context->addConnection( Connection::createParking( "CRL", 0, 33 )); // car parking in CRL
+    context->addConnection( Connection::createParking( "HHN", 0, 23 )); // car parking in HHN
     
     // 1 hour 20 minutes
 	context->addConnection(Connection::createCar("Luxembourg", "HHN", 1.33, 106));

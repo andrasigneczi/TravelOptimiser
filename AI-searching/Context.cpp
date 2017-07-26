@@ -19,7 +19,7 @@ void Context::createNode( Connection c ) {
 		}
     }
     
-	if (c.mConnectionType == Connection::stay) {
+	if (c.mConnectionType == Connection::stay || c.mConnectionType == Connection::parking) {
 		it->second->mLinks.push_back({ c.mConnectionType, it->second, c.mTimeConsuming, c.mDistance, c.mCost });
 		return;
 	}
