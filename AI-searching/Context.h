@@ -11,19 +11,21 @@ class Context {
 public:
     void addConnection( Connection c );
     void setGoal( std::vector<std::string> stops );
-    
+	//void addAirplaneTimetable(std::string node1, std::string node2, std::initializer_list<std::string> timings);
+	//void addBusTimetable(std::string node1, std::string node2, std::initializer_list<std::string> timings);
+
     struct CtNode {
         CtNode( std::string name ) { mName = name; }
         
         std::string mName;
         struct Link {
-            Link( Connection::Type type, CtNode* node, double  timeConsuming, double  distance, double  cost ) { mType = type; mNode = node; mTimeConsuming = timeConsuming; mDistance = distance; mCost = cost; }
+            Link( Connection::Type type, CtNode* node, double  timeConsuming, double  distance, double  cost, Timetable timetable ) { mType = type; mNode = node; mTimeConsuming = timeConsuming; mDistance = distance; mCost = cost; mTimetable = timetable; }
             Connection::Type mType;
             CtNode* mNode;
             double  mTimeConsuming; // in hour
             double  mDistance;      // in km
             double  mCost;
-            
+            Timetable mTimetable;
 		};
         std::vector<Context::CtNode::Link> mLinks;
     };

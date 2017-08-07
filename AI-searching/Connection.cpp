@@ -19,8 +19,10 @@ Connection Connection::createCarpool(std::string node1, std::string node2, doubl
 }
 
 // cost is the ticket and additional prices
-Connection Connection::createAirplane( std::string node1, std::string node2, double timeConsuming, double cost ) {
-    return Connection( node1, node2, airplane, timeConsuming, 0, cost );
+Connection Connection::createAirplane( std::string node1, std::string node2, double timeConsuming, Timetable timetable ) {
+    Connection c( node1, node2, airplane, timeConsuming, 0, 0 );
+    c.mTimetable = timetable;
+    return c;
 }
 
 // e.g. staying in a hotel or waiting at the airport
@@ -33,8 +35,10 @@ Connection Connection::createParking(std::string node, double timeConsuming, dou
 }
 
 // the distance doesn't matter
-Connection Connection::createBus( std::string node1, std::string node2, double timeConsuming, double cost ) {
-    return Connection( node1, node2, bus, timeConsuming, 0, cost );
+Connection Connection::createBus( std::string node1, std::string node2, double timeConsuming, Timetable timetable ) {
+    Connection c( node1, node2, bus, timeConsuming, 0, 0 );
+    c.mTimetable = timetable;
+    return c;
 }
 
 // the distance doesn't matter

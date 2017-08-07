@@ -7,6 +7,7 @@
 // Every connection has a direction, because the cost and the lasting of the trip can be different.
 
 #include <string>
+#include "Timetable.h"
 
 class Connection {
 public:
@@ -28,14 +29,14 @@ public:
 	static Connection createCarpool(std::string node1, std::string node2, double timeConsuming, double cost);
 
     // cost is the ticket and additional prices
-    static Connection createAirplane( std::string node1, std::string node2, double timeConsuming, double cost );
+    static Connection createAirplane( std::string node1, std::string node2, double timeConsuming, Timetable timetable );
     
     // e.g. staying in a hotel or waiting at the airport
 	static Connection createStay(std::string node, double timeConsuming, double cost);
 	static Connection createParking(std::string node, double timeConsuming, double cost);
 
     // the distance doesn't matter
-    static Connection createBus( std::string node1, std::string node2, double timeConsuming, double cost );
+    static Connection createBus( std::string node1, std::string node2, double timeConsuming, Timetable timetable );
 
     // the distance doesn't matter
     static Connection createTaxi( std::string node1, std::string node2, double timeConsuming, double cost );
@@ -53,6 +54,7 @@ public:
 	double  mTimeConsuming; // in hour
 	double  mDistance;      // in km
 	double  mCost;
+	Timetable mTimetable;
 
 private:
     Connection( std::string node1, std::string node2, Type type, double timeConsuming, double distance, double cost );

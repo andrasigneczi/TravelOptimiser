@@ -116,6 +116,7 @@
     <ClInclude Include="..\Connection.h" />
     <ClInclude Include="..\Context.h" />
     <ClInclude Include="..\test.h" />
+    <ClInclude Include="..\Timetable.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Astar.cpp" />
@@ -124,6 +125,7 @@
     <ClCompile Include="..\Context.cpp" />
     <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\test.cpp" />
+    <ClCompile Include="..\Timetable.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -16,6 +16,8 @@ std::vector<Connection> Backtrack::seachTheBestWay( Context* context ) {
     }
 	printAllPaths();
 
+	std::cerr << "press enter\n";
+
 	std::string str;
 	std::getline(std::cin, str );
     return std::vector<Connection>();
@@ -199,34 +201,77 @@ bool Backtrack::genNextPath() {
 }
 
 void Backtrack::printPath( const std::vector<Backtrack::BtNode>& path ) {
-	int parkingCounter = 0;
+	//int parkingCounter = 0;
 	for (size_t i = 0; i < path.size(); ++i) {
-		const Backtrack::BtNode* btNode = &path[i];
+		//const Backtrack::BtNode* btNode = &path[i];
 
-		if (btNode->mIndex >= 0 && btNode->mCtNode->mLinks[btNode->mIndex].mType == Connection::parking && btNode->mCtNode->mName.compare( "CRL" ) == 0 )
-			parkingCounter++;
-
-		if (btNode->mIndex >= 0) {
-			std::cout << btNode->mCtNode->mName << " ("
-				<< Connection::typeToString(btNode->mCtNode->mLinks[btNode->mIndex].mType) << ")" 
+		if (pathNodeIndex(path,i) >= 0) {
+			std::cout << pathNodeName(path,i) << " ("
+				<< Connection::typeToString(pathNodeLink(path,i).mType) << ")" 
 				<< "\n---------------\n";
 		}
 		else {
-			std::cout << btNode->mCtNode->mName << " ("
-				<< btNode->mIndex << ")" 
+			std::cout << pathNodeName(path,i) << " ("
+				<< pathNodeIndex(path,i) << ")" 
 				<< "\n---------------\n";
 		}
 	}
 
-	std::cout << "parking counter: " << parkingCounter << std::endl;
+	std::cout << "cost (stay included): " << calcPathPrice(path) << "€" << std::endl;
+	std::cout << "travelling time (except stay): " << calcPathTimeConsuming(path) << " hours" << std::endl;
 	std::cout << std::string( 30, '=');
 	std::cout << std::endl;
 }
 
-void Backtrack::printAllPaths() {
-	std::cout << "results:\n";
+double Backtrack::calcPathPrice(const std::vector<Backtrack::BtNode>& path ) {
+	double priece = 0;
+	double fuelPricePerKm = 46. / 228. / 2.;
+	for (size_t i = 0; i < path.size(); ++i) {
+		if (pathNodeIndex(path,i) != -1) {
+			if (pathNodeLink(path,i).mType == Connection::car)
+				priece += pathNodeLink(path,i).mDistance * fuelPricePerKm;
+			else if (pathNodeLink(path, i).mType == Connection::airplane || pathNodeLink(path, i).mType == Connection::bus)
+				priece += pathNodeLink(path, i).mTimetable.getFirstPrice();
+			else
+				priece += pathNodeLink(path, i).mCost;
+		}
+	}
+	return priece;
+}
 
-	for (const auto& path : mMatches ) {
+double Backtrack::calcPathTimeConsuming(const std::vector<Backtrack::BtNode>& path) {
+	double sum = 0;
+	for (size_t i = 0; i < path.size(); ++i) {
+		if (pathNodeIndex(path,i) != -1 && pathNodeLink(path,i).mType != Connection::stay) {
+			sum += pathNodeLink(path, i).mTimeConsuming;
+		}
+	}
+	return sum;
+}
+
+bool Backtrack::comparePathPrice(const std::vector<Backtrack::BtNode>& path1, const std::vector<Backtrack::BtNode>& path2) {
+	return Backtrack::calcPathPrice(path1) < Backtrack::calcPathPrice(path2);
+}
+
+bool Backtrack::compareTravellingTime(const std::vector<Backtrack::BtNode>& path1, const std::vector<Backtrack::BtNode>& path2) {
+	return Backtrack::calcPathTimeConsuming(path1) < Backtrack::calcPathTimeConsuming(path2);
+}
+
+void Backtrack::printAllPaths() {
+
+	std::cout << "results ordered by travelling cost:\n";
+	sort(mMatches.begin(), mMatches.end(), comparePathPrice);
+	for (size_t i = 0; i < 3 && i < mMatches.size(); ++i) {
+		const auto& path = mMatches[i];
+		printPath(path);
+		//std::string str;
+		//std::getline(std::cin, str);
+	}
+	std::cout << std::endl << std::endl;
+	std::cout << "results ordered by travelling time:\n";
+	sort(mMatches.begin(), mMatches.end(), compareTravellingTime);
+	for (size_t i = 0; i < 3 && i < mMatches.size(); ++i) {
+		const auto& path = mMatches[i];
 		printPath(path);
 		//std::string str;
 		//std::getline(std::cin, str);

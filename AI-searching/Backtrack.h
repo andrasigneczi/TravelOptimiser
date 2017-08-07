@@ -14,7 +14,11 @@ public:
 	};
 
     std::vector<Connection> seachTheBestWay( Context* context ) override;
-    
+	static double calcPathPrice(const std::vector<Backtrack::BtNode>& path);
+	static double calcPathTimeConsuming(const std::vector<Backtrack::BtNode>& path);
+	static bool comparePathPrice(const std::vector<Backtrack::BtNode>& path1, const std::vector<Backtrack::BtNode>& path2);
+	static bool compareTravellingTime(const std::vector<Backtrack::BtNode>& path1, const std::vector<Backtrack::BtNode>& path2);
+
 private:
 	void init();
     bool isGoal();
@@ -28,7 +32,11 @@ private:
 	void deleteLastPathItem();
 
 	const std::string& pathNodeName(int pathIndex) { return mPath[ pathIndex ].mCtNode->mName;  }
+	static const std::string& pathNodeName(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mCtNode->mName; }
+	int pathNodeIndex(int pathIndex) { return mPath[pathIndex].mIndex; }
+	static int pathNodeIndex(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mIndex; }
 	const Context::CtNode::Link& pathNodeLink(int pathIndex) { return mPath[pathIndex].mCtNode->mLinks[mPath[pathIndex].mIndex];  }
+	static const Context::CtNode::Link& pathNodeLink(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex]; }
 
     std::vector<Backtrack::BtNode> mPath;
 	std::vector<std::vector<Backtrack::BtNode>> mMatches;

@@ -20,7 +20,7 @@ void Context::createNode( Connection c ) {
     }
     
 	if (c.mConnectionType == Connection::stay || c.mConnectionType == Connection::parking) {
-		it->second->mLinks.push_back({ c.mConnectionType, it->second, c.mTimeConsuming, c.mDistance, c.mCost });
+		it->second->mLinks.push_back({ c.mConnectionType, it->second, c.mTimeConsuming, c.mDistance, c.mCost, c.mTimetable });
 		return;
 	}
 
@@ -33,5 +33,5 @@ void Context::createNode( Connection c ) {
 		}
 	}
 
-    it->second->mLinks.push_back({ c.mConnectionType, it2->second, c.mTimeConsuming, c.mDistance, c.mCost });
+    it->second->mLinks.push_back({ c.mConnectionType, it2->second, c.mTimeConsuming, c.mDistance, c.mCost, c.mTimetable });
 }
