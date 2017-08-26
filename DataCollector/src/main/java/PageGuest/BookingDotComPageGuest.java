@@ -954,6 +954,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 			String roomName = "";
 			String roomSize = "";
 			AccomodationData_RESULT.Room lRoomResult = new AccomodationData_RESULT.Room();
+			boolean skipRoom = false;
 			for( DOMElement lRoom : lRooms )
 			{
 				String cssClassName = lRoom.getAttribute( "class" );
@@ -969,19 +970,28 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 					DOMElement lRoomName = lRoom.findElement( By.className( "js-track-hp-rt-room-name" ));
 					if( lRoomName != null )
 					{
+						skipRoom = false;
 						lRoomResult.mName = lRoomName.getAttribute( "data-room-name-en" );
 						lRoomResult.mRoomHook = lRoomName.getAttribute( "href" );
 						getMetablock( lRoomResult.mRoomHook );
 						lRoomResult.mRoomSize = getRoomSize();
 						if( !testRoomSize( lRoomResult.mRoomSize ))
+						{
+							skipRoom = true;
 							continue;
+						}
 						if( !testSharedBathroom())
+						{
+							skipRoom = true;
 							continue;
-
+						}
 					}
 				}
 				else
 				{
+					if( skipRoom )
+						continue;
+
 					// MAX OCCUPAMCY
 					String maxOccupancy = lRoom.getAttribute( "data-occupancy" );
 					if( maxOccupancy != null && maxOccupancy.length() > 0 )
