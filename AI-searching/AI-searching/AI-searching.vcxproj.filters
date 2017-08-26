@@ -36,6 +36,9 @@
     <ClInclude Include="..\Timetable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\ScenarioMaker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Astar.cpp">
@@ -57,6 +60,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Timetable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ScenarioMaker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

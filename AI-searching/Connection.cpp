@@ -30,8 +30,8 @@ Connection Connection::createStay( std::string node, double timeConsuming, doubl
     return Connection( node, "", stay, timeConsuming, 0, cost );
 }
 
-Connection Connection::createParking(std::string node, double timeConsuming, double cost) {
-	return Connection(node, "", parking, timeConsuming, 0, cost);
+Connection Connection::createParking(std::string node, double cost) {
+	return Connection(node, "", parking, 0, 0, cost);
 }
 
 // the distance doesn't matter

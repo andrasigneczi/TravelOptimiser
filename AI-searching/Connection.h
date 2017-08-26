@@ -33,7 +33,7 @@ public:
     
     // e.g. staying in a hotel or waiting at the airport
 	static Connection createStay(std::string node, double timeConsuming, double cost);
-	static Connection createParking(std::string node, double timeConsuming, double cost);
+	static Connection createParking(std::string node, double cost);
 
     // the distance doesn't matter
     static Connection createBus( std::string node1, std::string node2, double timeConsuming, Timetable timetable );

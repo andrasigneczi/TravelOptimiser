@@ -1,12 +1,57 @@
 #include "Backtrack.h"
 #include <algorithm>
 #include <iostream>
+#include <functional>
+#include <ctime>
+#include <iomanip>      // std::get_time
+#include <sstream> // std::istringstream
+#include <time.h>
+#include "ScenarioMaker.h"
 
 #define MAXPATHLENGTH 10
+
+std::string Backtrack::timeToString(time_t t) {
+	//time_t t = time(nullptr);
+	struct tm tm;
+	memset(&tm, 0, sizeof(tm));
+	//errno_t err = gmtime_s(&tm, &t);
+	errno_t err = localtime_s(&tm, &t);
+
+	std::ostringstream oss;
+	oss << std::put_time(&tm, "%Y-%m-%d %R%z");
+	return oss.str();
+}
+
+time_t Backtrack::stringToTime(std::string strTime) {
+	struct std::tm tm;
+	memset(&tm, 0, sizeof(tm));
+	//std::string strTime("2017-08-12 11:50+0300");
+	std::istringstream ss(strTime);
+	ss >> std::get_time(&tm, "%Y-%m-%d %R");
+	size_t pos = strTime.find("+");
+	int tmz = 0;
+	if (pos != std::string::npos) {
+		tmz = (strTime[pos + 1] - '0') * 10 + (strTime[pos + 2] - '0');
+	}
+	else {
+		tmz = 2;
+	}
+	time_t t = mktime(&tm);
+	t -= (tmz-1) * 60 * 60;
+	//timeToString(t);
+	return t;
+}
+
+
+
 
 std::vector<Connection> Backtrack::seachTheBestWay( Context* context ) {
     mContext.reset( context );
     
+	//timeToString(time(nullptr) );
+	//stringToTime();
+	//return std::vector<Connection>();
+
     init();
 
     while( !mTerminated ) {
@@ -200,85 +245,144 @@ bool Backtrack::genNextPath() {
 	return genNextPath();
 }
 
-void Backtrack::printPath( const std::vector<Backtrack::BtNode>& path ) {
-	//int parkingCounter = 0;
-	for (size_t i = 0; i < path.size(); ++i) {
-		//const Backtrack::BtNode* btNode = &path[i];
+void Backtrack::printPath(const Backtrack::PathInfo& pathInfo) {
+	for (size_t i = 0; i < pathInfo.mPath.size(); ++i) {
 
-		if (pathNodeIndex(path,i) >= 0) {
-			std::cout << pathNodeName(path,i) << " ("
-				<< Connection::typeToString(pathNodeLink(path,i).mType) << ")" 
-				<< "\n---------------\n";
+		if (pathNodeIndex(pathInfo.mPath, i) >= 0) {
+
+			std::cout << pathNodeName(pathInfo.mPath, i) << " ("
+				<< Connection::typeToString(pathNodeLink(pathInfo.mPath, i).mType) << ") "
+				<< "\n" << std::string(60, '-') << "\n";
 		}
 		else {
-			std::cout << pathNodeName(path,i) << " ("
-				<< pathNodeIndex(path,i) << ")" 
-				<< "\n---------------\n";
+			std::cout << pathNodeName(pathInfo.mPath, i) << " ("
+				<< pathNodeIndex(pathInfo.mPath, i) << ")"
+				<< "\n" << std::string(60, '-') << "\n";
 		}
 	}
+	std::cout << std::string(80, 'T') << std::endl;
+	std::cout << std::string(80, 'T') << std::endl;
 
-	std::cout << "cost (stay included): " << calcPathPrice(path) << "€" << std::endl;
-	std::cout << "travelling time (except stay): " << calcPathTimeConsuming(path) << " hours" << std::endl;
-	std::cout << std::string( 30, '=');
+
+	std::cout << "cost (stay included): " << calcPathPrice(pathInfo) << "€" << std::endl;
+	std::cout << "travelling time (except stay): " << calcPathTimeConsuming(pathInfo) << " hours" << std::endl;
+	std::cout << std::string(30, '=');
 	std::cout << std::endl;
 }
 
-double Backtrack::calcPathPrice(const std::vector<Backtrack::BtNode>& path ) {
+void Backtrack::printPathWithScenarios(const Backtrack::PathInfo& pathInfo) {
+	for (size_t scenarioIndex = 0; scenarioIndex < pathInfo.mScenarios.size(); ++scenarioIndex) {
+		size_t scenarioNodeIndex = 0;
+		for (size_t i = 0; i < pathInfo.mPath.size(); ++i) {
+
+			std::string time;
+			if (pathNodeIndex(pathInfo.mPath, i) >= 0) {
+				if (scenarioNodeIndex >= pathInfo.mScenarios[scenarioIndex].size()) {
+					int debug = 10;
+					continue;
+				}
+				if (pathNodeLink(pathInfo.mPath, i).mType != Connection::parking)
+					time = "departure: " + timeToString(pathInfo.mScenarios[scenarioIndex][scenarioNodeIndex]);
+
+				std::cout << pathNodeName(pathInfo.mPath, i) << " ("
+					<< Connection::typeToString(pathNodeLink(pathInfo.mPath, i).mType) << ") "
+					<< time
+					<< "\n" << std::string(60, '-') << "\n";
+				if (pathNodeLink(pathInfo.mPath, i).mType != Connection::parking)
+					++scenarioNodeIndex;
+			}
+			else {
+				if (pathNodeLink(pathInfo.mPath, i - 1).mType != Connection::parking)
+					time = "arrival: " + timeToString(pathInfo.mScenarios[scenarioIndex][scenarioNodeIndex - 1] + (time_t)(pathNodeLink(pathInfo.mPath, i - 1).mTimeConsuming * 60. * 60.));
+				std::cout << pathNodeName(pathInfo.mPath, i) << " ("
+					<< pathNodeIndex(pathInfo.mPath, i) << ") "
+					<< time
+					<< "\n" << std::string(60, '-') << "\n";
+			}
+		}
+		std::cout << std::string(80, 'T') << std::endl;
+		std::cout << std::string(80, 'T') << std::endl;
+	}
+
+
+	std::cout << "cost (stay included): " << calcPathPrice(pathInfo) << "€" << std::endl;
+	std::cout << "travelling time (except stay): " << calcPathTimeConsuming(pathInfo) << " hours" << std::endl;
+	std::cout << std::string(30, '=');
+	std::cout << std::endl;
+}
+
+double Backtrack::calcPathPrice(const Backtrack::PathInfo& pathInfo ) {
 	double priece = 0;
 	double fuelPricePerKm = 46. / 228. / 2.;
-	for (size_t i = 0; i < path.size(); ++i) {
-		if (pathNodeIndex(path,i) != -1) {
-			if (pathNodeLink(path,i).mType == Connection::car)
-				priece += pathNodeLink(path,i).mDistance * fuelPricePerKm;
-			else if (pathNodeLink(path, i).mType == Connection::airplane || pathNodeLink(path, i).mType == Connection::bus)
-				priece += pathNodeLink(path, i).mTimetable.getFirstPrice();
+	for (size_t i = 0; i < pathInfo.mPath.size(); ++i) {
+		if (pathNodeIndex(pathInfo.mPath,i) != -1) {
+			if (pathNodeLink(pathInfo.mPath,i).mType == Connection::car)
+				priece += pathNodeLink(pathInfo.mPath,i).mDistance * fuelPricePerKm;
+			else if (pathNodeLink(pathInfo.mPath, i).mType == Connection::airplane || pathNodeLink(pathInfo.mPath, i).mType == Connection::bus)
+				priece += pathNodeLink(pathInfo.mPath, i).mTimetable.getFirstPrice();
 			else
-				priece += pathNodeLink(path, i).mCost;
+				priece += pathNodeLink(pathInfo.mPath, i).mCost;
 		}
 	}
 	return priece;
 }
 
-double Backtrack::calcPathTimeConsuming(const std::vector<Backtrack::BtNode>& path) {
+double Backtrack::calcPathTimeConsuming(const Backtrack::PathInfo& pathInfo) {
 	double sum = 0;
-	for (size_t i = 0; i < path.size(); ++i) {
-		if (pathNodeIndex(path,i) != -1 && pathNodeLink(path,i).mType != Connection::stay) {
-			sum += pathNodeLink(path, i).mTimeConsuming;
+	for (size_t i = 0; i < pathInfo.mPath.size(); ++i) {
+		if (pathNodeIndex(pathInfo.mPath,i) != -1 && pathNodeLink(pathInfo.mPath,i).mType != Connection::stay) {
+			sum += pathNodeLink(pathInfo.mPath, i).mTimeConsuming;
 		}
 	}
 	return sum;
 }
 
-bool Backtrack::comparePathPrice(const std::vector<Backtrack::BtNode>& path1, const std::vector<Backtrack::BtNode>& path2) {
-	return Backtrack::calcPathPrice(path1) < Backtrack::calcPathPrice(path2);
+bool Backtrack::comparePathPrice(const Backtrack::PathInfo& pathInfo1, const Backtrack::PathInfo& pathInfo2) {
+	return pathInfo1.mSumPrice < pathInfo2.mSumPrice;
 }
 
-bool Backtrack::compareTravellingTime(const std::vector<Backtrack::BtNode>& path1, const std::vector<Backtrack::BtNode>& path2) {
-	return Backtrack::calcPathTimeConsuming(path1) < Backtrack::calcPathTimeConsuming(path2);
+bool Backtrack::compareTravellingTime(const Backtrack::PathInfo& pathInfo1, const Backtrack::PathInfo& pathInfo2) {
+	return pathInfo1.mSumTime < pathInfo2.mSumTime;
 }
 
 void Backtrack::printAllPaths() {
 
+	for (size_t i = 0; i < mMatches.size(); ++i) {
+		mMatches[i].mSumPrice = Backtrack::calcPathPrice(mMatches[i]);
+		mMatches[i].mSumTime = Backtrack::calcPathTimeConsuming(mMatches[i]);
+	}
+
+	ScenarioMaker scenarioMaker(*this);
 	std::cout << "results ordered by travelling cost:\n";
 	sort(mMatches.begin(), mMatches.end(), comparePathPrice);
+	scenarioMaker.generateAllTheScenarios();
 	for (size_t i = 0; i < 3 && i < mMatches.size(); ++i) {
-		const auto& path = mMatches[i];
-		printPath(path);
-		//std::string str;
-		//std::getline(std::cin, str);
+		const auto& pathInfo = mMatches[i];
+		//printPath(pathInfo);
+		printPathWithScenarios(pathInfo);
 	}
 	std::cout << std::endl << std::endl;
 	std::cout << "results ordered by travelling time:\n";
 	sort(mMatches.begin(), mMatches.end(), compareTravellingTime);
+	scenarioMaker.generateAllTheScenarios();
 	for (size_t i = 0; i < 3 && i < mMatches.size(); ++i) {
-		const auto& path = mMatches[i];
-		printPath(path);
-		//std::string str;
-		//std::getline(std::cin, str);
+		const auto& pathInfo = mMatches[i];
+		printPath(pathInfo);
+		printPathWithScenarios(pathInfo);
 	}
 }
 
 void Backtrack::savePath() {
-	std::vector<Backtrack::BtNode> path = mPath;
-	mMatches.push_back(path);
+	PathInfo pathInfo;
+	pathInfo.mPath = mPath;
+	pathInfo.mHash = genHash(pathInfo.mPath);
+	mMatches.push_back(pathInfo);
+}
+
+const size_t Backtrack::genHash(const std::vector<Backtrack::BtNode>& path) {
+	std::string hashStr;
+	for (size_t i = 0; i < path.size(); ++i) {
+		hashStr += path[i].mCtNode->mName;
+	}
+	return std::hash<std::string>()(hashStr);
 }
