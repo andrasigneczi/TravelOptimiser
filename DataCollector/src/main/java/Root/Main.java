@@ -46,6 +46,11 @@ public class Main
                 BookingDotComApp.Run();
                 break;
             }
+            else if( arg.equals( "-airbnb.com" ))
+            {
+                AirbnbDotComApp.Run();
+                break;
+            }
             else if( arg.equals( "-dbagent" ))
             {
                 DBAgentApp.Run();

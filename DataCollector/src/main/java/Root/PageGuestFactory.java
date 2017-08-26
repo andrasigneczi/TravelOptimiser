@@ -37,6 +37,10 @@ public class PageGuestFactory
 		{
 			return new BookingDotComPageGuest();
 		}
+		else if( PageType.equalsIgnoreCase( "airbnb.com" ))
+		{
+			return new AirbnbDotComPageGuest();
+		}
 		return null;
 	}
 }

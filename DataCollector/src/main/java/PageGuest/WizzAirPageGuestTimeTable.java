@@ -194,11 +194,10 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		for( int i = 0; i < lInterval; i++ )
 		{
 			FillTheForm( aTravelDataInput, lYear, lMonth, lDay, lResultList );
-			if( ++lMonth == 13 )
-			{
-				lMonth = 1;
-				lYear++;
-			}
+			lDate = lDate.plusMonths( 1 );
+			lYear = lDate.getYear();
+			lMonth = lDate.getMonthValue();
+			lDay = lDate.getDayOfMonth();
 			Sleep( 1000 * Integer.parseInt( lSleep ));
 		}
 
@@ -279,6 +278,11 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		for( int lTripIndex = 0; lTripIndex < aFlights.length(); lTripIndex++ )
 		{
 			JSONObject lJSONTrip = aFlights.getJSONObject( lTripIndex );
+
+			String lpriceType = lJSONTrip.getString( "priceType" );
+			if( lpriceType.equals( "soldOut" ))
+				continue;
+
 			//lTripClone.mDepartureDatetime = lJSONTrip.getString( "departureDate" );
 			String lDepartureStation = lJSONTrip.getString( "departureStation" );
 			String lArrivalStation = lJSONTrip.getString( "arrivalStation" );

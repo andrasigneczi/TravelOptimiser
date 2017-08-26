@@ -1,6 +1,9 @@
 package PageGuest;
 
 import com.teamdev.jxbrowser.chromium.Browser;
+import com.teamdev.jxbrowser.chromium.dom.By;
+import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
+import com.teamdev.jxbrowser.chromium.dom.DOMElement;
 
 import java.awt.*;
 import java.awt.event.InputEvent;
@@ -228,7 +231,7 @@ public abstract class WebPageGuest extends PageGuest
         aBrowser.executeJavaScript( String.format( mGetElementByXPathPattern + ".focus();", aXPath ));
     }
 
-    private void javaScriptSubmit( Browser aBrowser, String aXPath )
+    public void javaScriptSubmit( Browser aBrowser, String aXPath )
     {
         aBrowser.executeJavaScript( String.format( mGetElementByXPathPattern + ".submit();", aXPath ));
     }
@@ -242,5 +245,18 @@ public abstract class WebPageGuest extends PageGuest
     private void javaScriptClick( Browser aBrowser, String aXPath )
     {
         aBrowser.executeJavaScript( String.format( mGetElementByXPathPattern + ".click();", aXPath ));
+    }
+
+    public static DOMElement findElementByAttrib( DOMDocument aDOMDocument, String tagName, String attribName, String attribValue )
+    {
+        java.util.List<DOMElement> tags = aDOMDocument.findElements( By.tagName( tagName));
+
+        for( DOMElement element : tags )
+        {
+            String value = element.getAttribute( attribName );
+            if( value != null && value.equals( attribValue ))
+                return element;
+        }
+        return null;
     }
 }

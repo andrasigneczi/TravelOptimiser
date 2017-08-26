@@ -42,7 +42,6 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	private BrowserView mBrowserView = null;
 	private JTabbedPane mTabbedPane = null;
 
-	private boolean mThreadStopped = true;
 	private DOMDocument mDOMDocument;
 	private BookingDotComStatus mStatus = new BookingDotComStatus();
 
@@ -62,6 +61,9 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 	private int mHigherPriceCounter; // if 5 consecutive accomodation have only higher price than my limit, I stop the parsing.
 	private static final int HIGH_PRICE_FLAT_COUNT = 5;
 	private int mMatchedAccomodationCounter = 0;
+
+	// blocktoggle #RD17925503
+	DOMElement mRoomMetaBlock;
 
 	enum MyFilterIds
 	{
@@ -263,6 +265,7 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		mResultSorted = false;
 		mHigherPriceCounter = HIGH_PRICE_FLAT_COUNT;
 		mMatchedAccomodationCounter = 0;
+		mRoomMetaBlock = null;
 		mBrowser.loadURL( getURL());
 	}
 
@@ -808,30 +811,58 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 		return false;
 	}
 
-	private String getRoomSize( String roomMetaId )
+	private void getMetablock( String roomMetaId )
 	{
-		String roomSize = "";
 		if( roomMetaId != null )
 		{
 			// cutting the starting #
 			roomMetaId = roomMetaId.substring( 1 );
 
 			// blocktoggle #RD17925503
-			DOMElement lRoomMetaBlock = mDOMDocument.findElement( By.id( "blocktoggle" + roomMetaId ));
-			if( lRoomMetaBlock != null )
+			mRoomMetaBlock = mDOMDocument.findElement( By.id( "blocktoggle" + roomMetaId ));
+		}
+	}
+
+	private String getRoomSize()
+	{
+		String roomSize = "";
+		if( mRoomMetaBlock != null )
+		{
+			DOMElement lRoomInfo = mRoomMetaBlock.findElement( By.className( "info" ));
+			if( lRoomInfo != null )
 			{
-				DOMElement lRoomInfo = lRoomMetaBlock.findElement( By.className( "info" ));
-				if( lRoomInfo != null )
-				{
-					roomSize = lRoomInfo.getInnerText()
-							.replaceAll( "\n", "" )
-							.replace( "Room size:", "" )
-							.replace( "Apartment size:", "" )
-							.trim();
-				}
+				roomSize = lRoomInfo.getInnerText()
+						.replaceAll( "\n", "" )
+						.replace( "Room size:", "" )
+						.replace( "Apartment size:", "" )
+						.trim();
 			}
 		}
 		return roomSize;
+	}
+
+	private boolean testSharedBathroom()
+	{
+		if( mRoomMetaBlock != null )
+		{
+			DOMElement lDOMFacilities = mRoomMetaBlock.findElement( By.className( "js_hp_rt_lightbox_facilities" ));
+			if( lDOMFacilities != null )
+			{
+				boolean sharedBathroom = lDOMFacilities.getInnerText().contains( "Shared Bathroom" );
+				boolean expectedPrivateBathroom = false;
+				for( int i = 0; mFilters != null && i < mFilters.length; ++i )
+				{
+					if( mFilters[i].equals( "private_bathroom" ))
+					{
+						expectedPrivateBathroom = true;
+						break;
+					}
+				}
+				if( expectedPrivateBathroom && sharedBathroom )
+					return false;
+			}
+		}
+		return true;
 	}
 
 	boolean testRoomSize( String roomSize )
@@ -940,9 +971,13 @@ public class BookingDotComPageGuest extends WebPageGuest implements Runnable
 					{
 						lRoomResult.mName = lRoomName.getAttribute( "data-room-name-en" );
 						lRoomResult.mRoomHook = lRoomName.getAttribute( "href" );
-						lRoomResult.mRoomSize = getRoomSize( lRoomResult.mRoomHook );
+						getMetablock( lRoomResult.mRoomHook );
+						lRoomResult.mRoomSize = getRoomSize();
 						if( !testRoomSize( lRoomResult.mRoomSize ))
 							continue;
+						if( !testSharedBathroom())
+							continue;
+
 					}
 				}
 				else
