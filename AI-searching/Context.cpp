@@ -1,5 +1,11 @@
 #include "Context.h"
 
+Context::~Context() {
+	for (auto pair : mNodes) {
+		delete pair.second;
+	}
+}
+
 void Context::addConnection( Connection c ) {
     mConnections.push_back( c );
     createNode( c );

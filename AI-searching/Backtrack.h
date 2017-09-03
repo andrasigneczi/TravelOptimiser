@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _BACKTRACK_H
 #define _BACKTRACK_H
 
@@ -27,13 +29,11 @@ public:
 	std::vector<PathInfo>& getMatches() { return mMatches; }
 
     std::vector<Connection> seachTheBestWay( Context* context ) override;
-	static bool comparePathPrice(const PathInfo& pathInfo1, const PathInfo& pathInfo2);
-	static bool compareTravellingTime(const PathInfo& pathInfo1, const PathInfo& pathInfo2);
 
 	static const std::string& pathNodeName(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mCtNode->mName; }
 	static int pathNodeIndex(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mIndex; }
 	static const Context::CtNode::Link& pathNodeLink(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex]; }
-	static const std::map<std::string, double>& pathNodeTimetable(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex].mTimetable.getTimetable(); }
+	static const Timetable::TimetableData& pathNodeTimetable(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex].mTimetable.getTimetable(); }
 	static std::string Backtrack::timeToString(time_t t);
 	static time_t Backtrack::stringToTime(std::string strTime);
 
@@ -44,7 +44,6 @@ private:
 	bool isValidPath();
 
 	void printPath(const PathInfo& path );
-	void printPathWithScenarios(const PathInfo& path);
 	void printAllPaths();
 	void savePath();
 	bool isMatch(int pathIndex, std::string goal, Connection::Type linkType);
@@ -54,10 +53,6 @@ private:
 	int pathNodeIndex(int pathIndex) { return mPath[pathIndex].mIndex; }
 	const Context::CtNode::Link& pathNodeLink(int pathIndex) { return mPath[pathIndex].mCtNode->mLinks[mPath[pathIndex].mIndex];  }
 	static const size_t genHash(const std::vector<Backtrack::BtNode>& path);
-	static double calcPathPrice(const PathInfo& pathInfo);
-	static double calcPathTimeConsuming(const PathInfo& pathInfo);
-
-	
 
     std::vector<Backtrack::BtNode> mPath;
 	std::vector<PathInfo> mMatches;

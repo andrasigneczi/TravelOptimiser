@@ -7,14 +7,20 @@
 #include <map>
 
 class Timetable {
-
 public:
-	void add(std::string departure, double price);
-	const double getPrice(std::string time) const;
-	const double getFirstPrice() const;
-	const std::map<std::string, double>& getTimetable() const { return mTimetable;}
+	struct Data {
+		Data(double price, double timeConsuming ) : mPrice( price ), mTimeConsuming( timeConsuming ) { }
+		double mPrice;
+		double mTimeConsuming;
+	};
+	typedef std::map<time_t, Data> TimetableData;
+
+	void add(std::string departure, double price, double timeConsuming );
+	const double getPrice(time_t departure) const;
+	//const double getFirstPrice() const;
+	const TimetableData& getTimetable() const { return mTimetable;}
 
 private:
-	std::map<std::string, double> mTimetable;
+	std::map<time_t, Data> mTimetable;
 };
 #endif

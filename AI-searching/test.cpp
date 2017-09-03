@@ -4,47 +4,113 @@
 
 Context* createContext() {
     Context* context = new Context;
-    // createCar( std::string node1, std::string node2, float timeConsuming, float distance );
-    // createAirplane( std::string node1, std::string node2, float timeConsuming, float cost );
-    // createStay( std::string node, float timeConsuming, float cost );
 
     // 26 minutes, 34 km
     context->addConnection( Connection::createCar( "Igel", "Luxembourg", 26./60., 34 ));
     context->addConnection( Connection::createCar( "Luxembourg", "Igel", 26./60., 34 ));
-    // 3 hours, 215 km
+	
+	
+	Timetable ttIgelLuxembourg;
+	// price, hours
+	ttIgelLuxembourg.add("2017-07-28 05:15", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 05:15", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 06:45", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 07:05", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 07:15", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 07:45", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 08:45", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 09:45", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 10:45", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 11:45", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 12:45", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 13:45", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 14:45", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 15:45", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 16:45", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 16:55", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 17:05", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 17:15", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 17:15", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 17:25", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 17:35", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 17:45", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 17:55", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 18:05", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 18:25", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 18:45", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 19:05", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 20:05", 2, 4.);
+	// 1 hour
+	context->addConnection(Connection::createBus("Igel", "Luxembourg", 1.0, ttIgelLuxembourg));
+
+	Timetable ttLuxembourgIgel;
+	// price, hours
+	ttLuxembourgIgel.add("2017-07-31 05:15", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 05:15", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 06:45", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 07:05", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 07:15", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 07:45", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 08:45", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 09:45", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 10:45", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 11:45", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 12:45", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 13:45", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 14:45", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 15:45", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 16:45", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 16:55", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 17:05", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 17:15", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 17:15", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 17:25", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 17:35", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 17:45", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 17:55", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 18:05", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 18:25", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 18:45", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 19:05", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 20:05", 2, 4.);
+	// 1 hour
+	context->addConnection(Connection::createBus( "Luxembourg", "Igel", 1.0, ttLuxembourgIgel));
+
+	// 3 hours, 215 km
     context->addConnection( Connection::createCar( "Luxembourg", "CRL", 3., 215 ));
     context->addConnection( Connection::createCar( "CRL", "Luxembourg", 3., 215 ));
 	
-	// 3 hours, 10 ʉcontext->addConnection(Connection::createCarpool("Luxembourg", "CRL", 3., 10));
+	// 3 hours, 10 €
+	context->addConnection(Connection::createCarpool("Luxembourg", "CRL", 3., 10));
 	context->addConnection(Connection::createCarpool("CRL", "Luxembourg", 3., 10));
 
 	// The different buses has different price.
 	Timetable timetable1;
-	timetable1.add("2017-07-28 06:15", 25);
-	timetable1.add("2017-07-28 18:15", 5);
+	timetable1.add("2017-07-28 06:15", 25, 4.);
+	timetable1.add("2017-07-28 18:15", 5, 4. );
 
 	// 4 hours, 25 euro
 	context->addConnection(Connection::createBus("Luxembourg", "CRL", 4.0, timetable1));
 
 	// The different buses has different price.
 	Timetable timetable2;
-	timetable1.add("2017-07-28 08:15", 15);
-	timetable1.add("2017-07-28 20:50", 25);
+	timetable1.add("2017-07-28 08:15", 15, 4. );
+	timetable1.add("2017-07-28 20:50", 25, 4. );
 
 	context->addConnection(Connection::createBus("CRL", "Luxembourg", 4.0, timetable2));
 
 	// The different flights has different price.
 	Timetable timetable3;
-	timetable3.add("2017-07-28 06:15", 50);
-	timetable3.add("2017-07-28 18:15", 60);
+	timetable3.add("2017-07-28 06:15", 50, 1 + 5. / 6. + 1.25);
+	timetable3.add("2017-07-28 18:15", 60, 1 + 5. / 6. + 1.25);
 
     // I added the extra time (1.25h), what we have to spend at the airports; 23 euro
     context->addConnection( Connection::createAirplane( "CRL", "BUD", 1 + 5./6. + 1.25, timetable3 )); 
 
 	// The different flights has different price.
 	Timetable timetable4;
-	timetable4.add("2017-07-31 08:15", 15);
-	timetable4.add("2017-07-31 20:50", 100);
+	timetable4.add("2017-07-31 08:15", 15, 2 + 1. / 6. + 1.25);
+	timetable4.add("2017-07-31 20:50", 100, 2 + 1. / 6. + 1.25);
 
     context->addConnection( Connection::createAirplane( "BUD", "CRL", 2 + 1./6. + 1.25, timetable4 ));
 
@@ -64,13 +130,13 @@ Context* createContext() {
 	context->addConnection(Connection::createCar("HHN", "Igel", 1.03, 77));
 
 	Timetable timetable5;
-	timetable5.add("2017-07-28 09:15", 83);
+	timetable5.add("2017-07-28 09:15", 83, 1.33 + 1.25);
 	
 	// I added the extra time (1.25h), what we have to spend at the airports; 83 euro
 	context->addConnection( Connection::createAirplane( "HHN", "BUD",  1.33 + 1.25, timetable5));
 
 	Timetable timetable6;
-	timetable5.add("2017-07-31 10:15", 83);
+	timetable5.add("2017-07-31 10:15", 83, 1.33 + 1.25);
 
 	// I added the extra time (1.25h), what we have to spend at the airports; 83 euro
 	context->addConnection(Connection::createAirplane("BUD", "HHN", 1.33 + 1.25, timetable5));

@@ -9,6 +9,7 @@
 class Context {
 
 public:
+	~Context();
     void addConnection( Connection c );
     void setGoal( std::vector<std::string> stops );
 	//void addAirplaneTimetable(std::string node1, std::string node2, std::initializer_list<std::string> timings);

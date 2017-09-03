@@ -1,19 +1,22 @@
 #include "Timetable.h"
+#include "Backtrack.h"
 
-void Timetable::add(std::string departure, double price) {
-	mTimetable.emplace(departure, price);
+void Timetable::add(std::string departure, double price, double timeConsuming) {
+	mTimetable.emplace(Backtrack::stringToTime(departure), Data(price, timeConsuming));
 }
 
-const double Timetable::getPrice(std::string time) const {
-	auto it = mTimetable.find(time);
+const double Timetable::getPrice(time_t departure) const {
+	auto it = mTimetable.find(departure);
 	if (it == mTimetable.end())
 		return -1.0;
-	return it->second;
+	return it->second.mPrice;
 }
 
+/*
 const double Timetable::getFirstPrice() const {
 	if (mTimetable.size() > 0) {
-		return mTimetable.begin()->second;
+		return mTimetable.begin()->second.mPrice;
 	}
 	return -1.0;
 }
+*/
