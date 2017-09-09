@@ -5,14 +5,15 @@
 
 #include "AI.h"
 #include <set>
+#include "CtNode.h"
 
 class Backtrack : public AI {
 
 public:
 	struct BtNode {
-	    BtNode( const Context::CtNode* node, int index ) : mCtNode( node), mIndex( index ) {}
-	    const Context::CtNode* mCtNode;
-	    int mIndex; // index of Context::Node::mLinks
+	    BtNode( const CtNode* node, int index ) : mCtNode( node), mIndex( index ) {}
+	    const CtNode* mCtNode;
+	    int mIndex; // index of Node::mLinks
 	};
 
 	// One scenario is a time vector. The index of the items are used to index the item of the PathInfo::mPath.
@@ -32,7 +33,7 @@ public:
 
 	static const std::string& pathNodeName(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mCtNode->mName; }
 	static int pathNodeIndex(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mIndex; }
-	static const Context::CtNode::Link& pathNodeLink(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex]; }
+	static const CtNode::Link& pathNodeLink(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex]; }
 	static const Timetable::TimetableData& pathNodeTimetable(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex].mTimetable.getTimetable(); }
 	static std::string Backtrack::timeToString(time_t t);
 	static time_t Backtrack::stringToTime(std::string strTime);
@@ -51,7 +52,7 @@ private:
 	
 	const std::string& pathNodeName(int pathIndex) { return mPath[ pathIndex ].mCtNode->mName;  }
 	int pathNodeIndex(int pathIndex) { return mPath[pathIndex].mIndex; }
-	const Context::CtNode::Link& pathNodeLink(int pathIndex) { return mPath[pathIndex].mCtNode->mLinks[mPath[pathIndex].mIndex];  }
+	const CtNode::Link& pathNodeLink(int pathIndex) { return mPath[pathIndex].mCtNode->mLinks[mPath[pathIndex].mIndex];  }
 	static const size_t genHash(const std::vector<Backtrack::BtNode>& path);
 
     std::vector<Backtrack::BtNode> mPath;

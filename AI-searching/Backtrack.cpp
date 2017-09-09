@@ -75,7 +75,7 @@ void Backtrack::init() {
     // minimum a start and an end required
     if( mContext->getGoalSize() > 1 ) {
         std::string start = mContext->getGoalItem( 0 );
-        const Context::CtNode* node = mContext->getNode( start );
+        const CtNode* node = mContext->getNode( start );
         
         if( node->mLinks.size() > 0 ) {
             mPath.push_back(Backtrack::BtNode( node, -1 ));
@@ -227,7 +227,7 @@ bool Backtrack::genNextPath() {
 	if (btNode->mCtNode->mLinks.size() > 0 && btNode->mIndex < (int)(btNode->mCtNode->mLinks.size()) - 1) {
 		// step right
 		btNode->mIndex += 1;
-		Context::CtNode* ctNode = btNode->mCtNode->mLinks[btNode->mIndex].mNode;
+		CtNode* ctNode = btNode->mCtNode->mLinks[btNode->mIndex].mNode;
 
 		// generating the name of the from:type:to trip
 		std::string tripName = btNode->mCtNode->mName + ":" + Connection::typeToString(btNode->mCtNode->mLinks[btNode->mIndex].mType) + ":" + ctNode->mName;

@@ -78,6 +78,10 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\Users\Andras\IdeaProjects\TravelOptimizer\AI-searching\sqlite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -118,8 +122,10 @@
     <ClInclude Include="..\Backtrack.h" />
     <ClInclude Include="..\Connection.h" />
     <ClInclude Include="..\Context.h" />
+    <ClInclude Include="..\CtNode.h" />
     <ClInclude Include="..\ScenarioMaker.h" />
     <ClInclude Include="..\Sorters.h" />
+    <ClInclude Include="..\SQLiteTest.h" />
     <ClInclude Include="..\test.h" />
     <ClInclude Include="..\Timetable.h" />
   </ItemGroup>
@@ -131,6 +137,9 @@
     <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\ScenarioMaker.cpp" />
     <ClCompile Include="..\Sorters.cpp" />
+    <ClCompile Include="..\SQLiteTest.cpp" />
+    <ClCompile Include="..\sqlite\shell.c" />
+    <ClCompile Include="..\sqlite\sqlite3.c" />
     <ClCompile Include="..\test.cpp" />
     <ClCompile Include="..\Timetable.cpp" />
   </ItemGroup>

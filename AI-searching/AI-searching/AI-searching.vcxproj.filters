@@ -42,6 +42,12 @@
     <ClInclude Include="..\Sorters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\SQLiteTest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CtNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Astar.cpp">
@@ -69,6 +75,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Sorters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SQLiteTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sqlite\shell.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sqlite\sqlite3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

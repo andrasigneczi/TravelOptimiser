@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _CONNECTION_H
 #define _CONNECTION_H
 
@@ -8,6 +10,8 @@
 
 #include <string>
 #include "Timetable.h"
+
+struct CtNode;
 
 class Connection {
 public:
@@ -25,30 +29,30 @@ public:
     };
     
     // cost calculated from the distance and the fuel price/km
-	static Connection createCar(std::string node1, std::string node2, double timeConsuming, double distance);
-	static Connection createCarpool(std::string node1, std::string node2, double timeConsuming, double cost);
+	static Connection createCar(CtNode* node1, CtNode* node2, double timeConsuming, double distance);
+	static Connection createCarpool(CtNode* node1, CtNode* node2, double timeConsuming, double cost);
 
     // cost is the ticket and additional prices
-    static Connection createAirplane( std::string node1, std::string node2, double timeConsuming, Timetable timetable );
+    static Connection createAirplane(CtNode* node1, CtNode* node2, double timeConsuming, Timetable timetable );
     
     // e.g. staying in a hotel or waiting at the airport
-	static Connection createStay(std::string node, double timeConsuming, double cost);
-	static Connection createParking(std::string node, double cost);
+	static Connection createStay(CtNode* node, double timeConsuming, double cost);
+	static Connection createParking(CtNode* node, double cost);
 
     // the distance doesn't matter
-    static Connection createBus( std::string node1, std::string node2, double timeConsuming, Timetable timetable );
+    static Connection createBus(CtNode* node1, CtNode* node2, double timeConsuming, Timetable timetable );
 
     // the distance doesn't matter
-    static Connection createTaxi( std::string node1, std::string node2, double timeConsuming, double cost );
+    static Connection createTaxi(CtNode* node1, CtNode* node2, double timeConsuming, double cost );
     
     // frobably it's free of charge
-    static Connection createOnFoot( std::string node1, std::string node2, double timeConsuming );
+    static Connection createOnFoot(CtNode* node1, CtNode* node2, double timeConsuming );
 
 	static Type getType(std::string name);
 	static std::string typeToString(Connection::Type type);
 
-	std::string mNode1; // name, e.g. Igel
-	std::string mNode2; // name, e.g. Luxmbourg
+	CtNode* mNode1; // name, e.g. Igel
+	CtNode* mNode2; // name, e.g. Luxmbourg
 
 	Type   mConnectionType;
 	double  mTimeConsuming; // in hour
@@ -57,7 +61,7 @@ public:
 	Timetable mTimetable;
 
 private:
-    Connection( std::string node1, std::string node2, Type type, double timeConsuming, double distance, double cost );
+    Connection(CtNode* node1, CtNode* node2, Type type, double timeConsuming, double distance, double cost );
 
 };
 

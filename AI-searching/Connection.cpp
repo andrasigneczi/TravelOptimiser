@@ -1,6 +1,6 @@
 #include "Connection.h"
 
-Connection::Connection( std::string node1, std::string node2, Type type, double timeConsuming, double distance, double cost ) {
+Connection::Connection(CtNode* node1, CtNode* node2, Type type, double timeConsuming, double distance, double cost ) {
     mNode1 = node1;
     mNode2 = node2;
     mConnectionType = type;
@@ -10,44 +10,44 @@ Connection::Connection( std::string node1, std::string node2, Type type, double 
 }
 
 // cost calculated from the distance and the fuel price/km
-Connection Connection::createCar( std::string node1, std::string node2, double timeConsuming, double distance ) {
+Connection Connection::createCar(CtNode* node1, CtNode* node2, double timeConsuming, double distance ) {
     return Connection( node1, node2, car, timeConsuming, distance, 0 );
 }
 
-Connection Connection::createCarpool(std::string node1, std::string node2, double timeConsuming, double cost) {
+Connection Connection::createCarpool(CtNode* node1, CtNode* node2, double timeConsuming, double cost) {
 	return Connection(node1, node2, carpool, timeConsuming, 0, cost);
 }
 
 // cost is the ticket and additional prices
-Connection Connection::createAirplane( std::string node1, std::string node2, double timeConsuming, Timetable timetable ) {
+Connection Connection::createAirplane(CtNode* node1, CtNode* node2, double timeConsuming, Timetable timetable ) {
     Connection c( node1, node2, airplane, timeConsuming, 0, 0 );
     c.mTimetable = timetable;
     return c;
 }
 
 // e.g. staying in a hotel or waiting at the airport
-Connection Connection::createStay( std::string node, double timeConsuming, double cost ) {
-    return Connection( node, "", stay, timeConsuming, 0, cost );
+Connection Connection::createStay(CtNode* node, double timeConsuming, double cost ) {
+    return Connection( node, nullptr, stay, timeConsuming, 0, cost );
 }
 
-Connection Connection::createParking(std::string node, double cost) {
-	return Connection(node, "", parking, 0, 0, cost);
+Connection Connection::createParking(CtNode* node, double cost) {
+	return Connection(node, nullptr, parking, 0, 0, cost);
 }
 
 // the distance doesn't matter
-Connection Connection::createBus( std::string node1, std::string node2, double timeConsuming, Timetable timetable ) {
+Connection Connection::createBus(CtNode* node1, CtNode* node2, double timeConsuming, Timetable timetable ) {
     Connection c( node1, node2, bus, timeConsuming, 0, 0 );
     c.mTimetable = timetable;
     return c;
 }
 
 // the distance doesn't matter
-Connection Connection::createTaxi( std::string node1, std::string node2, double timeConsuming, double cost ) {
+Connection Connection::createTaxi(CtNode* node1, CtNode* node2, double timeConsuming, double cost ) {
     return Connection( node1, node2, taxi, timeConsuming, 0, cost );
 }
 
 // frobably it's free of charge
-Connection Connection::createOnFoot( std::string node1, std::string node2, double timeConsuming ) {
+Connection Connection::createOnFoot(CtNode* node1, CtNode* node2, double timeConsuming ) {
     return Connection( node1, node2, car, timeConsuming, 0, 0 );
 }
 
