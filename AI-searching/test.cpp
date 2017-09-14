@@ -2,14 +2,15 @@
 #include "Backtrack.h"
 #include "Timetable.h"
 
-Context* createContext() {
+static Context* createContext() {
     Context* context = new Context;
 
-	CtNode* nodeIgel = context->createNode("Igel");
-	CtNode* nodeLuxembourg = context->createNode("Luxembourg");
-	CtNode* nodeCRL = context->createNode("CRL");
-	CtNode* nodeBUD = context->createNode("BUD");
-	CtNode* nodeHHN = context->createNode("HHN");
+	CtNode* nodeIgel = context->createNode("Igel", "+0200");
+	CtNode* nodeLuxembourg = context->createNode("Luxembourg", "+0200");
+	CtNode* nodeCRL = context->createNode("CRL", "+0200");
+	CtNode* nodeBUD = context->createNode("BUD", "+0200");
+	CtNode* nodeHHN = context->createNode("HHN", "+0200");
+	CtNode* nodeSOF = context->createNode("SOF", "+0300");
 
     // 26 minutes, 34 km
     context->addConnection( Connection::createCar(nodeIgel, nodeLuxembourg, 26./60., 34 ));
@@ -93,15 +94,26 @@ Context* createContext() {
 	// The different buses has different price.
 	Timetable timetable1;
 	timetable1.add("2017-07-28 06:15", 25, 4.);
-	timetable1.add("2017-07-28 18:15", 5, 4. );
+	timetable1.add("2017-07-28 09:15", 25, 4.);
+	timetable1.add("2017-07-28 12:15", 25, 4.);
+	timetable1.add("2017-07-28 15:15", 5, 4.);
+	timetable1.add("2017-07-28 18:15", 25, 4.);
+	timetable1.add("2017-07-28 21:15", 25, 4.);
+	timetable1.add("2017-07-29 00:15", 5, 4. );
 
 	// 4 hours, 25 euro
 	context->addConnection(Connection::createBus(nodeLuxembourg, nodeCRL, 4.0, timetable1));
 
 	// The different buses has different price.
 	Timetable timetable2;
-	timetable1.add("2017-07-28 08:15", 15, 4. );
-	timetable1.add("2017-07-28 20:50", 25, 4. );
+	timetable1.add("2017-07-28 08:15", 15, 4.);
+	timetable1.add("2017-07-28 11:15", 15, 4.);
+	timetable1.add("2017-07-28 14:15", 15, 4.);
+	timetable1.add("2017-07-28 17:15", 15, 4.);
+	timetable1.add("2017-07-28 21:15", 15, 4.);
+	timetable1.add("2017-07-29 00:15", 15, 4.);
+	timetable1.add("2017-07-29 03:15", 15, 4.);
+	timetable1.add("2017-07-29 06:50", 25, 4. );
 
 	context->addConnection(Connection::createBus(nodeCRL, nodeLuxembourg, 4.0, timetable2));
 
@@ -121,7 +133,7 @@ Context* createContext() {
     context->addConnection( Connection::createAirplane(nodeBUD, nodeCRL, 2 + 1./6. + 1.25, timetable4 ));
 
     // 55 hours, 250 euro with accomodation
-    context->addConnection( Connection::createStay(nodeBUD, 55, 250 )); // spent time and money in Budapest
+    context->addConnection( Connection::createStay(nodeBUD, 250 )); // spent time and money in Budapest
 	// the parking must be listed even times in the result, so I have to add half prcie
 	context->addConnection( Connection::createParking(nodeCRL, 16.5 )); // car parking in CRL
 	context->addConnection(Connection::createParking(nodeHHN, 11.5)); // car parking in HHN

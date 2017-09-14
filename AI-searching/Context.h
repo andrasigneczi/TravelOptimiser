@@ -18,7 +18,7 @@ public:
     void addConnection( Connection c );
     void setGoal( std::vector<std::string> stops );
 
-	CtNode* createNode(std::string name);
+	CtNode* createNode(std::string name, std::string timeZone );
 
     const std::vector<std::string>& getGoal() const { return mGoal; }
     const std::string& getGoalItem( int index ) const { return mGoal.at( index ); }

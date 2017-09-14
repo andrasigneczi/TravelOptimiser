@@ -20,13 +20,6 @@ private:
 	bool planForwards(Backtrack::PathInfo& pathInfo, time_t t, int firstIndex, Backtrack::Scenario& scenario);
 	bool planMiddle(Backtrack::PathInfo& pathInfo, time_t t1, int firstIndex, time_t t2, int lastIndex, Backtrack::Scenario& scenario);
 
-#ifdef OLD_SCENARIO
-	static void generateAllTheScenarios(Backtrack::PathInfo& pathInfo);
-	static void printScenarios(const Backtrack::PathInfo& pathInfo);
-	static void planBackward(Backtrack::PathInfo& pathInfo, time_t t, int lastIndex, Backtrack::Scenario& scenario);
-	static void planForward(Backtrack::PathInfo& pathInfo, time_t t, int firstIndex, Backtrack::Scenario& scenario);
-#endif // OLD_SCENARIO
-
 private:
 	Backtrack& mBacktrack;
 	std::vector<size_t> mPathItemIndexWithTimetable; // index of the path item which has timetable values

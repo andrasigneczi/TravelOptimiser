@@ -26,20 +26,23 @@ protected:
 	//...............|..............................
 	//..............................................
 	struct Item {
-		std::string mNameAndType;
-		time_t  mDeparture;
+		std::string mNameAndType; // e.g.: BUD (airplane)
+		time_t  mDeparture; // e.g.: 2017-07-31 15:45+0200
 		double  mTimeConsuming; // in hour
 		double  mCost;
-		//Connection::Type mType;
+		Connection::Type mType;
+		std::string mTimeZone;
 	};
 
 	struct Path {
 	public:
+		Path() : mSumPrice(0), mSumTravellingTime(0), mSumStayTime(0){}
 		std::vector<Item> mItems;
 		double mSumPrice;
-		double mSumTime;
+		double mSumTravellingTime;
+		double mSumStayTime;
 	};
-
+	void calcStayTime();
 	std::vector<Path> mEvaluatedPaths;
 
 	Backtrack& mBacktrack;

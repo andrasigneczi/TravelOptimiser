@@ -36,7 +36,7 @@ public:
     static Connection createAirplane(CtNode* node1, CtNode* node2, double timeConsuming, Timetable timetable );
     
     // e.g. staying in a hotel or waiting at the airport
-	static Connection createStay(CtNode* node, double timeConsuming, double cost);
+	static Connection createStay(CtNode* node, double cost);
 	static Connection createParking(CtNode* node, double cost);
 
     // the distance doesn't matter
@@ -62,7 +62,6 @@ public:
 
 private:
     Connection(CtNode* node1, CtNode* node2, Type type, double timeConsuming, double distance, double cost );
-
 };
 
 #endif // _CONNECTION_H

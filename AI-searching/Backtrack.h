@@ -35,7 +35,7 @@ public:
 	static int pathNodeIndex(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mIndex; }
 	static const CtNode::Link& pathNodeLink(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex]; }
 	static const Timetable::TimetableData& pathNodeTimetable(const std::vector<Backtrack::BtNode>& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex].mTimetable.getTimetable(); }
-	static std::string Backtrack::timeToString(time_t t);
+	static std::string Backtrack::timeToString(time_t t, std::string timeZone);
 	static time_t Backtrack::stringToTime(std::string strTime);
 
 private:

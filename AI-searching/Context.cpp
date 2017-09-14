@@ -15,11 +15,11 @@ void Context::addConnection( Connection c ) {
 }
 
 
-CtNode* Context::createNode(std::string name) {
-	CtNode node(name);
+CtNode* Context::createNode(std::string name, std::string timeZone) {
+	CtNode node(name, timeZone);
 	auto it = mNodes.find(&node);
 	if (it == mNodes.end()) {
-		CtNode* node = new CtNode(name);
+		CtNode* node = new CtNode(name, timeZone);
 		auto insIt = mNodes.emplace(node);
 		if (insIt.second) {
 			it = insIt.first;
@@ -51,8 +51,8 @@ void Context::createNode( Connection c ) {
     (*it)->mLinks.push_back({ c.mConnectionType, *it2, c.mTimeConsuming, c.mDistance, c.mCost, c.mTimetable });
 }
 
-const CtNode* Context::getNode(const std::string name) const { 
-	CtNode node( name );
+const CtNode* Context::getNode(const std::string name) const {
+	CtNode node( name, "" );
 	auto it = mNodes.find(&node); 
 	if (it == mNodes.end()) 
 		return nullptr; 

@@ -7,9 +7,10 @@
 #include "Connection.h"
 
 struct CtNode {
-	CtNode(std::string name) { mName = name; }
+	CtNode(std::string name, std::string timeZone) { mName = name; mTimeZone = timeZone; }
 
 	std::string mName;
+	std::string mTimeZone;
 	struct Link {
 		Link(Connection::Type type, CtNode* node, double  timeConsuming, double  distance, double  cost, Timetable timetable) { mType = type; mNode = node; mTimeConsuming = timeConsuming; mDistance = distance; mCost = cost; mTimetable = timetable; }
 		Connection::Type mType;

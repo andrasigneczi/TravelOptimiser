@@ -2,7 +2,8 @@
 #include "Backtrack.h"
 
 void Timetable::add(std::string departure, double price, double timeConsuming) {
-	mTimetable.emplace(Backtrack::stringToTime(departure), Data(price, timeConsuming));
+	//mTimetable.emplace(Backtrack::stringToTime(departure), Data(price, timeConsuming));
+	mTempTimetable.emplace(departure, Data(price, timeConsuming));
 }
 
 const double Timetable::getPrice(time_t departure) const {
@@ -20,3 +21,16 @@ const double Timetable::getFirstPrice() const {
 	return -1.0;
 }
 */
+
+void Timetable::correctionByTimezone(std::string timeZone) {
+	for (auto pair : mTempTimetable) {
+		size_t pos = pair.first.find("+");
+		if (pos == std::string::npos) {
+			mTimetable.emplace(Backtrack::stringToTime(pair.first+timeZone), Data(pair.second.mPrice, pair.second.mTimeConsuming));
+		}
+		else {
+			mTimetable.emplace(Backtrack::stringToTime(pair.first), Data(pair.second.mPrice, pair.second.mTimeConsuming));
+		}
+	}
+	
+}

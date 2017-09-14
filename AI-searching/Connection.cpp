@@ -1,4 +1,5 @@
 #include "Connection.h"
+#include "CtNode.h"
 
 Connection::Connection(CtNode* node1, CtNode* node2, Type type, double timeConsuming, double distance, double cost ) {
     mNode1 = node1;
@@ -22,12 +23,13 @@ Connection Connection::createCarpool(CtNode* node1, CtNode* node2, double timeCo
 Connection Connection::createAirplane(CtNode* node1, CtNode* node2, double timeConsuming, Timetable timetable ) {
     Connection c( node1, node2, airplane, timeConsuming, 0, 0 );
     c.mTimetable = timetable;
+	c.mTimetable.correctionByTimezone(node1->mTimeZone);
     return c;
 }
 
 // e.g. staying in a hotel or waiting at the airport
-Connection Connection::createStay(CtNode* node, double timeConsuming, double cost ) {
-    return Connection( node, nullptr, stay, timeConsuming, 0, cost );
+Connection Connection::createStay(CtNode* node, double cost ) {
+    return Connection( node, nullptr, stay, 0, 0, cost );
 }
 
 Connection Connection::createParking(CtNode* node, double cost) {
@@ -38,6 +40,7 @@ Connection Connection::createParking(CtNode* node, double cost) {
 Connection Connection::createBus(CtNode* node1, CtNode* node2, double timeConsuming, Timetable timetable ) {
     Connection c( node1, node2, bus, timeConsuming, 0, 0 );
     c.mTimetable = timetable;
+	c.mTimetable.correctionByTimezone(node1->mTimeZone);
     return c;
 }
 

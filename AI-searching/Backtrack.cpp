@@ -12,15 +12,27 @@
 
 #define MAXPATHLENGTH 10
 
-std::string Backtrack::timeToString(time_t t) {
-	//time_t t = time(nullptr);
+std::string Backtrack::timeToString(time_t t, std::string timeZone) {
 	struct tm tm;
 	memset(&tm, 0, sizeof(tm));
-	//errno_t err = gmtime_s(&tm, &t);
-	errno_t err = localtime_s(&tm, &t);
+
+	size_t pos = timeZone.find("+");
+	int tmz = 0;
+	if (pos != std::string::npos) {
+		tmz = ((timeZone[pos + 1] - '0') * 10 + (timeZone[pos + 2] - '0')) * 3600;
+		tmz += ((timeZone[pos + 3] - '0') * 10 + (timeZone[pos + 4] - '0')) * 60;
+	}
+	else {
+		tmz = 2 * 3600;
+	}
+
+	t += tmz;
+	errno_t err = gmtime_s(&tm, &t);
+	//errno_t err = localtime_s(&tm, &t);
 
 	std::ostringstream oss;
-	oss << std::put_time(&tm, "%Y-%m-%d %R%z");
+	oss << std::put_time(&tm, "%Y-%m-%d %R");
+	oss << timeZone;
 	return oss.str();
 }
 

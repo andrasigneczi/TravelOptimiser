@@ -20,7 +20,10 @@ public:
 	//const double getFirstPrice() const;
 	const TimetableData& getTimetable() const { return mTimetable;}
 
+	void correctionByTimezone(std::string timeZone);
+
 private:
 	std::map<time_t, Data> mTimetable;
+	std::map<std::string, Data> mTempTimetable;
 };
 #endif
