@@ -60,7 +60,7 @@ public class HighChartDataResultComposer extends DataResultComposer
 //		if( !aCurrency.equals( "%" )&& !aCurrency.equals( lCurrency ))
 //			mLogger.warn( "Illegal currency (" + lCurrency + ") in chart. Expected currency is " + aCurrency );
 
-		mFoundCurrency.add( lCurrency );
+		boolean currencyConverted = false;
 
 		lValue = lValue.replace( ",", "." );
 		//lValue = lValue.replace( " ", "" );
@@ -75,14 +75,14 @@ public class HighChartDataResultComposer extends DataResultComposer
 				&& aOriginalCurrencyMultiplerToEuro > 0.0 )
 		{
 			lDValue *= (double)aOriginalCurrencyMultiplerToEuro;
-			mFoundCurrencyCount++;
+			currencyConverted = true;
 		}
 		else
 		{
 			// Some fixes for older data, where the program didn't store the currency multipler
 			if( lCurrency.equals( "€" ))
 			{
-				mFoundCurrencyCount++;
+				currencyConverted = true;
 			}
 			else if( lCurrency.equals( "lv" ))
 			{
@@ -90,15 +90,20 @@ public class HighChartDataResultComposer extends DataResultComposer
 				{
 					final double lCurrencyMultiplerToEuro = 0.511763;
 					lDValue *= lCurrencyMultiplerToEuro;
-					mFoundCurrencyCount++;
+					currencyConverted = true;
 				}
 			}
 		}
 
-		aDate = aDate.replace( " ", "T" );
-		mUnfilteredDates.add( aDate );
-		mUnfilteredValues.add( lDValue );
-		addDates( mDates, mValues, aDate, lDValue );
+		if( currencyConverted ) {
+			mFoundCurrencyCount++;
+			mFoundCurrency.add( lCurrency );
+
+			aDate = aDate.replace( " ", "T" );
+			mUnfilteredDates.add( aDate );
+			mUnfilteredValues.add( lDValue );
+			addDates( mDates, mValues, aDate, lDValue );
+		}
 	}
 
 	/**
