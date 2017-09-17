@@ -142,7 +142,12 @@ public class CurrencyHelper
             String lInner = lElement.getInnerText();
             //String lCurrencyValue = lElement.getInnerText().substring( 0, lInner.length() - 4 );
             String lCurrencyValue = lInner;
-            mMultipliers.put( lItem.getValue().toString(), Double.valueOf( lCurrencyValue ) );
+            double currencyValue = Double.valueOf( lCurrencyValue );
+            if( currencyValue == 0.0 ) {
+                lBrowser.dispose();
+                return false;
+            }
+            mMultipliers.put( lItem.getValue().toString(), currencyValue );
         }
         lBrowser.dispose();
         return true;

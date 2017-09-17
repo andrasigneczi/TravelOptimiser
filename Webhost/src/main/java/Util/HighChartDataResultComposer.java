@@ -93,6 +93,15 @@ public class HighChartDataResultComposer extends DataResultComposer
 					currencyConverted = true;
 				}
 			}
+			else if( lCurrency.equals( "Ft" ))
+			{
+				if( aOriginalCurrencyMultiplerToEuro == null )
+				{
+					final double lCurrencyMultiplerToEuro = 0.00326809;
+					lDValue *= lCurrencyMultiplerToEuro;
+					currencyConverted = true;
+				}
+			}
 		}
 
 		if( currencyConverted ) {
