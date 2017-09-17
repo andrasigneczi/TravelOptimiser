@@ -97,13 +97,26 @@ public class CurrencyHelper
     {
         return mCurrencies.get( aCurrency );
     }
-
     public static boolean DownloadRecentCurrencyPrices() throws InterruptedException
     {
-        final java.lang.String lUrlTemplate = "http://www.xe.com/currencyconverter/convert/?Amount=1&From=BGN&To=EUR";
+        final java.lang.String lUrlTemplate1 = "http://www.xe.com/currencyconverter/convert/?Amount=1&From=BGN&To=EUR";
+        final java.lang.String lUrlTemplate2 = "https://transferwise.com/au/currency-converter/BGN-to-eur-rate?amount=1";
+
+        return DownloadRecentCurrencyPrices( lUrlTemplate1, "//*[@id=\"ucc-container\"]/span[2]/span[2]", "//*[@id=\"ucc-container\"]/span[3]/span[2]" ) ||
+            DownloadRecentCurrencyPrices( lUrlTemplate2, "/html/body/section[2]/div/div/div/div/div/div[2]/div[1]/h3[2]/span[2]", "" );
+    }
+
+    public static boolean DownloadRecentCurrencyPrices( String lUrlTemplate, String path1, String path2 ) throws InterruptedException
+    {
         Browser lBrowser = TeamDevJxBrowser.getInstance().getJxBrowser("wwww");
         for( Map.Entry<String,String> lItem : mCurrencies.entrySet())
         {
+            if( lItem.getKey().equals( "EUR" ))
+            {
+                mMultipliers.put( lItem.getValue().toString(), 1.0 );
+                continue;
+            }
+
             java.lang.String lUrl = lUrlTemplate.replace( "BGN", lItem.getKey().toString() );
             for( int i = 0; i < 3; i++ )
             {
@@ -129,10 +142,9 @@ public class CurrencyHelper
             Thread.sleep( 1000 );
 
             DOMDocument lDocument = lBrowser.getDocument();
-            //DOMElement lElement = lDocument.findElement( By.xpath( "//*[@id=\"contentL\"]/div[1]/div[1]/div/span/table/tbody/tr[1]/td[3]" ) );
-            DOMElement lElement = lDocument.findElement( By.xpath( "//*[@id=\"ucc-container\"]/span[2]/span[2]" ) );
-            if( lElement == null )
-                lElement = lDocument.findElement( By.xpath( "//*[@id=\"ucc-container\"]/span[3]/span[2]" ));
+            DOMElement lElement = lDocument.findElement( By.xpath( path1 ) );
+            if( lElement == null && path2.length() > 0 )
+                lElement = lDocument.findElement( By.xpath( path2 ));
             if( lElement == null )
             {
                 lBrowser.dispose();
@@ -141,7 +153,12 @@ public class CurrencyHelper
 
             String lInner = lElement.getInnerText();
             //String lCurrencyValue = lElement.getInnerText().substring( 0, lInner.length() - 4 );
-            String lCurrencyValue = lInner;
+            String lCurrencyValue = "";
+            for( int i = 0; i < lInner.length(); ++i) {
+                if(( lInner.charAt(i) >= '0' && lInner.charAt(i) <= '9' ) || lInner.charAt(i) == '.')
+                    lCurrencyValue += lInner.charAt(i);
+            }
+            //String lCurrencyValue = lInner;
             double currencyValue = Double.valueOf( lCurrencyValue );
             if( currencyValue == 0.0 ) {
                 lBrowser.dispose();
