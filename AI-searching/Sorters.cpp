@@ -13,10 +13,18 @@ void Sorter::printMathes( int count ) {
 		}
 	}
 	sort();
+
+	double maxSpentTime = mBacktrack.getContext()->getMaxSpentTime();
+
 	int i = 0;
 	for (const Path& path : mEvaluatedPaths) {
 		if (i == count)
 			break;
+
+		double timeSpent = path.mSumTravellingTime + path.mSumStayTime * 24.;
+		if (maxSpentTime > 0 && timeSpent > maxSpentTime)
+			continue;
+
 		for (const Item& item : path.mItems) {
 			std::cout << item.mNameAndType;
 			if (item.mType != Connection::parking)
@@ -28,6 +36,7 @@ void Sorter::printMathes( int count ) {
 		}
 		std::cout << "cost (stay included): " << path.mSumPrice << "€" << std::endl;
 		std::cout << "travelling time (except stay): " << path.mSumTravellingTime << " hours" << std::endl;
+		std::cout << "full time consuming: " << timeSpent << " hours \n";
 		std::cout << std::string(80, '-') << std::endl;
 		std::cout << std::string(100, '=') << std::endl;
 		++i;
@@ -43,27 +52,33 @@ void Sorter::extractPathWithScenarios(const Backtrack::PathInfo& pathInfo) {
 			Item pathItem;
 			
 			if (Backtrack::pathNodeIndex(pathInfo.mPath, i) >= 0) {
+				const CtNode::Link& nodeLink = Backtrack::pathNodeLink(pathInfo.mPath, i);
 				assert(scenarioNodeIndex < pathInfo.mScenarios[scenarioIndex].size());
-				if (Backtrack::pathNodeLink(pathInfo.mPath, i).mType != Connection::parking)
+				if (nodeLink.mType != Connection::parking)
 					pathItem.mDeparture = pathInfo.mScenarios[scenarioIndex][scenarioNodeIndex];
 
-				pathItem.mType = Backtrack::pathNodeLink(pathInfo.mPath, i).mType;
+				pathItem.mType = nodeLink.mType;
 				pathItem.mTimeZone = pathInfo.mPath[i].mCtNode->mTimeZone;
 				pathItem.mNameAndType = Backtrack::pathNodeName(pathInfo.mPath, i) + " ("
 					+ Connection::typeToString(pathItem.mType) + ") ";
 					
-				if (Backtrack::pathNodeLink(pathInfo.mPath, i).mType != Connection::parking)
+				if (nodeLink.mType != Connection::parking)
 					++scenarioNodeIndex;
 
-				if (Backtrack::pathNodeLink(pathInfo.mPath, i).mType == Connection::car)
-					path.mSumPrice += Backtrack::pathNodeLink(pathInfo.mPath, i).mDistance * fuelPricePerKm;
-				else if (Backtrack::pathNodeLink(pathInfo.mPath, i).mType == Connection::airplane || Backtrack::pathNodeLink(pathInfo.mPath, i).mType == Connection::bus)
-					path.mSumPrice += Backtrack::pathNodeLink(pathInfo.mPath, i).mTimetable.getPrice(pathItem.mDeparture);
+				if (nodeLink.mType == Connection::car)
+					path.mSumPrice += nodeLink.mDistance * fuelPricePerKm;
+				else if (nodeLink.mType == Connection::airplane || nodeLink.mType == Connection::bus)
+					path.mSumPrice += nodeLink.mTimetable.getPrice(pathItem.mDeparture);
 				else
-					path.mSumPrice += Backtrack::pathNodeLink(pathInfo.mPath, i).mCost;
+					path.mSumPrice += nodeLink.mCost;
 
-				if (Backtrack::pathNodeLink(pathInfo.mPath, i).mType != Connection::stay) {
-					path.mSumTravellingTime += Backtrack::pathNodeLink(pathInfo.mPath, i).mTimeConsuming;
+				if (nodeLink.mType != Connection::stay && nodeLink.mType != Connection::parking) {
+					if (nodeLink.mType == Connection::airplane || nodeLink.mType == Connection::bus) {
+						path.mSumTravellingTime += nodeLink.mTimetable.getTimeConsuming(pathItem.mDeparture);
+					}
+					else {
+						path.mSumTravellingTime += nodeLink.mTimeConsuming;
+					}
 				}
 			}
 			else {
@@ -80,6 +95,7 @@ void Sorter::extractPathWithScenarios(const Backtrack::PathInfo& pathInfo) {
 	calcStayTime();
 }
 
+// calculate the stay time in days
 void Sorter::calcStayTime() {
 	for (Path& path : mEvaluatedPaths) {
 		double sumStayTime = 0;
@@ -109,10 +125,18 @@ bool SorterByTravellingTime::compareTravellingTime(const Sorter::Path& path1, co
 	return path1.mSumTravellingTime < path2.mSumTravellingTime;
 }
 
+bool SorterByStayingTime::compareStayingTime(const Sorter::Path& path1, const Sorter::Path& path2) {
+	return path1.mSumStayTime > path2.mSumStayTime;
+}
+
 void SorterByTravellingCost::sort() {
 	std::sort(mEvaluatedPaths.begin(), mEvaluatedPaths.end(), comparePathPrice);
 }
 
 void SorterByTravellingTime::sort() {
 	std::sort(mEvaluatedPaths.begin(), mEvaluatedPaths.end(), compareTravellingTime);
+}
+
+void SorterByStayingTime::sort() {
+	std::sort(mEvaluatedPaths.begin(), mEvaluatedPaths.end(), compareStayingTime);
 }

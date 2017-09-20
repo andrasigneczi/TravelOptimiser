@@ -95,7 +95,12 @@ void ScenarioMaker::generateOneScenario(Backtrack::PathInfo& pathInfo) {
 			<< " " << Backtrack::pathNodeLink(pathInfo.mPath, mPathItemIndexWithTimetable[i]).mTimeConsuming << "\n";
 		std::cout << "scenariocount2: " << scenario.size() << "\n";
 */
-		t += (time_t)(Backtrack::pathNodeLink(pathInfo.mPath, mPathItemIndexWithTimetable[i]).mTimeConsuming * 60. * 60.);
+		const CtNode::Link& ctNodeI = Backtrack::pathNodeLink(pathInfo.mPath, mPathItemIndexWithTimetable[i]);
+		if(ctNodeI.mType == Connection::airplane || ctNodeI.mType == Connection::bus )
+			t += (time_t)(timetableIT->second.mTimeConsuming * 60. * 60.);
+		else
+			t += (time_t)(ctNodeI.mTimeConsuming * 60. * 60.);
+
 		if ( i < mPathItemIndexWithTimetable.size() - 1) {
 //			std::cout << "debug: i...i+1\n";
 			// i....i+1 közötti elemek tervezése

@@ -131,11 +131,16 @@ bool Backtrack::isValidPath() {
 //				printPath(mPath);
 				return false;
 			}
+			if (pathNodeLink(i - 1).mType == Connection::parking)
+				parkingPlace = "";
 		}
 
 		// car parking allowed after a car link or before a car link
 		if (pathNodeLink(i).mType == Connection::parking) {
 			if (parkingPlace.length() == 0) {
+				if (pathNodeLink(i - 1).mType != Connection::car) {
+					return false;
+				}
 				parkingPlace = pathNodeName(i);
 			}
 			else {
@@ -260,19 +265,20 @@ bool Backtrack::genNextPath() {
 }
 
 void Backtrack::printAllPaths() {
-	const int resultCount = 1000;
 	ScenarioMaker scenarioMaker(*this);
-	std::cout << std::string(100, '*') << "\n*         results ordered by travelling cost:\n" << std::string(100, '*') << std::endl;
-	//sort(mMatches.begin(), mMatches.end(), comparePathPrice);
 	scenarioMaker.generateAllTheScenarios();
 	
+	std::cout << std::string(100, '*') << "\n*         results ordered by travelling cost:\n" << std::string(100, '*') << std::endl;
 	SorterByTravellingCost sorterByTravellingCost(*this);
-	sorterByTravellingCost.printMathes(resultCount);
+	sorterByTravellingCost.printMathes(mContext->getDisplayMatchNumberPerScenarion());
 
 	std::cout << std::string(100, '*') << "\n*         results ordered by travelling time:\n" << std::string(100, '*') << std::endl;
-
 	SorterByTravellingTime sorterByTravellingTime(*this);
-	sorterByTravellingTime.printMathes(resultCount);
+	sorterByTravellingTime.printMathes(mContext->getDisplayMatchNumberPerScenarion());
+
+	std::cout << std::string(100, '*') << "\n*         results ordered by staying time:\n" << std::string(100, '*') << std::endl;
+	SorterByStayingTime sorterByStayingTime(*this);
+	sorterByStayingTime.printMathes(mContext->getDisplayMatchNumberPerScenarion());
 }
 
 void Backtrack::savePath() {

@@ -33,7 +33,7 @@ static Context* createContext() {
 	timetable3.add("2017-08-02 18:15", 60, 1 + 5. / 6. + 1.25);
 
 	// I added the extra time (1.25h), what we have to spend at the airports; 23 euro
-	context->addConnection(Connection::createAirplane(nodeCRL, nodeSOF, 1 + 5. / 6. + 1.25, timetable3));
+	context->addConnection(Connection::createAirplane(nodeCRL, nodeSOF, timetable3));
 
 	// The different flights has different price.
 	Timetable timetable4;
@@ -44,7 +44,7 @@ static Context* createContext() {
 	timetable4.add("2017-08-02 08:15", 15, 2 + 1. / 6. + 1.25);
 	timetable4.add("2017-08-02 20:50", 100, 2 + 1. / 6. + 1.25);
 
-	context->addConnection(Connection::createAirplane(nodeSOF, nodeCRL, 2 + 1. / 6. + 1.25, timetable4));
+	context->addConnection(Connection::createAirplane(nodeSOF, nodeCRL, timetable4));
 
 
 	// 55 hours, 250 euro with accomodation
@@ -54,6 +54,8 @@ static Context* createContext() {
 
 
 	context->setGoal({ "Igel", "SOF:stay", "Igel" });
+	//context->setMaxSpentTime(128.);
+	//context->setDisplayMatchNumberPerScenarion(3);
 	return context;
 }
 

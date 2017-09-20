@@ -48,7 +48,7 @@ static Context* createContext() {
 	ttIgelLuxembourg.add("2017-07-28 19:05", 2, 4.);
 	ttIgelLuxembourg.add("2017-07-28 20:05", 2, 4.);
 	// 1 hour
-	context->addConnection(Connection::createBus(nodeIgel, nodeLuxembourg, 1.0, ttIgelLuxembourg));
+	context->addConnection(Connection::createBus(nodeIgel, nodeLuxembourg, ttIgelLuxembourg));
 
 	Timetable ttLuxembourgIgel;
 	// price, hours
@@ -81,7 +81,7 @@ static Context* createContext() {
 	ttLuxembourgIgel.add("2017-07-31 19:05", 2, 4.);
 	ttLuxembourgIgel.add("2017-07-31 20:05", 2, 4.);
 	// 1 hour
-	context->addConnection(Connection::createBus(nodeLuxembourg, nodeIgel, 1.0, ttLuxembourgIgel));
+	context->addConnection(Connection::createBus(nodeLuxembourg, nodeIgel, ttLuxembourgIgel));
 
 	// 3 hours, 215 km
     context->addConnection( Connection::createCar(nodeLuxembourg, nodeCRL, 3., 215 ));
@@ -102,7 +102,7 @@ static Context* createContext() {
 	timetable1.add("2017-07-29 00:15", 5, 4. );
 
 	// 4 hours, 25 euro
-	context->addConnection(Connection::createBus(nodeLuxembourg, nodeCRL, 4.0, timetable1));
+	context->addConnection(Connection::createBus(nodeLuxembourg, nodeCRL, timetable1));
 
 	// The different buses has different price.
 	Timetable timetable2;
@@ -115,7 +115,7 @@ static Context* createContext() {
 	timetable1.add("2017-07-29 03:15", 15, 4.);
 	timetable1.add("2017-07-29 06:50", 25, 4. );
 
-	context->addConnection(Connection::createBus(nodeCRL, nodeLuxembourg, 4.0, timetable2));
+	context->addConnection(Connection::createBus(nodeCRL, nodeLuxembourg, timetable2));
 
 	// The different flights has different price.
 	Timetable timetable3;
@@ -123,14 +123,14 @@ static Context* createContext() {
 	timetable3.add("2017-07-28 18:15", 60, 1 + 5. / 6. + 1.25);
 
     // I added the extra time (1.25h), what we have to spend at the airports; 23 euro
-    context->addConnection( Connection::createAirplane(nodeCRL, nodeBUD, 1 + 5./6. + 1.25, timetable3 ));
+    context->addConnection( Connection::createAirplane(nodeCRL, nodeBUD, timetable3 ));
 
 	// The different flights has different price.
 	Timetable timetable4;
 	timetable4.add("2017-07-31 08:15", 15, 2 + 1. / 6. + 1.25);
 	timetable4.add("2017-07-31 20:50", 100, 2 + 1. / 6. + 1.25);
 
-    context->addConnection( Connection::createAirplane(nodeBUD, nodeCRL, 2 + 1./6. + 1.25, timetable4 ));
+    context->addConnection( Connection::createAirplane(nodeBUD, nodeCRL, timetable4 ));
 
     // 55 hours, 250 euro with accomodation
     context->addConnection( Connection::createStay(nodeBUD, 250 )); // spent time and money in Budapest
@@ -151,13 +151,13 @@ static Context* createContext() {
 	timetable5.add("2017-07-28 09:15", 83, 1.33 + 1.25);
 	
 	// I added the extra time (1.25h), what we have to spend at the airports; 83 euro
-	context->addConnection( Connection::createAirplane(nodeHHN, nodeBUD,  1.33 + 1.25, timetable5));
+	context->addConnection( Connection::createAirplane(nodeHHN, nodeBUD, timetable5));
 
 	Timetable timetable6;
 	timetable5.add("2017-07-31 10:15", 83, 1.33 + 1.25);
 
 	// I added the extra time (1.25h), what we have to spend at the airports; 83 euro
-	context->addConnection(Connection::createAirplane(nodeBUD, nodeHHN, 1.33 + 1.25, timetable5));
+	context->addConnection(Connection::createAirplane(nodeBUD, nodeHHN, timetable5));
 
     // Igel-Budapest, Budapest-Igel by car 1152 km, 12 hours with rest
     context->addConnection( Connection::createCar(nodeIgel, nodeBUD, 12, 1152 ));
@@ -166,6 +166,10 @@ static Context* createContext() {
     // how will I define, that if I departed from Igel to BUD, I have to come back with that?
     // Maybe I should prepare a different search for this scenario
     context->setGoal( { "Igel", "BUD:stay", "Igel" } );
+
+	// maximum 3 days can be the trip
+	//context->setMaxSpentTime( 3. * 24. );
+	context->setDisplayMatchNumberPerScenarion(3);
     return context;
 }
 

@@ -20,8 +20,8 @@ Connection Connection::createCarpool(CtNode* node1, CtNode* node2, double timeCo
 }
 
 // cost is the ticket and additional prices
-Connection Connection::createAirplane(CtNode* node1, CtNode* node2, double timeConsuming, Timetable timetable ) {
-    Connection c( node1, node2, airplane, timeConsuming, 0, 0 );
+Connection Connection::createAirplane(CtNode* node1, CtNode* node2, Timetable timetable ) {
+    Connection c( node1, node2, airplane, 0, 0, 0 );
     c.mTimetable = timetable;
 	c.mTimetable.correctionByTimezone(node1->mTimeZone);
     return c;
@@ -37,8 +37,8 @@ Connection Connection::createParking(CtNode* node, double cost) {
 }
 
 // the distance doesn't matter
-Connection Connection::createBus(CtNode* node1, CtNode* node2, double timeConsuming, Timetable timetable ) {
-    Connection c( node1, node2, bus, timeConsuming, 0, 0 );
+Connection Connection::createBus(CtNode* node1, CtNode* node2, Timetable timetable ) {
+    Connection c( node1, node2, bus, 0, 0, 0 );
     c.mTimetable = timetable;
 	c.mTimetable.correctionByTimezone(node1->mTimeZone);
     return c;

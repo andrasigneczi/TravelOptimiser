@@ -11,7 +11,7 @@ class AI {
 
 public:
     virtual std::vector<Connection> seachTheBestWay( Context* context ) = 0;
-    
+	Context* getContext() { return mContext.get();  }
 protected:
 
     std::unique_ptr<Context> mContext;

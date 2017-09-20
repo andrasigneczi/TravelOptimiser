@@ -17,6 +17,7 @@ public:
 
 	void add(std::string departure, double price, double timeConsuming );
 	const double getPrice(time_t departure) const;
+	const double getTimeConsuming(time_t departure) const;
 	//const double getFirstPrice() const;
 	const TimetableData& getTimetable() const { return mTimetable;}
 

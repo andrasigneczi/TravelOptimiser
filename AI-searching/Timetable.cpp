@@ -13,6 +13,13 @@ const double Timetable::getPrice(time_t departure) const {
 	return it->second.mPrice;
 }
 
+const double Timetable::getTimeConsuming(time_t departure) const {
+	auto it = mTimetable.find(departure);
+	if (it == mTimetable.end())
+		return -1.0;
+	return it->second.mTimeConsuming;
+}
+
 /*
 const double Timetable::getFirstPrice() const {
 	if (mTimetable.size() > 0) {

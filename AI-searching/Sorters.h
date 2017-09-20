@@ -66,4 +66,12 @@ public:
 	static bool compareTravellingTime(const Sorter::Path& path, const Sorter::Path& path2);
 };
 
+class SorterByStayingTime : public Sorter {
+public:
+	using Sorter::Sorter;
+	virtual void sort();
+
+	static bool compareStayingTime(const Sorter::Path& path, const Sorter::Path& path2);
+};
+
 #endif

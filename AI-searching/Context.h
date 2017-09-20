@@ -14,18 +14,25 @@
 class Context {
 
 public:
+	Context() : mMaxSpentTime(0.0), mDisplayMatchNumberPerScenarion( 1000 ) {}
 	~Context();
-    void addConnection( Connection c );
-    void setGoal( std::vector<std::string> stops );
+	void addConnection(Connection c);
+	void setGoal(std::vector<std::string> stops);
 
-	CtNode* createNode(std::string name, std::string timeZone );
+	CtNode* createNode(std::string name, std::string timeZone);
 
-    const std::vector<std::string>& getGoal() const { return mGoal; }
-    const std::string& getGoalItem( int index ) const { return mGoal.at( index ); }
-    const std::string& getLastGoalItem() const { return mGoal.at( mGoal.size() - 1 ); }
-    const size_t getGoalSize() const { return mGoal.size(); }
+	const std::vector<std::string>& getGoal() const { return mGoal; }
+	const std::string& getGoalItem(int index) const { return mGoal.at(index); }
+	const std::string& getLastGoalItem() const { return mGoal.at(mGoal.size() - 1); }
+	const size_t getGoalSize() const { return mGoal.size(); }
 	const CtNode* getNode(const std::string name) const;
-    
+
+	void setMaxSpentTime(double maxSpentTime) { mMaxSpentTime = maxSpentTime; } // in hours
+	const double getMaxSpentTime() const { return mMaxSpentTime; }
+
+	void setDisplayMatchNumberPerScenarion(int n) { mDisplayMatchNumberPerScenarion = n;  }
+	const int getDisplayMatchNumberPerScenarion() const { return mDisplayMatchNumberPerScenarion; }
+
 private:
     void createNode( Connection c );
     
@@ -33,6 +40,8 @@ private:
     std::vector<std::string> mGoal;
 
     std::set<CtNode*, nodeComparator> mNodes;
+	double mMaxSpentTime;
+	int mDisplayMatchNumberPerScenarion;
 };
 
 #endif // _CONTEXT_H

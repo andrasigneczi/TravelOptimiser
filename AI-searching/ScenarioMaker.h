@@ -5,8 +5,6 @@
 
 #include "Backtrack.h"
 
-//#define OLD_SCENARIO
-
 class ScenarioMaker {
 public:
 	ScenarioMaker(Backtrack& backtrack);

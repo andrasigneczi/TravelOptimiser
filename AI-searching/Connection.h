@@ -33,14 +33,14 @@ public:
 	static Connection createCarpool(CtNode* node1, CtNode* node2, double timeConsuming, double cost);
 
     // cost is the ticket and additional prices
-    static Connection createAirplane(CtNode* node1, CtNode* node2, double timeConsuming, Timetable timetable );
+    static Connection createAirplane(CtNode* node1, CtNode* node2, Timetable timetable );
     
     // e.g. staying in a hotel or waiting at the airport
 	static Connection createStay(CtNode* node, double cost);
 	static Connection createParking(CtNode* node, double cost);
 
     // the distance doesn't matter
-    static Connection createBus(CtNode* node1, CtNode* node2, double timeConsuming, Timetable timetable );
+    static Connection createBus(CtNode* node1, CtNode* node2, Timetable timetable );
 
     // the distance doesn't matter
     static Connection createTaxi(CtNode* node1, CtNode* node2, double timeConsuming, double cost );
