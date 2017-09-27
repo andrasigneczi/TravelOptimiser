@@ -169,7 +169,7 @@ static Context* createContext() {
 
 	// maximum 3 days can be the trip
 	//context->setMaxSpentTime( 3. * 24. );
-	context->setDisplayMatchNumberPerScenarion(3);
+	//context->setDisplayMatchNumberPerScenarion(3);
     return context;
 }
 

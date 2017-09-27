@@ -12,52 +12,6 @@
 
 #define MAXPATHLENGTH 10
 
-std::string Backtrack::timeToString(time_t t, std::string timeZone) {
-	struct tm tm;
-	memset(&tm, 0, sizeof(tm));
-
-	size_t pos = timeZone.find("+");
-	int tmz = 0;
-	if (pos != std::string::npos) {
-		tmz = ((timeZone[pos + 1] - '0') * 10 + (timeZone[pos + 2] - '0')) * 3600;
-		tmz += ((timeZone[pos + 3] - '0') * 10 + (timeZone[pos + 4] - '0')) * 60;
-	}
-	else {
-		tmz = 2 * 3600;
-	}
-
-	t += tmz;
-	errno_t err = gmtime_s(&tm, &t);
-	//errno_t err = localtime_s(&tm, &t);
-
-	std::ostringstream oss;
-	oss << std::put_time(&tm, "%Y-%m-%d %R");
-	oss << timeZone;
-	return oss.str();
-}
-
-time_t Backtrack::stringToTime(std::string strTime) {
-	struct std::tm tm;
-	memset(&tm, 0, sizeof(tm));
-	//std::string strTime("2017-08-12 11:50+0300");
-	std::istringstream ss(strTime);
-	ss >> std::get_time(&tm, "%Y-%m-%d %R");
-	size_t pos = strTime.find("+");
-	int tmz = 0;
-	if (pos != std::string::npos) {
-		tmz = (strTime[pos + 1] - '0') * 10 + (strTime[pos + 2] - '0');
-	}
-	else {
-		tmz = 2;
-	}
-	time_t t = mktime(&tm);
-	t -= (tmz-1) * 60 * 60;
-	//timeToString(t);
-	return t;
-}
-
-
-
 
 std::vector<Connection> Backtrack::seachTheBestWay( Context* context ) {
     mContext.reset( context );
@@ -69,7 +23,7 @@ std::vector<Connection> Backtrack::seachTheBestWay( Context* context ) {
     init();
 
     while( !mTerminated ) {
-		if (isGoal())
+		if (isGoal(context))
 			savePath();
 		mTerminated = !genNextPath();
     }
@@ -96,21 +50,83 @@ void Backtrack::init() {
     }
 }
 
-bool Backtrack::isMatch(int pathIndex, std::string goal, Connection::Type linkType) {
-	bool match = mPath[pathIndex].mCtNode->mName.compare(goal) == 0; // name is equal
+bool Backtrack::isMatch(const Path& path, int pathIndex, std::string goal, Connection::Type linkType) {
+	bool match = path[pathIndex].mCtNode->mName.compare(goal) == 0; // name is equal
 	if (match && linkType != Connection::unknown && 
-		mPath[pathIndex].mIndex >= 0 && linkType != mPath[pathIndex].mCtNode->mLinks[mPath[pathIndex].mIndex].mType)
+		path[pathIndex].mIndex >= 0 && linkType != path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex].mType)
 		match = false;
 	return match;
 }
 
-bool Backtrack::isValidPath() {
-	if (mPath.size() < 3)
+bool Backtrack::isMinimal(const Path& path, Context* context, int level /*= 0*/) {
+	// I want to remove those path which contains unnecessary ways, e.g.: Igel, Luxembourg, HHN, .... Luxembourg is useless here.
+/*
+	size_t h = genHash(path);
+	if (h == 339287363) {
+		int debug = 10;
+	}
+*/
+	// If a path is goal, and it remains being a goal after I removed a node, then this path isn't minimal, it is invalid.
+#if 1
+	for (size_t i = 1; i < path.size() - 1; ++i) {
+		Path newPath = genPathWithoutOneItem(path, i);
+		if (newPath.size() == 0)
+			continue;
+		if (checkGoalCondition(newPath, context)) {
+			/*
+			std::cout << "The following path isn't minimal:\n";
+			printPath(path);
+			std::cout << "Hash: " << h << std::endl;
+			*/
+			return false;
+		}
+		if (level == 0 && !isMinimal(newPath, context, level + 1)) {
+			/*
+			std::cout << "The following path isn't minimal:\n";
+			printPath(path);
+			std::cout << "Hash: " << h << std::endl;
+			*/
+			return false;
+		}
+	}
+#endif
+	return true;
+}
+
+Backtrack::Path Backtrack::genPathWithoutOneItem(const Path& path, int index) {
+	Path newPath;
+	for (size_t i = 0; i < path.size(); ++i) {
+		if (index == i) {
+			bool linked = false;
+			// path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex];
+			// path[pathIndex].mIndex = ?
+			const CtNode::Links& prevLinks = newPath[i - 1].mCtNode->mLinks;
+			for (size_t l = 0; l < prevLinks.size(); ++l) {
+				const CtNode::Link& link = prevLinks[l];
+				if (link.mNode == path[i + 1].mCtNode) {
+					newPath[i - 1].mIndex = l;
+					linked = true;
+					break;
+				}
+			}
+			if (!linked) {
+				return Path();
+			}
+		}
+		else {
+			newPath.push_back(path.at(i));
+		}
+	}
+	return newPath;
+}
+
+bool Backtrack::isValidPath(const Path& path) {
+	if (path.size() < 3)
 		return true;
 
 	// 1) If I depart by car, I have to arrive by car
-	if ((pathNodeLink(0).mType == Connection::car &&  pathNodeLink(mPath.size() - 2).mType != Connection::car) ||
-		(pathNodeLink(0).mType != Connection::car &&  pathNodeLink(mPath.size() - 2).mType == Connection::car)) {
+	if ((pathNodeLink(path,0).mType == Connection::car &&  pathNodeLink(path, path.size() - 2).mType != Connection::car) ||
+		(pathNodeLink(path,0).mType != Connection::car &&  pathNodeLink(path, path.size() - 2).mType == Connection::car)) {
 		return false;
 	}
 
@@ -125,46 +141,48 @@ bool Backtrack::isValidPath() {
 	std::string parkingPlace;
 
 #if 1
-	for (size_t i = 1; i < mPath.size() - 1; ++i) {
-		if (pathNodeLink(i).mType == Connection::car) {
-			if (pathNodeLink(i - 1).mType != Connection::car && pathNodeLink(i - 1).mType != Connection::parking) {
-//				printPath(mPath);
+	// the last pathnode's index is -1 (there is no link from there), so we don't use it.
+	for (size_t i = 1; i < path.size() - 1; ++i) {
+		const CtNode::Link& currentLink = pathNodeLink(path, i);
+		const CtNode::Link& prevLink = pathNodeLink(path, i - 1);
+		if (currentLink.mType == Connection::car) {
+			if (prevLink.mType != Connection::car && prevLink.mType != Connection::parking) {
 				return false;
 			}
-			if (pathNodeLink(i - 1).mType == Connection::parking)
+			if (prevLink.mType == Connection::parking)
 				parkingPlace = "";
 		}
 
 		// car parking allowed after a car link or before a car link
-		if (pathNodeLink(i).mType == Connection::parking) {
+		if (currentLink.mType == Connection::parking) {
 			if (parkingPlace.length() == 0) {
-				if (pathNodeLink(i - 1).mType != Connection::car) {
+				if (prevLink.mType != Connection::car) {
 					return false;
 				}
-				parkingPlace = pathNodeName(i);
+				parkingPlace = pathNodeName(path, i);
 			}
 			else {
-				if (parkingPlace.compare(pathNodeName(i)) != 0)
+				if (parkingPlace.compare(pathNodeName(path, i)) != 0)
 					return false;
 				parkingPlace = "";
 			}
 
-			if (i < mPath.size() - 1) {
+			if (i < path.size() - 1) {
 				// if this link is parking, the previous or the next one must be car
-				if (pathNodeLink(i - 1).mType != Connection::car && pathNodeLink(i + 1).mType != Connection::car) {
+				if (prevLink.mType != Connection::car && pathNodeLink(path, i + 1).mType != Connection::car) {
 					return false;
 				}
 			}
 			else {
 				// if this link is parking, the previous one must be car
-				if (pathNodeLink(i - 1).mType != Connection::car) {
+				if (prevLink.mType != Connection::car) {
 					return false;
 				}
 			}
 		}
 		else {
 			// if this link isn't parking, nor car, then the previos musn't be car
-			if (pathNodeLink(i).mType != Connection::car && pathNodeLink(i - 1).mType == Connection::car) {
+			if (currentLink.mType != Connection::car && prevLink.mType == Connection::car) {
 				return false;
 			}
 		}
@@ -173,28 +191,32 @@ bool Backtrack::isValidPath() {
 	return true;
 }
 
-bool Backtrack::isGoal() {
-    if( mPath.size() <  mContext->getGoalSize())
+bool Backtrack::isGoal(Context* context) const {
+	return checkGoalCondition( mPath, context ) && isMinimal( mPath, context );
+}
+
+bool Backtrack::checkGoalCondition(const Path& path, Context* context) {
+	if( path.size() <  context->getGoalSize())
         return false;
     
     int matches = 0;
 
 	// let's check the first item, ...
-	if (mPath[0].mCtNode->mName.compare(mContext->getGoalItem(0)) != 0)
+	if (path[0].mCtNode->mName.compare(context->getGoalItem(0)) != 0)
 		return false;
 
 	// the last item, ...
-	if (mPath[mPath.size() - 1].mCtNode->mName.compare(mContext->getLastGoalItem()) != 0)
+	if (path[path.size() - 1].mCtNode->mName.compare(context->getLastGoalItem()) != 0)
 		return false;
 
-	if (!isValidPath())
+	if (!isValidPath(path))
 		return false;
 
 	// and the others
 	int pathIndex = 1;
 	int goalIndex = 1;
-	while(pathIndex < (int)(mPath.size()) - 1 && goalIndex < (int)(mContext->getGoalSize()) - 1 ) {
-        std::string goal =  mContext->getGoalItem(goalIndex);
+	while(pathIndex < (int)(path.size()) - 1 && goalIndex < (int)(context->getGoalSize()) - 1 ) {
+        std::string goal =  context->getGoalItem(goalIndex);
 		int separator = goal.find(":");
 		Connection::Type linkType = Connection::unknown;
 		if (separator != std::string::npos) {
@@ -202,9 +224,9 @@ bool Backtrack::isGoal() {
 			goal = goal.substr(0, separator);
 		}
 
-		while (!isMatch( pathIndex, goal, linkType)) {
+		while (!isMatch( path, pathIndex, goal, linkType)) {
 			++pathIndex;
-			if (pathIndex == (int)mPath.size())
+			if (pathIndex == (int)path.size())
 				return false;
 		}
 		++goalIndex;
@@ -288,10 +310,78 @@ void Backtrack::savePath() {
 	mMatches.push_back(pathInfo);
 }
 
-const size_t Backtrack::genHash(const std::vector<Backtrack::BtNode>& path) {
+const size_t Backtrack::genHash(const Backtrack::Path& path) {
 	std::string hashStr;
 	for (size_t i = 0; i < path.size(); ++i) {
 		hashStr += path[i].mCtNode->mName;
 	}
 	return std::hash<std::string>()(hashStr);
+}
+
+std::string Backtrack::timeToString(time_t t, std::string timeZone) {
+	struct tm tm;
+	memset(&tm, 0, sizeof(tm));
+
+	size_t pos = timeZone.find("+");
+	int tmz = 0;
+	if (pos != std::string::npos) {
+		tmz = ((timeZone[pos + 1] - '0') * 10 + (timeZone[pos + 2] - '0')) * 3600;
+		tmz += ((timeZone[pos + 3] - '0') * 10 + (timeZone[pos + 4] - '0')) * 60;
+	}
+	else {
+		tmz = 2 * 3600;
+	}
+
+	t += tmz;
+	errno_t err = gmtime_s(&tm, &t);
+	//errno_t err = localtime_s(&tm, &t);
+
+	std::ostringstream oss;
+	oss << std::put_time(&tm, "%Y-%m-%d %R");
+	oss << timeZone;
+	return oss.str();
+}
+
+time_t Backtrack::stringToTime(std::string strTime) {
+	struct std::tm tm;
+	memset(&tm, 0, sizeof(tm));
+	//std::string strTime("2017-08-12 11:50+0300");
+	std::istringstream ss(strTime);
+	ss >> std::get_time(&tm, "%Y-%m-%d %R");
+	size_t pos = strTime.find("+");
+	int tmz = 0;
+	if (pos != std::string::npos) {
+		tmz = (strTime[pos + 1] - '0') * 10 + (strTime[pos + 2] - '0');
+	}
+	else {
+		tmz = 2;
+	}
+	time_t t = mktime(&tm);
+	t -= (tmz - 1) * 60 * 60;
+	//timeToString(t);
+	return t;
+}
+
+// for debugging
+void Backtrack::printPath(const Backtrack::Path& path) {
+	for (size_t i = 0; i < path.size(); ++i) {
+
+		if (pathNodeIndex(path, i) >= 0) {
+
+			std::cout << pathNodeName(path, i) << " ("
+				<< Connection::typeToString(pathNodeLink(path, i).mType) << ") "
+				<< "\n" << std::string(60, '-') << "\n";
+		}
+		else {
+			std::cout << pathNodeName(path, i) << " ("
+				<< pathNodeIndex(path, i) << ")"
+				<< "\n" << std::string(60, '-') << "\n";
+		}
+	}
+	std::cout << std::string(80, 'T') << std::endl;
+	std::cout << std::string(80, 'T') << std::endl;
+
+
+	std::cout << std::string(30, '=');
+	std::cout << std::endl;
 }

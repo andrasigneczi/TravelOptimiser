@@ -6,7 +6,8 @@
 #include "Connection.h"
 #include <vector>
 #include <string>
-#include <unordered_map>
+//#include <unordered_map>
+#include <map>
 //#include <unordered_set>
 #include <set>
 #include "CtNode.h"
@@ -32,11 +33,12 @@ public:
 
 	void setDisplayMatchNumberPerScenarion(int n) { mDisplayMatchNumberPerScenarion = n;  }
 	const int getDisplayMatchNumberPerScenarion() const { return mDisplayMatchNumberPerScenarion; }
+	bool isConnected(std::string name1, std::string name2);
 
 private:
     void createNode( Connection c );
     
-    std::vector<Connection> mConnections;
+	std::map<std::string, std::set<std::string>> mConnections;
     std::vector<std::string> mGoal;
 
     std::set<CtNode*, nodeComparator> mNodes;

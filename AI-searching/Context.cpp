@@ -10,7 +10,20 @@ Context::~Context() {
 
 
 void Context::addConnection( Connection c ) {
-    mConnections.push_back( c );
+    //mConnections.push_back( c );
+	if (c.mNode2 != nullptr) {
+		auto it = mConnections.find(c.mNode1->mName);
+		if (it != mConnections.end()) {
+			if (c.mNode2 != nullptr) {
+				it->second.emplace(c.mNode2->mName);
+			}
+		}
+		else {
+			std::set<std::string> newSet;
+			newSet.emplace(c.mNode2->mName);
+			mConnections.emplace(c.mNode1->mName, newSet);
+		}
+	}
     createNode( c );
 }
 
@@ -57,4 +70,12 @@ const CtNode* Context::getNode(const std::string name) const {
 	if (it == mNodes.end()) 
 		return nullptr; 
 	return *it; 
+}
+
+bool Context::isConnected(std::string name1, std::string name2) {
+	auto it = mConnections.find(name1);
+	if (it != mConnections.end()) {
+		return it->second.find(name2) != it->second.end();
+	}
+	return false;
 }

@@ -20,7 +20,8 @@ struct CtNode {
 		double  mCost;
 		Timetable mTimetable;
 	};
-	std::vector<CtNode::Link> mLinks;
+	typedef std::vector<CtNode::Link> Links;
+	Links mLinks;
 };
 
 struct nodeComparator {
