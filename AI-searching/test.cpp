@@ -106,14 +106,14 @@ static Context* createContext() {
 
 	// The different buses has different price.
 	Timetable timetable2;
-	timetable1.add("2017-07-28 08:15", 15, 4.);
-	timetable1.add("2017-07-28 11:15", 15, 4.);
-	timetable1.add("2017-07-28 14:15", 15, 4.);
-	timetable1.add("2017-07-28 17:15", 15, 4.);
-	timetable1.add("2017-07-28 21:15", 15, 4.);
-	timetable1.add("2017-07-29 00:15", 15, 4.);
-	timetable1.add("2017-07-29 03:15", 15, 4.);
-	timetable1.add("2017-07-29 06:50", 25, 4. );
+	timetable2.add("2017-07-28 08:15", 15, 4.);
+	timetable2.add("2017-07-28 11:15", 15, 4.);
+	timetable2.add("2017-07-28 14:15", 15, 4.);
+	timetable2.add("2017-07-28 17:15", 15, 4.);
+	timetable2.add("2017-07-28 21:15", 15, 4.);
+	timetable2.add("2017-07-29 00:15", 15, 4.);
+	timetable2.add("2017-07-29 03:15", 15, 4.);
+	timetable2.add("2017-07-29 06:50", 25, 4. );
 
 	context->addConnection(Connection::createBus(nodeCRL, nodeLuxembourg, timetable2));
 

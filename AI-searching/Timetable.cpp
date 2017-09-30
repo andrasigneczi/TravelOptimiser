@@ -1,5 +1,6 @@
 #include "Timetable.h"
 #include "Backtrack.h"
+#include <assert.h>
 
 void Timetable::add(std::string departure, double price, double timeConsuming) {
 	//mTimetable.emplace(Backtrack::stringToTime(departure), Data(price, timeConsuming));
@@ -15,8 +16,10 @@ const double Timetable::getPrice(time_t departure) const {
 
 const double Timetable::getTimeConsuming(time_t departure) const {
 	auto it = mTimetable.find(departure);
-	if (it == mTimetable.end())
+	assert(it != mTimetable.end());
+		if (it == mTimetable.end()) {
 		return -1.0;
+	}
 	return it->second.mTimeConsuming;
 }
 

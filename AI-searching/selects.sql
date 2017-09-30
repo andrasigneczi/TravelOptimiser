@@ -1,0 +1,3 @@
+select distinct Airline, AirportCode_LeavingFrom, AirportCode_GoingTo,DepartureDatetime, ArrivalDatetime, OutboundTrip from TravelDataResult tr, TravelDataResult_PossibleTrips tr_pt 
+where tr_pt.TravelDataResult_ID=tr.ID and ((tr.AirportCode_LeavingFrom='CRL' and tr.AirportCode_GoingTo='BUD' and tr_pt.OutboundTrip='true') or (tr.AirportCode_LeavingFrom='BUD' and tr.AirportCode_GoingTo='CRL' and tr_pt.OutboundTrip='false'))
+order by DepartureDatetime;

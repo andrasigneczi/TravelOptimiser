@@ -36,14 +36,19 @@ protected:
 
 	struct Path {
 	public:
-		Path() : mSumPrice(0), mSumTravellingTime(0), mSumStayTime(0){}
+		Path() : mSumPrice(0), mSumTravellingTime(0), mSumStayTime(0), mSumWaitingTime(0){}
 		std::vector<Item> mItems;
 		double mSumPrice;
-		double mSumTravellingTime;
-		double mSumStayTime;
+		double mSumTravellingTime; // in hours
+		double mSumStayTime; // in days
+		double mSumWaitingTime; // in hours
+		size_t mHash;
 	};
 	void calcStayTime();
+	// the empty time between the end of the previous travel and the begin of the next one.
+	void calcWaitingTime();
 	std::vector<Path> mEvaluatedPaths;
+	void hash();
 
 	Backtrack& mBacktrack;
 };

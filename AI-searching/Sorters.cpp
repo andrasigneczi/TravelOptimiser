@@ -36,7 +36,9 @@ void Sorter::printMathes( int count ) {
 		}
 		std::cout << "cost (stay included): " << path.mSumPrice << "€" << std::endl;
 		std::cout << "travelling time (except stay): " << path.mSumTravellingTime << " hours" << std::endl;
+		std::cout << "waiting time: " << path.mSumWaitingTime << " hours" << std::endl;
 		std::cout << "full time consuming: " << timeSpent << " hours \n";
+		std::cout << "hash: " << path.mHash << std::endl;
 		std::cout << std::string(80, '-') << std::endl;
 		std::cout << std::string(100, '=') << std::endl;
 		++i;
@@ -74,16 +76,20 @@ void Sorter::extractPathWithScenarios(const Backtrack::PathInfo& pathInfo) {
 
 				if (nodeLink.mType != Connection::stay && nodeLink.mType != Connection::parking) {
 					if (nodeLink.mType == Connection::airplane || nodeLink.mType == Connection::bus) {
-						path.mSumTravellingTime += nodeLink.mTimetable.getTimeConsuming(pathItem.mDeparture);
+						pathItem.mTimeConsuming = nodeLink.mTimetable.getTimeConsuming(pathItem.mDeparture);
+						path.mSumTravellingTime += pathItem.mTimeConsuming;
 					}
 					else {
+						pathItem.mTimeConsuming = nodeLink.mTimeConsuming;
 						path.mSumTravellingTime += nodeLink.mTimeConsuming;
 					}
+					assert(pathItem.mTimeConsuming >= 0.0);
 				}
 			}
 			else {
-				if (Backtrack::pathNodeLink(pathInfo.mPath, i - 1).mType != Connection::parking)
-					pathItem.mDeparture = pathInfo.mScenarios[scenarioIndex][scenarioNodeIndex - 1] + (time_t)(Backtrack::pathNodeLink(pathInfo.mPath, i - 1).mTimeConsuming * 60. * 60.);
+				if (Backtrack::pathNodeLink(pathInfo.mPath, i - 1).mType != Connection::parking) {
+					pathItem.mDeparture = pathInfo.mScenarios[scenarioIndex][scenarioNodeIndex];
+				}
 				pathItem.mNameAndType = Backtrack::pathNodeName(pathInfo.mPath, i) + " ("
 					+ std::to_string( Backtrack::pathNodeIndex(pathInfo.mPath, i)) + ") ";
 				pathItem.mTimeZone = pathInfo.mPath[i].mCtNode->mTimeZone;
@@ -92,7 +98,9 @@ void Sorter::extractPathWithScenarios(const Backtrack::PathInfo& pathInfo) {
 		}
 		mEvaluatedPaths.push_back(path);
 	}
+	hash();
 	calcStayTime();
+	calcWaitingTime();
 }
 
 // calculate the stay time in days
@@ -100,33 +108,90 @@ void Sorter::calcStayTime() {
 	for (Path& path : mEvaluatedPaths) {
 		double sumStayTime = 0;
 		for (auto it = path.mItems.begin(); it != path.mItems.end(); ++it ) {
-			if ((*it).mType == Connection::stay) {
-				if (it != path.mItems.end()) {
-					auto next = std::next(it, 1);
-					// calculated in days
-					it->mTimeConsuming = ((double)next->mDeparture - it->mDeparture) / 3600.0 / 24.0;
-					sumStayTime += it->mTimeConsuming;
-				}
+			auto next = std::next(it, 1);
+			if (it->mType == Connection::stay && next != path.mItems.end()) {
+				// calculated in days
+				it->mTimeConsuming = ((double)next->mDeparture - it->mDeparture) / 3600.0 / 24.0;
+				assert(it->mTimeConsuming >= 0.0);
+				sumStayTime += it->mTimeConsuming;
 			}
 		}
 		path.mSumStayTime = sumStayTime;
 	}
 }
 
-bool SorterByTravellingCost::comparePathPrice(const Sorter::Path& path1, const Sorter::Path& path2) {
-	if (path1.mSumPrice == path2.mSumPrice)
-		return path1.mSumStayTime > path2.mSumStayTime;
-	return path1.mSumPrice < path2.mSumPrice;
+void Sorter::calcWaitingTime() {
+	for (Path& path : mEvaluatedPaths) {
+		double sumWaitingTime = 0.0;
+		for (auto it = path.mItems.begin(); it != path.mItems.end(); ++it) {
+			auto next = std::next(it, 1);
+			if (next != path.mItems.end() && it->mType != Connection::parking && next->mType != Connection::parking) {
+				// calculated in hours
+				double timeConsuming = it->mTimeConsuming;
+				if (it->mType == Connection::stay)
+					timeConsuming *= 24.0;
+				assert(timeConsuming > 0.0);
+				double waitingTime = ((double)(next->mDeparture - it->mDeparture)) / 3600.0 - timeConsuming;
+				assert(waitingTime >= -0.00001);
+				if(waitingTime > 0.0 )
+					sumWaitingTime += waitingTime;
+			}
+		}
+		path.mSumWaitingTime = sumWaitingTime;
+	}
 }
 
-bool SorterByTravellingTime::compareTravellingTime(const Sorter::Path& path1, const Sorter::Path& path2) {
-	if (path1.mSumPrice == path2.mSumPrice)
+void Sorter::hash() {
+	for (Path& path : mEvaluatedPaths) {
+		std::string hashStr;
+		for (auto it = path.mItems.begin(); it != path.mItems.end(); ++it) {
+			hashStr += it->mNameAndType + std::to_string( it->mDeparture );
+		}
+		path.mHash = std::hash<std::string>()(hashStr);
+	}
+}
+
+bool SorterByTravellingCost::comparePathPrice(const Sorter::Path& path1, const Sorter::Path& path2) {
+	// First point of view
+	if (path1.mSumPrice != path2.mSumPrice)
+		return path1.mSumPrice < path2.mSumPrice;
+
+	// Second point of view
+	if (path1.mSumWaitingTime != path2.mSumWaitingTime)
+		return path1.mSumWaitingTime < path2.mSumWaitingTime;
+
+	// Third point of view
+	if (path1.mSumStayTime != path2.mSumStayTime)
 		return path1.mSumStayTime > path2.mSumStayTime;
+
+	// Fourth point of view
 	return path1.mSumTravellingTime < path2.mSumTravellingTime;
 }
 
+bool SorterByTravellingTime::compareTravellingTime(const Sorter::Path& path1, const Sorter::Path& path2) {
+	if (path1.mSumTravellingTime != path2.mSumTravellingTime)
+		return path1.mSumTravellingTime < path2.mSumTravellingTime;
+
+	if (path1.mSumWaitingTime != path2.mSumWaitingTime)
+		return path1.mSumWaitingTime < path2.mSumWaitingTime;
+
+	if (path1.mSumStayTime != path2.mSumStayTime)
+		return path1.mSumStayTime > path2.mSumStayTime;
+
+	return path1.mSumPrice < path2.mSumPrice;
+}
+
 bool SorterByStayingTime::compareStayingTime(const Sorter::Path& path1, const Sorter::Path& path2) {
-	return path1.mSumStayTime > path2.mSumStayTime;
+	if (path1.mSumStayTime != path2.mSumStayTime)
+		return path1.mSumStayTime > path2.mSumStayTime;
+
+	if (path1.mSumWaitingTime != path2.mSumWaitingTime)
+		return path1.mSumWaitingTime < path2.mSumWaitingTime;
+
+	if (path1.mSumTravellingTime != path2.mSumTravellingTime)
+		return path1.mSumTravellingTime < path2.mSumTravellingTime;
+
+	return path1.mSumPrice < path2.mSumPrice;
 }
 
 void SorterByTravellingCost::sort() {
