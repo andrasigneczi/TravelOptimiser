@@ -7,6 +7,11 @@ void Timetable::add(std::string departure, double price, double timeConsuming) {
 	mTempTimetable.emplace(departure, Data(price, timeConsuming));
 }
 
+void Timetable::add(std::string departure, double price, Duration timeConsuming) {
+	//mTimetable.emplace(Backtrack::stringToTime(departure), Data(price, timeConsuming));
+	mTempTimetable.emplace(departure, Data(price, timeConsuming.getHour()));
+}
+
 const double Timetable::getPrice(time_t departure) const {
 	auto it = mTimetable.find(departure);
 	if (it == mTimetable.end())

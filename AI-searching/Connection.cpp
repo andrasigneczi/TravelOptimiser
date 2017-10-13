@@ -15,6 +15,10 @@ Connection Connection::createCar(CtNode* node1, CtNode* node2, double timeConsum
     return Connection( node1, node2, car, timeConsuming, distance, 0 );
 }
 
+Connection Connection::createCar(CtNode* node1, CtNode* node2, Duration timeConsuming, double distance) {
+	return Connection(node1, node2, car, timeConsuming.getHour(), distance, 0);
+}
+
 Connection Connection::createCarpool(CtNode* node1, CtNode* node2, double timeConsuming, double cost) {
 	return Connection(node1, node2, carpool, timeConsuming, 0, cost);
 }

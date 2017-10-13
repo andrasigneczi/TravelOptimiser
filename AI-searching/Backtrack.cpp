@@ -10,9 +10,6 @@
 #include <assert.h>
 #include "Sorters.h"
 
-#define MAXPATHLENGTH 10
-
-
 std::vector<Connection> Backtrack::seachTheBestWay( Context* context ) {
     mContext.reset( context );
     
@@ -256,7 +253,7 @@ bool Backtrack::genNextPath() {
 		return false;
 	}
 
-	if (mPath.size() == MAXPATHLENGTH) {
+	if (mPath.size() == mContext->getMaxPathLength()) {
 		// step back
 		deleteLastPathItem();
 		return genNextPath();

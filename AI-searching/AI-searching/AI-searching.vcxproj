@@ -123,10 +123,13 @@
     <ClInclude Include="..\Connection.h" />
     <ClInclude Include="..\Context.h" />
     <ClInclude Include="..\CtNode.h" />
+    <ClInclude Include="..\Duration.h" />
     <ClInclude Include="..\ScenarioMaker.h" />
+    <ClInclude Include="..\ScenarioMaker2.h" />
     <ClInclude Include="..\Sorters.h" />
     <ClInclude Include="..\SQLiteTest.h" />
     <ClInclude Include="..\test.h" />
+    <ClInclude Include="..\testBarcelona.h" />
     <ClInclude Include="..\testTimeZone.h" />
     <ClInclude Include="..\Timetable.h" />
   </ItemGroup>
@@ -135,13 +138,16 @@
     <ClCompile Include="..\Backtrack.cpp" />
     <ClCompile Include="..\Connection.cpp" />
     <ClCompile Include="..\Context.cpp" />
+    <ClCompile Include="..\Duration.cpp" />
     <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\ScenarioMaker.cpp" />
+    <ClCompile Include="..\ScenarioMaker2.cpp" />
     <ClCompile Include="..\Sorters.cpp" />
     <ClCompile Include="..\SQLiteTest.cpp" />
     <ClCompile Include="..\sqlite\shell.c" />
     <ClCompile Include="..\sqlite\sqlite3.c" />
     <ClCompile Include="..\test.cpp" />
+    <ClCompile Include="..\testBarcelona.cpp" />
     <ClCompile Include="..\testTimeZone.cpp" />
     <ClCompile Include="..\Timetable.cpp" />
   </ItemGroup>

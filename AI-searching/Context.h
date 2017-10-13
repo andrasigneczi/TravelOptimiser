@@ -15,7 +15,7 @@
 class Context {
 
 public:
-	Context() : mMaxSpentTime(0.0), mDisplayMatchNumberPerScenarion( 1000 ) {}
+	Context() : mMaxSpentTime(0.0), mDisplayMatchNumberPerScenarion(1000), mMaxPathLength(10) {}
 	~Context();
 	void addConnection(Connection c);
 	void setGoal(std::vector<std::string> stops);
@@ -31,9 +31,12 @@ public:
 	void setMaxSpentTime(double maxSpentTime) { mMaxSpentTime = maxSpentTime; } // in hours
 	const double getMaxSpentTime() const { return mMaxSpentTime; }
 
-	void setDisplayMatchNumberPerScenarion(int n) { mDisplayMatchNumberPerScenarion = n;  }
+	void setDisplayMatchNumberPerScenarion(int n) { mDisplayMatchNumberPerScenarion = n; }
 	const int getDisplayMatchNumberPerScenarion() const { return mDisplayMatchNumberPerScenarion; }
 	bool isConnected(std::string name1, std::string name2);
+
+	void setMaxPathLength(int maxPathLength) { mMaxPathLength = maxPathLength; };
+	int getMaxPathLength() const { return mMaxPathLength; }
 
 private:
     void createNode( Connection c );
@@ -44,6 +47,7 @@ private:
     std::set<CtNode*, nodeComparator> mNodes;
 	double mMaxSpentTime;
 	int mDisplayMatchNumberPerScenarion;
+	int mMaxPathLength;
 };
 
 #endif // _CONTEXT_H
