@@ -9,8 +9,8 @@ using namespace std;
 int main()
 {
    //testAstar();
-   testBacktrack();
-	//testBarcelona();
+   //testBacktrack();
+	testBarcelona();
 	//SQLiteTest::run();
 	//testTimeZone();
    return 0;

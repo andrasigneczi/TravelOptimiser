@@ -25,6 +25,11 @@ public:
 
 	void correctionByTimezone(std::string timeZone);
 
+	// for planning backwards
+	time_t searchLessBeginningPlusTimeConsuming(time_t currentTime) const;
+	// for planning forwards
+	std::pair<time_t, double> searchGreaterBeginning(time_t currentTime) const;
+
 private:
 	std::map<time_t, Data> mTimetable;
 	std::map<std::string, Data> mTempTimetable;

@@ -47,5 +47,29 @@ void Timetable::correctionByTimezone(std::string timeZone) {
 			mTimetable.emplace(Backtrack::stringToTime(pair.first), Data(pair.second.mPrice, pair.second.mTimeConsuming));
 		}
 	}
-	
+}
+
+// for planning backwards
+time_t Timetable::searchLessBeginningPlusTimeConsuming(time_t currentTime) const {
+	time_t retVal = 0;
+	for (auto pair : mTimetable) {
+		time_t val = pair.first + (time_t)(pair.second.mTimeConsuming * 60. * 60.);
+		if (val < currentTime) {
+			retVal = pair.first;
+		}
+		else {
+			break;
+		}
+	}
+	return retVal;
+}
+
+// for planning forwards
+std::pair<time_t, double> Timetable::searchGreaterBeginning(time_t currentTime) const {
+	for (auto pair : mTimetable) {
+		if (pair.first > currentTime) {
+			return std::pair<time_t, double>(pair.first, pair.second.mTimeConsuming);
+		}
+	}
+	return std::pair < time_t, double>(0, 0);
 }

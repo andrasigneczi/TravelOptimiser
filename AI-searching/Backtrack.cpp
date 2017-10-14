@@ -6,7 +6,7 @@
 #include <iomanip>      // std::get_time
 #include <sstream> // std::istringstream
 #include <time.h>
-#include "ScenarioMaker.h"
+#include "ScenarioMaker2.h"
 #include <assert.h>
 #include "Sorters.h"
 
@@ -284,7 +284,7 @@ bool Backtrack::genNextPath() {
 }
 
 void Backtrack::printAllPaths() {
-	ScenarioMaker scenarioMaker(*this);
+	ScenarioMaker2 scenarioMaker(*this);
 	scenarioMaker.generateAllTheScenarios();
 	
 	std::cout << std::string(100, '*') << "\n*         results ordered by travelling cost:\n" << std::string(100, '*') << std::endl;
