@@ -2,6 +2,7 @@
 #include <iostream>
 #include <assert.h>
 #include <algorithm>
+#include <sstream> // std::ostringstream
 
 void Sorter::printMathes( int count ) {
 	for (size_t i = 0; i < mBacktrack.getMatches().size(); ++i) {
@@ -15,6 +16,10 @@ void Sorter::printMathes( int count ) {
 	sort();
 
 	double maxSpentTime = mBacktrack.getContext()->getMaxSpentTime();
+	double maxStayTime = mBacktrack.getContext()->getMaxStayingTime().getDay();
+	double minStayTime = mBacktrack.getContext()->getMinStayingTime().getDay();
+	double maxWaitingTime = mBacktrack.getContext()->getMaxWaitingTime().getHour();
+	double maxTravellingTime = mBacktrack.getContext()->getTravellingTime().getHour();
 
 	int i = 0;
 	for (const Path& path : mEvaluatedPaths) {
@@ -24,23 +29,48 @@ void Sorter::printMathes( int count ) {
 		double timeSpent = path.mSumTravellingTime + path.mSumStayTime * 24.;
 		if (maxSpentTime > 0 && timeSpent > maxSpentTime)
 			continue;
-
+		bool valid = true;
+		std::ostringstream oneResult;
 		for (const Item& item : path.mItems) {
-			std::cout << item.mNameAndType;
+			oneResult << item.mNameAndType;
 			if (item.mType != Connection::parking)
-				std::cout << "departure: " << Backtrack::timeToString(item.mDeparture, item.mTimeZone);
-			std::cout << std::endl;
-			if (item.mType == Connection::stay)
-				std::cout << "staying time: " << item.mTimeConsuming << " days" << std::endl;
-			std::cout << std::string(80, '-') << std::endl;
+				oneResult << "departure: " << Backtrack::timeToString(item.mDeparture, item.mTimeZone);
+			oneResult << std::endl;
+
+			if (item.mType == Connection::stay) {
+
+				if (maxStayTime > 0.001 && item.mTimeConsuming > maxStayTime) {
+					valid = false;
+					break;
+				}
+
+				if (minStayTime > 0.001 && item.mTimeConsuming < minStayTime) {
+					valid = false;
+					break;
+				}
+
+				oneResult << "staying time: " << item.mTimeConsuming << " days" << std::endl;
+			}
+			oneResult << std::string(80, '-') << std::endl;
 		}
-		std::cout << "cost (stay included): " << path.mSumPrice << "€" << std::endl;
-		std::cout << "travelling time (except stay): " << path.mSumTravellingTime << " hours" << std::endl;
-		std::cout << "waiting time: " << path.mSumWaitingTime << " hours" << std::endl;
-		std::cout << "full time consuming: " << timeSpent << " hours \n";
-		std::cout << "hash: " << path.mHash << std::endl;
-		std::cout << std::string(80, '-') << std::endl;
-		std::cout << std::string(100, '=') << std::endl;
+
+		if (maxWaitingTime > 0.001 && path.mSumWaitingTime > maxWaitingTime) {
+			valid = false;
+		}
+		if (maxTravellingTime > 0.001 && path.mSumTravellingTime > maxTravellingTime) {
+			valid = false;
+		}
+		oneResult << "cost (stay included): " << path.mSumPrice << "€" << std::endl;
+		oneResult << "travelling time (except stay): " << path.mSumTravellingTime << " hours" << std::endl;
+		oneResult << "waiting time: " << path.mSumWaitingTime << " hours" << std::endl;
+		oneResult << "full time consuming: " << timeSpent << " hours \n";
+		oneResult << "hash: " << path.mHash << std::endl;
+		oneResult << std::string(80, '-') << std::endl;
+		oneResult << std::string(100, '=') << std::endl;
+
+		if (valid) {
+			std::cout << oneResult.str();
+		}
 		++i;
 	}
 }

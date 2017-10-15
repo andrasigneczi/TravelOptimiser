@@ -748,6 +748,10 @@ static Context* createContext() {
 	//context->setMaxSpentTime(128.);
 	//context->setDisplayMatchNumberPerScenarion(3);
 	context->setMaxPathLength(10);
+	context->setMinStayingTime(3_day);
+	context->setMaxStayingTime(4_day);
+	context->setMaxWaitingTime(10_hour);
+	context->setMaxTravellingTime(12_hour);
 	return context;
 }
 

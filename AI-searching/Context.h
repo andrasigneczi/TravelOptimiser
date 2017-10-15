@@ -15,7 +15,15 @@
 class Context {
 
 public:
-	Context() : mMaxSpentTime(0.0), mDisplayMatchNumberPerScenarion(1000), mMaxPathLength(10) {}
+	Context() 
+		: mMaxSpentTime(0.0)
+		, mDisplayMatchNumberPerScenarion(100000)
+		, mMaxPathLength(10)
+		, mMaxStayingTime(0)
+		, mMinStayingTime(0)
+		, mMaxWaitingTime(0)
+		, mMaxTravellingTime(0){}
+
 	~Context();
 	void addConnection(Connection c);
 	void setGoal(std::vector<std::string> stops);
@@ -33,11 +41,23 @@ public:
 
 	void setDisplayMatchNumberPerScenarion(int n) { mDisplayMatchNumberPerScenarion = n; }
 	const int getDisplayMatchNumberPerScenarion() const { return mDisplayMatchNumberPerScenarion; }
+
 	bool isConnected(std::string name1, std::string name2);
 
 	void setMaxPathLength(int maxPathLength) { mMaxPathLength = maxPathLength; };
 	int getMaxPathLength() const { return mMaxPathLength; }
 
+	void setMaxStayingTime(Duration d) { mMaxStayingTime = d.getSec(); };
+	Duration getMaxStayingTime() const { return mMaxStayingTime; }
+
+	void setMinStayingTime(Duration d) { mMinStayingTime = d.getSec(); };
+	Duration getMinStayingTime() const { return mMinStayingTime; }
+
+	void setMaxWaitingTime(Duration d) { mMaxWaitingTime = d.getSec(); };
+	Duration getMaxWaitingTime() const { return mMaxWaitingTime; }
+
+	void setMaxTravellingTime(Duration d) { mMaxTravellingTime = d.getSec(); };
+	Duration getTravellingTime() const { return mMaxTravellingTime; }
 private:
     void createNode( Connection c );
     
@@ -48,6 +68,10 @@ private:
 	double mMaxSpentTime;
 	int mDisplayMatchNumberPerScenarion;
 	int mMaxPathLength;
+	time_t mMaxStayingTime;
+	time_t mMinStayingTime;
+	time_t mMaxWaitingTime;
+	time_t mMaxTravellingTime;
 };
 
 #endif // _CONTEXT_H
