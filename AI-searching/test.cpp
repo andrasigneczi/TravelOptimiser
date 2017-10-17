@@ -1,3 +1,4 @@
+#include "test.h"
 #include "Astar.h"
 #include "Backtrack.h"
 #include "Timetable.h"
@@ -10,7 +11,7 @@ static Context* createContext() {
 	CtNode* nodeCRL = context->createNode("CRL", "+0200");
 	CtNode* nodeBUD = context->createNode("BUD", "+0200");
 	CtNode* nodeHHN = context->createNode("HHN", "+0200");
-	CtNode* nodeSOF = context->createNode("SOF", "+0300");
+	//CtNode* nodeSOF = context->createNode("SOF", "+0300");
 
     // 26 minutes, 34 km
     context->addConnection( Connection::createCar(nodeIgel, nodeLuxembourg, 26./60., 34 ));

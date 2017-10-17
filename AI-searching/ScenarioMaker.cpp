@@ -1,4 +1,4 @@
-﻿#include "ScenarioMaker.h"
+#include "ScenarioMaker.h"
 #include <iostream>
 #include <assert.h>
 
@@ -25,8 +25,6 @@ Igel (-1)
 ------------------------------------------------------------
 
 */
-
-
 
 ScenarioMaker::ScenarioMaker(Backtrack& backtrack)
 : mBacktrack( backtrack )
@@ -76,7 +74,7 @@ void ScenarioMaker::generateOneScenario(Backtrack::PathInfo& pathInfo) {
 		const int timetableIndexer_1 = mPathItemIndexWithTimetableIndexer[i];
 
 		auto& timetable = Backtrack::pathNodeTimetable(pathInfo.mPath, timetableIndex_1);
-		auto& timetableIT = std::next(timetable.begin(), timetableIndexer_1);
+		auto timetableIT = std::next(timetable.begin(), timetableIndexer_1);
 		time_t t = timetableIT->first;
 
 //		std::cout << "generateAllTheScenarios: " << timetableIT->first << "; " << Backtrack::timeToString(t) << "; price: " << timetableIT->second << std::endl;
@@ -116,7 +114,7 @@ void ScenarioMaker::generateOneScenario(Backtrack::PathInfo& pathInfo) {
 			const int timetableIndexer_2 = mPathItemIndexWithTimetableIndexer[i + 1];
 
 			auto& timetable2 = Backtrack::pathNodeTimetable(pathInfo.mPath, timetableIndex_2);
-			auto& timetableIT2 = std::next(timetable2.begin(), timetableIndexer_2);
+			auto timetableIT2 = std::next(timetable2.begin(), timetableIndexer_2);
 			//time_t t2 = Backtrack::stringToTime(timetableIT2->first) + (time_t)(Backtrack::pathNodeLink(pathInfo.mPath, mPathItemIndexWithTimetableIndexer[i + 1]).mTimeConsuming * 60. * 60.);
 			time_t t2 = timetableIT2->first;
 			planWasOK &= planMiddle(pathInfo, t, timetableIndex_1 + 1, t2, timetableIndex_2 - 1, scenario);

@@ -1,15 +1,18 @@
 CXX=g++
-CPPFLAGS=-g -std=c++11 -g -Wall -pedantic
+#CPPFLAGS=-g -std=c++11 -g -Wall -pedantic -D__LINUX__
+CFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -pedantic -D__LINUX__
 LDFLAGS=-g
 LDLIBS=
 
-SRCS=main.cpp Astar.cpp Connection.cpp test.cpp Context.cpp Backtrack.cpp
+SRCS=main.cpp Astar.cpp Connection.cpp test.cpp Context.cpp Backtrack.cpp Duration.cpp ScenarioMaker.cpp ScenarioMaker2.cpp \
+     Sorters.cpp testBarcelona.cpp testTimeZone.cpp Timetable.cpp
+#SQLiteTest.cpp 
 OBJS=$(subst .cpp,.o,$(SRCS))
 
-all: DelBin Astar
+all: DelBin Backtrack
 
-Astar: $(OBJS)
-	$(CXX) $(LDFLAGS) -o Astar $(OBJS) $(LDLIBS)
+Backtrack: $(OBJS)
+	$(CXX) $(LDFLAGS) -o Backtrack $(OBJS) $(LDLIBS)
 
 %.o: %.cpp
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -c $<
@@ -19,4 +22,4 @@ clean:
 	$(RM) Astar
 
 DelBin:
-	$(RM) Astar
+	$(RM) Backtrack

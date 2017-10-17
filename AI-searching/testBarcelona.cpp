@@ -2,6 +2,10 @@
 #include "Backtrack.h"
 #include "Timetable.h"
 
+#ifdef __LINUX__
+#define sprintf_s sprintf
+#endif
+
 static Context* createContext() {
 	Context* context = new Context;
 	char dateBuff[100];
@@ -11,7 +15,7 @@ static Context* createContext() {
 	CtNode* nodeLuxembourg = context->createNode("Luxembourg", "+0200"); // JFK
 	CtNode* nodeLUX = context->createNode("LUX", "+0200"); // airport
 	CtNode* nodeCRL = context->createNode("CRL", "+0200");
-	CtNode* nodeSOF = context->createNode("SOF", "+0300");
+	//CtNode* nodeSOF = context->createNode("SOF", "+0300");
 	CtNode* nodeBCN = context->createNode("BCN", "+0200"); // El Prat
 	CtNode* nodeGRO = context->createNode("GRO", "+0200"); // Girona
 	CtNode* nodeREU = context->createNode("REU", "+0200"); // Reus
@@ -113,9 +117,9 @@ static Context* createContext() {
 	/***************************************************************************************/
 	/***************************************************************************************/
 	/*
-	Monday – Friday : 5:30 – 23:00, every 10 minutes
-	Saturday: 5:25 – 23:05, every 20 minutes
-	Sunday: 5:59 – 22:59, every 30 minutes
+	Monday ï¿½ Friday : 5:30 ï¿½ 23:00, every 10 minutes
+	Saturday: 5:25 ï¿½ 23:05, every 20 minutes
+	Sunday: 5:59 ï¿½ 22:59, every 30 minutes
 	*/
 	Timetable timetable_JFK_LUX_BUS;
 	for (int day = 1; day <= 31; ++day) {
