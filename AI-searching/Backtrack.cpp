@@ -9,6 +9,65 @@
 #include "ScenarioMaker2.h"
 #include <assert.h>
 #include "Sorters.h"
+#include <string.h>
+#include <stddef.h>
+
+#ifdef __LINUX__
+typedef int errno_t;
+
+namespace std {
+	
+	struct __unspecified { 
+		operator char*() {
+			return nullptr;
+		}
+		
+		operator bool&() {
+			return b;
+		}
+		
+		bool b;
+		std::tm* tmb;
+		const char* fmt;
+	};
+	
+	std::string put_time( struct tm* tm, const char* format ) {
+		char foo[124];
+	
+		if(0 < strftime(foo, sizeof(foo), format, tm))
+			return std::string( foo );
+		std::cerr << "Something went wrong1\n";
+		return std::string();
+	}
+	
+	template< class CharT >
+	__unspecified get_time( std::tm* tmb, const CharT* fmt ) {
+          __unspecified ret;
+          ret.fmt = fmt;
+          ret.tmb = tmb;
+          return ret;
+	}
+	
+	std::istringstream& operator>>( std::istringstream& in, __unspecified un ) {
+		char buff[256];
+		in.getline(buff, 256);
+		
+          if(strptime(buff, un.fmt, un.tmb) == NULL) {
+          	std::cerr << "Something went wrong2: " << buff << " " << un.fmt << std::endl;
+          }
+		
+		//std::cerr << v << std::endl;
+		return in;
+	}
+	
+}
+
+	errno_t gmtime_s(struct tm *result,const time_t *timep) {
+		if( gmtime_r(timep, result) != nullptr )
+			return 0;
+		return 1;
+	}
+#endif
 
 std::vector<Connection> Backtrack::seachTheBestWay( Context* context ) {
     mContext.reset( context );
@@ -90,7 +149,7 @@ bool Backtrack::isMinimal(const Path& path, Context* context, int level /*= 0*/)
 	return true;
 }
 
-Backtrack::Path Backtrack::genPathWithoutOneItem(const Path& path, int index) {
+Backtrack::Path Backtrack::genPathWithoutOneItem(const Path& path, size_t index) {
 	Path newPath;
 	for (size_t i = 0; i < path.size(); ++i) {
 		if (index == i) {
@@ -196,8 +255,6 @@ bool Backtrack::checkGoalCondition(const Path& path, Context* context) {
 	if( path.size() <  context->getGoalSize())
         return false;
     
-    int matches = 0;
-
 	// let's check the first item, ...
 	if (path[0].mCtNode->mName.compare(context->getGoalItem(0)) != 0)
 		return false;
@@ -214,7 +271,7 @@ bool Backtrack::checkGoalCondition(const Path& path, Context* context) {
 	int goalIndex = 1;
 	while(pathIndex < (int)(path.size()) - 1 && goalIndex < (int)(context->getGoalSize()) - 1 ) {
         std::string goal =  context->getGoalItem(goalIndex);
-		int separator = goal.find(":");
+		size_t separator = goal.find(":");
 		Connection::Type linkType = Connection::unknown;
 		if (separator != std::string::npos) {
 			linkType = Connection::getType(goal.substr(separator + 1));
@@ -253,7 +310,7 @@ bool Backtrack::genNextPath() {
 		return false;
 	}
 
-	if (mPath.size() == mContext->getMaxPathLength()) {
+	if (mPath.size() == (size_t)mContext->getMaxPathLength()) {
 		// step back
 		deleteLastPathItem();
 		return genNextPath();
@@ -330,7 +387,7 @@ std::string Backtrack::timeToString(time_t t, std::string timeZone) {
 	}
 
 	t += tmz;
-	errno_t err = gmtime_s(&tm, &t);
+	/*errno_t err = */gmtime_s(&tm, &t);
 	//errno_t err = localtime_s(&tm, &t);
 
 	std::ostringstream oss;

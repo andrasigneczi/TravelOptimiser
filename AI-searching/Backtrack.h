@@ -37,8 +37,8 @@ public:
 	static int pathNodeIndex(const Path& path, int pathIndex) { return path[pathIndex].mIndex; }
 	static const CtNode::Link& pathNodeLink(const Path& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex]; }
 	static const Timetable::TimetableData& pathNodeTimetable(const Path& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex].mTimetable.getTimetable(); }
-	static std::string Backtrack::timeToString(time_t t, std::string timeZone);
-	static time_t Backtrack::stringToTime(std::string strTime);
+	static std::string timeToString(time_t t, std::string timeZone);
+	static time_t stringToTime(std::string strTime);
 
 private:
 	void init();
@@ -47,7 +47,7 @@ private:
     bool genNextPath();
 	static bool isValidPath(const Path& path);
 	static bool isMinimal(const Path& path, Context* context, int level = 0);
-	static Path genPathWithoutOneItem(const Path& path, int index);
+	static Path genPathWithoutOneItem(const Path& path, size_t index);
 
 	void printAllPaths();
 	void savePath();

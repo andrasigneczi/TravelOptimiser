@@ -98,7 +98,6 @@ bool ScenarioMaker2::planMiddle(Backtrack::PathInfo& pathInfo, time_t t1, int fi
 		const auto& timeTableFw = Backtrack::pathNodeLink(pathInfo.mPath, fw).mTimetable;
 
 		if (timeTableFw.getTimetable().size() > 0) {
-			time_t timeConsuming = 0;
 			std::pair<time_t, double> retv = timeTableFw.searchGreaterBeginning(currentTimeFw);
 			if (retv.first == 0) {
 				return false;
