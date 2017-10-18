@@ -72,10 +72,6 @@ namespace std {
 std::vector<Connection> Backtrack::seachTheBestWay( Context* context ) {
     mContext.reset( context );
     
-	//timeToString(time(nullptr) );
-	//stringToTime();
-	//return std::vector<Connection>();
-
     init();
 
     while( !mTerminated ) {
@@ -107,45 +103,27 @@ void Backtrack::init() {
 }
 
 bool Backtrack::isMatch(const Path& path, int pathIndex, std::string goal, Connection::Type linkType) {
-	bool match = path[pathIndex].mCtNode->mName.compare(goal) == 0; // name is equal
+	bool match = pathNodeName(path, pathIndex).compare(goal) == 0; // name is equal
 	if (match && linkType != Connection::unknown && 
-		path[pathIndex].mIndex >= 0 && linkType != path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex].mType)
+		pathNodeIndex(path,pathIndex) >= 0 && linkType != pathNodeLink(path,pathIndex).mType)
 		match = false;
 	return match;
 }
 
 bool Backtrack::isMinimal(const Path& path, Context* context, int level /*= 0*/) {
 	// I want to remove those path which contains unnecessary ways, e.g.: Igel, Luxembourg, HHN, .... Luxembourg is useless here.
-/*
-	size_t h = genHash(path);
-	if (h == 339287363) {
-		int debug = 10;
-	}
-*/
 	// If a path is goal, and it remains being a goal after I removed a node, then this path isn't minimal, it is invalid.
-#if 1
 	for (size_t i = 1; i < path.size() - 1; ++i) {
 		Path newPath = genPathWithoutOneItem(path, i);
 		if (newPath.size() == 0)
 			continue;
 		if (checkGoalCondition(newPath, context)) {
-			/*
-			std::cout << "The following path isn't minimal:\n";
-			printPath(path);
-			std::cout << "Hash: " << h << std::endl;
-			*/
 			return false;
 		}
 		if (level == 0 && !isMinimal(newPath, context, level + 1)) {
-			/*
-			std::cout << "The following path isn't minimal:\n";
-			printPath(path);
-			std::cout << "Hash: " << h << std::endl;
-			*/
 			return false;
 		}
 	}
-#endif
 	return true;
 }
 
@@ -154,8 +132,6 @@ Backtrack::Path Backtrack::genPathWithoutOneItem(const Path& path, size_t index)
 	for (size_t i = 0; i < path.size(); ++i) {
 		if (index == i) {
 			bool linked = false;
-			// path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex];
-			// path[pathIndex].mIndex = ?
 			const CtNode::Links& prevLinks = newPath[i - 1].mCtNode->mLinks;
 			for (size_t l = 0; l < prevLinks.size(); ++l) {
 				const CtNode::Link& link = prevLinks[l];
