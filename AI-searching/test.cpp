@@ -14,8 +14,8 @@ static Context* createContext() {
 	//CtNode* nodeSOF = context->createNode("SOF", "+0300");
 
     // 26 minutes, 34 km
-    context->addConnection( Connection::createCar(nodeIgel, nodeLuxembourg, 26./60., 34 ));
-    context->addConnection( Connection::createCar(nodeLuxembourg, nodeIgel, 26./60., 34 ));
+    context->addConnection( Connection::createCar(nodeIgel, nodeLuxembourg, 26_min, 34 ));
+    context->addConnection( Connection::createCar(nodeLuxembourg, nodeIgel, 26_min, 34 ));
 	
 	
 	Timetable ttIgelLuxembourg;
@@ -85,12 +85,12 @@ static Context* createContext() {
 	context->addConnection(Connection::createBus(nodeLuxembourg, nodeIgel, ttLuxembourgIgel));
 
 	// 3 hours, 215 km
-    context->addConnection( Connection::createCar(nodeLuxembourg, nodeCRL, 3., 215 ));
-    context->addConnection( Connection::createCar(nodeCRL, nodeLuxembourg, 3., 215 ));
+    context->addConnection( Connection::createCar(nodeLuxembourg, nodeCRL, 3_hour, 215 ));
+    context->addConnection( Connection::createCar(nodeCRL, nodeLuxembourg, 3_hour, 215 ));
 	
 	// 3 hours, 10 €
-	context->addConnection(Connection::createCarpool(nodeLuxembourg, nodeCRL, 3., 10));
-	context->addConnection(Connection::createCarpool(nodeCRL, nodeLuxembourg, 3., 10));
+	context->addConnection(Connection::createCarpool(nodeLuxembourg, nodeCRL, 3_hour, 10));
+	context->addConnection(Connection::createCarpool(nodeCRL, nodeLuxembourg, 3_hour, 10));
 
 	// The different buses has different price.
 	Timetable timetable1;
@@ -141,12 +141,12 @@ static Context* createContext() {
 	context->addConnection(Connection::createParking(nodeBUD, 0)); // car parking in Budapest
 
     // 1 hour 20 minutes, 106 km
-	context->addConnection(Connection::createCar(nodeLuxembourg, nodeHHN, 1.33, 106));
-	context->addConnection(Connection::createCar(nodeHHN, nodeLuxembourg, 1.33, 106));
+	context->addConnection(Connection::createCar(nodeLuxembourg, nodeHHN, 1_hour + 20_min, 106));
+	context->addConnection(Connection::createCar(nodeHHN, nodeLuxembourg, 1_hour + 20_min, 106));
 
 	// 1 hour 1 minute, 77 km
-	context->addConnection(Connection::createCar(nodeIgel, nodeHHN, 1.03, 77));
-	context->addConnection(Connection::createCar(nodeHHN, nodeIgel, 1.03, 77));
+	context->addConnection(Connection::createCar(nodeIgel, nodeHHN, 1_hour + 1_min, 77));
+	context->addConnection(Connection::createCar(nodeHHN, nodeIgel, 1_hour + 1_min, 77));
 
 	Timetable timetable5;
 	timetable5.add("2017-07-28 09:15", 83, 1.33 + 1.25);

@@ -13,13 +13,13 @@ static Context* createContext() {
 
 
 	// 26 minutes, 34 km
-	context->addConnection(Connection::createCar(nodeIgel, nodeLuxembourg, 26. / 60., 34));
-	context->addConnection(Connection::createCar(nodeLuxembourg, nodeIgel, 26. / 60., 34));
+	context->addConnection(Connection::createCar(nodeIgel, nodeLuxembourg, 26_min, 34));
+	context->addConnection(Connection::createCar(nodeLuxembourg, nodeIgel, 26_min, 34));
 
 
 	// 3 hours, 215 km
-	context->addConnection(Connection::createCar(nodeLuxembourg, nodeCRL, 3., 215));
-	context->addConnection(Connection::createCar(nodeCRL, nodeLuxembourg, 3., 215));
+	context->addConnection(Connection::createCar(nodeLuxembourg, nodeCRL, 3_hour, 215));
+	context->addConnection(Connection::createCar(nodeCRL, nodeLuxembourg, 3_hour, 215));
 
 
 

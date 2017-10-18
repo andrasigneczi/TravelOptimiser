@@ -11,16 +11,12 @@ Connection::Connection(CtNode* node1, CtNode* node2, Type type, double timeConsu
 }
 
 // cost calculated from the distance and the fuel price/km
-Connection Connection::createCar(CtNode* node1, CtNode* node2, double timeConsuming, double distance ) {
-    return Connection( node1, node2, car, timeConsuming, distance, 0 );
-}
-
 Connection Connection::createCar(CtNode* node1, CtNode* node2, Duration timeConsuming, double distance) {
 	return Connection(node1, node2, car, timeConsuming.getHour(), distance, 0);
 }
 
-Connection Connection::createCarpool(CtNode* node1, CtNode* node2, double timeConsuming, double cost) {
-	return Connection(node1, node2, carpool, timeConsuming, 0, cost);
+Connection Connection::createCarpool(CtNode* node1, CtNode* node2, Duration timeConsuming, double cost) {
+	return Connection(node1, node2, carpool, timeConsuming.getHour(), 0, cost);
 }
 
 // cost is the ticket and additional prices

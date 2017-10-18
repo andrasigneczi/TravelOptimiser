@@ -30,9 +30,8 @@ public:
     };
     
     // cost calculated from the distance and the fuel price/km
-	static Connection createCar(CtNode* node1, CtNode* node2, double timeConsuming, double distance);
 	static Connection createCar(CtNode* node1, CtNode* node2, Duration timeConsuming, double distance);
-	static Connection createCarpool(CtNode* node1, CtNode* node2, double timeConsuming, double cost);
+	static Connection createCarpool(CtNode* node1, CtNode* node2, Duration timeConsuming, double cost);
 
     // cost is the ticket and additional prices
     static Connection createAirplane(CtNode* node1, CtNode* node2, Timetable timetable );
