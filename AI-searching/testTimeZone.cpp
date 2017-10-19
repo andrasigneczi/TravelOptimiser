@@ -25,24 +25,24 @@ static Context* createContext() {
 
 	// The different flights has different price.
 	Timetable timetable3;
-	timetable3.add("2017-07-28 06:15", 50, 1 + 5. / 6. + 1.25);
-	timetable3.add("2017-07-28 18:15", 60, 1 + 5. / 6. + 1.25);
-	timetable3.add("2017-07-31 06:15", 50, 1 + 5. / 6. + 1.25);
-	timetable3.add("2017-07-31 18:15", 60, 1 + 5. / 6. + 1.25);
-	timetable3.add("2017-08-02 06:15", 50, 1 + 5. / 6. + 1.25);
-	timetable3.add("2017-08-02 18:15", 60, 1 + 5. / 6. + 1.25);
+	timetable3.add("2017-07-28 06:15", 50, 3_hour + 5_min);
+	timetable3.add("2017-07-28 18:15", 60, 3_hour + 5_min);
+	timetable3.add("2017-07-31 06:15", 50, 3_hour + 5_min);
+	timetable3.add("2017-07-31 18:15", 60, 3_hour + 5_min);
+	timetable3.add("2017-08-02 06:15", 50, 3_hour + 5_min);
+	timetable3.add("2017-08-02 18:15", 60, 3_hour + 5_min);
 
 	// I added the extra time (1.25h), what we have to spend at the airports; 23 euro
 	context->addConnection(Connection::createAirplane(nodeCRL, nodeSOF, timetable3));
 
 	// The different flights has different price.
 	Timetable timetable4;
-	timetable4.add("2017-07-31 08:15", 15, 2 + 1. / 6. + 1.25);
-	timetable4.add("2017-07-31 20:50", 100, 2 + 1. / 6. + 1.25);
-	timetable4.add("2017-08-01 08:15", 15, 2 + 1. / 6. + 1.25);
-	timetable4.add("2017-08-01 20:50", 100, 2 + 1. / 6. + 1.25);
-	timetable4.add("2017-08-02 08:15", 15, 2 + 1. / 6. + 1.25);
-	timetable4.add("2017-08-02 20:50", 100, 2 + 1. / 6. + 1.25);
+	timetable4.add("2017-07-31 08:15", 15,  3_hour + 25_min);
+	timetable4.add("2017-07-31 20:50", 100, 3_hour + 25_min);
+	timetable4.add("2017-08-01 08:15", 15,  3_hour + 25_min);
+	timetable4.add("2017-08-01 20:50", 100, 3_hour + 25_min);
+	timetable4.add("2017-08-02 08:15", 15,  3_hour + 25_min);
+	timetable4.add("2017-08-02 20:50", 100, 3_hour + 25_min);
 
 	context->addConnection(Connection::createAirplane(nodeSOF, nodeCRL, timetable4));
 

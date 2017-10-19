@@ -77,36 +77,23 @@ void ScenarioMaker::generateOneScenario(Backtrack::PathInfo& pathInfo) {
 		auto timetableIT = std::next(timetable.begin(), timetableIndexer_1);
 		time_t t = timetableIT->first;
 
-//		std::cout << "generateAllTheScenarios: " << timetableIT->first << "; " << Backtrack::timeToString(t) << "; price: " << timetableIT->second << std::endl;
-
 		bool planWasOK = true;
 		if (i == 0) {
-//			std::cout << "debug: 0...i\n";
 			// 0. timetable előtti elemek tervezése
 			planWasOK &= planBackwards(pathInfo, t, timetableIndex_1 - 1, scenario);
-//			std::cout << "scenariocount1: " << scenario.size() << "\n";
 		}
 		if (!planWasOK)
 			return;
 
 		// i. elem a timetableből jön
 		scenario.push_back(t);
-/*
-		std::cout << "debug: " << Backtrack::pathNodeName(pathInfo.mPath, mPathItemIndexWithTimetable[i]) // source node name
-			<< " (" << Connection::typeToString( Backtrack::pathNodeLink(pathInfo.mPath, mPathItemIndexWithTimetable[i]).mType )
-			<< ") ==> " 
-			<< Backtrack::pathNodeLink(pathInfo.mPath, mPathItemIndexWithTimetable[i]).mNode->mName // target node name
-			<< " " << Backtrack::pathNodeLink(pathInfo.mPath, mPathItemIndexWithTimetable[i]).mTimeConsuming << "\n";
-		std::cout << "scenariocount2: " << scenario.size() << "\n";
-*/
 		const CtNode::Link& ctNodeI = Backtrack::pathNodeLink(pathInfo.mPath, timetableIndex_1);
 		if(ctNodeI.mType == Connection::airplane || ctNodeI.mType == Connection::bus )
-			t += (time_t)(timetableIT->second.mTimeConsuming * 60. * 60.);
+			t += timetableIT->second.mTimeConsuming;
 		else
-			t += (time_t)(ctNodeI.mTimeConsuming * 60. * 60.);
+			t += ctNodeI.mTimeConsuming.getSec();
 
 		if ( i < mPathItemIndexWithTimetable.size() - 1) {
-//			std::cout << "debug: i...i+1\n";
 			// i....i+1 közötti elemek tervezése
 			// mi van, ha nincs köztük más elem?
 
@@ -115,16 +102,12 @@ void ScenarioMaker::generateOneScenario(Backtrack::PathInfo& pathInfo) {
 
 			auto& timetable2 = Backtrack::pathNodeTimetable(pathInfo.mPath, timetableIndex_2);
 			auto timetableIT2 = std::next(timetable2.begin(), timetableIndexer_2);
-			//time_t t2 = Backtrack::stringToTime(timetableIT2->first) + (time_t)(Backtrack::pathNodeLink(pathInfo.mPath, mPathItemIndexWithTimetableIndexer[i + 1]).mTimeConsuming * 60. * 60.);
 			time_t t2 = timetableIT2->first;
 			planWasOK &= planMiddle(pathInfo, t, timetableIndex_1 + 1, t2, timetableIndex_2 - 1, scenario);
-//			std::cout << "scenariocount3: " << scenario.size() << "\n";
 		}
 		else if ( i == mPathItemIndexWithTimetable.size() - 1) {
-//			std::cout << "debug: i...end\n";
 			// utolsó timetable utáni elemek tervezése
 			planWasOK &= planForwards(pathInfo, t, timetableIndex_1 + 1, scenario);
-//			std::cout << "scenariocount4: " << scenario.size() << "\n";
 		}
 
 		if (!planWasOK)
@@ -144,7 +127,7 @@ bool ScenarioMaker::planBackwards(Backtrack::PathInfo& pathInfo, time_t t, int l
 			continue;
 
 		// time_t in seconds, time consuming in hours
-		currentTime -= (time_t)(Backtrack::pathNodeLink(pathInfo.mPath, i).mTimeConsuming * 60. * 60.);
+		currentTime -= Backtrack::pathNodeLink(pathInfo.mPath, i).mTimeConsuming.getSec();
 		scenario.insert(scenario.begin(), currentTime);
 	}
 
@@ -167,7 +150,7 @@ bool ScenarioMaker::planForwards(Backtrack::PathInfo& pathInfo, time_t t, int fi
 
 		// time_t in seconds, time consuming in hours
 		scenario.push_back(currentTime);
-		currentTime += (time_t)(Backtrack::pathNodeLink(pathInfo.mPath, i).mTimeConsuming * 60. * 60.);
+		currentTime += Backtrack::pathNodeLink(pathInfo.mPath, i).mTimeConsuming.getSec();
 	}
 
 	return retVal;
@@ -188,7 +171,7 @@ bool ScenarioMaker::planMiddle(Backtrack::PathInfo& pathInfo, time_t t1, int fir
 		assert(timeTableMap.size() == 0);
 
 		scenario.push_back(currentTime);
-		currentTime += (time_t)(Backtrack::pathNodeLink(pathInfo.mPath, i).mTimeConsuming * 60. * 60.);
+		currentTime += Backtrack::pathNodeLink(pathInfo.mPath, i).mTimeConsuming.getSec();
 	}
 	
 	if (currentTime > t2)

@@ -1,7 +1,7 @@
 CXX=g++
 CC=gcc
-#CPPFLAGS=-g -std=c++11 -g -Wall -pedantic -D__LINUX__
-CFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -pedantic -D__LINUX__ -pthread
+CPPFLAGS= -g -std=c++11 -Wall -pedantic -D__LINUX__  -pthread
+#CFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -pedantic -D__LINUX__ -pthread
 #LDFLAGS=-g
 LDLIBS=-lpthread -ldl
 OBJDIR=Release

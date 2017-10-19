@@ -20,67 +20,67 @@ static Context* createContext() {
 	
 	Timetable ttIgelLuxembourg;
 	// price, hours
-	ttIgelLuxembourg.add("2017-07-28 05:15", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 05:15", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 06:45", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 07:05", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 07:15", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 07:45", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 08:45", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 09:45", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 10:45", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 11:45", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 12:45", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 13:45", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 14:45", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 15:45", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 16:45", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 16:55", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 17:05", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 17:15", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 17:15", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 17:25", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 17:35", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 17:45", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 17:55", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 18:05", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 18:25", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 18:45", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 19:05", 2, 4.);
-	ttIgelLuxembourg.add("2017-07-28 20:05", 2, 4.);
+	ttIgelLuxembourg.add("2017-07-28 05:15", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 05:15", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 06:45", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 07:05", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 07:15", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 07:45", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 08:45", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 09:45", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 10:45", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 11:45", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 12:45", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 13:45", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 14:45", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 15:45", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 16:45", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 16:55", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 17:05", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 17:15", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 17:15", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 17:25", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 17:35", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 17:45", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 17:55", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 18:05", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 18:25", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 18:45", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 19:05", 2, 4_hour);
+	ttIgelLuxembourg.add("2017-07-28 20:05", 2, 4_hour);
 	// 1 hour
 	context->addConnection(Connection::createBus(nodeIgel, nodeLuxembourg, ttIgelLuxembourg));
 
 	Timetable ttLuxembourgIgel;
 	// price, hours
-	ttLuxembourgIgel.add("2017-07-31 05:15", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 05:15", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 06:45", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 07:05", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 07:15", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 07:45", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 08:45", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 09:45", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 10:45", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 11:45", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 12:45", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 13:45", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 14:45", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 15:45", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 16:45", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 16:55", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 17:05", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 17:15", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 17:15", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 17:25", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 17:35", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 17:45", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 17:55", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 18:05", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 18:25", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 18:45", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 19:05", 2, 4.);
-	ttLuxembourgIgel.add("2017-07-31 20:05", 2, 4.);
+	ttLuxembourgIgel.add("2017-07-31 05:15", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 05:15", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 06:45", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 07:05", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 07:15", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 07:45", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 08:45", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 09:45", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 10:45", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 11:45", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 12:45", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 13:45", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 14:45", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 15:45", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 16:45", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 16:55", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 17:05", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 17:15", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 17:15", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 17:25", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 17:35", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 17:45", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 17:55", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 18:05", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 18:25", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 18:45", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 19:05", 2, 4_hour);
+	ttLuxembourgIgel.add("2017-07-31 20:05", 2, 4_hour);
 	// 1 hour
 	context->addConnection(Connection::createBus(nodeLuxembourg, nodeIgel, ttLuxembourgIgel));
 
@@ -94,42 +94,42 @@ static Context* createContext() {
 
 	// The different buses has different price.
 	Timetable timetable1;
-	timetable1.add("2017-07-28 06:15", 25, 4.);
-	timetable1.add("2017-07-28 09:15", 25, 4.);
-	timetable1.add("2017-07-28 12:15", 25, 4.);
-	timetable1.add("2017-07-28 15:15", 5, 4.);
-	timetable1.add("2017-07-28 18:15", 25, 4.);
-	timetable1.add("2017-07-28 21:15", 25, 4.);
-	timetable1.add("2017-07-29 00:15", 5, 4. );
+	timetable1.add("2017-07-28 06:15", 25, 4_hour);
+	timetable1.add("2017-07-28 09:15", 25, 4_hour);
+	timetable1.add("2017-07-28 12:15", 25, 4_hour);
+	timetable1.add("2017-07-28 15:15", 5,  4_hour);
+	timetable1.add("2017-07-28 18:15", 25, 4_hour);
+	timetable1.add("2017-07-28 21:15", 25, 4_hour);
+	timetable1.add("2017-07-29 00:15", 5,  4_hour);
 
 	// 4 hours, 25 euro
 	context->addConnection(Connection::createBus(nodeLuxembourg, nodeCRL, timetable1));
 
 	// The different buses has different price.
 	Timetable timetable2;
-	timetable2.add("2017-07-28 08:15", 15, 4.);
-	timetable2.add("2017-07-28 11:15", 15, 4.);
-	timetable2.add("2017-07-28 14:15", 15, 4.);
-	timetable2.add("2017-07-28 17:15", 15, 4.);
-	timetable2.add("2017-07-28 21:15", 15, 4.);
-	timetable2.add("2017-07-29 00:15", 15, 4.);
-	timetable2.add("2017-07-29 03:15", 15, 4.);
-	timetable2.add("2017-07-29 06:50", 25, 4. );
+	timetable2.add("2017-07-28 08:15", 15, 4_hour);
+	timetable2.add("2017-07-28 11:15", 15, 4_hour);
+	timetable2.add("2017-07-28 14:15", 15, 4_hour);
+	timetable2.add("2017-07-28 17:15", 15, 4_hour);
+	timetable2.add("2017-07-28 21:15", 15, 4_hour);
+	timetable2.add("2017-07-29 00:15", 15, 4_hour);
+	timetable2.add("2017-07-29 03:15", 15, 4_hour);
+	timetable2.add("2017-07-29 06:50", 25, 4_hour);
 
 	context->addConnection(Connection::createBus(nodeCRL, nodeLuxembourg, timetable2));
 
 	// The different flights has different price.
 	Timetable timetable3;
-	timetable3.add("2017-07-28 06:15", 50, 1 + 5. / 6. + 1.25);
-	timetable3.add("2017-07-28 18:15", 60, 1 + 5. / 6. + 1.25);
+	timetable3.add("2017-07-28 06:15", 50, 3_hour + 5_min);
+	timetable3.add("2017-07-28 18:15", 60, 3_hour + 5_min);
 
     // I added the extra time (1.25h), what we have to spend at the airports; 23 euro
     context->addConnection( Connection::createAirplane(nodeCRL, nodeBUD, timetable3 ));
 
 	// The different flights has different price.
 	Timetable timetable4;
-	timetable4.add("2017-07-31 08:15", 15, 2 + 1. / 6. + 1.25);
-	timetable4.add("2017-07-31 20:50", 100, 2 + 1. / 6. + 1.25);
+	timetable4.add("2017-07-31 08:15", 15, 3_hour + 25_min);
+	timetable4.add("2017-07-31 20:50", 100, 3_hour + 25_min);
 
     context->addConnection( Connection::createAirplane(nodeBUD, nodeCRL, timetable4 ));
 
@@ -149,20 +149,20 @@ static Context* createContext() {
 	context->addConnection(Connection::createCar(nodeHHN, nodeIgel, 1_hour + 1_min, 77));
 
 	Timetable timetable5;
-	timetable5.add("2017-07-28 09:15", 83, 1.33 + 1.25);
+	timetable5.add("2017-07-28 09:15", 83, 2_hour + 35_min);
 	
 	// I added the extra time (1.25h), what we have to spend at the airports; 83 euro
 	context->addConnection( Connection::createAirplane(nodeHHN, nodeBUD, timetable5));
 
 	Timetable timetable6;
-	timetable5.add("2017-07-31 10:15", 83, 1.33 + 1.25);
+	timetable5.add("2017-07-31 10:15", 83, 2_hour + 35_min);
 
 	// I added the extra time (1.25h), what we have to spend at the airports; 83 euro
 	context->addConnection(Connection::createAirplane(nodeBUD, nodeHHN, timetable5));
 
     // Igel-Budapest, Budapest-Igel by car 1152 km, 12 hours with rest
-    context->addConnection( Connection::createCar(nodeIgel, nodeBUD, 12, 1152 ));
-    context->addConnection( Connection::createCar(nodeBUD, nodeIgel, 12, 1152 ));
+    context->addConnection( Connection::createCar(nodeIgel, nodeBUD, 12_hour, 1152. ));
+    context->addConnection( Connection::createCar(nodeBUD, nodeIgel, 12_hour, 1152. ));
     
     // how will I define, that if I departed from Igel to BUD, I have to come back with that?
     // Maybe I should prepare a different search for this scenario

@@ -44,10 +44,10 @@ public:
     static Connection createBus(CtNode* node1, CtNode* node2, Timetable timetable );
 
     // the distance doesn't matter
-    static Connection createTaxi(CtNode* node1, CtNode* node2, double timeConsuming, double cost );
+    static Connection createTaxi(CtNode* node1, CtNode* node2, Duration timeConsuming, double cost );
     
     // frobably it's free of charge
-    static Connection createOnFoot(CtNode* node1, CtNode* node2, double timeConsuming );
+    static Connection createOnFoot(CtNode* node1, CtNode* node2, Duration timeConsuming );
 
 	static Type getType(std::string name);
 	static std::string typeToString(Connection::Type type);
@@ -56,13 +56,13 @@ public:
 	CtNode* mNode2; // name, e.g. Luxmbourg
 
 	Type   mConnectionType;
-	double  mTimeConsuming; // in hour
+	Duration  mTimeConsuming;
 	double  mDistance;      // in km
 	double  mCost;
 	Timetable mTimetable;
 
 private:
-    Connection(CtNode* node1, CtNode* node2, Type type, double timeConsuming, double distance, double cost );
+    Connection(CtNode* node1, CtNode* node2, Type type, Duration timeConsuming, double distance, double cost );
 };
 
 #endif // _CONNECTION_H

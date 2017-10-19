@@ -36,8 +36,8 @@ public:
 	const size_t getGoalSize() const { return mGoal.size(); }
 	const CtNode* getNode(const std::string name) const;
 
-	void setMaxSpentTime(double maxSpentTime) { mMaxSpentTime = maxSpentTime; } // in hours
-	const double getMaxSpentTime() const { return mMaxSpentTime; }
+	void setMaxSpentTime(Duration maxSpentTime) { mMaxSpentTime = maxSpentTime.getSec(); } // in hours
+	const Duration getMaxSpentTime() const { return Duration( mMaxSpentTime ); }
 
 	void setDisplayMatchNumberPerScenarion(int n) { mDisplayMatchNumberPerScenarion = n; }
 	const int getDisplayMatchNumberPerScenarion() const { return mDisplayMatchNumberPerScenarion; }
@@ -48,16 +48,16 @@ public:
 	int getMaxPathLength() const { return mMaxPathLength; }
 
 	void setMaxStayingTime(Duration d) { mMaxStayingTime = d.getSec(); };
-	Duration getMaxStayingTime() const { return mMaxStayingTime; }
+	Duration getMaxStayingTime() const { return Duration( mMaxStayingTime ); }
 
 	void setMinStayingTime(Duration d) { mMinStayingTime = d.getSec(); };
-	Duration getMinStayingTime() const { return mMinStayingTime; }
+	Duration getMinStayingTime() const { return Duration( mMinStayingTime ); }
 
 	void setMaxWaitingTime(Duration d) { mMaxWaitingTime = d.getSec(); };
-	Duration getMaxWaitingTime() const { return mMaxWaitingTime; }
+	Duration getMaxWaitingTime() const { return Duration( mMaxWaitingTime ); }
 
 	void setMaxTravellingTime(Duration d) { mMaxTravellingTime = d.getSec(); };
-	Duration getTravellingTime() const { return mMaxTravellingTime; }
+	Duration getTravellingTime() const { return Duration( mMaxTravellingTime ); }
 private:
     void createNode( Connection c );
     
@@ -65,7 +65,7 @@ private:
     std::vector<std::string> mGoal;
 
     std::set<CtNode*, nodeComparator> mNodes;
-	double mMaxSpentTime;
+	time_t mMaxSpentTime;
 	int mDisplayMatchNumberPerScenarion;
 	int mMaxPathLength;
 	time_t mMaxStayingTime;

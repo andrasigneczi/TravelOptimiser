@@ -12,10 +12,10 @@ struct CtNode {
 	std::string mName;
 	std::string mTimeZone;
 	struct Link {
-		Link(Connection::Type type, CtNode* node, double  timeConsuming, double  distance, double  cost, Timetable timetable) { mType = type; mNode = node; mTimeConsuming = timeConsuming; mDistance = distance; mCost = cost; mTimetable = timetable; }
+		Link(Connection::Type type, CtNode* node, Duration  timeConsuming, double  distance, double  cost, Timetable timetable) { mType = type; mNode = node; mTimeConsuming = timeConsuming; mDistance = distance; mCost = cost; mTimetable = timetable; }
 		Connection::Type mType;
 		CtNode* mNode;
-		double  mTimeConsuming; // in hour
+		Duration  mTimeConsuming;
 		double  mDistance;      // in km
 		double  mCost;
 		Timetable mTimetable;

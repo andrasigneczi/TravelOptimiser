@@ -10,16 +10,15 @@
 class Timetable {
 public:
 	struct Data {
-		Data(double price, double timeConsuming ) : mPrice( price ), mTimeConsuming( timeConsuming ) { }
+		Data(double price, time_t timeConsuming ) : mPrice( price ), mTimeConsuming( timeConsuming ) { }
 		double mPrice;
-		double mTimeConsuming;
+		time_t mTimeConsuming;
 	};
 	typedef std::map<time_t, Data> TimetableData;
 
-	void add(std::string departure, double price, double timeConsuming );
 	void add(std::string departure, double price, Duration timeConsuming);
 	const double getPrice(time_t departure) const;
-	const double getTimeConsuming(time_t departure) const;
+	const time_t getTimeConsuming(time_t departure) const;
 	//const double getFirstPrice() const;
 	const TimetableData& getTimetable() const { return mTimetable;}
 
@@ -28,7 +27,7 @@ public:
 	// for planning backwards
 	time_t searchLessBeginningPlusTimeConsuming(time_t currentTime) const;
 	// for planning forwards
-	std::pair<time_t, double> searchGreaterBeginning(time_t currentTime) const;
+	std::pair<time_t, time_t> searchGreaterBeginning(time_t currentTime) const;
 
 private:
 	std::map<time_t, Data> mTimetable;

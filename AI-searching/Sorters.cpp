@@ -15,7 +15,7 @@ void Sorter::printMathes( int count ) {
 	}
 	sort();
 
-	double maxSpentTime = mBacktrack.getContext()->getMaxSpentTime();
+	double maxSpentTime = mBacktrack.getContext()->getMaxSpentTime().getHour();
 	double maxStayTime = mBacktrack.getContext()->getMaxStayingTime().getDay();
 	double minStayTime = mBacktrack.getContext()->getMinStayingTime().getDay();
 	double maxWaitingTime = mBacktrack.getContext()->getMaxWaitingTime().getHour();
@@ -26,8 +26,8 @@ void Sorter::printMathes( int count ) {
 		if (i == count)
 			break;
 
-		double timeSpent = path.mSumTravellingTime + path.mSumStayTime * 24.;
-		if (maxSpentTime > 0 && timeSpent > maxSpentTime)
+		Duration timeSpent = path.mSumTravellingTime + path.mSumStayTime;
+		if (maxSpentTime > 0.0 && timeSpent.getHour() > maxSpentTime)
 			continue;
 		bool valid = true;
 		std::ostringstream oneResult;
@@ -39,31 +39,31 @@ void Sorter::printMathes( int count ) {
 
 			if (item.mType == Connection::stay) {
 
-				if (maxStayTime > 0.001 && item.mTimeConsuming > maxStayTime) {
+				if (maxStayTime > 0.001 && item.mTimeConsuming.getDay() > maxStayTime) {
 					valid = false;
 					break;
 				}
 
-				if (minStayTime > 0.001 && item.mTimeConsuming < minStayTime) {
+				if (minStayTime > 0.001 && item.mTimeConsuming.getDay() < minStayTime) {
 					valid = false;
 					break;
 				}
 
-				oneResult << "staying time: " << item.mTimeConsuming << " days" << std::endl;
+				oneResult << "staying time: " << item.mTimeConsuming.getDay() << " days" << std::endl;
 			}
 			oneResult << std::string(80, '-') << std::endl;
 		}
 
-		if (maxWaitingTime > 0.001 && path.mSumWaitingTime > maxWaitingTime) {
+		if (maxWaitingTime > 0.001 && path.mSumWaitingTime.getHour() > maxWaitingTime) {
 			valid = false;
 		}
-		if (maxTravellingTime > 0.001 && path.mSumTravellingTime > maxTravellingTime) {
+		if (maxTravellingTime > 0.001 && path.mSumTravellingTime.getHour() > maxTravellingTime) {
 			valid = false;
 		}
-		oneResult << "cost (stay included): " << path.mSumPrice << "€" << std::endl;
-		oneResult << "travelling time (except stay): " << path.mSumTravellingTime << " hours" << std::endl;
-		oneResult << "waiting time: " << path.mSumWaitingTime << " hours" << std::endl;
-		oneResult << "full time consuming: " << timeSpent << " hours \n";
+		oneResult << "cost (stay included): " << path.mSumPrice << "ï¿½" << std::endl;
+		oneResult << "travelling time (except stay): " << path.mSumTravellingTime.getHour() << " hours" << std::endl;
+		oneResult << "waiting time: " << path.mSumWaitingTime.getHour() << " hours" << std::endl;
+		oneResult << "full time consuming: " << timeSpent.getHour() << " hours \n";
 		oneResult << "hash: " << path.mHash << std::endl;
 		oneResult << std::string(80, '-') << std::endl;
 		oneResult << std::string(100, '=') << std::endl;
@@ -113,7 +113,7 @@ void Sorter::extractPathWithScenarios(const Backtrack::PathInfo& pathInfo) {
 						pathItem.mTimeConsuming = nodeLink.mTimeConsuming;
 						path.mSumTravellingTime += nodeLink.mTimeConsuming;
 					}
-					assert(pathItem.mTimeConsuming >= 0.0);
+					assert(pathItem.mTimeConsuming.getSec() >= 0);
 				}
 			}
 			else {
@@ -136,13 +136,13 @@ void Sorter::extractPathWithScenarios(const Backtrack::PathInfo& pathInfo) {
 // calculate the stay time in days
 void Sorter::calcStayTime() {
 	for (Path& path : mEvaluatedPaths) {
-		double sumStayTime = 0;
+		Duration sumStayTime;
 		for (auto it = path.mItems.begin(); it != path.mItems.end(); ++it ) {
 			auto next = std::next(it, 1);
 			if (it->mType == Connection::stay && next != path.mItems.end()) {
 				// calculated in days
 				it->mTimeConsuming = ((double)next->mDeparture - it->mDeparture) / 3600.0 / 24.0;
-				assert(it->mTimeConsuming >= 0.0);
+				assert(it->mTimeConsuming.getSec() >= 0);
 				sumStayTime += it->mTimeConsuming;
 			}
 		}
@@ -157,9 +157,9 @@ void Sorter::calcWaitingTime() {
 			auto next = std::next(it, 1);
 			if (next != path.mItems.end() && it->mType != Connection::parking && next->mType != Connection::parking) {
 				// calculated in hours
-				double timeConsuming = it->mTimeConsuming;
-				if (it->mType == Connection::stay)
-					timeConsuming *= 24.0;
+				double timeConsuming = it->mTimeConsuming.getHour();
+				//if (it->mType == Connection::stay)
+				//	timeConsuming *= 24.0;
 				assert(timeConsuming > 0.0);
 				double waitingTime = ((double)(next->mDeparture - it->mDeparture)) / 3600.0 - timeConsuming;
 				assert(waitingTime >= -0.00001);

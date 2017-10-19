@@ -35,7 +35,7 @@ bool ScenarioMaker2::planBackwards(Backtrack::PathInfo& pathInfo, time_t t, int 
 		    currentTime = t;
 		} else {
     		// time_t in seconds, time consuming in hours
-    		currentTime -= (time_t)(Backtrack::pathNodeLink(pathInfo.mPath, i).mTimeConsuming * 60. * 60.);
+    		currentTime -= Backtrack::pathNodeLink(pathInfo.mPath, i).mTimeConsuming.getSec();
 		}
 		scenario.insert(scenario.begin(), currentTime);
 	}
@@ -69,7 +69,7 @@ bool ScenarioMaker2::planForwards(Backtrack::PathInfo& pathInfo, time_t t, int f
 		} else {
     		// time_t in seconds, time consuming in hours
     		scenario.push_back(currentTime);
-    		currentTime += (time_t)(Backtrack::pathNodeLink(pathInfo.mPath, i).mTimeConsuming * 60. * 60.);
+    		currentTime += Backtrack::pathNodeLink(pathInfo.mPath, i).mTimeConsuming.getSec();
 		}
 	}
 
@@ -107,7 +107,7 @@ bool ScenarioMaker2::planMiddle(Backtrack::PathInfo& pathInfo, time_t t1, int fi
 		}
 		else {
 			scenario.push_back(currentTimeFw);
-			currentTimeFw += (time_t)(Backtrack::pathNodeLink(pathInfo.mPath, fw).mTimeConsuming * 60. * 60.);
+			currentTimeFw += Backtrack::pathNodeLink(pathInfo.mPath, fw).mTimeConsuming.getSec();
 		}
 
 		if (bw-fw>0) {
@@ -121,7 +121,7 @@ bool ScenarioMaker2::planMiddle(Backtrack::PathInfo& pathInfo, time_t t1, int fi
 			}
 			else {
 				// time_t in seconds, time consuming in hours
-				currentTimeBw -= (time_t)(Backtrack::pathNodeLink(pathInfo.mPath, bw).mTimeConsuming * 60. * 60.);
+				currentTimeBw -= Backtrack::pathNodeLink(pathInfo.mPath, bw).mTimeConsuming.getSec();
 			}
 			bwScenario.insert(bwScenario.begin(), currentTimeBw);
 		}

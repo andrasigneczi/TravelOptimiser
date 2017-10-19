@@ -2,14 +2,9 @@
 #include "Backtrack.h"
 #include <assert.h>
 
-void Timetable::add(std::string departure, double price, double timeConsuming) {
-	//mTimetable.emplace(Backtrack::stringToTime(departure), Data(price, timeConsuming));
-	mTempTimetable.emplace(departure, Data(price, timeConsuming));
-}
-
 void Timetable::add(std::string departure, double price, Duration timeConsuming) {
 	//mTimetable.emplace(Backtrack::stringToTime(departure), Data(price, timeConsuming));
-	mTempTimetable.emplace(departure, Data(price, timeConsuming.getHour()));
+	mTempTimetable.emplace(departure, Data(price, timeConsuming.getSec()));
 }
 
 const double Timetable::getPrice(time_t departure) const {
@@ -19,7 +14,7 @@ const double Timetable::getPrice(time_t departure) const {
 	return it->second.mPrice;
 }
 
-const double Timetable::getTimeConsuming(time_t departure) const {
+const time_t Timetable::getTimeConsuming(time_t departure) const {
 	auto it = mTimetable.find(departure);
 	assert(it != mTimetable.end());
 		if (it == mTimetable.end()) {
@@ -53,7 +48,7 @@ void Timetable::correctionByTimezone(std::string timeZone) {
 time_t Timetable::searchLessBeginningPlusTimeConsuming(time_t currentTime) const {
 	time_t retVal = 0;
 	for (auto pair : mTimetable) {
-		time_t val = pair.first + (time_t)(pair.second.mTimeConsuming * 60. * 60.);
+		time_t val = pair.first + pair.second.mTimeConsuming;
 		if (val < currentTime) {
 			retVal = pair.first;
 		}
@@ -65,11 +60,11 @@ time_t Timetable::searchLessBeginningPlusTimeConsuming(time_t currentTime) const
 }
 
 // for planning forwards
-std::pair<time_t, double> Timetable::searchGreaterBeginning(time_t currentTime) const {
+std::pair<time_t, time_t> Timetable::searchGreaterBeginning(time_t currentTime) const {
 	for (auto pair : mTimetable) {
 		if (pair.first > currentTime) {
-			return std::pair<time_t, double>(pair.first, pair.second.mTimeConsuming);
+			return std::pair<time_t, time_t>(pair.first, pair.second.mTimeConsuming);
 		}
 	}
-	return std::pair < time_t, double>(0, 0);
+	return std::pair < time_t, time_t>(0, 0);
 }

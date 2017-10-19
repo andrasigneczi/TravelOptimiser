@@ -28,7 +28,7 @@ protected:
 	struct Item {
 		std::string mNameAndType; // e.g.: BUD (airplane)
 		time_t  mDeparture; // e.g.: 2017-07-31 15:45+0200
-		double  mTimeConsuming; // in hour
+		Duration  mTimeConsuming;
 		double  mCost;
 		Connection::Type mType;
 		std::string mTimeZone;
@@ -39,9 +39,9 @@ protected:
 		Path() : mSumPrice(0), mSumTravellingTime(0), mSumStayTime(0), mSumWaitingTime(0){}
 		std::vector<Item> mItems;
 		double mSumPrice;
-		double mSumTravellingTime; // in hours
-		double mSumStayTime; // in days
-		double mSumWaitingTime; // in hours
+		Duration mSumTravellingTime; // in hours
+		Duration mSumStayTime; // in days
+		Duration mSumWaitingTime; // in hours
 		size_t mHash;
 	};
 	void calcStayTime();
