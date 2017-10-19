@@ -16,7 +16,7 @@ class Context {
 
 public:
 	Context() 
-		: mMaxSpentTime(0.0)
+		: mMaxSpentTime(0)
 		, mDisplayMatchNumberPerScenarion(100000)
 		, mMaxPathLength(10)
 		, mMaxStayingTime(0)

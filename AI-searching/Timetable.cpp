@@ -18,7 +18,7 @@ const time_t Timetable::getTimeConsuming(time_t departure) const {
 	auto it = mTimetable.find(departure);
 	assert(it != mTimetable.end());
 		if (it == mTimetable.end()) {
-		return -1.0;
+		return -1;
 	}
 	return it->second.mTimeConsuming;
 }

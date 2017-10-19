@@ -17,7 +17,7 @@ public:
 
     Duration& operator+=(const Duration& x);
     Duration& operator=(const Duration& x);
-    Duration& operator=(const time_t x);
+    //Duration& operator=(const time_t x);
     bool operator>(const Duration x) const;
     //bool operator>(const double x) const;    
     bool operator<(const Duration x) const;

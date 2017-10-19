@@ -106,7 +106,7 @@ void Sorter::extractPathWithScenarios(const Backtrack::PathInfo& pathInfo) {
 
 				if (nodeLink.mType != Connection::stay && nodeLink.mType != Connection::parking) {
 					if (nodeLink.mType == Connection::airplane || nodeLink.mType == Connection::bus) {
-						pathItem.mTimeConsuming = nodeLink.mTimetable.getTimeConsuming(pathItem.mDeparture);
+						pathItem.mTimeConsuming = Duration( nodeLink.mTimetable.getTimeConsuming(pathItem.mDeparture));
 						path.mSumTravellingTime += pathItem.mTimeConsuming;
 					}
 					else {
@@ -141,7 +141,7 @@ void Sorter::calcStayTime() {
 			auto next = std::next(it, 1);
 			if (it->mType == Connection::stay && next != path.mItems.end()) {
 				// calculated in days
-				it->mTimeConsuming = ((double)next->mDeparture - it->mDeparture) / 3600.0 / 24.0;
+				it->mTimeConsuming = Duration(next->mDeparture - it->mDeparture);
 				assert(it->mTimeConsuming.getSec() >= 0);
 				sumStayTime += it->mTimeConsuming;
 			}
@@ -152,22 +152,22 @@ void Sorter::calcStayTime() {
 
 void Sorter::calcWaitingTime() {
 	for (Path& path : mEvaluatedPaths) {
-		double sumWaitingTime = 0.0;
+		time_t sumWaitingTime = 0;
 		for (auto it = path.mItems.begin(); it != path.mItems.end(); ++it) {
 			auto next = std::next(it, 1);
 			if (next != path.mItems.end() && it->mType != Connection::parking && next->mType != Connection::parking) {
 				// calculated in hours
-				double timeConsuming = it->mTimeConsuming.getHour();
+				time_t timeConsuming = it->mTimeConsuming.getSec();
 				//if (it->mType == Connection::stay)
 				//	timeConsuming *= 24.0;
 				assert(timeConsuming > 0.0);
-				double waitingTime = ((double)(next->mDeparture - it->mDeparture)) / 3600.0 - timeConsuming;
-				assert(waitingTime >= -0.00001);
-				if(waitingTime > 0.0 )
+				time_t waitingTime = next->mDeparture - it->mDeparture - timeConsuming;
+				assert(waitingTime >= 0);
+				if(waitingTime > 0 )
 					sumWaitingTime += waitingTime;
 			}
 		}
-		path.mSumWaitingTime = sumWaitingTime;
+		path.mSumWaitingTime = Duration( sumWaitingTime );
 	}
 }
 

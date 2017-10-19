@@ -59,13 +59,13 @@ bool ScenarioMaker2::planForwards(Backtrack::PathInfo& pathInfo, time_t t, int f
 		const auto& timeTable = Backtrack::pathNodeLink(pathInfo.mPath, i).mTimetable;
 		
 		if(timeTable.getTimetable().size() > 0) {
-			std::pair<time_t, double> retv = timeTable.searchGreaterBeginning( currentTime );
+			std::pair<time_t, time_t> retv = timeTable.searchGreaterBeginning( currentTime );
 			if (retv.first == 0) {
 				retVal = false;
 				break;
 			}
 		    scenario.push_back(retv.first);
-		    currentTime = retv.first + (time_t)(retv.second * 60. * 60.);
+		    currentTime = retv.first + retv.second;
 		} else {
     		// time_t in seconds, time consuming in hours
     		scenario.push_back(currentTime);
@@ -98,12 +98,12 @@ bool ScenarioMaker2::planMiddle(Backtrack::PathInfo& pathInfo, time_t t1, int fi
 		const auto& timeTableFw = Backtrack::pathNodeLink(pathInfo.mPath, fw).mTimetable;
 
 		if (timeTableFw.getTimetable().size() > 0) {
-			std::pair<time_t, double> retv = timeTableFw.searchGreaterBeginning(currentTimeFw);
+			std::pair<time_t, time_t> retv = timeTableFw.searchGreaterBeginning(currentTimeFw);
 			if (retv.first == 0) {
 				return false;
 			}
 			scenario.push_back(retv.first);
-			currentTimeFw = retv.first + (time_t)(retv.second * 60. * 60.);
+			currentTimeFw = retv.first + retv.second;
 		}
 		else {
 			scenario.push_back(currentTimeFw);

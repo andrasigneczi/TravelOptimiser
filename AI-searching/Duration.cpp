@@ -65,8 +65,9 @@ Duration& Duration::operator=(const Duration& x) {
 	mDuration = x.mDuration;
 	return *this;
 }
-
+/*
 Duration& Duration::operator=(const time_t x) {
 	mDuration = x;
 	return *this;
 }
+*/
