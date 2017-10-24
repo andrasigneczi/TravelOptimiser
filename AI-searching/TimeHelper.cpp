@@ -91,14 +91,19 @@ time_t stringToTime(std::string strTime) {
 	return t;
 }
 
-bool isWeekend(std::string strDate) {
-	struct std::tm tm{};
+extern int getWeekday(std::string strDate) {
+	struct std::tm tm;
+	memset(&tm, 0, sizeof(tm));
 	std::istringstream ss(strDate);
 	ss >> std::get_time(&tm, "%Y-%m-%d");
 
 	std::ostringstream oss;
 	oss << std::put_time(&tm, "%w");
-	int weekDay = std::atoi( oss.str().c_str());
+	return std::atoi( oss.str().c_str());
+}
+
+bool isWeekend(std::string strDate) {
+	int weekDay = getWeekday( strDate );
 	if( weekDay == 0 || weekDay == 6 )
 	    return true;
 	return false;

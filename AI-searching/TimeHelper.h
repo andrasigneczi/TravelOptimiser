@@ -12,6 +12,7 @@ namespace TimeHelper {
     extern std::string timeToString(time_t t, std::string timeZone);
     extern time_t stringToTime(std::string strTime);
     extern bool isWeekend(std::string strDate);
+    extern int getWeekday(std::string strDate);
 }
 
 #ifdef __LINUX__
