@@ -60,7 +60,7 @@ void Sorter::printMathes( int count ) {
 		if (maxTravellingTime > 0.001 && path.mSumTravellingTime.getHour() > maxTravellingTime) {
 			valid = false;
 		}
-		oneResult << "cost (stay included): " << path.mSumPrice << "�" << std::endl;
+		oneResult << "cost (stay included): " << path.mSumPrice << "€" << std::endl;
 		oneResult << "travelling time (except stay): " << path.mSumTravellingTime.getHour() << " hours" << std::endl;
 		oneResult << "waiting time: " << path.mSumWaitingTime.getHour() << " hours" << std::endl;
 		oneResult << "full time consuming: " << timeSpent.getHour() << " hours \n";

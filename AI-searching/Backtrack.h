@@ -58,7 +58,7 @@ private:
 	const std::string& pathNodeName(int pathIndex) { return mPath[ pathIndex ].mCtNode->mName;  }
 	int pathNodeIndex(int pathIndex) { return mPath[pathIndex].mIndex; }
 	const CtNode::Link& pathNodeLink(int pathIndex) { return mPath[pathIndex].mCtNode->mLinks[mPath[pathIndex].mIndex];  }
-	static const size_t genHash(const Path& path);
+	static size_t genHash(const Path& path);
 
 	Path mPath;
 	std::vector<PathInfo> mMatches;

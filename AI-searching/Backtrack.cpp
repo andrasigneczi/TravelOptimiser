@@ -340,7 +340,7 @@ void Backtrack::savePath() {
 	mMatches.push_back(pathInfo);
 }
 
-const size_t Backtrack::genHash(const Backtrack::Path& path) {
+size_t Backtrack::genHash(const Backtrack::Path& path) {
 	std::string hashStr;
 	for (size_t i = 0; i < path.size(); ++i) {
 		hashStr += path[i].mCtNode->mName;

@@ -7,14 +7,14 @@ void Timetable::add(std::string departure, double price, Duration timeConsuming)
 	mTempTimetable.emplace(departure, Data(price, timeConsuming.getSec()));
 }
 
-const double Timetable::getPrice(time_t departure) const {
+double Timetable::getPrice(time_t departure) const {
 	auto it = mTimetable.find(departure);
 	if (it == mTimetable.end())
 		return -1.0;
 	return it->second.mPrice;
 }
 
-const time_t Timetable::getTimeConsuming(time_t departure) const {
+time_t Timetable::getTimeConsuming(time_t departure) const {
 	auto it = mTimetable.find(departure);
 	assert(it != mTimetable.end());
 		if (it == mTimetable.end()) {
