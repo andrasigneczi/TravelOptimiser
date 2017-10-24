@@ -37,8 +37,6 @@ public:
 	static int pathNodeIndex(const Path& path, int pathIndex) { return path[pathIndex].mIndex; }
 	static const CtNode::Link& pathNodeLink(const Path& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex]; }
 	static const Timetable::TimetableData& pathNodeTimetable(const Path& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex].mTimetable.getTimetable(); }
-	static std::string timeToString(time_t t, std::string timeZone);
-	static time_t stringToTime(std::string strTime);
 
 private:
 	void init();
