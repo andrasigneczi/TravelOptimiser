@@ -2,10 +2,6 @@
 #include "Backtrack.h"
 #include "Timetable.h"
 
-#ifdef __LINUX__
-#define sprintf_s sprintf
-#endif
-
 static Context* createContext() {
 	Context* context = new Context;
 	char dateBuff[100];

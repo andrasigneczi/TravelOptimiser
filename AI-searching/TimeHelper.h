@@ -20,19 +20,19 @@ namespace TimeHelper {
     
     namespace std {
     	
-	struct __unspecified { 
-		operator char*() {
-			return nullptr;
-		}
-		
-		operator bool&() {
-			return b;
-		}
-		
-		bool b;
-		std::tm* tmb;
-		const char* fmt;
-	};
+		struct __unspecified { 
+			operator char*() {
+				return nullptr;
+			}
+			
+			operator bool&() {
+				return b;
+			}
+			
+			bool b;
+			std::tm* tmb;
+			const char* fmt;
+		};
     	
     	std::string put_time( struct tm* tm, const char* format );
     	

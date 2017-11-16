@@ -1,7 +1,7 @@
 CXX=g++
 CC=gcc
 #CPPFLAGS= -g -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread
-CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -Wextra -pedantic -D__LINUX__ -pthread
+CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -Wextra -pedantic -D__LINUX__ -pthread -Dsprintf_s=sprintf
 #CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread \
 # -Wall -Wextra -Wcast-align -Wcast-qual -Wdiv-by-zero -Wendif-labels -Wformat-extra-args -Wformat-nonliteral -Wformat-security \
 # -Wdisabled-optimization  -Wformat-y2k -Wimport -Winit-self -Winvalid-pch -Wlogical-op \
@@ -14,12 +14,13 @@ CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -Wextra -pedantic -D__LINUX__ -pthrea
  # -Waggregate-return -Winline -Wmissing-declarations 
  
 #LDFLAGS=-g
-CFLAGS= -O2 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra
+CFLAGS= -O2 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra -Dsprintf_s=sprintf
+
 LDLIBS=-lpthread -ldl
 OBJDIR=Release
 
 SRCS1=main.cpp Astar.cpp Connection.cpp test.cpp Context.cpp Backtrack.cpp Duration.cpp ScenarioMaker.cpp ScenarioMaker2.cpp \
-     Sorters.cpp testBarcelona.cpp testTimeZone.cpp Timetable.cpp SQLiteTest.cpp TimeHelper.cpp
+     Sorters.cpp testBarcelona.cpp testTimeZone.cpp Timetable.cpp SQLiteTest.cpp TimeHelper.cpp testTimetable.cpp
 
 SRCS2=sqlite/sqlite3.c
 

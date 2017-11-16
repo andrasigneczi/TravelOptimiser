@@ -18,7 +18,7 @@ public:
 
 	typedef std::vector<Backtrack::BtNode> Path;
 
-	// One scenario is a time vector. The index of the items are used to index the item of the PathInfo::mPath.
+	// One scenario is a time vector. The index of the items are used to index the item of the PathInfo::mPath on a special way.
 	typedef std::vector<time_t> Scenario;
 
 	struct PathInfo {
