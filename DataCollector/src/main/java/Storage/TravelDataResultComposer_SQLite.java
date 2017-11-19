@@ -3,6 +3,7 @@ package Storage;
 import PageGuest.TravelDataResultComposer;
 import PageGuest.TravelData_RESULT;
 import Util.CurrencyHelper;
+import org.apache.log4j.Logger;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -12,6 +13,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class TravelDataResultComposer_SQLite extends TravelDataResultComposer
 {
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger(TravelDataResultComposer_SQLite.class);
 	private DateTimeFormatter mFormatterWizzair;
 
 	public TravelDataResultComposer_SQLite( TravelData_RESULT aResult )
@@ -117,6 +119,9 @@ public class TravelDataResultComposer_SQLite extends TravelDataResultComposer
 			currencyPriceInEuro = CurrencyHelper.getCurrencyPriceInEuro( aTrip.mPrices_PlusFare_Discount );
 		} else if( aTrip.mPrices_PlusFare_Normal.length() > 0 ) {
 			currencyPriceInEuro = CurrencyHelper.getCurrencyPriceInEuro( aTrip.mPrices_PlusFare_Normal );
+		} else {
+			mLogger.error( "something wrong with the prices" );
+			mLogger.error( aTrip.toString());
 		}
 
 		String lSQL = "INSERT INTO TravelDataResult_PossibleTrips (\n" +
