@@ -22,6 +22,7 @@ public class TravelData_INPUT implements Cloneable, Serializable
 	public boolean mNearbyAirports    = false;
 	public boolean mReturnTicket      = true;
 	public String  mInterval          = "";
+	public String  mMonth             = "";
 
 	public ArrayList<ResultFilter> mFilters = new ArrayList<ResultFilter>();
 
@@ -38,6 +39,7 @@ public class TravelData_INPUT implements Cloneable, Serializable
 		out.writeBoolean( mNearbyAirports );
 		out.writeBoolean( mReturnTicket );
 		out.writeObject(  mInterval );
+		out.writeObject(  mMonth );
 	}
 
 	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
@@ -53,6 +55,7 @@ public class TravelData_INPUT implements Cloneable, Serializable
 		mNearbyAirports          = in.readBoolean();
 		mReturnTicket            = in.readBoolean();
 		mInterval                = (String)in.readObject();
+		mMonth                   = (String)in.readObject();
 	}
 
 	public boolean set( String aName, String aValue )
@@ -136,6 +139,13 @@ public class TravelData_INPUT implements Cloneable, Serializable
 				lReturnValue = true;
 				break setvalues;
 			}
+
+			if( aName.equals( "Month" ) )
+			{
+				mMonth = aValue;
+				lReturnValue = true;
+				break setvalues;
+			}
 		}
 		return lReturnValue;
 	}
@@ -169,6 +179,7 @@ public class TravelData_INPUT implements Cloneable, Serializable
 		lReturn += "NearbyAirports: " + mNearbyAirports + "\n";
 		lReturn += "ReturnTicket: " + mReturnTicket + "\n";
 		lReturn += "Interval: " + mInterval + "\n";
+		lReturn += "Month: " + mMonth + "\n";
 		return lReturn;
 	}
 }

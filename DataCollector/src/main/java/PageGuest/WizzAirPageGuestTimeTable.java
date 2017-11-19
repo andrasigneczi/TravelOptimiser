@@ -4,6 +4,7 @@ import Configuration.Configuration;
 import QueueHandlers.JMSPublisher;
 import QueueHandlers.LocalStack;
 import ResultFilter.ResultFilter;
+import Util.DatetimeHelper;
 import Util.HttpRequest;
 import Util.StringHelper;
 import Util.WizzairHelper;
@@ -188,19 +189,27 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		String lSleep = Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
 		ArrayList<TravelData_RESULT> lResultList = new ArrayList<TravelData_RESULT>();
 
-		final int lInterval = StringHelper.parseInt( aTravelDataInput.mInterval, 6 );
-
-		// 6 month ahead
-		for( int i = 0; i < lInterval; i++ )
+		if( aTravelDataInput.mInterval.length() > 0 )
 		{
-			FillTheForm( aTravelDataInput, lYear, lMonth, lDay, lResultList );
-			lDate = lDate.plusMonths( 1 );
-			lYear = lDate.getYear();
-			lMonth = lDate.getMonthValue();
-			lDay = lDate.getDayOfMonth();
-			Sleep( 1000 * Integer.parseInt( lSleep ));
-		}
+			final int lInterval = StringHelper.parseInt( aTravelDataInput.mInterval, 6 );
 
+			// 6 month ahead
+			for( int i = 0; i < lInterval; i++ )
+			{
+				FillTheForm( aTravelDataInput, lYear, lMonth, lDay, lResultList );
+				lDate = lDate.plusMonths( 1 );
+				lYear = lDate.getYear();
+				lMonth = lDate.getMonthValue();
+				lDay = lDate.getDayOfMonth();
+				Sleep( 1000 * Integer.parseInt( lSleep ) );
+			}
+		}
+		else
+		{
+			ArrayList<Integer> dateItems = DatetimeHelper.getDateItems( aTravelDataInput.mMonth );
+			FillTheForm( aTravelDataInput, dateItems.get( 0 ), dateItems.get( 1 ), 1, lResultList );
+			Sleep( 1000 * Integer.parseInt( lSleep ) );
+		}
 		// Return way
 //		lYear = lDate.getYear();
 //		lMonth = lDate.getMonthValue();

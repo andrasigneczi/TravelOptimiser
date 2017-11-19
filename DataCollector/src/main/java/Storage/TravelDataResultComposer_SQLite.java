@@ -108,6 +108,17 @@ public class TravelDataResultComposer_SQLite extends TravelDataResultComposer
 	                                                    int aTravelDataResultId,
 	                                                    String recordedDatetime )
 	{
+		Double currencyPriceInEuro = 1.0;
+		if( aTrip.mPrices_BasicFare_Discount.length() > 0 ) {
+			currencyPriceInEuro = CurrencyHelper.getCurrencyPriceInEuro( aTrip.mPrices_BasicFare_Discount );
+		} else if( aTrip.mPrices_BasicFare_Normal.length() > 0 ) {
+			currencyPriceInEuro = CurrencyHelper.getCurrencyPriceInEuro( aTrip.mPrices_BasicFare_Normal );
+		} else if( aTrip.mPrices_PlusFare_Discount.length() > 0 ) {
+			currencyPriceInEuro = CurrencyHelper.getCurrencyPriceInEuro( aTrip.mPrices_PlusFare_Discount );
+		} else if( aTrip.mPrices_PlusFare_Normal.length() > 0 ) {
+			currencyPriceInEuro = CurrencyHelper.getCurrencyPriceInEuro( aTrip.mPrices_PlusFare_Normal );
+		}
+
 		String lSQL = "INSERT INTO TravelDataResult_PossibleTrips (\n" +
 				"\tDepartureDatetime         ,\n" +     // 2016.03.25 17:10
 				"\tArrivalDatetime           ,\n" +     // 2016.03.25 22:10
@@ -125,7 +136,7 @@ public class TravelDataResultComposer_SQLite extends TravelDataResultComposer
 				aTrip.mPrices_BasicFare_Discount + "', '" +
 				aTrip.mPrices_PlusFare_Normal + "', '" +
 				aTrip.mPrices_PlusFare_Discount + "', " +
-				String.valueOf( CurrencyHelper.getCurrencyPriceInEuro( aTrip.mPrices_BasicFare_Normal )) + ", '" +
+				String.valueOf( currencyPriceInEuro ) + ", '" +
 				aTrip.mOutboundTrip + "', " +
 				"datetime('" + recordedDatetime + "')," +
 				aTravelDataResultId + ");\n";
