@@ -9,6 +9,7 @@ import java.lang.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -17,16 +18,27 @@ public class HttpRequest
 {
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger( HttpRequest.class);
 
-	private final String USER_AGENT      = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36";
+	private final String USER_AGENT      = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36";
 	private final String ACCEPT_LANGUAGE = "hu,en-US;q=0.8,en;q=0.6,de-DE;q=0.4,de;q=0.2,fr;q=0.2";
 	private final String ACCEPT_ENCODING = "gzip, deflate, br";
-	private final String CONTENT_TYPE    = "application/json";
-	private final String ACCEPT          = "application/json, text/plain, */*";
-	private final String REFERER         = "https://wizzair.com/";
-	private final String AUTHORITY       = "be.wizzair.com";
-	private final String ORIGIN          = "https://wizzair.com";
+	private final String PRAGMA          = "no-cache";
+	private final String CACHE_CONTROL   = "no-cache";
 
+	private ArrayList<String> mRequestProperties = new ArrayList<>(  );
 	private int mResponseCode = 0;
+	private String mCookies = null;
+
+	public void addRequestProperties( String name, String value ) {
+		mRequestProperties.add( name );
+		mRequestProperties.add( value );
+	}
+
+	private void applyRequestProperties( HttpURLConnection conn ) {
+		for( int i = 0; i < mRequestProperties.size(); i += 2 )
+		{
+			conn.setRequestProperty( mRequestProperties.get( i ), mRequestProperties.get( i + 1 ) );
+		}
+	}
 
     /**
      *
@@ -54,13 +66,12 @@ public class HttpRequest
 	    conn.setRequestProperty( "User-Agent",      USER_AGENT );
 	    conn.setRequestProperty( "Accept-Language", ACCEPT_LANGUAGE );
 	    conn.setRequestProperty( "Accept-Encoding", ACCEPT_ENCODING );
-	    conn.setRequestProperty( "Accept",          ACCEPT );
-	    conn.setRequestProperty( "Referer",         REFERER );
-	    conn.setRequestProperty( "Authority",       AUTHORITY );
-	    conn.setRequestProperty( "Origin",          ORIGIN );
-	    //conn.setRequestProperty( "Content-Length",  String.valueOf(aPostData.length()));
-	    conn.setRequestProperty( "Pragma",          "no-cache" );
-	    conn.setRequestProperty( "Cache-Control",   "no-cache" );
+	    conn.setRequestProperty( "Pragma",          PRAGMA );
+	    conn.setRequestProperty( "Cache-Control",   CACHE_CONTROL );
+	    if( mCookies != null ) {
+		    conn.setRequestProperty("Cookie", mCookies );
+	    }
+	    applyRequestProperties(conn);
 	    conn.setUseCaches( false );
 
         mResponseCode = conn.getResponseCode();
@@ -82,27 +93,25 @@ public class HttpRequest
 
         //java.lang.System.out.println("Response Code ... " + mResponseCode);
 
-        if (redirect) {
+	    mCookies = conn.getHeaderField("Set-Cookie");
+
+	    if (redirect) {
 
             // get redirect url from "location" header field
             String newUrl = conn.getHeaderField("Location");
 
             // get the cookie if need, for login
-            String cookies = conn.getHeaderField("Set-Cookie");
+            //String cookies = conn.getHeaderField("Set-Cookie");
 
             // open the new connnection again
             conn = (HttpURLConnection) new URL(newUrl).openConnection();
-            conn.setRequestProperty("Cookie", cookies);
+            conn.setRequestProperty("Cookie", mCookies);
 	        conn.setRequestProperty( "User-Agent",      USER_AGENT );
 	        conn.setRequestProperty( "Accept-Language", ACCEPT_LANGUAGE );
 	        conn.setRequestProperty( "Accept-Encoding", ACCEPT_ENCODING );
-	        conn.setRequestProperty( "Accept",          ACCEPT );
-	        conn.setRequestProperty( "Referer",         REFERER );
-	        conn.setRequestProperty( "Authority",       AUTHORITY );
-	        conn.setRequestProperty( "Origin",          ORIGIN );
-	        //conn.setRequestProperty( "Content-Length",  String.valueOf(aPostData.length()));
-	        conn.setRequestProperty( "Pragma",          "no-cache" );
-	        conn.setRequestProperty( "Cache-Control",   "no-cache" );
+	        conn.setRequestProperty( "Pragma",          PRAGMA );
+	        conn.setRequestProperty( "Cache-Control",   CACHE_CONTROL );
+		    applyRequestProperties(conn);
 	        conn.setUseCaches( false );
 
 	        //java.lang.System.out.println("Redirect to URL : " + newUrl);
@@ -134,14 +143,10 @@ public class HttpRequest
         conHttp.setRequestProperty( "User-Agent",      USER_AGENT );
         conHttp.setRequestProperty( "Accept-Language", ACCEPT_LANGUAGE );
 	    conHttp.setRequestProperty( "Accept-Encoding", ACCEPT_ENCODING );
-	    conHttp.setRequestProperty( "Content-Type",    CONTENT_TYPE );
-	    conHttp.setRequestProperty( "Accept",          ACCEPT );
-	    conHttp.setRequestProperty( "Referer",         REFERER );
-	    conHttp.setRequestProperty( "Authority",       AUTHORITY );
-	    conHttp.setRequestProperty( "Origin",          ORIGIN );
 	    conHttp.setRequestProperty( "Content-Length",  String.valueOf(aPostData.length()));
-	    conHttp.setRequestProperty( "Pragma",          "no-cache" );
-	    conHttp.setRequestProperty( "Cache-Control",   "no-cache" );
+	    conHttp.setRequestProperty( "Pragma",          PRAGMA );
+	    conHttp.setRequestProperty( "Cache-Control",   CACHE_CONTROL );
+	    applyRequestProperties(conHttp);
 	    conHttp.setUseCaches( false );
 
         // Send post request

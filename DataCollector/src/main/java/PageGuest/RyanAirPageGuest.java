@@ -5,6 +5,7 @@ import QueueHandlers.LocalStack;
 import QueueHandlers.ResultQueue;
 import Configuration.Configuration;
 import Util.DatetimeHelper;
+import Util.HttpRequest;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -12,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,6 +35,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
     private static org.apache.log4j.Logger mLogger = Logger.getLogger(RyanAirPageGuest.class);
 
     private long mTimeoutStart;
+    private HttpRequest mRequest = new HttpRequest();
 
     public RyanAirPageGuest()
     {
@@ -40,8 +43,17 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         mSearchQueue = new LocalStack<>();
         mThread = new Thread(this);
         mThread.setName("RyanAirThread " + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        InitHttpRequest();
         mThread.start();
         System.out.println("RyanAirPageGuest()");
+    }
+
+    private void InitHttpRequest()
+    {
+        mRequest.addRequestProperties( "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" );
+        mRequest.addRequestProperties( "Host", "desktopapps.ryanair.com" );
+        mRequest.addRequestProperties( "Connection", "keep-alive" );
+        mRequest.addRequestProperties( "Upgrade-Insecure-Requests", "1" );
     }
 
     public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate)
@@ -234,12 +246,10 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         }
     }
 
-    private void FillTheForm( TravelData_INPUT aTravelDataInput ) throws URISyntaxException, IOException
+    private void FillTheForm( TravelData_INPUT aTravelDataInput ) throws Exception
     {
-        //String lUrl = "https://desktopapps.ryanair.com/en-gb/availability?ADT=1&CHD=0&DateIn=2016-07-31&" +
-        //        "DateOut=2017-01-04&Destination=FAO&FlexDaysIn=6&FlexDaysOut=6&INF=0&Origin=DUB&RoundTrip=true&TEEN=0";
-        // https://desktopapps.ryanair.com/v3/hu-hu/availability?ADT=1&CHD=0&DateIn=2017-07-27&DateOut=2017-06-22&Destination=AGP&FlexDaysIn=6&FlexDaysOut=4&INF=0&Origin=BUD&RoundTrip=true&TEEN=0&ToUs=AGREED&exists=false
-        String lUrl = "https://desktopapps.ryanair.com/v3/en-gb/availability?ADT="
+        // https://desktopapps.ryanair.com/v4/en-ie/availability?ADT=1&CHD=0&DateOut=2018-02-07&Destination=BUD&FlexDaysOut=4&INF=0&IncludeConnectingFlights=true&Origin=EDI&RoundTrip=false&TEEN=0&ToUs=AGREED&exists=false&promoCode=
+        String lUrl = "https://desktopapps.ryanair.com/v4/en-gb/availability?ADT="
                 + aTravelDataInput.mAdultNumber
                 + "&CHD=" + aTravelDataInput.mChildNumber
                 + "&DateOut=" + FormatDate( aTravelDataInput.mDepartureDay );
@@ -249,20 +259,29 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
 
         lUrl += "&Destination=" + aTravelDataInput.mAirportCode_GoingTo
                 + "&FlexDaysIn=6&FlexDaysOut=6&INF=" + aTravelDataInput.mInfantNumber
+                + "&IncludeConnectingFlights=false"
                 + "&Origin=" + aTravelDataInput.mAirportCode_LeavingFrom
                 + "&RoundTrip=" + ( aTravelDataInput.mReturnTicket ? "true" : "false" )
-                + "&TEEN=0&ToUs=AGREED&exists=false";
+                + "&TEEN=0&ToUs=AGREED&exists=false&promoCode=";
 
 //        String lTestJsonString = "\n" +
 // {"currency":"HUF","currPrecision":0,"trips":[{"origin":"BUD","originName":"Budapest T2B","destination":"AGP","destinationName":"Malaga T2","dates":[{"dateOut":"2017-06-22T00:00:00.000","flights":[]},{"dateOut":"2017-06-23T00:00:00.000","flights":[]},{"dateOut":"2017-06-24T00:00:00.000","flights":[{"faresLeft":2,"flightKey":"FR~2273~ ~~BUD~06/24/2017 16:45~AGP~06/24/2017 20:15~","infantsLeft":18,"regularFare":{"fareKey":"0~B~~B12HIGH~BO12~~1~X","fareClass":"B","fares":[{"type":"ADT","amount":68489.0000,"count":1,"hasDiscount":false,"publishedFare":68489.0000,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"BUD","destination":"AGP","flightNumber":"FR 2273","time":["2017-06-24T16:45:00.000","2017-06-24T20:15:00.000"],"timeUTC":["2017-06-24T14:45:00.000Z","2017-06-24T18:15:00.000Z"],"duration":"03:30"}],"flightNumber":"FR 2273","time":["2017-06-24T16:45:00.000","2017-06-24T20:15:00.000"],"timeUTC":["2017-06-24T14:45:00.000Z","2017-06-24T18:15:00.000Z"],"duration":"03:30"}]},{"dateOut":"2017-06-25T00:00:00.000","flights":[]},{"dateOut":"2017-06-26T00:00:00.000","flights":[]}]},{"origin":"AGP","originName":"Budapest T2B","destination":"BUD","destinationName":"Malaga T2","dates":[{"dateOut":"2017-07-27T00:00:00.000","flights":[]},{"dateOut":"2017-07-28T00:00:00.000","flights":[]},{"dateOut":"2017-07-29T00:00:00.000","flights":[{"faresLeft":4,"flightKey":"FR~2274~ ~~AGP~07/29/2017 20:50~BUD~07/30/2017 00:20~","infantsLeft":16,"regularFare":{"fareKey":"0~L~~L12HIGH~BO12~~1~X","fareClass":"L","fares":[{"type":"ADT","amount":50609.0000,"count":1,"hasDiscount":false,"publishedFare":50609.0000,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"AGP","destination":"BUD","flightNumber":"FR 2274","time":["2017-07-29T20:50:00.000","2017-07-30T00:20:00.000"],"timeUTC":["2017-07-29T18:50:00.000Z","2017-07-29T22:20:00.000Z"],"duration":"03:30"}],"flightNumber":"FR 2274","time":["2017-07-29T20:50:00.000","2017-07-30T00:20:00.000"],"timeUTC":["2017-07-29T18:50:00.000Z","2017-07-29T22:20:00.000Z"],"duration":"03:30"}]},{"dateOut":"2017-07-30T00:00:00.000","flights":[]},{"dateOut":"2017-07-31T00:00:00.000","flights":[]},{"dateOut":"2017-08-01T00:00:00.000","flights":[]},{"dateOut":"2017-08-02T00:00:00.000","flights":[{"faresLeft":-1,"flightKey":"FR~2274~ ~~AGP~08/02/2017 20:50~BUD~08/03/2017 00:20~","infantsLeft":16,"regularFare":{"fareKey":"0~V~~V12HIGH~BO12~~1~X","fareClass":"V","fares":[{"type":"ADT","amount":30609.0000,"count":1,"hasDiscount":false,"publishedFare":30609.0000,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"AGP","destination":"BUD","flightNumber":"FR 2274","time":["2017-08-02T20:50:00.000","2017-08-03T00:20:00.000"],"timeUTC":["2017-08-02T18:50:00.000Z","2017-08-02T22:20:00.000Z"],"duration":"03:30"}],"flightNumber":"FR 2274","time":["2017-08-02T20:50:00.000","2017-08-03T00:20:00.000"],"timeUTC":["2017-08-02T18:50:00.000Z","2017-08-02T22:20:00.000Z"],"duration":"03:30"}]}]}],"serverTimeUTC":"2017-06-11T08:35:41.477Z"}
 // {"termsOfUse":"https://www.ryanair.com/ie/en/corporate/terms-of-use=AGREED","currency":"EUR","currPrecision":2,"trips":[{"origin":"FRA","originName":"Frankfurt International Airport","destination":"AGP","destinationName":"Malaga T2","dates":[{"dateOut":"2017-08-30T00:00:00.000","flights":[{"faresLeft":-1,"flightKey":"FR~4100~ ~~FRA~08/30/2017 07:00~AGP~08/30/2017 10:05~","infantsLeft":17,"regularFare":{"fareKey":"0~T~~TZ12LOW~BO12~~2~X","fareClass":"T","fares":[{"type":"ADT","amount":35.9900,"count":1,"hasDiscount":false,"publishedFare":35.9900,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"FRA","destination":"AGP","flightNumber":"FR 4100","time":["2017-08-30T07:00:00.000","2017-08-30T10:05:00.000"],"timeUTC":["2017-08-30T05:00:00.000Z","2017-08-30T08:05:00.000Z"],"duration":"03:05"}],"flightNumber":"FR 4100","time":["2017-08-30T07:00:00.000","2017-08-30T10:05:00.000"],"timeUTC":["2017-08-30T05:00:00.000Z","2017-08-30T08:05:00.000Z"],"duration":"03:05"}]},{"dateOut":"2017-08-31T00:00:00.000","flights":[{"faresLeft":-1,"flightKey":"FR~4100~ ~~FRA~08/31/2017 07:00~AGP~08/31/2017 10:05~","infantsLeft":18,"regularFare":{"fareKey":"0~A~~AZ12LOW~BO12~~2~X","fareClass":"A","fares":[{"type":"ADT","amount":50.9900,"count":1,"hasDiscount":false,"publishedFare":50.9900,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"FRA","destination":"AGP","flightNumber":"FR 4100","time":["2017-08-31T07:00:00.000","2017-08-31T10:05:00.000"],"timeUTC":["2017-08-31T05:00:00.000Z","2017-08-31T08:05:00.000Z"],"duration":"03:05"}],"flightNumber":"FR 4100","time":["2017-08-31T07:00:00.000","2017-08-31T10:05:00.000"],"timeUTC":["2017-08-31T05:00:00.000Z","2017-08-31T08:05:00.000Z"],"duration":"03:05"}]},{"dateOut":"2017-09-01T00:00:00.000","flights":[{"faresLeft":-1,"flightKey":"FR~4100~ ~~FRA~09/01/2017 07:00~AGP~09/01/2017 10:05~","infantsLeft":18,"regularFare":{"fareKey":"0~C~~CZ12LOW~BO12~~2~X","fareClass":"C","fares":[{"type":"ADT","amount":69.9900,"count":1,"hasDiscount":false,"publishedFare":69.9900,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"FRA","destination":"AGP","flightNumber":"FR 4100","time":["2017-09-01T07:00:00.000","2017-09-01T10:05:00.000"],"timeUTC":["2017-09-01T05:00:00.000Z","2017-09-01T08:05:00.000Z"],"duration":"03:05"}],"flightNumber":"FR 4100","time":["2017-09-01T07:00:00.000","2017-09-01T10:05:00.000"],"timeUTC":["2017-09-01T05:00:00.000Z","2017-09-01T08:05:00.000Z"],"duration":"03:05"}]},{"dateOut":"2017-09-02T00:00:00.000","flights":[{"faresLeft":3,"flightKey":"FR~4100~ ~~FRA~09/02/2017 07:00~AGP~09/02/2017 10:05~","infantsLeft":16,"regularFare":{"fareKey":"0~H~~HZ12LOW~BO12~~2~X","fareClass":"H","fares":[{"type":"ADT","amount":59.9900,"count":1,"hasDiscount":false,"publishedFare":59.9900,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"FRA","destination":"AGP","flightNumber":"FR 4100","time":["2017-09-02T07:00:00.000","2017-09-02T10:05:00.000"],"timeUTC":["2017-09-02T05:00:00.000Z","2017-09-02T08:05:00.000Z"],"duration":"03:05"}],"flightNumber":"FR 4100","time":["2017-09-02T07:00:00.000","2017-09-02T10:05:00.000"],"timeUTC":["2017-09-02T05:00:00.000Z","2017-09-02T08:05:00.000Z"],"duration":"03:05"}]},{"dateOut":"2017-09-03T00:00:00.000","flights":[{"faresLeft":2,"flightKey":"FR~4100~ ~~FRA~09/03/2017 07:25~AGP~09/03/2017 10:30~","infantsLeft":16,"regularFare":{"fareKey":"0~H~~HZ12LOW~BO12~~2~X","fareClass":"H","fares":[{"type":"ADT","amount":59.9900,"count":1,"hasDiscount":false,"publishedFare":59.9900,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"FRA","destination":"AGP","flightNumber":"FR 4100","time":["2017-09-03T07:25:00.000","2017-09-03T10:30:00.000"],"timeUTC":["2017-09-03T05:25:00.000Z","2017-09-03T08:30:00.000Z"],"duration":"03:05"}],"flightNumber":"FR 4100","time":["2017-09-03T07:25:00.000","2017-09-03T10:30:00.000"],"timeUTC":["2017-09-03T05:25:00.000Z","2017-09-03T08:30:00.000Z"],"duration":"03:05"}]}]},{"origin":"AGP","originName":"Frankfurt International Airport","destination":"FRA","destinationName":"Malaga T2","dates":[{"dateOut":"2017-09-01T00:00:00.000","flights":[{"faresLeft":3,"flightKey":"FR~4110~ ~~AGP~09/01/2017 10:50~FRA~09/01/2017 14:00~","infantsLeft":18,"regularFare":{"fareKey":"0~C~~CZ12LOW~BO12~~2~X","fareClass":"C","fares":[{"type":"ADT","amount":69.9900,"count":1,"hasDiscount":false,"publishedFare":69.9900,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"AGP","destination":"FRA","flightNumber":"FR 4110","time":["2017-09-01T10:50:00.000","2017-09-01T14:00:00.000"],"timeUTC":["2017-09-01T08:50:00.000Z","2017-09-01T12:00:00.000Z"],"duration":"03:10"}],"flightNumber":"FR 4110","time":["2017-09-01T10:50:00.000","2017-09-01T14:00:00.000"],"timeUTC":["2017-09-01T08:50:00.000Z","2017-09-01T12:00:00.000Z"],"duration":"03:10"}]},{"dateOut":"2017-09-02T00:00:00.000","flights":[{"faresLeft":5,"flightKey":"FR~4110~ ~~AGP~09/02/2017 11:05~FRA~09/02/2017 14:15~","infantsLeft":17,"regularFare":{"fareKey":"0~V~~VZ12LOW~BO12~~2~X","fareClass":"V","fares":[{"type":"ADT","amount":81.9900,"count":1,"hasDiscount":false,"publishedFare":81.9900,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"AGP","destination":"FRA","flightNumber":"FR 4110","time":["2017-09-02T11:05:00.000","2017-09-02T14:15:00.000"],"timeUTC":["2017-09-02T09:05:00.000Z","2017-09-02T12:15:00.000Z"],"duration":"03:10"}],"flightNumber":"FR 4110","time":["2017-09-02T11:05:00.000","2017-09-02T14:15:00.000"],"timeUTC":["2017-09-02T09:05:00.000Z","2017-09-02T12:15:00.000Z"],"duration":"03:10"}]},{"dateOut":"2017-09-03T00:00:00.000","flights":[{"faresLeft":2,"flightKey":"FR~4110~ ~~AGP~09/03/2017 11:10~FRA~09/03/2017 14:20~","infantsLeft":16,"regularFare":{"fareKey":"0~V~~VZ12LOW~BO12~~2~X","fareClass":"V","fares":[{"type":"ADT","amount":81.9900,"count":1,"hasDiscount":false,"publishedFare":81.9900,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"AGP","destination":"FRA","flightNumber":"FR 4110","time":["2017-09-03T11:10:00.000","2017-09-03T14:20:00.000"],"timeUTC":["2017-09-03T09:10:00.000Z","2017-09-03T12:20:00.000Z"],"duration":"03:10"}],"flightNumber":"FR 4110","time":["2017-09-03T11:10:00.000","2017-09-03T14:20:00.000"],"timeUTC":["2017-09-03T09:10:00.000Z","2017-09-03T12:20:00.000Z"],"duration":"03:10"}]},{"dateOut":"2017-09-04T00:00:00.000","flights":[{"faresLeft":1,"flightKey":"FR~4110~ ~~AGP~09/04/2017 10:50~FRA~09/04/2017 14:00~","infantsLeft":16,"regularFare":{"fareKey":"0~V~~VZ12LOW~BO12~~2~X","fareClass":"V","fares":[{"type":"ADT","amount":81.9900,"count":1,"hasDiscount":false,"publishedFare":81.9900,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"AGP","destination":"FRA","flightNumber":"FR 4110","time":["2017-09-04T10:50:00.000","2017-09-04T14:00:00.000"],"timeUTC":["2017-09-04T08:50:00.000Z","2017-09-04T12:00:00.000Z"],"duration":"03:10"}],"flightNumber":"FR 4110","time":["2017-09-04T10:50:00.000","2017-09-04T14:00:00.000"],"timeUTC":["2017-09-04T08:50:00.000Z","2017-09-04T12:00:00.000Z"],"duration":"03:10"}]},{"dateOut":"2017-09-05T00:00:00.000","flights":[{"faresLeft":1,"flightKey":"FR~4110~ ~~AGP~09/05/2017 11:05~FRA~09/05/2017 14:15~","infantsLeft":17,"regularFare":{"fareKey":"0~H~~HZ12LOW~BO12~~2~X","fareClass":"H","fares":[{"type":"ADT","amount":59.9900,"count":1,"hasDiscount":false,"publishedFare":59.9900,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"AGP","destination":"FRA","flightNumber":"FR 4110","time":["2017-09-05T11:05:00.000","2017-09-05T14:15:00.000"],"timeUTC":["2017-09-05T09:05:00.000Z","2017-09-05T12:15:00.000Z"],"duration":"03:10"}],"flightNumber":"FR 4110","time":["2017-09-05T11:05:00.000","2017-09-05T14:15:00.000"],"timeUTC":["2017-09-05T09:05:00.000Z","2017-09-05T12:15:00.000Z"],"duration":"03:10"}]},{"dateOut":"2017-09-06T00:00:00.000","flights":[{"faresLeft":-1,"flightKey":"FR~4110~ ~~AGP~09/06/2017 10:50~FRA~09/06/2017 14:00~","infantsLeft":17,"regularFare":{"fareKey":"0~H~~HZ12LOW~BO12~~2~X","fareClass":"H","fares":[{"type":"ADT","amount":59.9900,"count":1,"hasDiscount":false,"publishedFare":59.9900,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"AGP","destination":"FRA","flightNumber":"FR 4110","time":["2017-09-06T10:50:00.000","2017-09-06T14:00:00.000"],"timeUTC":["2017-09-06T08:50:00.000Z","2017-09-06T12:00:00.000Z"],"duration":"03:10"}],"flightNumber":"FR 4110","time":["2017-09-06T10:50:00.000","2017-09-06T14:00:00.000"],"timeUTC":["2017-09-06T08:50:00.000Z","2017-09-06T12:00:00.000Z"],"duration":"03:10"}]},{"dateOut":"2017-09-07T00:00:00.000","flights":[{"faresLeft":1,"flightKey":"FR~4110~ ~~AGP~09/07/2017 11:10~FRA~09/07/2017 14:20~","infantsLeft":17,"regularFare":{"fareKey":"0~A~~AZ12LOW~BO12~~2~X","fareClass":"A","fares":[{"type":"ADT","amount":50.9900,"count":1,"hasDiscount":false,"publishedFare":50.9900,"discountInPercent":0,"hasPromoDiscount":false}]},"segments":[{"segmentNr":0,"origin":"AGP","destination":"FRA","flightNumber":"FR 4110","time":["2017-09-07T11:10:00.000","2017-09-07T14:20:00.000"],"timeUTC":["2017-09-07T09:10:00.000Z","2017-09-07T12:20:00.000Z"],"duration":"03:10"}],"flightNumber":"FR 4110","time":["2017-09-07T11:10:00.000","2017-09-07T14:20:00.000"],"timeUTC":["2017-09-07T09:10:00.000Z","2017-09-07T12:20:00.000Z"],"duration":"03:10"}]}]}],"serverTimeUTC":"2017-07-08T15:16:40.886Z"}
 
 
-        URI lURI = null;
+        //URI lURI = null;
         JSONTokener lTokener = null;
-		lURI = new URI( lUrl );
-		lTokener = new JSONTokener( lURI.toURL().openStream());
+		//lURI = new URI( lUrl );
+		//lTokener = new JSONTokener( lURI.toURL().openStream());
         //lTokener = new JSONTokener(new ByteArrayInputStream( lTestJsonString.getBytes() ));
+
+        String strResponse;
+        strResponse = mRequest.sendGet( lUrl, 0 );
+
+        if( mRequest.getResponseCode() != 404 && strResponse.length() > 0 )
+            lTokener = new JSONTokener(new ByteArrayInputStream( strResponse.getBytes() ));
+
+
         JSONObject root = new JSONObject( lTokener );
         String lCurrency = ConvertFrom3Digits( root.getString( "currency" ));
         JSONArray lTrips = root.getJSONArray( "trips" );
@@ -292,6 +311,8 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         try
         {
             System.out.println("Thread::run");
+            // we need the cookie to get the flight information in the FillTheForm
+            mRequest.sendGet( "https://www.ryanair.com", 0 );
 
             mThreadStopped = false;
             mTimeoutStart = System.currentTimeMillis();

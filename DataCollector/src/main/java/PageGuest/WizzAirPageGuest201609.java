@@ -34,6 +34,8 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 
 	private long mTimeoutStart;
 	private static String mApiSearchUrl = "https://be.wizzair.com/3.3.3/Api/search/search";
+	private HttpRequest mRequest = new HttpRequest();
+
 	// https://be.wizzair.com/5.0.1/Api/search/search
 
 	public static void InitApirURL() throws Exception
@@ -51,7 +53,16 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 		mSearchQueue = new LocalStack<>();
 		mThread = new Thread(this);
 		mThread.setName("WizzAirThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+		InitHttpRequest();
 		mThread.start();
+	}
+
+	private void InitHttpRequest() {
+		mRequest.addRequestProperties( "Origin",          "https://wizzair.com" );
+		mRequest.addRequestProperties( "Authority",       "be.wizzair.com" );
+		mRequest.addRequestProperties( "Referer",         "https://wizzair.com/" );
+		mRequest.addRequestProperties( "Accept",          "application/json, text/plain, */*" );
+		mRequest.addRequestProperties( "Content-Type",    "application/json" );
 	}
 
 	public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate)
@@ -366,11 +377,10 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 					+ aTravelDataInput.mChildNumber + ",\"infantCount\":" + aTravelDataInput.mInfantNumber + ",\"wdc\":true}";
 		}
 
-		HttpRequest request = new HttpRequest();
 		String strResponse;
-		strResponse = request.sendPost( mApiSearchUrl, lParameters );
+		strResponse = mRequest.sendPost( mApiSearchUrl, lParameters );
 
-		if( request.getResponseCode() != 404 && strResponse.length() > 0 )
+		if( mRequest.getResponseCode() != 404 && strResponse.length() > 0 )
 		{
 			mTravelDataResult = new TravelData_RESULT();
 			mTravelDataResult.mAirline = aTravelDataInput.mAirline;
