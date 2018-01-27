@@ -17,8 +17,8 @@ public:
 	typedef std::map<time_t, Data> TimetableData;
 
 	void add(std::string departure, double price, Duration timeConsuming);
-	const double getPrice(time_t departure) const;
-	const time_t getTimeConsuming(time_t departure) const;
+	double getPrice(time_t departure) const;
+	time_t getTimeConsuming(time_t departure) const;
 	//const double getFirstPrice() const;
 	const TimetableData& getTimetable() const { return mTimetable;}
 

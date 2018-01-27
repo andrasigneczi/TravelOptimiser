@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <algorithm>
 #include <sstream> // std::ostringstream
+#include "TimeHelper.h"
 
 void Sorter::printMathes( int count ) {
 	for (size_t i = 0; i < mBacktrack.getMatches().size(); ++i) {
@@ -34,7 +35,7 @@ void Sorter::printMathes( int count ) {
 		for (const Item& item : path.mItems) {
 			oneResult << item.mNameAndType;
 			if (item.mType != Connection::parking)
-				oneResult << "departure: " << Backtrack::timeToString(item.mDeparture, item.mTimeZone);
+				oneResult << "departure: " << TimeHelper::timeToString(item.mDeparture, item.mTimeZone);
 			oneResult << std::endl;
 
 			if (item.mType == Connection::stay) {
@@ -60,7 +61,7 @@ void Sorter::printMathes( int count ) {
 		if (maxTravellingTime > 0.001 && path.mSumTravellingTime.getHour() > maxTravellingTime) {
 			valid = false;
 		}
-		oneResult << "cost (stay included): " << path.mSumPrice << "�" << std::endl;
+		oneResult << "cost (stay included): " << path.mSumPrice << "€" << std::endl;
 		oneResult << "travelling time (except stay): " << path.mSumTravellingTime.getHour() << " hours" << std::endl;
 		oneResult << "waiting time: " << path.mSumWaitingTime.getHour() << " hours" << std::endl;
 		oneResult << "full time consuming: " << timeSpent.getHour() << " hours \n";

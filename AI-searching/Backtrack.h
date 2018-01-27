@@ -18,7 +18,7 @@ public:
 
 	typedef std::vector<Backtrack::BtNode> Path;
 
-	// One scenario is a time vector. The index of the items are used to index the item of the PathInfo::mPath.
+	// One scenario is a time vector. The index of the items are used to index the item of the PathInfo::mPath on a special way.
 	typedef std::vector<time_t> Scenario;
 
 	struct PathInfo {
@@ -37,8 +37,6 @@ public:
 	static int pathNodeIndex(const Path& path, int pathIndex) { return path[pathIndex].mIndex; }
 	static const CtNode::Link& pathNodeLink(const Path& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex]; }
 	static const Timetable::TimetableData& pathNodeTimetable(const Path& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex].mTimetable.getTimetable(); }
-	static std::string timeToString(time_t t, std::string timeZone);
-	static time_t stringToTime(std::string strTime);
 
 private:
 	void init();
@@ -58,7 +56,7 @@ private:
 	const std::string& pathNodeName(int pathIndex) { return mPath[ pathIndex ].mCtNode->mName;  }
 	int pathNodeIndex(int pathIndex) { return mPath[pathIndex].mIndex; }
 	const CtNode::Link& pathNodeLink(int pathIndex) { return mPath[pathIndex].mCtNode->mLinks[mPath[pathIndex].mIndex];  }
-	static const size_t genHash(const Path& path);
+	static size_t genHash(const Path& path);
 
 	Path mPath;
 	std::vector<PathInfo> mMatches;

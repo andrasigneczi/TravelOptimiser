@@ -14,7 +14,7 @@ extern "C" {
 		return 0;
 	}
 
-	void run() {
+	static void run() {
 		sqlite3 *db;
 		char *zErrMsg = 0;
 		int rc;

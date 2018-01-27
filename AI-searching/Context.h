@@ -33,14 +33,14 @@ public:
 	const std::vector<std::string>& getGoal() const { return mGoal; }
 	const std::string& getGoalItem(int index) const { return mGoal.at(index); }
 	const std::string& getLastGoalItem() const { return mGoal.at(mGoal.size() - 1); }
-	const size_t getGoalSize() const { return mGoal.size(); }
+	size_t getGoalSize() const { return mGoal.size(); }
 	const CtNode* getNode(const std::string name) const;
 
 	void setMaxSpentTime(Duration maxSpentTime) { mMaxSpentTime = maxSpentTime.getSec(); } // in hours
 	const Duration getMaxSpentTime() const { return Duration( mMaxSpentTime ); }
 
 	void setDisplayMatchNumberPerScenarion(int n) { mDisplayMatchNumberPerScenarion = n; }
-	const int getDisplayMatchNumberPerScenarion() const { return mDisplayMatchNumberPerScenarion; }
+	int getDisplayMatchNumberPerScenarion() const { return mDisplayMatchNumberPerScenarion; }
 
 	bool isConnected(std::string name1, std::string name2);
 

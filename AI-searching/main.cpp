@@ -4,8 +4,6 @@
 #include "testTimeZone.h"
 #include "testBarcelona.h"
 
-using namespace std;
-
 int main()
 {
    //testAstar();
