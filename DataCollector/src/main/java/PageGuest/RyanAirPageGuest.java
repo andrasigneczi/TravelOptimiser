@@ -15,12 +15,13 @@ import org.json.JSONTokener;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static Util.CurrencyHelper.ConvertFrom3Digits;
 import static Util.DatetimeHelper.FormatDate;
@@ -36,6 +37,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
 
     private long mTimeoutStart;
     private HttpRequest mRequest = new HttpRequest();
+    private static String mServerApiUrl = "https://desktopapps.ryanair.com/v4";
 
     public RyanAirPageGuest()
     {
@@ -54,6 +56,17 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         mRequest.addRequestProperties( "Host", "desktopapps.ryanair.com" );
         mRequest.addRequestProperties( "Connection", "keep-alive" );
         mRequest.addRequestProperties( "Upgrade-Insecure-Requests", "1" );
+    }
+
+    private void InitServerApiUrl( String response ) {
+        Pattern reg = Pattern.compile( "window\\.SERVER_CFG_REZAPI = \"(.*?)\";" );
+        Matcher m = reg.matcher( response );
+        if( m.find() )
+        {
+            mServerApiUrl = m.group(1).toString().trim();
+            mServerApiUrl = mServerApiUrl.replaceAll( "\\\\", "" );
+            mLogger.info( "RyanAir API Url: " + mServerApiUrl );
+        }
     }
 
     public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate)
@@ -249,7 +262,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
     private void FillTheForm( TravelData_INPUT aTravelDataInput ) throws Exception
     {
         // https://desktopapps.ryanair.com/v4/en-ie/availability?ADT=1&CHD=0&DateOut=2018-02-07&Destination=BUD&FlexDaysOut=4&INF=0&IncludeConnectingFlights=true&Origin=EDI&RoundTrip=false&TEEN=0&ToUs=AGREED&exists=false&promoCode=
-        String lUrl = "https://desktopapps.ryanair.com/v4/en-gb/availability?ADT="
+        String lUrl = mServerApiUrl + "/en-gb/availability?ADT="
                 + aTravelDataInput.mAdultNumber
                 + "&CHD=" + aTravelDataInput.mChildNumber
                 + "&DateOut=" + FormatDate( aTravelDataInput.mDepartureDay );
@@ -312,7 +325,8 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         {
             System.out.println("Thread::run");
             // we need the cookie to get the flight information in the FillTheForm
-            mRequest.sendGet( "https://www.ryanair.com", 0 );
+            String response = mRequest.sendGet( "https://www.ryanair.com", 0 );
+            InitServerApiUrl( response );
 
             mThreadStopped = false;
             mTimeoutStart = System.currentTimeMillis();

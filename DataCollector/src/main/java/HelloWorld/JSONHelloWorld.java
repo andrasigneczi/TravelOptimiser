@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class JSONHelloWorld {
 
@@ -73,6 +75,17 @@ class JSONHelloWorld {
 			HttpRequest request = new HttpRequest();
 			String strResponse;
 			strResponse = request.sendGet( "https://www.ryanair.com", 0 );
+
+			Pattern reg = Pattern.compile( "window\\.SERVER_CFG_REZAPI = \"(.*?)\";" );
+			Matcher m = reg.matcher( strResponse );
+			String mServerApiUrl = "";
+			if( m.find() )
+			{
+				mServerApiUrl = m.group(1).toString().trim();
+				mServerApiUrl = mServerApiUrl.replaceAll( "\\\\", "" );
+			}
+			System.out.println( mServerApiUrl);
+
 			strResponse = request.sendGet( lUrl, 0 );
 
 			//tokener = new JSONTokener(new ByteArrayInputStream( mTestJsonString.getBytes() ));

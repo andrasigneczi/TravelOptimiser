@@ -56,13 +56,29 @@
         <bookingdotcom>
             <Checkin>2017.09.08.</Checkin>
             <Checkout>2017.09.11.</Checkout>
+            <PriceLimit>220</PriceLimit>
             <City>Budapest, Pest, Hungary</City>
             <RoomNumber>1</RoomNumber>
             <AdultNumber>1</AdultNumber>
             <ChildrenNumber>2</ChildrenNumber>
             <ChildrenAges>8,11</ChildrenAges>
-            <AccomodationLimit>120</AccomodationLimit>
-            <Filters>price_0-50</Filters>
+            <Filters>price_0-50,price_50-100,checkin_no_till_limit,apartments,free_wifi,parking_place,private_bathroom</Filters>
+            <SearchURL></SearchURL>
+            <AccomodationLimit>30</AccomodationLimit>
+        </bookingdotcom>
+
+        <bookingdotcom>
+            <Checkin>2017.09.22.</Checkin>
+            <Checkout>2017.09.25.</Checkout>
+            <PriceLimit>200</PriceLimit>
+            <City>Budapest, Pest, Hungary</City>
+            <RoomNumber>1</RoomNumber>
+            <AdultNumber>1</AdultNumber>
+            <ChildrenNumber>2</ChildrenNumber>
+            <ChildrenAges>8,11</ChildrenAges>
+            <Filters>price_0-50,price_50-100,checkin_no_till_limit,apartments,free_wifi,parking_place,private_bathroom</Filters>
+            <SearchURL></SearchURL>
+            <AccomodationLimit>30</AccomodationLimit>
         </bookingdotcom>
 
         <airbnb>
