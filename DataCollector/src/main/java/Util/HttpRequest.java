@@ -146,6 +146,9 @@ public class HttpRequest
 	    conHttp.setRequestProperty( "Content-Length",  String.valueOf(aPostData.length()));
 	    conHttp.setRequestProperty( "Pragma",          PRAGMA );
 	    conHttp.setRequestProperty( "Cache-Control",   CACHE_CONTROL );
+	    if( mCookies != null ) {
+		    conHttp.setRequestProperty("Cookie", mCookies );
+	    }
 	    applyRequestProperties(conHttp);
 	    conHttp.setUseCaches( false );
 
@@ -167,6 +170,7 @@ public class HttpRequest
 		    mLogger.warn( "Post request returned with reponsecode 404!" );
 		    return "";
 	    }
+	    mCookies = conHttp.getHeaderField("Set-Cookie");
 
 	    print_all_headers( conHttp );
 	    print_https_cert( conHttps );
