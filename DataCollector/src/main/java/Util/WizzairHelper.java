@@ -23,7 +23,7 @@ public class WizzairHelper
 
 	private static String mApiVersionNumber = new String();
 
-	public static String getApiVersion() throws InterruptedException
+	public static String getApiVersion_old() throws InterruptedException
 	{
 		if( mApiVersionNumber.length() > 0 )
 			return mApiVersionNumber;
@@ -68,6 +68,23 @@ public class WizzairHelper
 			mLogger.info( "WizzAir API version: " + mApiVersionNumber );
 		}
 		lBrowser.dispose();
+		return mApiVersionNumber;
+	}
+
+	public static String getApiVersion() throws Exception
+	{
+		if( mApiVersionNumber.length() > 0 )
+			return mApiVersionNumber;
+
+		HttpRequest request = new HttpRequest();
+		String response = request.sendGet( "http://www.wizzair.com", 0 );
+		Pattern reg = Pattern.compile( "https\\://be\\.wizzair\\.com/(\\d{1,2}\\.\\d{1,2}\\.\\d{1,2})/Api" );
+		Matcher m = reg.matcher( response );
+		if( m.find() )
+		{
+			mApiVersionNumber = m.group(1).toString().trim();
+			mLogger.info( "WizzAir API version: " + mApiVersionNumber );
+		}
 		return mApiVersionNumber;
 	}
 }

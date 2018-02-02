@@ -72,6 +72,7 @@ public class Configuration
 		mValidFlightNodes.add( "GoingTo" );
 		mValidFlightNodes.add( "Filter" );
 		mValidFlightNodes.add( "Interval" );
+		mValidFlightNodes.add( "Month" );
 
 		mAccomodationBookings.add( "bookingdotcom" );
 		mAccomodationBookings.add( "airbnb" );

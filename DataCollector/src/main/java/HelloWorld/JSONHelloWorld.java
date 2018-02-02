@@ -1,12 +1,17 @@
 package HelloWorld;
 
+import Util.HttpRequest;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class JSONHelloWorld {
 
@@ -56,16 +61,35 @@ class JSONHelloWorld {
 		}
 	}
 
-	public static void main(String[] args){
+	public static void main(String[] args) throws Exception
+	{
 		//URI uri = new URI("http://someserver/data.json");
-		String lUrl = "https://desktopapps.ryanair.com/en-gb/availability?ADT=1&CHD=0&DateIn=2016-07-31&DateOut=2017-01-04&Destination=FAO&FlexDaysIn=6&FlexDaysOut=6&INF=0&Origin=DUB&RoundTrip=true&TEEN=0";
+		String lUrl = "https://desktopapps.ryanair.com/v4/en-gb/availability?ADT=1&CHD=0&DateOut=2018-02-09&Destination=BUD&FlexDaysIn=6&FlexDaysOut=6&INF=0&IncludeConnectingFlights=false&Origin=EDI&RoundTrip=false&TEEN=0&ToUs=AGREED&exists=false&promoCode=";
 		URI uri = null;
 		JSONTokener tokener = null;
 //		try
 		{
-//			uri = new URI(lUrl);
-//			if( false ) tokener = new JSONTokener(uri.toURL().openStream());
-			tokener = new JSONTokener(new ByteArrayInputStream( mTestJsonString.getBytes() ));
+			//uri = new URI(lUrl);
+			//tokener = new JSONTokener(uri.toURL().openStream());
+
+			HttpRequest request = new HttpRequest();
+			String strResponse;
+			strResponse = request.sendGet( "https://www.ryanair.com", 0 );
+
+			Pattern reg = Pattern.compile( "window\\.SERVER_CFG_REZAPI = \"(.*?)\";" );
+			Matcher m = reg.matcher( strResponse );
+			String mServerApiUrl = "";
+			if( m.find() )
+			{
+				mServerApiUrl = m.group(1).toString().trim();
+				mServerApiUrl = mServerApiUrl.replaceAll( "\\\\", "" );
+			}
+			System.out.println( mServerApiUrl);
+
+			strResponse = request.sendGet( lUrl, 0 );
+
+			//tokener = new JSONTokener(new ByteArrayInputStream( mTestJsonString.getBytes() ));
+			tokener = new JSONTokener(new ByteArrayInputStream( strResponse.getBytes() ));
 			JSONObject root = new JSONObject( tokener );
 			String lCurrency = root.getString( "currency" );
 			JSONArray lTrips = root.getJSONArray( "trips" );

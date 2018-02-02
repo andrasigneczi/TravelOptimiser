@@ -4,6 +4,7 @@ import Configuration.Configuration;
 import QueueHandlers.JMSPublisher;
 import QueueHandlers.LocalStack;
 import ResultFilter.ResultFilter;
+import Util.DatetimeHelper;
 import Util.HttpRequest;
 import Util.StringHelper;
 import Util.WizzairHelper;
@@ -46,6 +47,7 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 
 	private long mTimeoutStart;
 	private static String mApiTimetableUrl = "https://be.wizzair.com/5.1.4/Api/search/timetable";
+	private HttpRequest mRequest = new HttpRequest();
 
 	public WizzAirPageGuestTimetable( boolean dummy )
 	{
@@ -66,12 +68,21 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		mApiTimetableUrl = "https://be.wizzair.com/" + lApiVersion + "/Api/search/timetable";
 	}
 
+	private void InitHttpRequest() {
+		mRequest.addRequestProperties( "Origin",          "https://wizzair.com" );
+		mRequest.addRequestProperties( "Authority",       "be.wizzair.com" );
+		mRequest.addRequestProperties( "Referer",         "https://wizzair.com/" );
+		mRequest.addRequestProperties( "Accept",          "application/json, text/plain, */*" );
+		mRequest.addRequestProperties( "Content-Type",    "application/json" );
+	}
+
 	public WizzAirPageGuestTimetable()
 	{
 		super( "wizzair" );
 		mSearchQueue = new LocalStack<>();
 		mThread = new Thread(this);
 		mThread.setName("WizzAirTimetableThread " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+		InitHttpRequest();
 		mThread.start();
 		System.out.println("WizzAirPageGuestTimetable()");
 	}
@@ -188,19 +199,27 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		String lSleep = Configuration.getInstance().getValue( "/configuration/global/DelayBeforeClick", "3" );
 		ArrayList<TravelData_RESULT> lResultList = new ArrayList<TravelData_RESULT>();
 
-		final int lInterval = StringHelper.parseInt( aTravelDataInput.mInterval, 6 );
-
-		// 6 month ahead
-		for( int i = 0; i < lInterval; i++ )
+		if( aTravelDataInput.mInterval.length() > 0 )
 		{
-			FillTheForm( aTravelDataInput, lYear, lMonth, lDay, lResultList );
-			lDate = lDate.plusMonths( 1 );
-			lYear = lDate.getYear();
-			lMonth = lDate.getMonthValue();
-			lDay = lDate.getDayOfMonth();
-			Sleep( 1000 * Integer.parseInt( lSleep ));
-		}
+			final int lInterval = StringHelper.parseInt( aTravelDataInput.mInterval, 6 );
 
+			// 6 month ahead
+			for( int i = 0; i < lInterval; i++ )
+			{
+				FillTheForm( aTravelDataInput, lYear, lMonth, lDay, lResultList );
+				lDate = lDate.plusMonths( 1 );
+				lYear = lDate.getYear();
+				lMonth = lDate.getMonthValue();
+				lDay = lDate.getDayOfMonth();
+				Sleep( 1000 * Integer.parseInt( lSleep ) );
+			}
+		}
+		else
+		{
+			ArrayList<Integer> dateItems = DatetimeHelper.getDateItems( aTravelDataInput.mMonth );
+			FillTheForm( aTravelDataInput, dateItems.get( 0 ), dateItems.get( 1 ), 1, lResultList );
+			Sleep( 1000 * Integer.parseInt( lSleep ) );
+		}
 		// Return way
 //		lYear = lDate.getYear();
 //		lMonth = lDate.getMonthValue();
@@ -365,12 +384,11 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 				+ aTravelDataInput.mAirportCode_GoingTo + "\",\"arrivalStation\":\""
 				+ aTravelDataInput.mAirportCode_LeavingFrom + "\",\"from\":\""
 				+ String.format( "%04d-%02d-%02d", aYear, aMonth, aDay ) + "\",\"to\":\""
-				+ String.format( "%04d-%02d-%02d", lNextYear, lNextMonth, lNextDay ) + "\"}],\"priceType\":\"regular\"}";
-		HttpRequest request = new HttpRequest();
+				+ String.format( "%04d-%02d-%02d", lNextYear, lNextMonth, lNextDay ) + "\"}],\"priceType\":\"regular\",\"adultCount\":1,\"childCount\":0,\"infantCount\":0}";
 		String strResponse;
-		strResponse = request.sendPost( mApiTimetableUrl, lParameters );
+		strResponse = mRequest.sendPost( mApiTimetableUrl, lParameters );
 
-		if( request.getResponseCode() != 404 && strResponse.length() > 0 )
+		if( mRequest.getResponseCode() != 404 && strResponse.length() > 0 )
 			ParseTheResponse( strResponse, aResultList, aTravelDataInput );
 
 		mLogger.trace( "end, thread name: " + getThreadName());
