@@ -13,6 +13,7 @@ namespace TimeHelper {
     extern time_t stringToTime(std::string strTime);
     extern bool isWeekend(std::string strDate);
     extern int getWeekday(std::string strDate);
+    extern bool isLeapYear( int year );
 }
 
 #ifdef __LINUX__
@@ -36,12 +37,17 @@ namespace TimeHelper {
     	
     	std::string put_time( struct tm* tm, const char* format );
     	
-    	template< class CharT >
-    	__unspecified get_time( std::tm* tmb, const CharT* fmt );
+		template< class CharT >
+		__unspecified get_time( std::tm* tmb, const CharT* fmt ) {
+	          __unspecified ret;
+	          ret.fmt = fmt;
+	          ret.tmb = tmb;
+	          return ret;
+		}
     
     	std::istringstream& operator>>( std::istringstream& in, __unspecified un );
     	
-    }
+    } // std
     
     errno_t gmtime_s(struct tm *result,const time_t *timep);
 	

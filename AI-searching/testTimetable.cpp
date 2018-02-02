@@ -15,10 +15,10 @@ void testTimetable() {
 	// A = hétfő-péntek munkanapokon
 	// X = hétfő-szombat munkanapokon
 	// S = szombat
-	departure = { "5:09",  "5:24",  "5:39",  "5:54",  "6:09",  "6:24",  "6:41",  "6:51",  "6:56", "7:01", "7:06",
-	              "7:11",  "7:16",  "7:26",  "7:41",  "7:56",  "7:56",  "8:11",  "8:26",  "8:56", "9:54", "10:54",
-	              "11:54", "12:54", "13:54", "14:54", "15:54", "16:56", "17:56", "18:54", "19:54" };
-	              
+	departure = { "A 5:09",  "A 5:24",  "A 5:39",  "A 5:54",  "A 6:09",  "A 6:24",  "A 6:41",  "A 6:51",  "A 6:56", "A 7:01", "A 7:06",
+	              "A 7:11",  "A 7:16",  "A 7:26",  "A 7:41",  "A 7:56",  "S 7:56",  "A 8:11",  "A 8:26",  "A 8:56", "A 9:54", "X 10:54",
+	              "A 11:54", "A 12:54", "X 13:54", "A 14:54", "A 15:54", "X 16:56", "A 17:56", "A 18:54", "A 19:54" };
+/*	              
 	for (int day = 1; day <= 31; ++day) {
 		for (const std::string& hour : departure) {
 			if ((day - 3) % 7 == 0) { // saturday
@@ -33,6 +33,15 @@ void testTimetable() {
 			}
 		}
 	}
+*/
+	timetable_Igel_JFK_BUS.add( Rule( "2017.05.01", "2018.05.01" ));
+	timetable_Igel_JFK_BUS.add( Rule( 'A', Rule::Monday, Rule::Friday, Rule::Workday ));
+	timetable_Igel_JFK_BUS.add( Rule( 'X', Rule::Monday, Rule::Saturday, Rule::Workday ));
+	timetable_Igel_JFK_BUS.add( Rule( 'S', Rule::Saturday ));
+	timetable_Igel_JFK_BUS.add( departure );
+	timetable_Igel_JFK_BUS.setFixPrice( 2. );
+	timetable_Igel_JFK_BUS.setFixTravellingTime( 30_min );
+
 	context->addConnection(Connection::createBus(nodeIgel, nodeLuxembourg, timetable_Igel_JFK_BUS));
     
     
@@ -42,6 +51,7 @@ void testTimetable() {
 	Sunday: 5:59 - 22:59, every 30 minutes
 	*/
 	Timetable timetable_JFK_LUX_BUS;
+/*	
 	for (int day = 1; day <= 31; ++day) {
 		for (int hour = 0; hour < 24; ++hour) {
 			if ((day - 3) % 7 == 0) { // saturday
@@ -64,13 +74,15 @@ void testTimetable() {
 			}
 		}
 	}
-	/*
-	timetable_JFK_LUX_BUS.add( Rule::from( "2017.05.01" ), Rule::to( "2018.05.01" ));
-	timetable_JFK_LUX_BUS.add( Rule::Workday, Rule( Monday-Friday, "5:30", "23:00", 10_min));
-	timetable_JFK_LUX_BUS.add( Rule( Saturday,        "5:25", "23:05", 20_min));
-	timetable_JFK_LUX_BUS.add( Rule( Sunday,          "5:59", "22:59", 30_min));
-	timetable_JFK_LUX_BUS.add( Rule( OfficialHoliday, "5:59", "22:59", 30_min));
-	*/
+*/
+	timetable_JFK_LUX_BUS.add( Rule( "2017.05.01", "2018.05.01" ));
+	timetable_JFK_LUX_BUS.add( Rule( Rule::Monday, Rule::Friday, Rule::Workday, "5:30", "23:00", 10_min));
+	timetable_JFK_LUX_BUS.add( Rule( Rule::Saturday,        "5:25", "23:05", 20_min));
+	timetable_JFK_LUX_BUS.add( Rule( Rule::Sunday,          "5:59", "22:59", 30_min));
+	//timetable_JFK_LUX_BUS.add( Rule( Rule::PublicHoliday,   "5:59", "22:59", 30_min));
+	timetable_JFK_LUX_BUS.setFixPrice( 2. );
+	timetable_JFK_LUX_BUS.setFixTravellingTime( 15_min );
+
 	context->addConnection(Connection::createBus(nodeLuxembourg, nodeLUX, timetable_JFK_LUX_BUS));
     
 }

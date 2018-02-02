@@ -20,7 +20,7 @@ LDLIBS=-lpthread -ldl
 OBJDIR=Release
 
 SRCS1=main.cpp Astar.cpp Connection.cpp test.cpp Context.cpp Backtrack.cpp Duration.cpp ScenarioMaker.cpp ScenarioMaker2.cpp \
-     Sorters.cpp testBarcelona.cpp testTimeZone.cpp Timetable.cpp SQLiteTest.cpp TimeHelper.cpp testTimetable.cpp
+     Sorters.cpp testBarcelona.cpp testTimeZone.cpp Timetable.cpp SQLiteTest.cpp TimeHelper.cpp testTimetable.cpp Date.cpp
 
 SRCS2=sqlite/sqlite3.c
 

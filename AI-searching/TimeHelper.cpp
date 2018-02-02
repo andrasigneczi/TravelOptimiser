@@ -17,14 +17,6 @@
 			return std::string();
 		}
 		
-		template< class CharT >
-		__unspecified get_time( std::tm* tmb, const CharT* fmt ) {
-	          __unspecified ret;
-	          ret.fmt = fmt;
-	          ret.tmb = tmb;
-	          return ret;
-		}
-		
 		std::istringstream& operator>>( std::istringstream& in, __unspecified un ) {
 			char buff[256];
 			in.getline(buff, 256);
@@ -109,4 +101,7 @@ namespace TimeHelper {
 		return false;
 	}
 
+	bool isLeapYear( int year ) {
+	    return (year % 100 == 0) ? (year % 400 == 0) : (year % 4 == 0);
+	}
 } // namespace TimeHelper
