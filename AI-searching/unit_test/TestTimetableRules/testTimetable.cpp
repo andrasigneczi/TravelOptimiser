@@ -3,7 +3,6 @@
 #include "Context.h"
 
 void testTimetable() {
-	char dateBuff[100];
 	std::vector<std::string> departure;
     
 	Context* context = new Context;

@@ -1,7 +1,7 @@
 CXX=g++
 CC=gcc
-#CPPFLAGS= -g -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread
-CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -Wextra -pedantic -D__LINUX__ -pthread -Dsprintf_s=sprintf
+CPPFLAGS= -g -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -Dsprintf_s=sprintf
+#CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -Wextra -pedantic -D__LINUX__ -pthread -Dsprintf_s=sprintf
 #CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread \
 # -Wall -Wextra -Wcast-align -Wcast-qual -Wdiv-by-zero -Wendif-labels -Wformat-extra-args -Wformat-nonliteral -Wformat-security \
 # -Wdisabled-optimization  -Wformat-y2k -Wimport -Winit-self -Winvalid-pch -Wlogical-op \
@@ -13,14 +13,14 @@ CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -Wextra -pedantic -D__LINUX__ -pthrea
  # OK
  # -Waggregate-return -Winline -Wmissing-declarations 
  
-#LDFLAGS=-g
-CFLAGS= -O2 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra -Dsprintf_s=sprintf
+LDFLAGS=-g -shared -fPIC
+CFLAGS= -O2 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra -fPIC -Dsprintf_s=sprintf
 
 LDLIBS=-lpthread -ldl
-OBJDIR=Release
+OBJDIR=Debug
 
 SRCS1=main.cpp Astar.cpp Connection.cpp test.cpp Context.cpp Backtrack.cpp Duration.cpp ScenarioMaker.cpp ScenarioMaker2.cpp \
-     Sorters.cpp testBarcelona.cpp testTimeZone.cpp Timetable.cpp SQLiteTest.cpp TimeHelper.cpp testTimetable.cpp Date.cpp
+     Sorters.cpp testBarcelona.cpp testTimeZone.cpp Timetable.cpp SQLiteTest.cpp TimeHelper.cpp Date.cpp
 
 SRCS2=sqlite/sqlite3.c
 
@@ -31,11 +31,12 @@ OBJS11=$(addprefix $(OBJDIR)/, $(OBJS1))
 OBJS12=$(addprefix $(OBJDIR)/, $(OBJS2))
 
 OBJS=$(OBJS11) $(OBJS12)
+TARGET=libBacktrack.so
 
-all: DelBin Backtrack
+all: DelBin $(TARGET)
 
-Backtrack: $(OBJS)
-	$(CXX) $(LDFLAGS) -o Backtrack $(OBJS) $(LDLIBS)
+$(TARGET): $(OBJS)
+	$(CXX) $(LDFLAGS) -o $(TARGET) $(OBJS) $(LDLIBS)
 
 $(OBJDIR)/%.o: %.cpp
 	$(CXX) $(CPPFLAGS) -c -o $@ $<
@@ -45,7 +46,7 @@ $(OBJDIR)/%.o: %.c
     
 clean:
 	$(RM) $(OBJS)
-	$(RM) Backtrack
+	$(RM) $(TARGET)
 
 DelBin:
-	$(RM) Backtrack
+	$(RM) $(TARGET)

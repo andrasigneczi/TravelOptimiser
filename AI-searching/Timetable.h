@@ -55,10 +55,10 @@ public:
 	bool isApplicable( Date date ) const;
 	
 	// generates datetime string vector based on the parameter date and the rule.
-	std::vector<std::string> extract( Date date ) const;
+	std::vector<std::string> extract( Date date, const std::vector<std::string>& departures ) const;
 	
 //private:
-	char mCharRule;
+	char mCharRule; // 'A', 'X', ...
 	std::string mDateIntervalBegin; // "2017.05.01"
 	std::string mDateIntervalEnd; // "2018.05.01"
 	std::string mTimeBegin; // "5:25"

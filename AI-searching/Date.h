@@ -18,6 +18,11 @@ public:
     
     bool isNull() const { return mNull; }
     
+    int getDay()   const { return mDay;   }
+    int getWDay()  const { return mWDay;  }
+    int getMonth() const { return mMonth; }
+    int getYear()  const { return mYear;  }
+    
 private:
     int mYear;
     int mMonth;

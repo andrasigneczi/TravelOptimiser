@@ -93,5 +93,7 @@ Date& Date::operator++() {
     } else {
         ++mDay;
     }
+    mWDay = (( mWDay + 1 ) % 8 );
+    mWDay = (mWDay == 0 ) ? 1 : mWDay;
     return *this;
 }

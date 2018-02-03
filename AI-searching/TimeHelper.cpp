@@ -104,4 +104,26 @@ namespace TimeHelper {
 	bool isLeapYear( int year ) {
 	    return (year % 100 == 0) ? (year % 400 == 0) : (year % 4 == 0);
 	}
+	
+	// input parameter: "X 1:10", "A 21:23", "X 01:10", "1:05", "13:04", "01:05"
+	// output parameters: hour, min
+    void parseStringTime( std::string time, int& hour, int& min ) {
+		int * buff = &min;
+		int m = 1;
+		for( int i = time.length() - 1; i > 0; --i ) {
+			if(( time[ i ] < '0' || time[ i ] > '9' ) && time[ i ] != ':' ) {
+				break;
+			}
+			
+			if( time[ i ] == ':' ) {
+				buff = &hour;
+				m = 1;
+				continue;
+			}
+			
+			*buff += ( time[ i ] - '0' ) * m;
+			m *= 10;
+		}
+    }
+
 } // namespace TimeHelper

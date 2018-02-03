@@ -10,10 +10,13 @@
 
 namespace TimeHelper {
     extern std::string timeToString(time_t t, std::string timeZone);
-    extern time_t stringToTime(std::string strTime);
+    extern time_t stringToTime(std::string strTime); // "2017-08-12 11:50+0300", "2017-08-12 11:50"
     extern bool isWeekend(std::string strDate);
     extern int getWeekday(std::string strDate);
     extern bool isLeapYear( int year );
+    
+    // output parameters: hour, min
+    extern void parseStringTime( std::string time, int& hour, int& min ); // "X 1:10", "A 21:23", "1:05", "13:04"
 }
 
 #ifdef __LINUX__
