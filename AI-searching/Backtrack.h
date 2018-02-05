@@ -36,7 +36,7 @@ public:
 	static const std::string& pathNodeName(const Path& path, int pathIndex) { return path[pathIndex].mCtNode->mName; }
 	static int pathNodeIndex(const Path& path, int pathIndex) { return path[pathIndex].mIndex; }
 	static const CtNode::Link& pathNodeLink(const Path& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex]; }
-	static const Timetable::TimetableData& pathNodeTimetable(const Path& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex].mTimetable.getTimetable(); }
+	static const Timetable::TimetableData& pathNodeTimetable(const Path& path, int pathIndex) { return path[pathIndex].mCtNode->mLinks[path[pathIndex].mIndex].mTimetable.getTimetableData(); }
 
 private:
 	void init();

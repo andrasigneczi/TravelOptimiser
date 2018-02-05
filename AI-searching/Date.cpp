@@ -25,8 +25,9 @@ Date& Date::operator=( const std::string& value ) {
 	mYear  = tm.tm_year + 1900;
 	mMonth = tm.tm_mon + 1;
 	mDay   = tm.tm_mday;
-	mWDay  = tm.tm_wday + 1;
+	mWDay  = tm.tm_wday;
 	mNull  = false;
+	return *this;
 }
 
 Date& Date::operator=( const Date& value ) {
@@ -77,23 +78,23 @@ Date& Date::operator++() {
     
     if( isNull())
         return *this;
-    
+
     int leap = 0;
     if( TimeHelper::isLeapYear( mYear ) && mMonth == 2 )
         leap = 1;
-        
+    
     if( monthDays[mMonth-1] + leap == mDay ) {
         if( mMonth == 12 ) {
             ++mYear;
             mMonth = 1;
-            mDay = 1;
         } else {
-            
+            ++mMonth;
         }
+        mDay = 1;
     } else {
         ++mDay;
     }
-    mWDay = (( mWDay + 1 ) % 8 );
-    mWDay = (mWDay == 0 ) ? 1 : mWDay;
+    
+    mWDay = (( mWDay + 1 ) % 7 );
     return *this;
 }

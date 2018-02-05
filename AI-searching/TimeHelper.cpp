@@ -53,7 +53,9 @@ namespace TimeHelper {
 			tmz = 2 * 3600;
 		}
 	
-		t += tmz;
+		// TODO: doublecheck, because it worked before, maybe it depends on the operating system or the date
+		//t += tmz;
+		
 		/*errno_t err = */gmtime_s(&tm, &t);
 		//errno_t err = localtime_s(&tm, &t);
 	
@@ -78,8 +80,8 @@ namespace TimeHelper {
 			tmz = 2;
 		}
 		time_t t = mktime(&tm);
-		t -= (tmz - 1) * 60 * 60;
-		//timeToString(t);
+		// TODO: doublecheck, because it worked before, maybe it depends on the operating system or the date
+		//t -= (tmz - 1) * 60 * 60;
 		return t;
 	}
 	
@@ -110,7 +112,7 @@ namespace TimeHelper {
     void parseStringTime( std::string time, int& hour, int& min ) {
 		int * buff = &min;
 		int m = 1;
-		for( int i = time.length() - 1; i > 0; --i ) {
+		for( int i = time.length() - 1; i >= 0; --i ) {
 			if(( time[ i ] < '0' || time[ i ] > '9' ) && time[ i ] != ':' ) {
 				break;
 			}

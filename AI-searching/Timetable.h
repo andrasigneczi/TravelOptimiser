@@ -15,7 +15,7 @@ private:
 	enum RuleType {
 		UNDEFINED,
 		DAY_INTERVALL, // Monday-Friday
-		DATE_INTERVAL, // 2017.05.01 - 2018.06.02
+		DATE_INTERVAL, // 2017-05-01 - 2018-06-02
 		
 	};
 	
@@ -23,23 +23,24 @@ private:
 	
 public:
 	enum Day {
+		Sunday,
 		Monday,
 		Tuesday,
 		Wednesday,
 		Thursday,
 		Friday,
 		Saturday,
-		Sunday,
-		Undefined
+		UndefinedDay
 	};
 	
 	enum DayType {
 		Workday,
 		PublicHoliday,
+		UndefinedDayType
 	};
 	
 	// Rule validity interval
-	Rule( std::string from, std::string to ); // "2017.05.01", "2017.05.01"
+	Rule( std::string from, std::string to ); // "2017-05-01", "2017-05-01"
 	
 	// Assigning special character to a weekday, a weekday interval or a weekday interval with day type.
 	Rule( char sign, Day day ); // e.g.: ('X', Saturday)
@@ -51,7 +52,7 @@ public:
 	Rule( Day from, Day to, std::string t1, std::string t2, Duration period ); // (Monday, Saturday, "5:59", "22:59", 30_min)
 	Rule( Day from, Day to, DayType type, std::string t1, std::string t2, Duration period ); // (Monday, Saturday, Workday, "5:59", "22:59", 30_min)
 
-	// returns true, if the rule is applicable for this day, e.g. date="2018.01.03", and the rule is Monday-Saturday Workday
+	// returns true, if the rule is applicable for this day, e.g. date="2018-01-03", and the rule is Monday-Saturday Workday
 	bool isApplicable( Date date ) const;
 	
 	// generates datetime string vector based on the parameter date and the rule.
@@ -59,8 +60,8 @@ public:
 	
 //private:
 	char mCharRule; // 'A', 'X', ...
-	std::string mDateIntervalBegin; // "2017.05.01"
-	std::string mDateIntervalEnd; // "2018.05.01"
+	std::string mDateIntervalBegin; // "2017-05-01"
+	std::string mDateIntervalEnd; // "2018-05-01"
 	std::string mTimeBegin; // "5:25"
 	std::string mTimeEnd; // "6:25"
 	Day mDayIntervalBegin; // Monday
@@ -88,7 +89,7 @@ public:
 	double getPrice(time_t departure) const;
 	time_t getTimeConsuming(time_t departure) const;
 	//const double getFirstPrice() const;
-	const TimetableData& getTimetable() const { return mTimetable;}
+	const TimetableData& getTimetableData() const { return mTimetable;}
 
 	void correctionByTimezone(std::string timeZone);
 

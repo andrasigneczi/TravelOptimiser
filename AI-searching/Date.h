@@ -27,7 +27,7 @@ private:
     int mYear;
     int mMonth;
     int mDay;
-    int mWDay;
+    int mWDay; // Sunday = 0, Monday = 1, ...
     
     bool mNull;
 };

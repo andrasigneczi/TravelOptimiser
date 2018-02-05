@@ -13,8 +13,9 @@ Rule::Rule( std::string from, std::string to ) { // "2017.05.01", "2017.05.01"
     mCharRule = 0;
 	mDateIntervalBegin = from;
 	mDateIntervalEnd = to;
-	mDayIntervalBegin = Undefined;
-	mDayIntervalEnd = Undefined;
+	mDayIntervalBegin = UndefinedDay;
+	mDayIntervalEnd = UndefinedDay;
+	mDayType = UndefinedDayType;
 }
 
 // Assigning special character to a weekday, a weekday interval or a weekday interval with day type.
@@ -22,12 +23,14 @@ Rule::Rule( char sign, Rule::Day day ) { // e.g.: ('X', Saturday)
 	mCharRule = sign;
 	mDayIntervalBegin = day;
 	mDayIntervalEnd = day;
+	mDayType = UndefinedDayType;
 }
 
 Rule::Rule( char sign, Rule::Day from, Rule::Day to ) { // e.g.: ('A', Monday,Friday)
 	mCharRule = sign;
 	mDayIntervalBegin = from;
 	mDayIntervalEnd = to;
+	mDayType = UndefinedDayType;
 }
 
 Rule::Rule( char sign, Rule::Day from, Rule::Day to, DayType type ) { // e.g.: ('A', Monday,Friday, Workday)
@@ -45,6 +48,7 @@ Rule::Rule( Rule::Day day, std::string t1, std::string t2, Duration period ) { /
 	mDayIntervalBegin = day;
 	mDayIntervalEnd = day;
 	mShortPeriod = period;
+	mDayType = UndefinedDayType;
 }
 
 Rule::Rule( Rule::Day from, Rule::Day to, std::string t1, std::string t2, Duration period ) { // (Monday, Saturday, "5:59", "22:59", 30_min)
@@ -54,6 +58,7 @@ Rule::Rule( Rule::Day from, Rule::Day to, std::string t1, std::string t2, Durati
 	mDayIntervalBegin = from;
 	mDayIntervalEnd = to;
 	mShortPeriod = period;
+	mDayType = UndefinedDayType;
 }
 
 Rule::Rule( Rule::Day from, Rule::Day to, Rule::DayType type, std::string t1, std::string t2, Duration period ) { // (Monday, Saturday, Workday, "5:59", "22:59", 30_min)
@@ -73,19 +78,18 @@ bool Rule::isApplicable( Date date ) const {
 	
 	// 1. I don't check the thegin and end day interval, so I have to call with a date in this interval.
 	// 2. Which weekday is this?
-	if( mDayIntervalBegin != Undefined && date.getWDay() - 1 < (int)mDayIntervalBegin ) {
+	if( mDayIntervalBegin != UndefinedDay && date.getWDay() < (int)mDayIntervalBegin ) {
 		return false;
 	}
 	
-	if( mDayIntervalEnd != Undefined && date.getWDay() - 1 > (int)mDayIntervalEnd ) {
+	if( mDayIntervalEnd != UndefinedDay && date.getWDay() > (int)mDayIntervalEnd ) {
 		return false;
 	}
 	
-	// Workday can be defferent, depending on the recent calendar, e.g. Ester, Christmas, ...
-	if( mDayType == Workday && date.getWDay() >= 6 ) {
+	// Workday can be different, depending on the recent calendar, e.g. Ester, Christmas, ...
+	if( mDayType == Workday && ( date.getWDay() == 6 || date.getWDay() == 0 )) {
 		return false;
 	}
-	
 	return true;
 }
 
@@ -93,7 +97,7 @@ bool Rule::isApplicable( Date date ) const {
 std::vector<std::string> Rule::extract( Date date, const std::vector<std::string>& departures ) const {
 	std::vector<std::string> result;
 	
-	if(  mDayIntervalBegin == Undefined || mDayIntervalEnd == Undefined ) {
+	if(  mDayIntervalBegin == UndefinedDay || mDayIntervalEnd == UndefinedDay ) {
 		return result;
 	}
 	
@@ -120,7 +124,7 @@ std::vector<std::string> Rule::extract( Date date, const std::vector<std::string
 		time_t begin = hourBeg * 3600 + minBeg * 60;
 		time_t end   = hourEnd * 3600 + minEnd * 60;
 		time_t step = mShortPeriod.getSec();
-		for( time_t i = begin; i < end; i += step ) {
+		for( time_t i = begin; i <= end; i += step ) {
 			int hour = i / 3600;
 			int min = ( i % 3600 ) / 60;
 			sprintf( datetime, "%04d-%02d-%02d %02d:%02d", date.getYear(), date.getMonth(), date.getDay(), hour, min );
@@ -134,7 +138,6 @@ std::vector<std::string> Rule::extract( Date date, const std::vector<std::string
 /************************************************** TIMETABLE **********************************************************************/
 /***********************************************************************************************************************************/
 void Timetable::add(std::string departure, double price, Duration timeConsuming) {
-	//mTimetable.emplace(Backtrack::stringToTime(departure), Data(price, timeConsuming));
 	mTempTimetable.emplace(departure, Data(price, timeConsuming.getSec()));
 }
 
@@ -219,22 +222,24 @@ void Timetable::setFixTravellingTime( Duration d ) {
 
 bool Timetable::extractRules() {
 	
-	Date dateIntervalBegin; // "2017.05.01"
-	Date dateIntervalEnd; // "2018.05.01"
+	Date dateIntervalBegin; // "2017-05-01"
+	Date dateIntervalEnd; // "2018-05-01"
+	
 	for( const Rule& r : mRules ) {
 		if( r.mDateIntervalBegin.length() == 10 && r.mDateIntervalEnd.length() == 10 ) {
 			dateIntervalBegin = r.mDateIntervalBegin;
 			dateIntervalEnd = r.mDateIntervalEnd;
 		}
 	}
-	
+
 	// 0. mDateIntervalBegin and mDateIntervalEnd are mandatory, let's check it.
 	if( dateIntervalBegin.isNull() || dateIntervalEnd.isNull()) {
 		return false;
 	}
-	
+
 	// 2. Iteration from mDateIntervalBegin to mDateIntervalEnd and apply the rules.
 	for( Date x = dateIntervalBegin; x < dateIntervalEnd; ++x ) {
+		
 		for( const Rule& r : mRules ) {
 			if( r.isApplicable( x )) {
     			std::vector<std::string> departures = r.extract( x, mDepartureTimeRules );
@@ -244,5 +249,6 @@ bool Timetable::extractRules() {
 			}
 		}
 	}
+	
 	return true;
 }
