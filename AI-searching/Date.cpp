@@ -30,6 +30,19 @@ Date& Date::operator=( const std::string& value ) {
 	return *this;
 }
 
+Date::Date( const std::string& value ) {
+	struct std::tm tm;
+	memset(&tm, 0, sizeof(tm));
+	std::istringstream ss(value);
+	ss >> std::get_time(&tm, "%Y-%m-%d");
+	
+	mYear  = tm.tm_year + 1900;
+	mMonth = tm.tm_mon + 1;
+	mDay   = tm.tm_mday;
+	mWDay  = tm.tm_wday;
+	mNull  = false;
+}
+
 Date& Date::operator=( const Date& value ) {
     if( &value != this ) {
         mYear  = value.mYear ;
@@ -41,7 +54,19 @@ Date& Date::operator=( const Date& value ) {
     return *this;
 }
 
-bool Date::operator<( const Date& value ) {
+bool Date::operator==( const Date& value ) const {
+    if( &value == this )
+        return true;
+    
+    if(    mYear  == value.mYear && mMonth == value.mMonth && mDay   == value.mDay 
+        && mWDay  == value.mWDay && mNull  == value.mNull ) {
+            return true;
+    }
+    
+    return false;
+}
+
+bool Date::operator<( const Date& value ) const {
     if( isNull() || value.isNull())
         return false;
     
@@ -57,7 +82,7 @@ bool Date::operator<( const Date& value ) {
     return true;
 }
 
-bool Date::operator>( const Date& value ) {
+bool Date::operator>( const Date& value ) const {
     if( isNull() || value.isNull())
         return false;
     

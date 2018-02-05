@@ -5,6 +5,7 @@
 
 #include <string>
 #include <map>
+#include <set>
 #include <vector>
 #include "Duration.h"
 #include "Date.h"
@@ -53,7 +54,7 @@ public:
 	Rule( Day from, Day to, DayType type, std::string t1, std::string t2, Duration period ); // (Monday, Saturday, Workday, "5:59", "22:59", 30_min)
 
 	// returns true, if the rule is applicable for this day, e.g. date="2018-01-03", and the rule is Monday-Saturday Workday
-	bool isApplicable( Date date ) const;
+	bool isApplicable( Date date, const std::set<Date>& publicHolidays, const std::set<Date>& extraWorkdays ) const;
 	
 	// generates datetime string vector based on the parameter date and the rule.
 	std::vector<std::string> extract( Date date, const std::vector<std::string>& departures ) const;
@@ -98,18 +99,27 @@ public:
 	// for planning forwards
 	std::pair<time_t, time_t> searchGreaterBeginning(time_t currentTime) const;
 
+	// e.g. sometimes the shuttle bus has the same price independently from the departure time
 	void setFixPrice( double x );
 	double getFixPrice() { return mFixPrice; }
+	
+	// e.g. sometimes the shuttle bus has the same travelling time independently from the departure time
 	void setFixTravellingTime( Duration d );
 	Duration getFixTravellingTime() { return mFixTravellingTime; }
+	
+	void addPublicHolidays( const std::vector<std::string>& publicHolidays );
+	void addExtraWorkdays( const std::vector<std::string>& extraWorkdays );
+	
+private:
 	bool extractRules();
 
-private:
 	std::map<time_t, Data> mTimetable;
 	std::map<std::string, Data> mTempTimetable;
 	double mFixPrice;
 	Duration mFixTravellingTime;
 	std::vector<Rule> mRules;
 	std::vector<std::string> mDepartureTimeRules;
+	std::set<Date> mPublicHolidays;
+	std::set<Date> mExtraWorkdays;
 };
 #endif

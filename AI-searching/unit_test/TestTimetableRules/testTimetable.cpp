@@ -20,7 +20,7 @@ void testTimetable() {
 	// X = hétfő-szombat munkanapokon
 	// S = szombat
 	departure = { "A 5:09",  "A 5:24",  "A 5:39",  "A 5:54",  "A 6:09",  "A 6:24",  "A 6:41",  "A 6:51",  "A 6:56", "A 7:01", "A 7:06",
-	              "A 7:11",  "A 7:16",  "A 7:26",  "A 7:41",  /*"A 7:56",*/  "S 7:56",  "A 8:11",  "A 8:26",  "A 8:56", "A 9:54", "X 10:54",
+	              "A 7:11",  "A 7:16",  "A 7:26",  "A 7:41",  "A 7:56",  "S 7:56",  "A 8:11",  "A 8:26",  "A 8:56", "A 9:54", "X 10:54",
 	              "A 11:54", "A 12:54", "X 13:54", "A 14:54", "A 15:54", "X 16:56", "A 17:56", "A 18:54", "A 19:54" };
 
 	timetable_Igel_JFK_BUS.add( Rule( "2017-05-01", "2018-05-01" ));
@@ -38,7 +38,7 @@ void testTimetable() {
 	const Timetable& t1 = c1.getTimetable();
     
     for( auto& i : t1.getTimetableData()) {
-    	//std::cerr << "dbg testTimetable 4: " << TimeHelper::timeToString( i.first, "+0200" ) << ";"  << i.second.mPrice << ";" << i.second.mTimeConsuming << std::endl;	
+    	std::cerr << "dbg testTimetable 4: " << TimeHelper::timeToString( i.first, "+0200" ) << ";"  << i.second.mPrice << ";" << i.second.mTimeConsuming << std::endl;	
     }
    	
     

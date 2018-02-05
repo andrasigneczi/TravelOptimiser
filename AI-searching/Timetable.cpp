@@ -71,7 +71,7 @@ Rule::Rule( Rule::Day from, Rule::Day to, Rule::DayType type, std::string t1, st
 	mDayType = type;
 }
 
-bool Rule::isApplicable( Date date ) const {
+bool Rule::isApplicable( Date date, const std::set<Date>& publicHolidays, const std::set<Date>& extraWorkdays ) const {
 	//Day mDayIntervalBegin; // Monday
 	//Day mDayIntervalEnd; // Saturday
 	//DayType  mDayType; // Workday, PublicHoliday
@@ -87,9 +87,22 @@ bool Rule::isApplicable( Date date ) const {
 	}
 	
 	// Workday can be different, depending on the recent calendar, e.g. Ester, Christmas, ...
-	if( mDayType == Workday && ( date.getWDay() == 6 || date.getWDay() == 0 )) {
+	// The Saturday and the Sunday are considered as public holiday by default
+	
+	// Public holiday, if:
+	// it is weekend and it isn't in the extra workdays set
+	// it isn't weekend and it is in the public holidays set
+	bool dateIsPublicHoliday = ( date.getWDay() == 6 || date.getWDay() == 0 ) && extraWorkdays.find( date ) == extraWorkdays.end();
+	dateIsPublicHoliday |= !( date.getWDay() == 6 || date.getWDay() == 0 ) && publicHolidays.find( date ) != publicHolidays.end();
+
+	if( mDayType == Workday && dateIsPublicHoliday ) {
 		return false;
 	}
+	
+	if( mDayType == PublicHoliday && !dateIsPublicHoliday ) {
+		return false;
+	}
+	
 	return true;
 }
 
@@ -241,7 +254,7 @@ bool Timetable::extractRules() {
 	for( Date x = dateIntervalBegin; x < dateIntervalEnd; ++x ) {
 		
 		for( const Rule& r : mRules ) {
-			if( r.isApplicable( x )) {
+			if( r.isApplicable( x, mPublicHolidays, mExtraWorkdays )) {
     			std::vector<std::string> departures = r.extract( x, mDepartureTimeRules );
     			for( auto d : departures ) {
     				add( d, getFixPrice(), getFixTravellingTime());
@@ -251,4 +264,16 @@ bool Timetable::extractRules() {
 	}
 	
 	return true;
+}
+
+void Timetable::addPublicHolidays( const std::vector<std::string>& publicHolidays ) {
+	for( auto& x : publicHolidays ) {
+		mPublicHolidays.insert( Date( x ));
+	}
+}
+
+void Timetable::addExtraWorkdays( const std::vector<std::string>& extraWorkdays ) {
+	for( auto& x : extraWorkdays ) {
+		mExtraWorkdays.insert( Date( x ));
+	}
 }

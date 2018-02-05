@@ -8,12 +8,13 @@
 class Date {
 public:
     Date();
-    
+    explicit Date( const std::string& value );
     Date& operator=( const std::string& value );
     Date& operator=( const Date& value );
+    bool operator==( const Date& value ) const;
     
-    bool operator<( const Date& value );
-    bool operator>( const Date& value );
+    bool operator<( const Date& value ) const;
+    bool operator>( const Date& value ) const;
     Date& operator++();
     
     bool isNull() const { return mNull; }
