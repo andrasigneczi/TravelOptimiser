@@ -42,7 +42,7 @@ Date::Date( const std::string& value ) {
 	mWDay  = tm.tm_wday;
 	mNull  = false;
 }
-
+/*
 Date& Date::operator=( const Date& value ) {
     if( &value != this ) {
         mYear  = value.mYear ;
@@ -53,7 +53,7 @@ Date& Date::operator=( const Date& value ) {
     }
     return *this;
 }
-
+*/
 bool Date::operator==( const Date& value ) const {
     if( &value == this )
         return true;
@@ -66,7 +66,35 @@ bool Date::operator==( const Date& value ) const {
     return false;
 }
 
+bool Date::operator!=( const Date& value ) const {
+    if( &value == this )
+        return false;
+    
+    if(    mYear  == value.mYear && mMonth == value.mMonth && mDay   == value.mDay 
+        && mWDay  == value.mWDay && mNull  == value.mNull ) {
+            return false;
+    }
+    
+    return true;
+}
+
 bool Date::operator<( const Date& value ) const {
+    if( isNull() || value.isNull())
+        return false;
+    
+    if( mYear < value.mYear ) return true;
+    if( mYear > value.mYear ) return false;
+    
+    if( mMonth < value.mMonth ) return true;
+    if( mMonth > value.mMonth ) return false;
+
+    if( mDay < value.mDay ) return true;
+    if( mDay > value.mDay ) return false;
+    
+    return false;
+}
+
+bool Date::operator<=( const Date& value ) const {
     if( isNull() || value.isNull())
         return false;
     
@@ -83,6 +111,22 @@ bool Date::operator<( const Date& value ) const {
 }
 
 bool Date::operator>( const Date& value ) const {
+    if( isNull() || value.isNull())
+        return false;
+    
+    if( mYear > value.mYear ) return true;
+    if( mYear < value.mYear ) return false;
+    
+    if( mMonth > value.mMonth ) return true;
+    if( mMonth < value.mMonth ) return false;
+
+    if( mDay > value.mDay ) return true;
+    if( mDay < value.mDay ) return false;
+    
+    return false;
+}
+
+bool Date::operator>=( const Date& value ) const {
     if( isNull() || value.isNull())
         return false;
     
@@ -122,4 +166,11 @@ Date& Date::operator++() {
     
     mWDay = (( mWDay + 1 ) % 7 );
     return *this;
+}
+
+std::ostream& operator<<( std::ostream& out, const Date& date ) {
+    char datetime[100];
+    sprintf( datetime, "%04d-%02d-%02d", date.getYear(), date.getMonth(), date.getDay());
+    out << datetime;
+    return out;
 }

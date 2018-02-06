@@ -92,9 +92,30 @@ bool Rule::isApplicable( Date date, const std::set<Date>& publicHolidays, const 
 	// Public holiday, if:
 	// it is weekend and it isn't in the extra workdays set
 	// it isn't weekend and it is in the public holidays set
-	bool dateIsPublicHoliday = ( date.getWDay() == 6 || date.getWDay() == 0 ) && extraWorkdays.find( date ) == extraWorkdays.end();
-	dateIsPublicHoliday |= !( date.getWDay() == 6 || date.getWDay() == 0 ) && publicHolidays.find( date ) != publicHolidays.end();
+	bool dateIsPublicHoliday = (( date.getWDay() == 6 || date.getWDay() == 0 ) && extraWorkdays.find( date ) == extraWorkdays.end());
 
+	//if( dateIsPublicHoliday ) {
+	//	std::cerr << "Rule::isApplicable public holiday 1: " << date << "\n";
+	//}
+
+	dateIsPublicHoliday |= (!( date.getWDay() == 6 || date.getWDay() == 0 ) && publicHolidays.find( date ) != publicHolidays.end());
+
+	//if( dateIsPublicHoliday ) {
+	//	std::cerr << "Rule::isApplicable public holiday 2: " << date << "\n";
+	//}
+
+	//if( publicHolidays.find( date ) != publicHolidays.end()) {
+	//	std::cerr << "Rule::isApplicable public holiday 3: " << date << "\n";
+	//}
+	
+	//if( date.getYear() == 2018 && date.getMonth()==5 && date.getDay() == 1 ) {
+	//	std::cerr << "Rule::isApplicable date: " << date << "\n";
+	//	std::cerr << "Rule::isApplicable wday: " << date.getWDay() << "\n";
+	//	if( publicHolidays.find( date ) != publicHolidays.end()) {
+	//		std::cerr << "Rule::isApplicable date is in the publicHolidays set\n";
+	//	}
+	//}
+	
 	if( mDayType == Workday && dateIsPublicHoliday ) {
 		return false;
 	}
@@ -251,7 +272,7 @@ bool Timetable::extractRules() {
 	}
 
 	// 2. Iteration from mDateIntervalBegin to mDateIntervalEnd and apply the rules.
-	for( Date x = dateIntervalBegin; x < dateIntervalEnd; ++x ) {
+	for( Date x = dateIntervalBegin; x <= dateIntervalEnd; ++x ) {
 		
 		for( const Rule& r : mRules ) {
 			if( r.isApplicable( x, mPublicHolidays, mExtraWorkdays )) {
@@ -270,7 +291,11 @@ void Timetable::addPublicHolidays( const std::vector<std::string>& publicHoliday
 	for( auto& x : publicHolidays ) {
 		mPublicHolidays.insert( Date( x ));
 	}
-}
+	
+	//for( auto& x : mPublicHolidays ) {
+	//	std::cerr << "Timetable::addPublicHolidays: " << x << std::endl;
+	//}
+}//
 
 void Timetable::addExtraWorkdays( const std::vector<std::string>& extraWorkdays ) {
 	for( auto& x : extraWorkdays ) {

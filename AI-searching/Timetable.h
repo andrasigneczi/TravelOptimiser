@@ -110,6 +110,8 @@ public:
 	void addPublicHolidays( const std::vector<std::string>& publicHolidays );
 	void addExtraWorkdays( const std::vector<std::string>& extraWorkdays );
 	
+	const std::set<Date>& getPublicHolidays() const { return mPublicHolidays; }
+	
 private:
 	bool extractRules();
 
