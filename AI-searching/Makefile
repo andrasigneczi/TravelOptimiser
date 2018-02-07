@@ -16,13 +16,14 @@ CPPFLAGS= -g -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -Dsp
 LDFLAGS=-g -shared -fPIC
 CFLAGS= -O2 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra -fPIC -Dsprintf_s=sprintf
 
-LDLIBS=-lpthread -ldl
+LDLIBS=-lpthread -ldl  sqlite/sqlite3.o
 OBJDIR=Debug
 
 SRCS1=main.cpp Astar.cpp Connection.cpp test.cpp Context.cpp Backtrack.cpp Duration.cpp ScenarioMaker.cpp ScenarioMaker2.cpp \
      Sorters.cpp testBarcelona.cpp testTimeZone.cpp Timetable.cpp SQLiteTest.cpp TimeHelper.cpp Date.cpp
 
-SRCS2=sqlite/sqlite3.c
+SRCS2=
+#sqlite/sqlite3.c
 
 OBJS1=$(subst .cpp,.o,$(SRCS1))
 OBJS2=$(subst .c,.o,$(SRCS2))

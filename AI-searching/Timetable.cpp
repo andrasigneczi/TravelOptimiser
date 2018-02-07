@@ -71,6 +71,16 @@ Rule::Rule( Rule::Day from, Rule::Day to, Rule::DayType type, std::string t1, st
 	mDayType = type;
 }
 
+Rule::Rule( DayType type, std::string t1, std::string t2, Duration period ) { // (PublicHoliday, "5:59", "22:59", 30_min)
+	mCharRule = 0;
+	mTimeBegin = t1;
+	mTimeEnd = t2;
+	mDayIntervalBegin = UndefinedDay;
+	mDayIntervalEnd = UndefinedDay;
+	mShortPeriod = period;
+	mDayType = type;
+}
+
 bool Rule::isApplicable( Date date, const std::set<Date>& publicHolidays, const std::set<Date>& extraWorkdays ) const {
 	//Day mDayIntervalBegin; // Monday
 	//Day mDayIntervalEnd; // Saturday
@@ -108,14 +118,6 @@ bool Rule::isApplicable( Date date, const std::set<Date>& publicHolidays, const 
 	//	std::cerr << "Rule::isApplicable public holiday 3: " << date << "\n";
 	//}
 	
-	//if( date.getYear() == 2018 && date.getMonth()==5 && date.getDay() == 1 ) {
-	//	std::cerr << "Rule::isApplicable date: " << date << "\n";
-	//	std::cerr << "Rule::isApplicable wday: " << date.getWDay() << "\n";
-	//	if( publicHolidays.find( date ) != publicHolidays.end()) {
-	//		std::cerr << "Rule::isApplicable date is in the publicHolidays set\n";
-	//	}
-	//}
-	
 	if( mDayType == Workday && dateIsPublicHoliday ) {
 		return false;
 	}
@@ -124,16 +126,20 @@ bool Rule::isApplicable( Date date, const std::set<Date>& publicHolidays, const 
 		return false;
 	}
 	
+//	if( date.getYear() == 2018 && date.getMonth()==1 && date.getDay() == 1 ) {
+//		std::cerr << "Rule::isApplicable date: " << date << "\n";
+//		std::cerr << "Rule::isApplicable wday: " << date.getWDay() << "\n";
+//		if( publicHolidays.find( date ) != publicHolidays.end()) {
+//			std::cerr << "Rule::isApplicable date is in the publicHolidays set\n";
+//		}
+//	}
+	
 	return true;
 }
 
 // generates datetime string vector based on the parameter date and the rule.
 std::vector<std::string> Rule::extract( Date date, const std::vector<std::string>& departures ) const {
 	std::vector<std::string> result;
-	
-	if(  mDayIntervalBegin == UndefinedDay || mDayIntervalEnd == UndefinedDay ) {
-		return result;
-	}
 	
 	char datetime[100];
 	if( mCharRule != 0 && departures.size() > 0 ) {

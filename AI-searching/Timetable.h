@@ -52,6 +52,7 @@ public:
 	Rule( Day day, std::string t1, std::string t2, Duration period ); // (Saturday, "5:59", "22:59", 30_min)
 	Rule( Day from, Day to, std::string t1, std::string t2, Duration period ); // (Monday, Saturday, "5:59", "22:59", 30_min)
 	Rule( Day from, Day to, DayType type, std::string t1, std::string t2, Duration period ); // (Monday, Saturday, Workday, "5:59", "22:59", 30_min)
+	Rule( DayType type, std::string t1, std::string t2, Duration period ); // (PublicHoliday, "5:59", "22:59", 30_min)
 
 	// returns true, if the rule is applicable for this day, e.g. date="2018-01-03", and the rule is Monday-Saturday Workday
 	bool isApplicable( Date date, const std::set<Date>& publicHolidays, const std::set<Date>& extraWorkdays ) const;
