@@ -86,13 +86,22 @@ bool Rule::isApplicable( Date date, const std::set<Date>& publicHolidays, const 
 	//Day mDayIntervalEnd; // Saturday
 	//DayType  mDayType; // Workday, PublicHoliday
 	
-	// 1. I don't check the thegin and end day interval, so I have to call with a date in this interval.
-	// 2. Which weekday is this?
-	if( mDayIntervalBegin != UndefinedDay && date.getWDay() < (int)mDayIntervalBegin ) {
-		return false;
+	// day order: Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
+	
+	if( mDayType == Workday && ((Day)date.getWDay() == Saturday || (Day)date.getWDay() == Sunday ) && extraWorkdays.find( date ) != extraWorkdays.end()) {
+	} else {
+		// 1. I don't check the thegin and end day interval, so I have to call with a date in this interval.
+		// 2. Which weekday is this?
+		if( mDayIntervalBegin != UndefinedDay && date.getWDay() < (int)mDayIntervalBegin ) {
+			return false;
+		}
+		
+		if( mDayIntervalEnd != UndefinedDay && date.getWDay() > (int)mDayIntervalEnd ) {
+			return false;
+		}
 	}
 	
-	if( mDayIntervalEnd != UndefinedDay && date.getWDay() > (int)mDayIntervalEnd ) {
+	if( mDayType != Workday && ((Day)date.getWDay() == Saturday || (Day)date.getWDay() == Sunday ) && extraWorkdays.find( date ) != extraWorkdays.end()) {
 		return false;
 	}
 	
@@ -126,14 +135,21 @@ bool Rule::isApplicable( Date date, const std::set<Date>& publicHolidays, const 
 		return false;
 	}
 	
-//	if( date.getYear() == 2018 && date.getMonth()==1 && date.getDay() == 1 ) {
+	// We cannot use the Saturday schedule for extra working days
+//	if( mDayType != Workday && (Day)date.getWDay() == Saturday && extraWorkdays.find( date ) != extraWorkdays.end()) {
+//		std::cerr << "Rule is not Applicable on: " << date << "\n";
+//		std::cerr << "rule: " << (int)mDayType << "\n";
+//		return false;
+//	}
+		
+//	if( date.getYear() == 2018 && date.getMonth()==1 && date.getDay() == 6 ) {
 //		std::cerr << "Rule::isApplicable date: " << date << "\n";
 //		std::cerr << "Rule::isApplicable wday: " << date.getWDay() << "\n";
-//		if( publicHolidays.find( date ) != publicHolidays.end()) {
-//			std::cerr << "Rule::isApplicable date is in the publicHolidays set\n";
+//		if( extraWorkdays.find( date ) != extraWorkdays.end()) {
+//			std::cerr << "Rule::isApplicable date is in the extraWorkdays set\n";
 //		}
 //	}
-	
+
 	return true;
 }
 

@@ -33,7 +33,7 @@ void testTimetable_type1() {
 	              "A 7:11",  "A 7:16",  "A 7:26",  "A 7:41",  "A 7:56",  "S 7:46",  "A 8:11",  "A 8:26",  "A 8:56", "A 9:54", "X 10:54",
 	              "A 11:54", "A 12:54", "X 13:54", "A 14:54", "A 15:54", "X 16:56", "A 17:56", "A 18:54", "A 19:54" };
 
-	timetable_Igel_JFK_BUS.add( Rule( "2018-01-01", "2018-01-02" ));
+	timetable_Igel_JFK_BUS.add( Rule( "2017-11-27", "2018-06-27" ));
 	timetable_Igel_JFK_BUS.add( Rule( 'A', Rule::Monday, Rule::Friday, Rule::Workday ));
 	timetable_Igel_JFK_BUS.add( Rule( 'X', Rule::Monday, Rule::Saturday, Rule::Workday ));
 	timetable_Igel_JFK_BUS.add( Rule( 'S', Rule::Saturday ));
@@ -67,7 +67,7 @@ void testTimetable_type2() {
 	*/
 	Timetable timetable_JFK_LUX_BUS;
 
-	timetable_JFK_LUX_BUS.add( Rule( "2018-01-01", "2018-01-02" ));
+	timetable_JFK_LUX_BUS.add( Rule( "2017-11-27", "2018-06-27" ));
 	timetable_JFK_LUX_BUS.add( Rule( Rule::Monday, Rule::Friday, Rule::Workday, "5:30", "23:00", 10_min));
 	timetable_JFK_LUX_BUS.add( Rule( Rule::Saturday,        "5:25", "23:05", 20_min));
 	timetable_JFK_LUX_BUS.add( Rule( Rule::Sunday,          "5:59", "22:59", 30_min));
