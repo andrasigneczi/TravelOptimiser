@@ -3,10 +3,10 @@ CC=gcc
 CPPFLAGS= -g -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -Dsprintf_s=sprintf -I../..
 #CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -Wextra -pedantic -D__LINUX__ -pthread -Dsprintf_s=sprintf -I../..
 
-LDFLAGS=-g -fPIC -L../.. -lBacktrack
+LDFLAGS=-g -fPIC -L../..
 CFLAGS= -O2 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra -Dsprintf_s=sprintf
 
-LDLIBS=-lpthread -ldl
+LDLIBS=-lBacktrack -lpthread -ldl
 OBJDIR=Debug
 
 SRCS1=main.cpp test.cpp

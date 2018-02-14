@@ -2,6 +2,6 @@
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../..
 
-#cd ../..;make clean;make;cd unit_test/TestTimetableRules;make clean;make
+#cd ../..;make clean;make;cd unit_test/TestBarcelona;make clean;make
 
 ./test
