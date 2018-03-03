@@ -52,6 +52,15 @@ public:
 	static Type getType(std::string name);
 	static std::string typeToString(Connection::Type type);
 
+    CtNode* getNode1() const { return mNode1; }
+    CtNode* getNode2() const { return mNode2; }
+    Type    getConnectionType() const { return mConnectionType; }
+    Duration getTimeConsuming() const { return mTimeConsuming; }
+    double getDistance() const { return mDistance; }
+    double getCost() const { return mCost; }
+    const Timetable& getTimetable() { return mTimetable; }
+    
+private:
 	CtNode* mNode1; // name, e.g. Igel
 	CtNode* mNode2; // name, e.g. Luxmbourg
 

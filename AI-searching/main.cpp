@@ -8,7 +8,7 @@ int main()
 {
    //testAstar();
    //testBacktrack();
-	testBarcelona();
+	//testBarcelona();
 	//SQLiteTest::run();
 	//testTimeZone();
    return 0;

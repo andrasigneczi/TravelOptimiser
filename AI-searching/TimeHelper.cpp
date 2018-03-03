@@ -17,14 +17,6 @@
 			return std::string();
 		}
 		
-		template< class CharT >
-		__unspecified get_time( std::tm* tmb, const CharT* fmt ) {
-	          __unspecified ret;
-	          ret.fmt = fmt;
-	          ret.tmb = tmb;
-	          return ret;
-		}
-		
 		std::istringstream& operator>>( std::istringstream& in, __unspecified un ) {
 			char buff[256];
 			in.getline(buff, 256);
@@ -61,7 +53,9 @@ namespace TimeHelper {
 			tmz = 2 * 3600;
 		}
 	
-		t += tmz;
+		// TODO: doublecheck, because it worked before, maybe it depends on the operating system or the date
+		//t += tmz;
+		
 		/*errno_t err = */gmtime_s(&tm, &t);
 		//errno_t err = localtime_s(&tm, &t);
 	
@@ -86,8 +80,8 @@ namespace TimeHelper {
 			tmz = 2;
 		}
 		time_t t = mktime(&tm);
-		t -= (tmz - 1) * 60 * 60;
-		//timeToString(t);
+		// TODO: doublecheck, because it worked before, maybe it depends on the operating system or the date
+		//t -= (tmz - 1) * 60 * 60;
 		return t;
 	}
 	
@@ -108,5 +102,30 @@ namespace TimeHelper {
 		    return true;
 		return false;
 	}
+
+	bool isLeapYear( int year ) {
+	    return (year % 100 == 0) ? (year % 400 == 0) : (year % 4 == 0);
+	}
+	
+	// input parameter: "X 1:10", "A 21:23", "X 01:10", "1:05", "13:04", "01:05"
+	// output parameters: hour, min
+    void parseStringTime( std::string time, int& hour, int& min ) {
+		int * buff = &min;
+		int m = 1;
+		for( int i = time.length() - 1; i >= 0; --i ) {
+			if(( time[ i ] < '0' || time[ i ] > '9' ) && time[ i ] != ':' ) {
+				break;
+			}
+			
+			if( time[ i ] == ':' ) {
+				buff = &hour;
+				m = 1;
+				continue;
+			}
+			
+			*buff += ( time[ i ] - '0' ) * m;
+			m *= 10;
+		}
+    }
 
 } // namespace TimeHelper

@@ -11,17 +11,17 @@ Context::~Context() {
 
 void Context::addConnection( Connection c ) {
     //mConnections.push_back( c );
-	if (c.mNode2 != nullptr) {
-		auto it = mConnections.find(c.mNode1->mName);
+	if (c.getNode2() != nullptr) {
+		auto it = mConnections.find(c.getNode1()->mName);
 		if (it != mConnections.end()) {
-			if (c.mNode2 != nullptr) {
-				it->second.emplace(c.mNode2->mName);
+			if (c.getNode2() != nullptr) {
+				it->second.emplace(c.getNode2()->mName);
 			}
 		}
 		else {
 			std::set<std::string> newSet;
-			newSet.emplace(c.mNode2->mName);
-			mConnections.emplace(c.mNode1->mName, newSet);
+			newSet.emplace(c.getNode2()->mName);
+			mConnections.emplace(c.getNode1()->mName, newSet);
 		}
 	}
     createNode( c );
@@ -46,22 +46,22 @@ void Context::setGoal( std::vector<std::string> stops ) {
 }
 
 void Context::createNode( Connection c ) {
-    auto it = mNodes.find( c.mNode1 );
+    auto it = mNodes.find( c.getNode1() );
     if( it == mNodes.end()) {
 		assert(0);
 	}
     
-	if (c.mConnectionType == Connection::stay || c.mConnectionType == Connection::parking) {
-		(*it)->mLinks.push_back({ c.mConnectionType, *it, c.mTimeConsuming, c.mDistance, c.mCost, c.mTimetable });
+	if (c.getConnectionType() == Connection::stay || c.getConnectionType() == Connection::parking) {
+		(*it)->mLinks.push_back({ c.getConnectionType(), *it, c.getTimeConsuming(), c.getDistance(), c.getCost(), c.getTimetable() });
 		return;
 	}
 
-    auto it2 = mNodes.find( c.mNode2 );
+    auto it2 = mNodes.find( c.getNode2() );
     if( it2 == mNodes.end()) {
 		assert(0);
 	}
 
-    (*it)->mLinks.push_back({ c.mConnectionType, *it2, c.mTimeConsuming, c.mDistance, c.mCost, c.mTimetable });
+    (*it)->mLinks.push_back({ c.getConnectionType(), *it2, c.getTimeConsuming(), c.getDistance(), c.getCost(), c.getTimetable() });
 }
 
 const CtNode* Context::getNode(const std::string name) const {
