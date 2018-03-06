@@ -4,4 +4,4 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../..
 
 #cd ../..;make clean;make;cd unit_test/TestSQLite;make clean;make
 
-./test
+#./test

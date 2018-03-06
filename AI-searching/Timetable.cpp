@@ -31,6 +31,11 @@ Rule::Rule( char sign, Rule::Day from, Rule::Day to ) { // e.g.: ('A', Monday,Fr
 	mDayIntervalBegin = from;
 	mDayIntervalEnd = to;
 	mDayType = UndefinedDayType;
+	
+	if( mDayIntervalBegin > mDayIntervalEnd ) {
+		std::cerr << "Rule mDayIntervalBegin > mDayIntervalEnd\n";
+		assert( 0 );
+	}
 }
 
 Rule::Rule( char sign, Rule::Day from, Rule::Day to, DayType type ) { // e.g.: ('A', Monday,Friday, Workday)
@@ -38,6 +43,11 @@ Rule::Rule( char sign, Rule::Day from, Rule::Day to, DayType type ) { // e.g.: (
 	mDayIntervalBegin = from;
 	mDayIntervalEnd = to;
 	mDayType = type; // Workday, PublicHoliday
+
+	if( mDayIntervalBegin > mDayIntervalEnd ) {
+		std::cerr << "Rule mDayIntervalBegin > mDayIntervalEnd\n";
+		assert( 0 );
+	}
 }
 
 // Assigning time interval with period to a weekday, weekday interval or a weekday interval with day type
@@ -49,6 +59,11 @@ Rule::Rule( Rule::Day day, std::string t1, std::string t2, Duration period ) { /
 	mDayIntervalEnd = day;
 	mShortPeriod = period;
 	mDayType = UndefinedDayType;
+
+	if( mDayIntervalBegin > mDayIntervalEnd ) {
+		std::cerr << "Rule mDayIntervalBegin > mDayIntervalEnd\n";
+		assert( 0 );
+	}
 }
 
 Rule::Rule( Rule::Day from, Rule::Day to, std::string t1, std::string t2, Duration period ) { // (Monday, Saturday, "5:59", "22:59", 30_min)
@@ -59,6 +74,11 @@ Rule::Rule( Rule::Day from, Rule::Day to, std::string t1, std::string t2, Durati
 	mDayIntervalEnd = to;
 	mShortPeriod = period;
 	mDayType = UndefinedDayType;
+
+	if( mDayIntervalBegin > mDayIntervalEnd ) {
+		std::cerr << "Rule mDayIntervalBegin > mDayIntervalEnd\n";
+		assert( 0 );
+	}
 }
 
 Rule::Rule( Rule::Day from, Rule::Day to, Rule::DayType type, std::string t1, std::string t2, Duration period ) { // (Monday, Saturday, Workday, "5:59", "22:59", 30_min)
@@ -69,6 +89,11 @@ Rule::Rule( Rule::Day from, Rule::Day to, Rule::DayType type, std::string t1, st
 	mDayIntervalEnd = to;
 	mShortPeriod = period;
 	mDayType = type;
+
+	if( mDayIntervalBegin > mDayIntervalEnd ) {
+		std::cerr << "Rule mDayIntervalBegin > mDayIntervalEnd\n";
+		assert( 0 );
+	}
 }
 
 Rule::Rule( DayType type, std::string t1, std::string t2, Duration period ) { // (PublicHoliday, "5:59", "22:59", 30_min)
@@ -85,9 +110,16 @@ bool Rule::isApplicable( Date date, const std::set<Date>& publicHolidays, const 
 	//Day mDayIntervalBegin; // Monday
 	//Day mDayIntervalEnd; // Saturday
 	//DayType  mDayType; // Workday, PublicHoliday
-	
+
+	// special handling of the dateinterval rules
+	if( mDateIntervalBegin.length() > 0 && mDateIntervalEnd.length() > 0
+	    && mDayIntervalBegin == UndefinedDay
+	    && mDayIntervalEnd == UndefinedDay
+	    && mDayType == UndefinedDayType ) {
+	    	return false;
+	}
+
 	// day order: Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
-	
 	if( mDayType == Workday && ((Day)date.getWDay() == Saturday || (Day)date.getWDay() == Sunday ) && extraWorkdays.find( date ) != extraWorkdays.end()) {
 	} else {
 		// 1. I don't check the thegin and end day interval, so I have to call with a date in this interval.
@@ -95,12 +127,10 @@ bool Rule::isApplicable( Date date, const std::set<Date>& publicHolidays, const 
 		if( mDayIntervalBegin != UndefinedDay && date.getWDay() < (int)mDayIntervalBegin ) {
 			return false;
 		}
-		
 		if( mDayIntervalEnd != UndefinedDay && date.getWDay() > (int)mDayIntervalEnd ) {
 			return false;
 		}
 	}
-	
 	if( mDayType != Workday && ((Day)date.getWDay() == Saturday || (Day)date.getWDay() == Sunday ) && extraWorkdays.find( date ) != extraWorkdays.end()) {
 		return false;
 	}
@@ -205,6 +235,10 @@ void Timetable::add(std::vector<std::string> departures) {
 	mDepartureTimeRules = departures;
 }
 
+void Timetable::add(std::vector<Duration> durations) {
+	mDurationTimeRules = durations;
+}
+
 double Timetable::getPrice(time_t departure) const {
 	auto it = mTimetable.find(departure);
 	if (it == mTimetable.end())
@@ -272,8 +306,8 @@ void Timetable::setFixPrice( double x ) {
 	mFixPrice = x;
 }
 
-void Timetable::setFixTravellingTime( Duration d ) {
-	mFixTravellingTime = d;
+void Timetable::setDefaultTravelingTime( Duration d ) {
+	mDefaultTravelingTime = d;
 }
 
 bool Timetable::extractRules() {
@@ -295,12 +329,17 @@ bool Timetable::extractRules() {
 
 	// 2. Iteration from mDateIntervalBegin to mDateIntervalEnd and apply the rules.
 	for( Date x = dateIntervalBegin; x <= dateIntervalEnd; ++x ) {
-		
+		size_t addedTimeCountPerDay = 0;
 		for( const Rule& r : mRules ) {
 			if( r.isApplicable( x, mPublicHolidays, mExtraWorkdays )) {
     			std::vector<std::string> departures = r.extract( x, mDepartureTimeRules );
     			for( auto d : departures ) {
-    				add( d, getFixPrice(), getFixTravellingTime());
+    				if( mDurationTimeRules.size() > addedTimeCountPerDay ) {
+    					add( d, getFixPrice(), mDurationTimeRules[addedTimeCountPerDay]);
+    				} else {
+    					add( d, getFixPrice(), getDefaultTravelingTime());
+    				}
+    				++addedTimeCountPerDay;
     			}
 			}
 		}
