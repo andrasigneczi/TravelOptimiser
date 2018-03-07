@@ -21,7 +21,6 @@ static Context* createContext() {
 	Timetable ttIgelLuxembourg;
 	// price, hours
 	ttIgelLuxembourg.add("2017-07-28 05:15", 2, 4_hour);
-	ttIgelLuxembourg.add("2017-07-28 05:15", 2, 4_hour);
 	ttIgelLuxembourg.add("2017-07-28 06:45", 2, 4_hour);
 	ttIgelLuxembourg.add("2017-07-28 07:05", 2, 4_hour);
 	ttIgelLuxembourg.add("2017-07-28 07:15", 2, 4_hour);
@@ -54,7 +53,6 @@ static Context* createContext() {
 	Timetable ttLuxembourgIgel;
 	// price, hours
 	ttLuxembourgIgel.add("2017-07-31 05:15", 2, 4_hour);
-	ttLuxembourgIgel.add("2017-07-31 05:15", 2, 4_hour);
 	ttLuxembourgIgel.add("2017-07-31 06:45", 2, 4_hour);
 	ttLuxembourgIgel.add("2017-07-31 07:05", 2, 4_hour);
 	ttLuxembourgIgel.add("2017-07-31 07:15", 2, 4_hour);
@@ -70,7 +68,6 @@ static Context* createContext() {
 	ttLuxembourgIgel.add("2017-07-31 16:45", 2, 4_hour);
 	ttLuxembourgIgel.add("2017-07-31 16:55", 2, 4_hour);
 	ttLuxembourgIgel.add("2017-07-31 17:05", 2, 4_hour);
-	ttLuxembourgIgel.add("2017-07-31 17:15", 2, 4_hour);
 	ttLuxembourgIgel.add("2017-07-31 17:15", 2, 4_hour);
 	ttLuxembourgIgel.add("2017-07-31 17:25", 2, 4_hour);
 	ttLuxembourgIgel.add("2017-07-31 17:35", 2, 4_hour);

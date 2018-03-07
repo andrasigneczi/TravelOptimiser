@@ -39,7 +39,7 @@ void testTimetable_type1() {
 	timetable_Igel_JFK_BUS.add( Rule( 'S', Rule::Saturday ));
 	timetable_Igel_JFK_BUS.add( departure );
 	timetable_Igel_JFK_BUS.setFixPrice( 2. );
-	timetable_Igel_JFK_BUS.setFixTravellingTime( 30_min );
+	timetable_Igel_JFK_BUS.setDefaultTravelingTime( 30_min );
 	timetable_Igel_JFK_BUS.addPublicHolidays( publicHolidays_Luxembourg );
 	timetable_Igel_JFK_BUS.addExtraWorkdays( extraWorkdays_Luxembourg );
 	
@@ -73,7 +73,7 @@ void testTimetable_type2() {
 	timetable_JFK_LUX_BUS.add( Rule( Rule::Sunday,          "5:59", "22:59", 30_min));
 	timetable_JFK_LUX_BUS.add( Rule( Rule::PublicHoliday,   "5:49", "22:49", 2_hour));
 	timetable_JFK_LUX_BUS.setFixPrice( 2. );
-	timetable_JFK_LUX_BUS.setFixTravellingTime( 15_min );
+	timetable_JFK_LUX_BUS.setDefaultTravelingTime( 15_min );
 	timetable_JFK_LUX_BUS.addPublicHolidays( publicHolidays_Luxembourg );
 	timetable_JFK_LUX_BUS.addExtraWorkdays( extraWorkdays_Luxembourg );
 

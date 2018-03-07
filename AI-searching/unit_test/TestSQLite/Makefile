@@ -9,7 +9,7 @@ CFLAGS= -O2 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra 
 LDLIBS=-lBacktrack -lpthread -ldl
 OBJDIR=Debug
 
-SRCS1=main.cpp testTimetable.cpp
+SRCS1=main.cpp SQLiteTest.cpp
 
 OBJS1=$(subst .cpp,.o,$(SRCS1))
 OBJS11=$(addprefix $(OBJDIR)/, $(OBJS1))

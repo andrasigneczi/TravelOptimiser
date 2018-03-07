@@ -1,0 +1,12 @@
+#!/bin/bash
+
+for i in `find -maxdepth 1 -type d`; do
+
+    if [[ $i != '.' ]]; then
+        cd $i;
+        echo "Test: " $i
+        ./run > test_results
+        diff expected_results test_results
+        cd ..
+    fi;
+done;

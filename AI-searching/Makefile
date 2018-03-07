@@ -20,7 +20,7 @@ LDLIBS=-lpthread -ldl  sqlite/sqlite3.o
 OBJDIR=Debug
 
 SRCS1=Astar.cpp Connection.cpp Context.cpp Backtrack.cpp Duration.cpp ScenarioMaker.cpp ScenarioMaker2.cpp \
-     Sorters.cpp Timetable.cpp SQLiteTest.cpp TimeHelper.cpp Date.cpp
+     Sorters.cpp Timetable.cpp TimeHelper.cpp Date.cpp
 #main.cpp
 
 SRCS2=

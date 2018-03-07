@@ -49,10 +49,10 @@ public:
 	Rule( char sign, Day from, Day to, DayType type ); // e.g.: ('A', Monday,Friday, Workday)
 	
 	// Assigning time interval with period to a weekday, weekday interval or a weekday interval with day type
-	Rule( Day day, std::string t1, std::string t2, Duration period ); // (Saturday, "5:59", "22:59", 30_min)
-	Rule( Day from, Day to, std::string t1, std::string t2, Duration period ); // (Monday, Saturday, "5:59", "22:59", 30_min)
-	Rule( Day from, Day to, DayType type, std::string t1, std::string t2, Duration period ); // (Monday, Saturday, Workday, "5:59", "22:59", 30_min)
-	Rule( DayType type, std::string t1, std::string t2, Duration period ); // (PublicHoliday, "5:59", "22:59", 30_min)
+	Rule( Day day, std::string t1, std::string t2, Duration period ); // (Saturday, "5:59", "22:59", 30_min) = on Saturday from 5:59 to 22:59 every 30 minutes
+	Rule( Day from, Day to, std::string t1, std::string t2, Duration period ); // (Monday, Saturday, "5:59", "22:59", 30_min) = from Monday to Saturday from 5:59 to 22:59 every 30 minutes
+	Rule( Day from, Day to, DayType type, std::string t1, std::string t2, Duration period ); // (Monday, Saturday, Workday, "5:59", "22:59", 30_min) = from Monday to Saturday on workdays from 5:59 to 22:59 every 30 minutes
+	Rule( DayType type, std::string t1, std::string t2, Duration period ); // (PublicHoliday, "5:59", "22:59", 30_min) = on public holiday from 5:59 to 22:59 every 30 minutes
 
 	// returns true, if the rule is applicable for this day, e.g. date="2018-01-03", and the rule is Monday-Saturday Workday
 	bool isApplicable( Date date, const std::set<Date>& publicHolidays, const std::set<Date>& extraWorkdays ) const;
@@ -87,6 +87,7 @@ public:
 	// Second way of defining a timetable: defining rules, and adding to the timetable with departures and fixed time and price.
 	void add(Rule rule);
 	void add(std::vector<std::string> departures);
+	void add(std::vector<Duration> durations);
 	
 	double getPrice(time_t departure) const;
 	time_t getTimeConsuming(time_t departure) const;
@@ -105,8 +106,8 @@ public:
 	double getFixPrice() { return mFixPrice; }
 	
 	// e.g. sometimes the shuttle bus has the same travelling time independently from the departure time
-	void setFixTravellingTime( Duration d );
-	Duration getFixTravellingTime() { return mFixTravellingTime; }
+	void setDefaultTravelingTime( Duration d );
+	Duration getDefaultTravelingTime() { return mDefaultTravelingTime; }
 	
 	void addPublicHolidays( const std::vector<std::string>& publicHolidays );
 	void addExtraWorkdays( const std::vector<std::string>& extraWorkdays );
@@ -119,9 +120,10 @@ private:
 	std::map<time_t, Data> mTimetable;
 	std::map<std::string, Data> mTempTimetable;
 	double mFixPrice;
-	Duration mFixTravellingTime;
+	Duration mDefaultTravelingTime;
 	std::vector<Rule> mRules;
 	std::vector<std::string> mDepartureTimeRules;
+	std::vector<Duration> mDurationTimeRules;
 	std::set<Date> mPublicHolidays;
 	std::set<Date> mExtraWorkdays;
 };

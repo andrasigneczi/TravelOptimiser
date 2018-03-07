@@ -24,10 +24,10 @@ std::vector<Connection> Backtrack::seachTheBestWay( Context* context ) {
     }
 	printAllPaths();
 
-	std::cerr << "press enter\n";
-
-	std::string str;
-	std::getline(std::cin, str );
+//	std::cerr << "press enter\n";
+//	std::string str;
+//	std::getline(std::cin, str );
+	
     return std::vector<Connection>();
 }
 

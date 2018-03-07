@@ -34,8 +34,13 @@ void Sorter::printMathes( int count ) {
 		std::ostringstream oneResult;
 		for (const Item& item : path.mItems) {
 			oneResult << item.mNameAndType;
-			if (item.mType != Connection::parking)
-				oneResult << "departure: " << TimeHelper::timeToString(item.mDeparture, item.mTimeZone);
+			if (item.mType != Connection::parking) {
+				if( item.mNameAndType.find( "(-1)" ) == std::string::npos )
+					oneResult << "departure: ";
+				else
+					oneResult << "arriving: ";
+				oneResult << TimeHelper::timeToString(item.mDeparture, item.mTimeZone);
+			}
 			oneResult << std::endl;
 
 			if (item.mType == Connection::stay) {
