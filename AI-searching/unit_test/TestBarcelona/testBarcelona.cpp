@@ -202,19 +202,6 @@ static Context* createContext() {
 	/***************************************************************************************/
 	// DUMMY
 	Timetable timetable_BCN_Barcelona;
-/*
-    start = std::vector<std::string>{ "01:30", "03:45", "05:25", "06:55", "09:10", "11:50", "14:05", "15:40", "17:35", "20:20", "23:30" };
-    for (int day = 1; day <= 31; ++day) {
-            for (size_t t = 0; t < start.size(); ++t) {
-                    sprintf_s(dateBuff, "2018-03-%02d %s", day, start[t].c_str());
-                    if (t == 3 || t == 7)
-                            timetable_BCN_Barcelona.add(dateBuff, 5., 3_hour + 20_min);
-                    else
-                            timetable_BCN_Barcelona.add(dateBuff, 5., 3_hour + 5_min);
-            }
-    }
-*/
-	
 	start = { "A 01:30", "A 03:45", "A 05:25", "A 06:55", "A 09:10", "A 11:50", "A 14:05", "A 15:40", "A 17:35", "A 20:20", "A 23:30" };
 	durations = {185_min, 185_min, 185_min, 200_min, 185_min, 185_min, 185_min, 200_min};
 
@@ -224,11 +211,9 @@ static Context* createContext() {
 	timetable_BCN_Barcelona.add( durations );
 	timetable_BCN_Barcelona.setFixPrice( 5. );
 	timetable_BCN_Barcelona.setDefaultTravelingTime( 3_hour + 5_min );
-
 	context->addConnection(Connection::createBus(nodeBCN, nodeBarcelona, timetable_BCN_Barcelona));
 
 	Timetable timetable_Barcelona_BCN;
-	/*
 	start = std::vector<std::string>{ "A 01:30", "A 03:45", "A 05:25", "A 06:55", "A 09:10", "A 11:50", "A 14:05", "A 15:40", "A 17:35", "A 20:20", "A 23:30" };
 	durations = {185_min, 185_min, 185_min, 200_min, 185_min, 185_min, 185_min, 200_min};
 
@@ -238,17 +223,6 @@ static Context* createContext() {
 	timetable_Barcelona_BCN.add( durations );
 	timetable_Barcelona_BCN.setFixPrice( 5. );
 	timetable_Barcelona_BCN.setDefaultTravelingTime( 3_hour + 5_min );
-	*/
-   start = std::vector<std::string>{ "01:30", "03:45", "05:25", "06:55", "09:10", "11:50", "14:05", "15:40", "17:35", "20:20", "23:30" };
-   for (int day = 1; day <= 31; ++day) {
-           for (size_t t = 0; t < start.size(); ++t) {
-                   sprintf_s(dateBuff, "2018-03-%02d %s", day, start[t].c_str());
-                   if (t == 3 || t == 7)
-                           timetable_Barcelona_BCN.add(dateBuff, 5., 3_hour + 20_min);
-                   else
-                           timetable_Barcelona_BCN.add(dateBuff, 5., 3_hour + 5_min);
-           }
-   }
 	context->addConnection(Connection::createBus(nodeBarcelona, nodeBCN, timetable_Barcelona_BCN));
 
 
@@ -270,77 +244,28 @@ static Context* createContext() {
 	// FRA-BCN; ryanair
 	// datetime, price, travelling time in hours
 	Timetable timetable_FRA_BCN;
-
+	// These prices won't be overwritten by the rules below
 	timetable_FRA_BCN.add("2018-03-01 17:40", 24.99, 2_hour + 20_min);
 	timetable_FRA_BCN.add("2018-03-02 17:40", 24.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-03 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-04 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-05 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-06 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-07 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-08 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-09 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-10 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-11 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-12 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-13 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-14 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-15 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-16 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-17 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-18 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-19 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-20 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-21 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-22 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-23 17:40", 45.99, 2_hour + 20_min);
-	timetable_FRA_BCN.add("2018-03-24 17:40", 45.99, 2_hour + 20_min);
-/*
+
 	start = std::vector<std::string>{ "A 17:40" };
 	timetable_FRA_BCN.add(timetableValidFromTo);
 	timetable_FRA_BCN.add( Rule( 'A', Rule::Sunday, Rule::Saturday ));
 	timetable_FRA_BCN.add( start );
 	timetable_FRA_BCN.setFixPrice( 45.99 );
 	timetable_FRA_BCN.setDefaultTravelingTime( 2_hour + 20_min );
-*/
 	context->addConnection(Connection::createAirplane(nodeFRA, nodeBCN, timetable_FRA_BCN));
 
 	//BCN-FRA; ryanair
 	// datetime, price, travelling time in hours
 	Timetable timetable_BCN_FRA;
 
-	timetable_BCN_FRA.add("2018-03-01 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-02 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-03 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-04 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-05 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-06 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-07 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-08 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-09 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-10 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-11 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-12 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-13 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-14 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-15 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-16 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-17 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-18 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-19 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-20 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-21 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-22 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-23 20:35", 45.99, 2_hour + 20_min);
-	timetable_BCN_FRA.add("2018-03-24 20:35", 45.99, 2_hour + 20_min);
-/*
 	start = std::vector<std::string>{ "A 20:35" };
-	timetable_BCN_FRA.add(timetableValidFromTo);
+	timetable_BCN_FRA.add(Rule("2018-03-01", "2018-03-24"));
 	timetable_BCN_FRA.add( Rule( 'A', Rule::Sunday, Rule::Saturday ));
 	timetable_BCN_FRA.add( start );
 	timetable_BCN_FRA.setFixPrice( 45.99 );
 	timetable_BCN_FRA.setDefaultTravelingTime( 2_hour + 20_min );
-*/
 	context->addConnection(Connection::createAirplane(nodeBCN, nodeFRA, timetable_BCN_FRA));
 
 	// CGN - BCN, ryanair
@@ -348,64 +273,25 @@ static Context* createContext() {
 
 	timetable_CGN_BCN.add("2018-03-01 21:25", 24.99, 2_hour + 25_min);
 	timetable_CGN_BCN.add("2018-03-02 21:25", 24.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-03 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-04 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-05 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-06 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-07 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-08 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-09 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-10 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-11 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-12 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-13 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-14 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-15 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-16 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-17 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-18 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-19 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-20 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-21 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-22 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-23 21:25", 45.99, 2_hour + 25_min);
-	timetable_CGN_BCN.add("2018-03-24 21:25", 45.99, 2_hour + 25_min);
-/*
+
 	start = std::vector<std::string>{ "A 21:25" };
-	timetable_CGN_BCN.add(timetableValidFromTo);
+	timetable_CGN_BCN.add(Rule("2018-03-01", "2018-03-24"));
 	timetable_CGN_BCN.add( Rule( 'A', Rule::Sunday, Rule::Saturday ));
 	timetable_CGN_BCN.add( start );
 	timetable_CGN_BCN.setFixPrice( 45.99 );
 	timetable_CGN_BCN.setDefaultTravelingTime( 2_hour + 25_min );
-*/
 	context->addConnection(Connection::createAirplane(nodeCGN, nodeBCN, timetable_CGN_BCN));
 
 	// BCN - CGN, ryanair
 	Timetable timetable_BCN_CGN;
 	timetable_BCN_CGN.add("2018-03-01 18:10", 35.99, 2_hour + 40_min);
 	timetable_BCN_CGN.add("2018-03-02 18:10", 35.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-03 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-04 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-05 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-06 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-07 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-08 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-09 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-10 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-11 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-12 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-13 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-14 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-15 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-16 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-17 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-18 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-19 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-20 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-21 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-22 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-23 18:10", 45.99, 2_hour + 40_min);
-	timetable_BCN_CGN.add("2018-03-24 18:10", 45.99, 2_hour + 40_min);
+	start = std::vector<std::string>{ "A 18:10" };
+	timetable_BCN_CGN.add(Rule("2018-03-01", "2018-03-24"));
+	timetable_BCN_CGN.add( Rule( 'A', Rule::Sunday, Rule::Saturday ));
+	timetable_BCN_CGN.add( start );
+	timetable_BCN_CGN.setFixPrice( 45.99 );
+	timetable_BCN_CGN.setDefaultTravelingTime( 2_hour + 40_min );
 	context->addConnection(Connection::createAirplane(nodeBCN, nodeCGN, timetable_BCN_CGN));
 
 
@@ -413,28 +299,12 @@ static Context* createContext() {
 	Timetable timetable_CRL_BCN;
 	timetable_CRL_BCN.add("2018-03-01 14:40", 69.99, 2_hour + 5_min);
 	timetable_CRL_BCN.add("2018-03-02 14:40", 69.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-03 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-04 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-05 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-06 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-07 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-08 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-09 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-10 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-11 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-12 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-13 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-14 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-15 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-16 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-17 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-18 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-19 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-20 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-21 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-22 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-23 14:40", 45.99, 2_hour + 5_min);
-	timetable_CRL_BCN.add("2018-03-24 14:40", 45.99, 2_hour + 5_min);
+	start = std::vector<std::string>{ "A 14:40" };
+	timetable_BCN_CGN.add(Rule("2018-03-01", "2018-03-24"));
+	timetable_BCN_CGN.add( Rule( 'A', Rule::Sunday, Rule::Saturday ));
+	timetable_BCN_CGN.add( start );
+	timetable_BCN_CGN.setFixPrice( 45.99 );
+	timetable_BCN_CGN.setDefaultTravelingTime( 2_hour + 5_min );
 	context->addConnection(Connection::createAirplane(nodeCRL, nodeBCN, timetable_CRL_BCN));
 
 
@@ -442,28 +312,12 @@ static Context* createContext() {
 	Timetable timetable_BCN_CRL;
 	timetable_BCN_CRL.add("2018-03-01 12:00", 69.99, 2_hour + 15_min);
 	timetable_BCN_CRL.add("2018-03-02 12:00", 69.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-03 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-04 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-05 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-06 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-07 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-08 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-09 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-10 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-11 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-12 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-13 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-14 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-15 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-16 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-17 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-18 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-19 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-20 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-21 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-22 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-23 12:00", 45.99, 2_hour + 15_min);
-	timetable_BCN_CRL.add("2018-03-24 12:00", 45.99, 2_hour + 15_min);
+	start = std::vector<std::string>{ "A 12:00" };
+	timetable_BCN_CGN.add(Rule("2018-03-01", "2018-03-24"));
+	timetable_BCN_CGN.add( Rule( 'A', Rule::Sunday, Rule::Saturday ));
+	timetable_BCN_CGN.add( start );
+	timetable_BCN_CGN.setFixPrice( 45.99 );
+	timetable_BCN_CGN.setDefaultTravelingTime( 2_hour + 15_min );
 	context->addConnection(Connection::createAirplane(nodeBCN, nodeCRL, timetable_BCN_CRL));
 
 
