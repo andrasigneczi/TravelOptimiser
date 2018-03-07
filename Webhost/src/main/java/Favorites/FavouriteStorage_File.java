@@ -37,13 +37,13 @@ public class FavouriteStorage_File implements FavouritesStorage
 		catch( FileNotFoundException e )
 		{
 			mLogger.error( "Favourite loading error: " + Util.getTraceInformation( e ));
-			return null;
+			return lTrips;
 		}
 		catch( java.util.NoSuchElementException e )
 		{
 			lScanner.close();
 			mLogger.error( "Favourite loading error: " + Util.getTraceInformation( e ));
-			return null;
+			return lTrips;
 		}
 
 		Pattern lReg = Pattern.compile( "^(.+)$", Pattern.MULTILINE );
