@@ -293,9 +293,16 @@ public class SQLiteDataProvider implements DataProvider
 		String[] lFileList = null;
 		try (Stream<Path> stream = Files.list( Paths.get( aPath )))
 		{
+			String pattern;
+			if( System.getProperty("os.name").contains( "Windows" )) {
+				pattern = "^.*\\\\database_\\d{4}-\\d{2}-\\d{2}T\\d{6}(\\.\\d{1,3})?\\.db$";
+			} else {
+				pattern = "^.*/database_\\d{4}-\\d{2}-\\d{2}T\\d{6}(\\.\\d{1,3})?\\.db$";
+			}
+
 			lJoinedString = stream
 					.map(String::valueOf)
-					.filter(path -> path.matches("^.*\\\\database_\\d{4}-\\d{2}-\\d{2}T\\d{6}(\\.\\d{1,3})?\\.db$"))
+					.filter(path -> path.matches(pattern))
 					.sorted()
 					.collect( Collectors.joining(lItemSeparator));
 			lFileList = lJoinedString.split( lItemSeparator );
