@@ -1,10 +1,10 @@
 #include "gradient_descent.h"
 
-arma::mat GradientDescent::calc( const arma::mat& dataSet, const arma::mat& theta, double alpha ) {
-    arma::mat Y = dataSet.col(1);
+arma::mat GradientDescent::calc( const arma::mat& dataSet, const arma::mat& theta, double alpha, int iteration ) {
+    arma::mat Y = dataSet.col(dataSet.n_cols - 1);
     int m = Y.n_rows;
     
-    arma::mat X = dataSet.col(0);
+    arma::mat X = dataSet.cols(0,dataSet.n_cols-2);
 
     double maxv = as_scalar(max(X));
     double minv = as_scalar(min(X));
@@ -18,18 +18,18 @@ arma::mat GradientDescent::calc( const arma::mat& dataSet, const arma::mat& thet
 
     std::cout << X << std::endl;
     
-    arma::mat H = theta;
-    for( int i = 0; i < 1500; ++i ) {
-        arma::mat delta = (X * H - Y).t();
+    arma::mat T = theta;
+    for( int i = 0; i < iteration; ++i ) {
+        arma::mat delta = (X * T - Y).t();
 
-        //H(0) = as_scalar(H(0) - alpha/m*delta*X.col(0));
-        //H(1) = as_scalar(H(1) - alpha/m*delta*X.col(1));
-        H = H - (alpha/m*delta*X).t();
+        //T(0) = as_scalar(T(0) - alpha/m*delta*X.col(0));
+        //T(1) = as_scalar(T(1) - alpha/m*delta*X.col(1));
+        T = T - (alpha/m*delta*X).t();
     }
     
     if( maxv-minv > 1. ) {
-        H(0) -= H(1)*average/(maxv-minv);
-        H(1) /= (maxv-minv);
+        T(0) -= T(1)*average/(maxv-minv);
+        T(1) /= (maxv-minv);
     }
-    return H;
+    return T;
 }

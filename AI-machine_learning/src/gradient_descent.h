@@ -7,7 +7,7 @@
 class GradientDescent {
 
 public:
-    arma::mat calc( const arma::mat& dataSet, const arma::mat& theta, double alpha );
+    arma::mat calc( const arma::mat& dataSet, const arma::mat& theta, double alpha, int iteration );
 
 private:
     

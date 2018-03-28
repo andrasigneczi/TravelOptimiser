@@ -24,6 +24,6 @@ void gradientDescentCalc() {
     H << 0. << arma::endr << 0.;
     double alpha = 0.1;
     GradientDescent gd;
-    H = gd.calc( dataSet, H, alpha );
+    H = gd.calc( dataSet, H, alpha, 1500 );
     std::cout << "H: " << H << std::endl;
 }
