@@ -32,6 +32,11 @@ void gradientDescentCalc() {
     std::cout << "prediction: 55; " << gd.predict( {55 } ) << "\n";
     std::cout << "prediction: 255; " << gd.predict( {255 } ) << "\n";
     std::cout << "prediction: 1255; " << gd.predict( {1255} ) << "\n";
+
+    CostFunctionJ cfj;
+    std::cout << "\nCost Function J:\n";
+    std::cout << std::string(80,'-') << std::endl;
+    std::cout << cfj.calc( dataSet, H ) << std::endl;
     
     NormalEquation ne;
     
@@ -42,4 +47,8 @@ void gradientDescentCalc() {
     std::cout << "prediction: 55; " << ne.predict( {55 } ) << "\n";
     std::cout << "prediction: 255; " << ne.predict( {255 } ) << "\n";
     std::cout << "prediction: 1255; " << ne.predict( {1255} ) << "\n";
+    
+    std::cout << "\nCost Function J:\n";
+    std::cout << std::string(80,'-') << std::endl;
+    std::cout << cfj.calc( dataSet, H ) << std::endl;
 }

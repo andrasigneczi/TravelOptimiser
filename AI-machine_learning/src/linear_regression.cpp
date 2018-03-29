@@ -8,7 +8,7 @@ arma::mat GradientDescent::calc( const arma::mat& dataSet, const arma::mat& thet
     arma::mat Y = dataSet.col(dataSet.n_cols - 1);
     
     // number of the training datas
-    int m = Y.n_rows;
+    double m = Y.n_rows;
     
     // input training feature dataset
     arma::mat X = dataSet.cols(0,dataSet.n_cols-2);
@@ -66,7 +66,7 @@ arma::mat NormalEquation::calc( const arma::mat& dataSet ) {
     arma::mat Y = dataSet.col(dataSet.n_cols - 1);
 
     // number of the training datas
-    int m = Y.n_rows;
+    double m = Y.n_rows;
 
     // input training feature dataset
     arma::mat X = dataSet.cols(0,dataSet.n_cols-2);
@@ -82,4 +82,22 @@ double NormalEquation::predict( const arma::rowvec input ) {
     arma::rowvec vals = input;
     vals.insert_cols( 0, arma::ones(1,1));
     return as_scalar(vals * mTheta);
+}
+
+double CostFunctionJ::calc( const arma::mat& dataSet, const arma::mat& theta ) {
+    // J = 1/2/m*sum=((X*theta-y)^2)
+
+    // The  last column of the dataset is the result column
+    arma::mat Y = dataSet.col(dataSet.n_cols - 1);
+ 
+     // number of the training datas
+    double m = Y.n_rows;
+
+    // input training feature dataset
+    arma::mat X = dataSet.cols(0,dataSet.n_cols-2);
+
+    // let's insert a column filled with ones
+    X.insert_cols(0, arma::ones<arma::mat>(m,1));
+
+    return 0.5/m/as_scalar(sum(arma::pow(X * theta - Y,2)));
 }

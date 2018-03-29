@@ -35,4 +35,9 @@ private:
     arma::mat mTheta;
 };
 
+class CostFunctionJ {
+public:
+    double calc( const arma::mat& dataSet, const arma::mat& theta );
+};
+
 #endif // __LINEAR_REGRESSION__
