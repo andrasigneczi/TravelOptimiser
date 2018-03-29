@@ -9,7 +9,7 @@ CFLAGS= -O2 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra
 LDLIBS=-lMachineLearning -lpthread -ldl -larmadillo
 OBJDIR=Debug
 
-SRCS1=matrix_test.cpp gradient_descent.cpp
+SRCS1=matrix_test.cpp linear_regression.cpp
 
 OBJS1=$(subst .cpp,.o,$(SRCS1))
 OBJS11=$(addprefix $(OBJDIR)/, $(OBJS1))

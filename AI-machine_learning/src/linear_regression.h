@@ -1,4 +1,4 @@
-#ifndef __GRADIENT_DESCENT__
+#ifndef __LINEAR_REGRESSION__
 
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
@@ -35,4 +35,4 @@ private:
     arma::mat mTheta;
 };
 
-#endif // __GRADIENT_DESCENT__
+#endif // __LINEAR_REGRESSION__

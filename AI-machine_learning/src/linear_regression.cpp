@@ -1,4 +1,4 @@
-#include "gradient_descent.h"
+#include "linear_regression.h"
 
 arma::mat GradientDescent::calc( const arma::mat& dataSet, const arma::mat& theta, double alpha, long long iteration, long double threshold /*=0 */) {
     // cleaning of the Feature Scaling vector

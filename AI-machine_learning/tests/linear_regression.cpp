@@ -1,8 +1,8 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
 #include <armadillo>
-#include "gradient_descent.h"
-#include <gradient_descent.h>
+#include "linear_regression.h"
+#include <linear_regression.h>
 
 void gradientDescentCalc() {
     //arma::mat X = {{1,1}, {2,2}, {3,3}};
