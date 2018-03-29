@@ -58,3 +58,28 @@ double GradientDescent::predict( const arma::rowvec input ) {
     }
     return retV;
 }
+
+arma::mat NormalEquation::calc( const arma::mat& dataSet ) {
+    // theta = (X.t()*X).i()*X.t()*y
+
+    // The  last column of the dataset is the result column
+    arma::mat Y = dataSet.col(dataSet.n_cols - 1);
+
+    // number of the training datas
+    int m = Y.n_rows;
+
+    // input training feature dataset
+    arma::mat X = dataSet.cols(0,dataSet.n_cols-2);
+
+    // let's insert a column filled with ones
+    X.insert_cols(0, arma::ones<arma::mat>(m,1));
+    
+    mTheta = (X.t()*X).i()*X.t()*Y;
+    return mTheta;
+}
+
+double NormalEquation::predict( const arma::rowvec input ) {
+    arma::rowvec vals = input;
+    vals.insert_cols( 0, arma::ones(1,1));
+    return as_scalar(vals * mTheta);
+}

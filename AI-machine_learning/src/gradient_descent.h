@@ -25,4 +25,14 @@ private:
     arma::mat mTheta;
 };
 
+class NormalEquation {
+public:
+    arma::mat calc( const arma::mat& dataSet );
+    // predic a value using the gradient descent
+    double predict( const arma::rowvec input );
+    
+private:
+    arma::mat mTheta;
+};
+
 #endif // __GRADIENT_DESCENT__

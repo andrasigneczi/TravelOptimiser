@@ -25,9 +25,21 @@ void gradientDescentCalc() {
     double alpha = 0.1;
     GradientDescent gd;
     //H = gd.calc( dataSet, H, alpha, 15000, 1.00393e-05 );
+    std::cout << "Gradient Descent:\n";
+    std::cout << std::string(80,'-') << std::endl;
     H = gd.calc( dataSet, H, alpha, 1500 );
-    std::cout << "H: " << H << std::endl;
+    std::cout << "H: " << H;
     std::cout << "prediction: 55; " << gd.predict( {55 } ) << "\n";
     std::cout << "prediction: 255; " << gd.predict( {255 } ) << "\n";
     std::cout << "prediction: 1255; " << gd.predict( {1255} ) << "\n";
+    
+    NormalEquation ne;
+    
+    H = ne.calc( dataSet );
+    std::cout << "\nNormal Equation:\n";
+    std::cout << std::string(80,'-') << std::endl;
+    std::cout << "H: " << H;
+    std::cout << "prediction: 55; " << ne.predict( {55 } ) << "\n";
+    std::cout << "prediction: 255; " << ne.predict( {255 } ) << "\n";
+    std::cout << "prediction: 1255; " << ne.predict( {1255} ) << "\n";
 }
