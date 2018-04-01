@@ -23,7 +23,7 @@ public class WizzairHelper
 
 	private static String mApiVersionNumber = new String();
 
-	public static String getApiVersion_old() throws InterruptedException
+	public static String getApiVersion() throws InterruptedException
 	{
 		if( mApiVersionNumber.length() > 0 )
 			return mApiVersionNumber;
@@ -71,7 +71,7 @@ public class WizzairHelper
 		return mApiVersionNumber;
 	}
 
-	public static String getApiVersion() throws Exception
+	public static String getApiVersion_new() throws Exception
 	{
 		if( mApiVersionNumber.length() > 0 )
 			return mApiVersionNumber;

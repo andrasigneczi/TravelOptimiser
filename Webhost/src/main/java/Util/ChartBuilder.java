@@ -184,9 +184,9 @@ public class ChartBuilder
 		int lCounter = 0;
 		for( TravelData_INPUT.Discount lDiscount : aDiscounts )
 		{
-			if( Util.compareDateTime( lDiscount.mEnding, lMostLeftDate ) == -1 )
+			if( lMostLeftDate.length() == 0 || Util.compareDateTime( lDiscount.mEnding, lMostLeftDate ) == -1 )
 				continue;
-			if( Util.compareDateTime( lDiscount.mBeginning, lMostRightDate ) == 1 )
+			if( lMostRightDate.length() == 0 || Util.compareDateTime( lDiscount.mBeginning, lMostRightDate ) == 1 )
 				continue;
 			HighChartDataResultComposer lHCDRCExtra = new HighChartDataResultComposer();
 			lHCDRCExtra.add( lDiscount.mBeginning, lHeight, new Float(1.0) );

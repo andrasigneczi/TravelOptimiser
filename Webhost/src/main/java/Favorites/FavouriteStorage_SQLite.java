@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 /**
  * Created by Andras on 10/10/2016.
@@ -52,7 +53,7 @@ public class FavouriteStorage_SQLite implements FavouritesStorage
 	}
 
 	@Override
-	public ArrayList<String> LoadFavourites()
+	public TreeSet<String> LoadFavourites()
 	{
 		ConnectionOpen();
 		ConnectionClose();
@@ -60,7 +61,7 @@ public class FavouriteStorage_SQLite implements FavouritesStorage
 	}
 
 	@Override
-	public void SaveFavourites( ArrayList<String> aTrips )
+	public void SaveFavourites( TreeSet<String> aTrips )
 	{
 		ConnectionOpen();
 		ConnectionClose();

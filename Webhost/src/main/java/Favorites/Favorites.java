@@ -3,8 +3,8 @@ package Favorites;
 import Util.OneWayTrip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 /**
  * Created by Andras on 10/06/2016.
@@ -12,8 +12,8 @@ import java.util.ArrayList;
 public class Favorites
 {
 	private static Logger mLogger = LoggerFactory.getLogger(Favorites.class);
-	private ArrayList<String> mTrips = new ArrayList<>();
-
+	protected FavouritesStorage.TripStringComparator mComparator = new FavouritesStorage.TripStringComparator();
+	private TreeSet<String> mTrips = new TreeSet<>(mComparator);
 	private final static Favorites mInstance = new Favorites();
 
 	private static FavouritesStorage mStorage;
@@ -69,9 +69,10 @@ public class Favorites
 		else
 			lTrip = aTrip1.toString() + "&" + aTrip2.toString();
 
-		for( int i = 0; i < mTrips.size(); i++ )
+		String[] lTrips = (String[])mTrips.toArray();
+		for( int i = 0; i < lTrips.length; i++ )
 		{
-			if( mTrips.get( i ).equals( lTrip ))
+			if( lTrips[ i ].equals( lTrip ))
 			{
 				mTrips.remove( i );
 				break;
@@ -83,7 +84,7 @@ public class Favorites
 	{
 		if( aIndex < 0 || aIndex >= mTrips.size() )
 			return;
-		mTrips.remove( aIndex );
+		mTrips.remove( getSource( aIndex ));
 	}
 
 	public boolean contains( OneWayTrip aTrip1, OneWayTrip aTrip2 )
@@ -97,12 +98,7 @@ public class Favorites
 		else
 			lTrip = aTrip1.toString() + "&" + aTrip2.toString();
 
-		for( int i = 0; i < mTrips.size(); i++ )
-		{
-			if( mTrips.get( i ).indexOf( lTrip ) != -1 )
-				return true;
-		}
-		return false;
+		return mTrips.contains( lTrip );
 	}
 
 	public OneWayTrip[] getFromSource( String aTripString )
@@ -160,8 +156,7 @@ public class Favorites
 		if( aIndex < 0 || aIndex >= mTrips.size() )
 			return null;
 
-		String lTripString = mTrips.get( aIndex );
-		return getFromSource( lTripString );
+		return getFromSource( (String)mTrips.toArray()[aIndex] );
 	}
 
 	public String getSource( int aIndex )
@@ -169,15 +164,17 @@ public class Favorites
 		if( aIndex < 0 || aIndex >= mTrips.size() )
 			return null;
 
-		return mTrips.get( aIndex );
+		return (String)mTrips.toArray()[aIndex];
 	}
 
 	public int indexOf( String source )
 	{
-		for( int i = 0; i < mTrips.size(); i++ )
-		{
-			if( mTrips.get( i ).equals( source ))
+		int i = 0;
+		for( Iterator<String> it = mTrips.iterator(); it.hasNext(); ) {
+			if( it.next().equals( source )) {
 				return i;
+			}
+			++i;
 		}
 		return -1;
 	}
@@ -189,6 +186,6 @@ public class Favorites
 
 	public void RemoveAll()
 	{
-		mTrips = new ArrayList<>();
+		mTrips = new TreeSet<>(mComparator);
 	}
 }

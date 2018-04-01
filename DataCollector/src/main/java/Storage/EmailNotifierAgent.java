@@ -120,7 +120,7 @@ public class EmailNotifierAgent extends ArchiverAgent
 					{
 						if( checkPriceDropTreshold( r, lPriceDrop ))
 						{
-							sendMailSSL( r, lOneWayTrip );
+							sendMailSSL( r, lOneWayTrip, lResult.mRecordedDatetime );
 							mMatchedTrips.add( oneWayTripString );
 						}
 					}
@@ -229,7 +229,7 @@ public class EmailNotifierAgent extends ArchiverAgent
 		return mPriceDropTreshold <= aPriceDrop;
 	}
 
-	private void sendMailSSL( Recipient recipient, OneWayTrip aOWTrip )
+	private void sendMailSSL( Recipient recipient, OneWayTrip aOWTrip, String recordedDatetime )
 	{
 		String fromAddress = "agent@traveloptimizer.com";
 		String fromName = "Travel Optimizer";
@@ -243,7 +243,8 @@ public class EmailNotifierAgent extends ArchiverAgent
 				" - " + aOWTrip.getOutboundArrivalAirport() +
 				" " + aOWTrip.getDatetime() + "\n" +
 				"old price: " + mOldPrice + "\n" +
-				"new price: " + mNewPrice + "\n";
+				"new price: " + mNewPrice + "\n" +
+				"recorded datetime: " + recordedDatetime + "\n";
 
 		//GMailSender.send( fromAddress, fromName, toAddress, toName, subject, msgBody );
 		mGmailSender.add( fromAddress, fromName, toAddress, toName, subject, msgBody );
