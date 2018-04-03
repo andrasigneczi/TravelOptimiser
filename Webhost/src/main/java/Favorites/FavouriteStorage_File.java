@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,9 +24,9 @@ public class FavouriteStorage_File implements FavouritesStorage
 	private final static String mFileName = "favourite_flights.txt";
 
 	@Override
-	public ArrayList<String> LoadFavourites()
+	public TreeSet<String> LoadFavourites()
 	{
-		ArrayList<String> lTrips = new ArrayList<>();
+		TreeSet<String> lTrips = new TreeSet<>(new TripStringComparator());
 		Scanner lScanner = null;
 		String lContent;
 		try
@@ -37,13 +38,13 @@ public class FavouriteStorage_File implements FavouritesStorage
 		catch( FileNotFoundException e )
 		{
 			mLogger.error( "Favourite loading error: " + Util.getTraceInformation( e ));
-			return null;
+			return lTrips;
 		}
 		catch( java.util.NoSuchElementException e )
 		{
 			lScanner.close();
 			mLogger.error( "Favourite loading error: " + Util.getTraceInformation( e ));
-			return null;
+			return lTrips;
 		}
 
 		Pattern lReg = Pattern.compile( "^(.+)$", Pattern.MULTILINE );
@@ -57,7 +58,7 @@ public class FavouriteStorage_File implements FavouritesStorage
 	}
 
 	@Override
-	public void SaveFavourites( ArrayList<String> aTrips )
+	public void SaveFavourites( TreeSet<String> aTrips )
 	{
 		try
 		{
