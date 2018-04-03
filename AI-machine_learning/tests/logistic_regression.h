@@ -1,0 +1,4 @@
+
+namespace LogisticRegression {
+void runTests();
+}

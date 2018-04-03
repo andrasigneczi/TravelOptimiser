@@ -4,6 +4,9 @@
 #include "linear_regression.h"
 #include <linear_regression.h>
 
+using namespace LinearRegression;
+
+namespace LinearRegression {
 void gradientDescentCalc() {
     //arma::mat X = {{1,1}, {2,2}, {3,3}};
     arma::mat dataSet;
@@ -25,7 +28,7 @@ void gradientDescentCalc() {
     double alpha = 0.1;
     GradientDescent gd;
     //H = gd.calc( dataSet, H, alpha, 15000, 1.00393e-05 );
-    std::cout << "Gradient Descent:\n";
+    std::cout << "Linear Regression Gradient Descent:\n";
     std::cout << std::string(80,'-') << std::endl;
     H = gd.calc( dataSet, H, alpha, 1500 );
     std::cout << "H: " << H;
@@ -52,3 +55,5 @@ void gradientDescentCalc() {
     std::cout << std::string(80,'-') << std::endl;
     std::cout << cfj.calc( dataSet, H ) << std::endl;
 }
+
+} // namespace LinearRegression

@@ -1,2 +1,4 @@
 
+namespace LinearRegression {
 void gradientDescentCalc();
+}

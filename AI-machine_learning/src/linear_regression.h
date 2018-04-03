@@ -5,6 +5,8 @@
 #include <armadillo>
 #include <vector>
 
+namespace LinearRegression {
+
 class GradientDescent {
 
 public:
@@ -39,5 +41,7 @@ class CostFunctionJ {
 public:
     double calc( const arma::mat& dataSet, const arma::mat& theta );
 };
+
+} // namespace LinearRegression
 
 #endif // __LINEAR_REGRESSION__

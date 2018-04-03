@@ -1,5 +1,9 @@
 #include "linear_regression.h"
 
+using namespace LinearRegression;
+
+namespace LinearRegression {
+
 arma::mat GradientDescent::calc( const arma::mat& dataSet, const arma::mat& theta, double alpha, long long iteration, long double threshold /*=0 */) {
     // cleaning of the Feature Scaling vector
     mFCData.clear();
@@ -101,3 +105,5 @@ double CostFunctionJ::calc( const arma::mat& dataSet, const arma::mat& theta ) {
 
     return 0.5/m/as_scalar(sum(arma::pow(X * theta - Y,2)));
 }
+
+} // namespace LinearRegression
