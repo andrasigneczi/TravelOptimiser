@@ -26,11 +26,12 @@ void gradientDescentCalc() {
     arma::mat H;
     H << 0. << arma::endr << 0.;
     double alpha = 0.1;
+    double lambda = 1.0;
     GradientDescent gd;
     //H = gd.calc( dataSet, H, alpha, 15000, 1.00393e-05 );
     std::cout << "Linear Regression Gradient Descent:\n";
     std::cout << std::string(80,'-') << std::endl;
-    H = gd.calc( dataSet, H, alpha, 1500 );
+    H = gd.calcL( dataSet, H, alpha, lambda, 1500 );
     std::cout << "H: " << H;
     std::cout << "prediction: 55; " << gd.predict( {55 } ) << "\n";
     std::cout << "prediction: 255; " << gd.predict( {255 } ) << "\n";
@@ -43,7 +44,7 @@ void gradientDescentCalc() {
     
     NormalEquation ne;
     
-    H = ne.calc( dataSet );
+    H = ne.calc( dataSet, lambda );
     std::cout << "\nNormal Equation:\n";
     std::cout << std::string(80,'-') << std::endl;
     std::cout << "H: " << H;
