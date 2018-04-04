@@ -18,6 +18,7 @@ public:
     
     // calculating the gradient descent
     arma::mat calc( const arma::mat& dataSet, const arma::mat& theta, double alpha, long long iteration, long double threshold = 0.0 );
+    arma::mat calcL( const arma::mat& dataSet, const arma::mat& theta, double alpha, double lambda, long long iteration, long double threshold = 0.0 );
     // predic a value using the gradient descent
     double predict( const arma::rowvec input );
     
@@ -30,6 +31,7 @@ private:
 class NormalEquation {
 public:
     arma::mat calc( const arma::mat& dataSet );
+    arma::mat calc( const arma::mat& dataSet, double lambda );
     // predic a value using the gradient descent
     double predict( const arma::rowvec input );
     
