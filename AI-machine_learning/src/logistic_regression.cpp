@@ -41,7 +41,7 @@ arma::mat GradientDescent::calc( arma::mat X, const arma::mat& y, const arma::ma
     return mTheta;
 }
 
-arma::mat GradientDescent::calc( arma::mat X, const arma::mat& y, const arma::mat& theta, double alpha, double lambda, long long iteration, long double threshold /*=0 */) {
+arma::mat GradientDescent::calcL( arma::mat X, const arma::mat& y, const arma::mat& theta, double alpha, double lambda, long long iteration, long double threshold /*=0 */) {
     // number of the training datas
     double m = y.n_rows;
     

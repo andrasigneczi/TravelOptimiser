@@ -11,7 +11,7 @@ void test1();
 void test2();
 
 void runTests() {
-//    test1();
+    test1();
     test2();
 }
 
@@ -142,7 +142,7 @@ void test2() {
     std::cout << "\nGradient descent with lambda:\n";
     initial_theta = arma::zeros(n, 1);
     LogisticRegression::GradientDescent gd;
-    arma::mat theta = gd.calc( X, y, initial_theta, 0.0006, 1.0, 1.2E+6, 1.0E-13 );
+    arma::mat theta = gd.calcL( X, y, initial_theta, 0.0006, 1.0, 1.2E+6, 1.0E-13 );
 
     // Compute accuracy on our training set
     arma::mat p = gd.predict(X,theta);
