@@ -1,4 +1,5 @@
 #!/bin/bash
 
-#cd ../src;make clean;make;cd ../tests;make clean;make
-cd ../src;make;cd ../tests;make
+cd ../src;make clean;make;cd ../tests;make clean;make
+#cd ../src;make;cd ../tests;make
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../src
