@@ -1,7 +1,6 @@
 #ifndef __LINEAR_REGRESSION__
+#define __LINEAR_REGRESSION__
 
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/io.hpp>
 #include <armadillo>
 #include <vector>
 

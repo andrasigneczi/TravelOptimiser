@@ -1,4 +1,4 @@
 
-namespace LogisticRegression {
+namespace LogisticRegression_ns {
 void runTests();
 }

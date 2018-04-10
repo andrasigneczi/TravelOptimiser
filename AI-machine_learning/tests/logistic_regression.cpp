@@ -1,18 +1,35 @@
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/io.hpp>
 #include <armadillo>
 #include "logistic_regression.h"
 #include <logistic_regression.h>
 
-using namespace LogisticRegression;
-
-namespace LogisticRegression {
+namespace LogisticRegression_ns {
 void test1();
 void test2();
+void test3();
+void test4();
 
 void runTests() {
+    //arma::mat dataSet;
+    //dataSet.load( "../Octave/machine-learning-ex4/ex4/ex4weights_Theta1.txt" );
+    //std::cout << arma::size( dataSet ) << "\n";
+    //dataSet.save("ex4weights_Theta1.bin", arma::arma_binary);
+//
+    //dataSet.load( "../Octave/machine-learning-ex4/ex4/ex4weights_Theta2.txt" );
+    //std::cout << arma::size( dataSet ) << "\n";
+    //dataSet.save("ex4weights_Theta2.bin", arma::arma_binary);
+//
+    //dataSet.load( "../Octave/machine-learning-ex4/ex4/ex4data1_X.txt" );
+    //std::cout << arma::size( dataSet ) << "\n";
+    //dataSet.save("ex4data1_X.bin", arma::arma_binary);
+//
+    //dataSet.load( "../Octave/machine-learning-ex4/ex4/ex4data1_y.txt" );
+    //std::cout << arma::size( dataSet ) << "\n";
+    //dataSet.save("ex4data1_y.bin", arma::arma_binary);
+
     test1();
     test2();
+    test3();
+    test4();
 }
 
 void test1() {
@@ -34,12 +51,12 @@ void test1() {
     // Initialize fitting parameters
     arma::mat initial_theta = arma::zeros(n + 1, 1);
 
+    LogisticRegression lr;
     // Compute and display initial cost and gradient
-    LogisticRegression::CostFunctionJ costFJ;
-    double cost = costFJ.calc(X, y, initial_theta);
-    arma::mat grad = costFJ.grad(X, y, initial_theta);
+    double costValue = lr.cost(X, y, initial_theta);
+    arma::mat grad = lr.gradient(X, y, initial_theta);
     
-    std::cout << "Cost at initial theta (zeros): " << cost << std::endl;
+    std::cout << "Cost at initial theta (zeros): " << costValue << std::endl;
     std::cout << "Expected cost (approx): 0.693" << std::endl;
 
     std::cout << "Gradient at initial theta (zeros): \n";
@@ -50,18 +67,19 @@ void test1() {
     arma::mat test_theta;
     test_theta << -24 << arma::endr << 0.2 << arma::endr << 0.2;
     
-    cost = costFJ.calc(X, y, test_theta);
-    grad = costFJ.grad(X, y, test_theta);
+    costValue = lr.cost(X, y, test_theta);
+    grad = lr.gradient(X, y, test_theta);
     
-    std::cout << "\nCost at test theta: " << cost << std::endl;
+    std::cout << "\nCost at test theta: " << costValue << std::endl;
     std::cout << "Expected cost (approx): 0.218\n";
     std::cout << "Gradient at test theta: \n";
     std::cout << grad << "\n";
     std::cout << "Expected gradients (approx):\n 0.043\n 2.566\n 2.647\n";
     
-    LogisticRegression::GradientDescent gd;
-    arma::mat theta = gd.calc( X, y, initial_theta, 0.003, 1.2E+7, 1.0E-13 );
+    arma::mat theta = lr.gradientDescent( X, y, initial_theta, 0.003, 1.2E+7 );
     std::cout << "\nGradient descent:\n";
+    costValue = lr.cost(X, y, theta);
+    std::cout << "Cost at theta: " << costValue << std::endl;
     std::cout << "Expected cost (approx): 0.203\n";
     std::cout << "theta: " << theta <<"\n";
     std::cout << "Expected theta (approx):\n";
@@ -70,13 +88,13 @@ void test1() {
     //  Predict probability for a student with score 45 on exam 1 
     //  and score 85 on exam 2 
     arma::mat st = {1,45,85};
-    double prob = arma::as_scalar(costFJ.sigmoid( st, theta));
+    double prob = arma::as_scalar(lr.sigmoid( st, theta));
     std::cout << "For a student with scores 45 and 85, we predict an admission probability of " << prob << "\n";
     std::cout << "Expected value: 0.775 +/- 0.002\n\n";
     
     // Compute accuracy on our training set
-    arma::mat p = gd.predict(X,theta);
-    std::cout << "Train Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == y)) << "\n";
+    arma::mat p = lr.predict(X,theta);
+    std::cout << "Train Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == y)) * 100 << "\n";
     std::cout << "Expected accuracy (approx): 89.0\n";
 
 }
@@ -114,11 +132,11 @@ void test2() {
     arma::mat initial_theta = arma::zeros(n, 1);
     double lambda = 1.0;
     // Compute and display initial cost and gradient
-    LogisticRegression::CostFunctionJ costFJ;
-    double cost = costFJ.calc(X, y, initial_theta, lambda);
-    arma::mat grad = costFJ.grad(X, y, initial_theta, lambda);
+    LogisticRegression lr;
+    double costValue = lr.cost(X, y, initial_theta, lambda);
+    arma::mat grad = lr.gradient(X, y, initial_theta, lambda);
     
-    std::cout << "Cost at initial theta (zeros): " << cost << std::endl;
+    std::cout << "Cost at initial theta (zeros): " << costValue << std::endl;
     std::cout << "Expected cost (approx): 0.693" << std::endl;
 
     std::cout << "Gradient at initial theta (zeros) - first five values only: \n";
@@ -128,10 +146,10 @@ void test2() {
     // Compute and display cost and gradient with all-ones theta and lambda = 10
     arma::mat test_theta = arma::ones(n,1);
 
-    cost = costFJ.calc(X, y, test_theta,10);
-    grad = costFJ.grad(X, y, test_theta,10);
+    costValue = lr.cost(X, y, test_theta,10);
+    grad = lr.gradient(X, y, test_theta,10);
     
-    std::cout << "\nCost at test theta (with lambda = 10): " << cost << "\n";
+    std::cout << "\nCost at test theta (with lambda = 10): " << costValue << "\n";
     std::cout << "Expected cost (approx): 3.16\n";
     std::cout << "Gradient at test theta - first five values only:\n";
     std::cout << grad.rows(0,4) << "\n";
@@ -141,13 +159,28 @@ void test2() {
 
     std::cout << "\nGradient descent with lambda:\n";
     initial_theta = arma::zeros(n, 1);
-    LogisticRegression::GradientDescent gd;
-    arma::mat theta = gd.calcL( X, y, initial_theta, 0.0006, 1.0, 1.2E+6, 1.0E-13 );
+    arma::mat theta = lr.gradientDescentWithReguralization( X, y, initial_theta, 0.0006, 1.0, 1.2E+6 );
 
     // Compute accuracy on our training set
-    arma::mat p = gd.predict(X,theta);
-    std::cout << "Train Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == y)) << "\n";
+    arma::mat p = lr.predict(X,theta);
+    std::cout << "Train Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == y))*100 << "\n";
     std::cout << "Expected accuracy (with lambda = 1): 83.1 (approx)\n";
 }
 
-} // namespace LogisticRegression
+void test3() {
+    // One-vs-all
+    // "ex3data1_X.bin"
+    // "ex3data1_y.bin"
+    // "ex3weights_Theta1.bin"
+    // "ex3weights_Theta2.bin"
+}
+
+void test4() {
+    // Neural Networks
+    // "ex3data1_X.bin"
+    // "ex3data1_y.bin"
+    // "ex3weights_Theta1.bin"
+    // "ex3weights_Theta2.bin"
+}
+
+} // LogisticRegression_ns
