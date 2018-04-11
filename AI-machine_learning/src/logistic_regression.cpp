@@ -7,7 +7,7 @@ struct FCData{
     double average;
 };
 
-arma::mat LogisticRegression::gradientDescent( arma::mat X, const arma::mat& y, const arma::mat& theta, double alpha, long long iteration ) {
+arma::mat LogisticRegression::gradientDescent( const arma::mat& X, const arma::mat& y, const arma::mat& theta, double alpha, long long iteration ) {
     // number of the training datas
     double m = y.n_rows;
     mTheta = theta;
@@ -22,7 +22,7 @@ arma::mat LogisticRegression::gradientDescent( arma::mat X, const arma::mat& y, 
     return mTheta;
 }
 
-arma::mat LogisticRegression::gradientDescentWithReguralization( arma::mat X, const arma::mat& y, const arma::mat& theta, double alpha, double lambda, long long iteration ) {
+arma::mat LogisticRegression::gradientDescentWithReguralization( const arma::mat& X, const arma::mat& y, const arma::mat& theta, double alpha, double lambda, long long iteration ) {
     // number of the training datas
     double m = y.n_rows;
     mTheta = theta;
@@ -99,4 +99,28 @@ arma::mat LogisticRegression::gradient( const arma::mat& X, const arma::mat& y, 
 arma::mat LogisticRegression::sigmoid( const arma::mat& X, const arma::mat& theta ) {
     const arma::mat z = -X*theta;
     return 1.0/(1.0+arma::exp(z));
+}
+
+CostAndGradient::RetVal LogisticRegressionV2::calc( const arma::mat& nn_params ) {
+    CostAndGradient::RetVal retVal;
+
+    const arma::mat& theta = nn_params;
+
+    const arma::mat z = -mX*theta;
+    
+    // cost calculation
+    const arma::mat h = 1.0/(1.0+arma::exp(z));
+    double m = mX.n_rows;
+    retVal.cost = 1.0/m*as_scalar(-mY.t()*arma::log(h)-(1.0-mY).t()*arma::log(1.0-h))
+    + mLambda/2.0/m*arma::as_scalar(arma::sum(arma::pow(theta.rows(1,theta.n_rows-1),2)));
+
+    // gradient calculation
+    retVal.grad = arma::mat(theta.n_rows,1);
+    retVal.grad(0) = arma::as_scalar(arma::sum((1/m*(h-mY).t()*mX.col(0))));
+    
+    for( size_t i = 1; i < theta.n_rows; ++i ) {
+      retVal.grad(i) = arma::as_scalar(1/m*(h-mY).t()*mX.col(i) + mLambda/m*theta(i));
+    }
+
+    return retVal;
 }

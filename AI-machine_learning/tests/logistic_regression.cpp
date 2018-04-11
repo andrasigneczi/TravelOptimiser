@@ -1,8 +1,10 @@
 #include <armadillo>
 #include "logistic_regression.h"
 #include <logistic_regression.h>
+#include "fmincg.h"
 
 namespace LogisticRegression_ns {
+    
 void test1();
 void test2();
 void test3();
@@ -27,7 +29,7 @@ void runTests() {
     //dataSet.save("ex4data1_y.bin", arma::arma_binary);
 
     test1();
-    test2();
+    //test2();
     test3();
     test4();
 }
@@ -77,9 +79,17 @@ void test1() {
     std::cout << "Expected gradients (approx):\n 0.043\n 2.566\n 2.647\n";
     
     arma::mat theta = lr.gradientDescent( X, y, initial_theta, 0.003, 1.2E+7 );
+    // fminunc(@(t)(costFunctionReg(t, X, y, lambda)), initial_theta, options);
+    /*
+    arma::mat thetaSizes;
+    LogisticRegressionV2 lrv2( thetaSizes, X, y, 1 );
+    fmincgRetVal rv = fmincg( lrv2, initial_theta, 400 );
+    arma::mat& theta = rv.m_NNPparams;
+    */
     std::cout << "\nGradient descent:\n";
     costValue = lr.cost(X, y, theta);
     std::cout << "Cost at theta: " << costValue << std::endl;
+    //std::cout << "Cost at theta: " << rv.mCost << std::endl;
     std::cout << "Expected cost (approx): 0.203\n";
     std::cout << "theta: " << theta <<"\n";
     std::cout << "Expected theta (approx):\n";

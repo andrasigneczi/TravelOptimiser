@@ -1,5 +1,5 @@
-#ifndef __LINEAR_REGRESSION__
-#define __LINEAR_REGRESSION__
+#ifndef __LINEAR_REGRESSION_H__
+#define __LINEAR_REGRESSION_H__
 
 #include <armadillo>
 #include <vector>

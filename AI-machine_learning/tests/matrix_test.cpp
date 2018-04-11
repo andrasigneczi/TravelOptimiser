@@ -4,8 +4,8 @@
 #include <chrono>
 
 int main () {
-    LinearRegression::gradientDescentCalc();
-    std::cout << std::string( 80, '-' ) << std::endl;
+    //LinearRegression::gradientDescentCalc();
+    //std::cout << std::string( 80, '-' ) << std::endl;
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
