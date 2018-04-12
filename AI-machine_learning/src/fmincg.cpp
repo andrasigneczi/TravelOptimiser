@@ -93,9 +93,7 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
     // while no 1
     while( i < abs(length)) {                                   // while not finished
       
-        std::cout << "dbg length " << length << "; i << " << i << "\n";
         i = i + (length>0);                                      // count iterations?!
-        std::cout << "dbg length2 " << length << "; i << " << i << "\n";
         arma::mat X0 = X; 
         double f0 = f1; 
         arma::mat df0 = df1;                   // make a copy of current values
@@ -119,7 +117,7 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
         // while no 2
         while( 1 ) {
             double A = 0.0,B = 0.0,z2 = 0.0;
-            // while no 3    
+            // while no 3  
             while(((f2 > f1+z1*RHO*d1) || (d2 > -SIG*d1)) && (M > 0)) {
                 limit = z1;                                         // tighten the bracket
                 if( f2 > f1 ) {
@@ -146,13 +144,10 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
                 z3 = z3-z2;                    // z3 is now relative to the location of z2
             } // while no 3
             if((f2 > f1+z1*RHO*d1) || (d2 > -SIG*d1)) {
-              std::cout << "dbg 1\n";
               break;                                                // this is a failure
             } else if( d2 > SIG*d1 ) {
-              std::cout << "dbg 2\n";
               success = 1; break;                                             // success
             } else if( M == 0 ) {
-              std::cout << "dbg 3\n";
               break;                                                          // failure
             }
             A = 6*(f2-f3)/z3+3*(d2+d3);                      // make cubic extrapolation
@@ -190,8 +185,10 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
             //fX = [fX' f1]';
             fX << f1 << arma::endr;
             //fprintf('Iteration %4i | Cost: %4.6e\r', i, f1);
-            std::cout << "Iteration " << i << " | Cost: " << f1 << "\r";
-            s = (df2.t()*df2-df1.t()*df2)/(df1.t()*df1)*s - df2;      // Polack-Ribiere direction
+            std::cout << "Iteration " << i << " | Cost: " << f1 << "\n";
+            //std::cout <<size(df2) << size(df1) << size(s);
+            //std::cout << size(df2.t()*df2) << size(df1.t()*df2) <<size(df1.t()*df1);
+            s = as_scalar((df2.t()*df2-df1.t()*df2)/(df1.t()*df1))*s - df2;      // Polack-Ribiere direction
             arma::mat tmp = df1; df1 = df2; df2 = tmp;                         // swap derivatives
             d2 = as_scalar(df1.t()*s);
             if( d2 > 0 ) {                                     // new slope must be negative
@@ -204,7 +201,6 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
         } else {
             X = X0; f1 = f0; df1 = df0;  // restore point from before failed line search
             if( ls_failed || i > abs(length)) {          // line search failed twice in a row
-              std::cout << "dbg 4\n";
               break;                             // or we ran out of time, so we give up
             }
             arma::mat tmp = df1; df1 = df2; df2 = tmp;                         // swap derivatives

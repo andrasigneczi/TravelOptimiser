@@ -1,4 +1,7 @@
 #!/bin/bash
 
-cd ../src;make clean;make;cd ../tests;make clean;make
-#cd ../src;make;cd ../tests;make
+if [[ $1 == "clean" ]]; then
+    cd ../src;make clean;make;cd ../tests;make clean;make;
+else
+    cd ../src;make;cd ../tests;make;
+fi;

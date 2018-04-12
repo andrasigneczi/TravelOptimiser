@@ -1,10 +1,10 @@
 CXX=g++
 CC=gcc
-CPPFLAGS= -g -O2 -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -I ../src
+CPPFLAGS= -O3 -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -I ../src
 #CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -Wextra -pedantic -D__LINUX__ -pthread -Dsprintf_s=sprintf -I../..
 
-LDFLAGS=-g -fPIC -O2 -L../src
-CFLAGS= -O2 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra
+LDFLAGS=-fPIC -O2 -L../src
+CFLAGS= -O3 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra
 
 LDLIBS=-lMachineLearning -lpthread -ldl -larmadillo
 OBJDIR=Debug

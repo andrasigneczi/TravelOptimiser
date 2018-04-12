@@ -11,15 +11,17 @@ public:
         arma::mat grad;
     };
     
-    CostAndGradient( const arma::mat& thetaSizes, const arma::mat& X, const arma::mat& y, double lambda )
-    : mThetaSizes( thetaSizes), mX( X ), mY( y ), mLambda( lambda ){}
+    CostAndGradient( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda )
+    : mLayerSizes( layerSizes), mX( X ), mY( y ), mLambda( lambda ){}
     
     virtual RetVal calc( const arma::mat& nn_params ) = 0;
+    void setLambda( double lambda ) { mLambda = lambda; }
     
-    const arma::mat& mThetaSizes;
+protected:
+    const arma::mat& mLayerSizes; // input layer, hidden1, hidden2, ..., output
     const arma::mat& mX;
     const arma::mat& mY;
-    const double mLambda;
+    double mLambda;
 };
 
 #endif // __COSTANDGRADIENT_H__
