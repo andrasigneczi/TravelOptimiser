@@ -41,8 +41,7 @@ void test2() {
     y.load("ex3data1_y.bin");
 
     //nn_params = [Theta1(:) ; Theta2(:)];
-    arma::mat nn_params = arma::vectorise( Theta1 );
-    nn_params.insert_rows( nn_params.n_rows, arma::vectorise( Theta2 ));
+    arma::mat nn_params = join_cols( arma::vectorise( Theta1 ), arma::vectorise( Theta2 ));
     double lambda = 0;
     
     std::cout << "Feedforward Using Neural Network ...\n";
@@ -55,7 +54,7 @@ void test2() {
     NeuralNetwork nn(thetaSizes, X, y, lambda);
     //J = nnCostFunction(nn_params, input_layer_size, hidden_layer_size, ...
     //                   num_labels, X, y, lambda);
-    CostAndGradient::RetVal rv = nn.calc(nn_params);
+    CostAndGradient::RetVal& rv = nn.calc(nn_params);
     
     std::cout << "Cost at parameters (loaded from ex4weights): " << rv.cost << " (this value should be about 0.287629)\n";
     

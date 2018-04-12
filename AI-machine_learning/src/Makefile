@@ -1,9 +1,9 @@
 CXX=g++
 CC=gcc
-CPPFLAGS=-O3 -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC
+CPPFLAGS=-O3 -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -DARMA_USE_CXX11 -march=native
 #CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -Wextra -pedantic -D__LINUX__ -pthread -Dsprintf_s=sprintf -I../..
 
-LDFLAGS=-fPIC -O2 -shared
+LDFLAGS=-fPIC -O3 -shared -march=native
 CFLAGS= -O3 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra
 
 LDLIBS=-lpthread -ldl -larmadillo
@@ -21,6 +21,7 @@ all: DelBin $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CXX) $(LDFLAGS) -o $(TARGET) $(OBJS) $(LDLIBS)
+	strip -s $(TARGET)
 
 $(OBJDIR)/%.o: %.cpp
 	$(CXX) $(CPPFLAGS) -c -o $@ $<

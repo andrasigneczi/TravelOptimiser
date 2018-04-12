@@ -27,7 +27,7 @@ class LogisticRegressionV2 : public CostAndGradient {
 public:
 
     using CostAndGradient::CostAndGradient;
-    RetVal calc( const arma::mat& nn_params ) override;
+    RetVal& calc( const arma::mat& nn_params ) override;
 };
 
 #endif // __LOGISTIC_REGRESSION__

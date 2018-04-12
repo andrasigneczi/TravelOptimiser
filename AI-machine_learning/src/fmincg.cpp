@@ -1,4 +1,5 @@
 #include "fmincg.h"
+#include <limits.h>
 
 // function [X, fX, i] = fmincg(f, X, options, P1, P2, P3, P4, P5)
 // Minimize a continuous differentialble multivariate function. Starting point
@@ -64,7 +65,8 @@ static bool isinf( const double& x ) {
 static bool isreal( const double& ) {
     return true;
 }
-static const double realmin = 2.2251e-308;
+//static const double realmin = 2.2251e-308;
+static const double realmin = std::numeric_limits<double>::min(); 
 
 fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
 
@@ -82,9 +84,9 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
     int ls_failed = 0;                             // no previous line search has failed
     arma::mat fX;
     //[f1 df1] = eval(argstr);                      // get function value and gradient
-    CostAndGradient::RetVal retVal = f.calc( X );
-    double& f1 = retVal.cost;
-    arma::mat& df1 = retVal.grad;
+    CostAndGradient::RetVal& retVal = f.calc( X );
+    double f1 = retVal.cost;
+    arma::mat df1 = std::move(retVal.grad);
     i = i + (length<0);                                        // count epochs?!
     arma::mat s = -df1;                                        // search direction is steepest
     double d1 = as_scalar(-s.t()*s);                                     // this is the slope
@@ -99,9 +101,9 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
         arma::mat df0 = df1;                   // make a copy of current values
         X = X + z1*s;                                             // begin line search
         // [f2 df2] = eval(argstr);
-        CostAndGradient::RetVal retVal2 = f.calc( X );
-        double f2 = retVal2.cost;
-        arma::mat df2 = retVal2.grad;
+        f.calc( X );
+        double f2 = retVal.cost;
+        arma::mat df2 { std::move(retVal.grad)};
         
         i = i + (length<0);                                          // count epochs?!
         double d2 = as_scalar(df2.t()*s);
@@ -135,9 +137,9 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
                 X = X + z2*s;
                 
                 //[f2 df2] = eval(argstr);
-                CostAndGradient::RetVal retVal3 = f.calc( X );
-                f2 = retVal3.cost;
-                df2 = retVal3.grad;
+                f.calc( X );
+                f2 = retVal.cost;
+                df2 = std::move(retVal.grad);
               
                 M = M - 1; i = i + (length<0);                           // count epochs?!
                 d2 = as_scalar(df2.t()*s);
@@ -172,9 +174,9 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
             f3 = f2; d3 = d2; z3 = -z2;                  // set point 3 equal to point 2
             z1 = z1 + z2; X = X + z2*s;                      // update current estimates
             //[f2 df2] = eval(argstr);
-            retVal2 = f.calc( X );
-            f2 = retVal2.cost;
-            df2 = retVal2.grad;
+            f.calc( X );
+            f2 = retVal.cost;
+            df2 = std::move(retVal.grad);
             
             M = M - 1; i = i + (length<0);                             // count epochs?!
             d2 = as_scalar(df2.t()*s);
@@ -189,7 +191,8 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
             //std::cout <<size(df2) << size(df1) << size(s);
             //std::cout << size(df2.t()*df2) << size(df1.t()*df2) <<size(df1.t()*df1);
             s = as_scalar((df2.t()*df2-df1.t()*df2)/(df1.t()*df1))*s - df2;      // Polack-Ribiere direction
-            arma::mat tmp = df1; df1 = df2; df2 = tmp;                         // swap derivatives
+            //arma::mat tmp = df1; df1 = df2; df2 = tmp;                         // swap derivatives
+            arma::mat tmp {std::move(df1)}; df1 = std::move(df2); df2 = std::move(tmp);                         // swap derivatives
             d2 = as_scalar(df1.t()*s);
             if( d2 > 0 ) {                                     // new slope must be negative
               s = -df1;                              // otherwise use steepest direction
@@ -203,7 +206,8 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
             if( ls_failed || i > abs(length)) {          // line search failed twice in a row
               break;                             // or we ran out of time, so we give up
             }
-            arma::mat tmp = df1; df1 = df2; df2 = tmp;                         // swap derivatives
+            //arma::mat tmp = df1; df1 = df2; df2 = tmp;                         // swap derivatives
+            arma::mat tmp{ std::move(df1)}; df1 = std::move(df2); df2 = std::move(tmp);                         // swap derivatives
             s = -df1;                                                    // try steepest
             d1 = as_scalar(-s.t()*s);
             z1 = 1/(1-d1);                     

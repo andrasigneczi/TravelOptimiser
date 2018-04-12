@@ -14,7 +14,7 @@ public:
     CostAndGradient( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda )
     : mLayerSizes( layerSizes), mX( X ), mY( y ), mLambda( lambda ){}
     
-    virtual RetVal calc( const arma::mat& nn_params ) = 0;
+    virtual RetVal& calc( const arma::mat& nn_params ) = 0;
     void setLambda( double lambda ) { mLambda = lambda; }
     
 protected:
@@ -22,6 +22,7 @@ protected:
     const arma::mat& mX;
     const arma::mat& mY;
     double mLambda;
+    RetVal mRetVal;
 };
 
 #endif // __COSTANDGRADIENT_H__

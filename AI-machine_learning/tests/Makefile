@@ -1,9 +1,9 @@
 CXX=g++
 CC=gcc
-CPPFLAGS= -O3 -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -I ../src
+CPPFLAGS= -O3 -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -I ../src -DARMA_USE_CXX11 -march=native
 #CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -Wextra -pedantic -D__LINUX__ -pthread -Dsprintf_s=sprintf -I../..
 
-LDFLAGS=-fPIC -O2 -L../src
+LDFLAGS=-fPIC -O3 -L../src -march=native
 CFLAGS= -O3 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra
 
 LDLIBS=-lMachineLearning -lpthread -ldl -larmadillo
@@ -15,11 +15,13 @@ OBJS1=$(subst .cpp,.o,$(SRCS1))
 OBJS11=$(addprefix $(OBJDIR)/, $(OBJS1))
 
 OBJS=$(OBJS11) $(OBJS12)
+TARGET=test
 
-all: DelBin test
+all: DelBin $(TARGET)
 
-test: $(OBJS)
-	$(CXX) $(LDFLAGS) -o test $(OBJS) $(LDLIBS)
+$(TARGET): $(OBJS)
+	$(CXX) $(LDFLAGS) -o $(TARGET) $(OBJS) $(LDLIBS)
+	strip -s $(TARGET)
 
 $(OBJDIR)/%.o: %.cpp
 	$(CXX) $(CPPFLAGS) -c -o $@ $<
@@ -29,7 +31,7 @@ $(OBJDIR)/%.o: %.c
     
 clean:
 	$(RM) $(OBJS)
-	$(RM) test
+	$(RM) $(TARGET)
 
 DelBin:
-	$(RM) test
+	$(RM) $(TARGET)

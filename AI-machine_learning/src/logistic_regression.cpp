@@ -101,9 +101,7 @@ arma::mat LogisticRegression::sigmoid( const arma::mat& X, const arma::mat& thet
     return 1.0/(1.0+arma::exp(z));
 }
 
-CostAndGradient::RetVal LogisticRegressionV2::calc( const arma::mat& nn_params ) {
-    CostAndGradient::RetVal retVal;
-
+CostAndGradient::RetVal& LogisticRegressionV2::calc( const arma::mat& nn_params ) {
     const arma::mat& theta = nn_params;
 
     const arma::mat z = -mX*theta;
@@ -111,16 +109,16 @@ CostAndGradient::RetVal LogisticRegressionV2::calc( const arma::mat& nn_params )
     // cost calculation
     const arma::mat h = 1.0/(1.0+arma::exp(z));
     double m = mX.n_rows;
-    retVal.cost = 1.0/m*as_scalar(-mY.t()*arma::log(h)-(1.0-mY).t()*arma::log(1.0-h))
+    mRetVal.cost = 1.0/m*as_scalar(-mY.t()*arma::log(h)-(1.0-mY).t()*arma::log(1.0-h))
     + mLambda/2.0/m*arma::as_scalar(arma::sum(arma::pow(theta.rows(1,theta.n_rows-1),2)));
 
     // gradient calculation
-    retVal.grad = arma::mat(theta.n_rows,1);
-    retVal.grad(0) = arma::as_scalar(arma::sum((1/m*(h-mY).t()*mX.col(0))));
+    mRetVal.grad = arma::mat(theta.n_rows,1);
+    mRetVal.grad(0) = arma::as_scalar(arma::sum((1/m*(h-mY).t()*mX.col(0))));
     
     for( size_t i = 1; i < theta.n_rows; ++i ) {
-      retVal.grad(i) = arma::as_scalar(1/m*(h-mY).t()*mX.col(i) + mLambda/m*theta(i));
+      mRetVal.grad(i) = arma::as_scalar(1/m*(h-mY).t()*mX.col(i) + mLambda/m*theta(i));
     }
 
-    return retVal;
+    return mRetVal;
 }
