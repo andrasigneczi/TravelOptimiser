@@ -6,10 +6,10 @@ CPPFLAGS= -O3 -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -I 
 LDFLAGS=-fPIC -O3 -L../src -march=native
 CFLAGS= -O3 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra
 
-LDLIBS=-lMachineLearning -lpthread -ldl -larmadillo
+LDLIBS=-lMachineLearning -lpthread -ldl -larmadillo -lpng
 OBJDIR=Debug
 
-SRCS1=matrix_test.cpp linear_regression.cpp logistic_regression.cpp neural_network.cpp
+SRCS1=matrix_test.cpp linear_regression.cpp logistic_regression.cpp neural_network.cpp png2arma.cpp
 
 OBJS1=$(subst .cpp,.o,$(SRCS1))
 OBJS11=$(addprefix $(OBJDIR)/, $(OBJS1))
