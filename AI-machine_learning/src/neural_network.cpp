@@ -327,28 +327,19 @@ void NeuralNetwork::checkNNGradients( double lambda /*= 0*/ ) {
 }
 
 std::vector<arma::mat> NeuralNetwork::extractThetas( const arma::mat& nn_params ) {
-    std::cout << "extract: " << size( nn_params );
-
     int hiddenLayerCount = mLayerSizes.n_cols - 2;
     std::vector<arma::mat> thetas(mLayerSizes.n_cols-1);
-    //int input_layer_size  = mLayerSizes(0,0); // 400
     int num_labels        = mLayerSizes(0,mLayerSizes.n_cols-1); // 10
-    double m = mX.n_rows;
 
-    //std::cout << "dbgX 1 " << nn_params.n_rows << "\n";
-    
     size_t pos = 0;
     for( int i = 1; i <= hiddenLayerCount; ++i ) {
         int act_layer_size = mLayerSizes(0,i);
         int prev_layer_size  = mLayerSizes(0,i-1);
-        //std::cout << act_layer_size << " " << prev_layer_size << " " << pos << "\n";
         thetas[i-1] = arma::reshape( nn_params.rows(pos, pos + act_layer_size * (prev_layer_size + 1)-1), 
                          act_layer_size, (prev_layer_size + 1));
         pos += act_layer_size * (prev_layer_size + 1);
-        //std::cout << "dbg1 i:" << i << "; pos: " << pos << "\n";
     }
     
-    //std::cout << "dbg1.5\n";
     int act_layer_size = mLayerSizes(0,hiddenLayerCount);
     thetas[hiddenLayerCount] = arma::reshape(nn_params.rows(pos, nn_params.n_rows-1), 
                      num_labels, (act_layer_size + 1));

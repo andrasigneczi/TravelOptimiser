@@ -187,7 +187,7 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
             //fX = [fX' f1]';
             fX << f1 << arma::endr;
             //fprintf('Iteration %4i | Cost: %4.6e\r', i, f1);
-            std::cout << "Iteration " << i << " | Cost: " << f1 << "\n";
+            std::cout << "Iteration " << i << " | Cost: " << f1 << "\r" << std::flush;
             //std::cout <<size(df2) << size(df1) << size(s);
             //std::cout << size(df2.t()*df2) << size(df1.t()*df2) <<size(df1.t()*df1);
             s = as_scalar((df2.t()*df2-df1.t()*df2)/(df1.t()*df1))*s - df2;      // Polack-Ribiere direction

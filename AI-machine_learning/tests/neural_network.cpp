@@ -29,6 +29,8 @@ void test1() {
     NeuralNetwork nn(thetaSizes, X, y, 0);
     arma::mat pred = nn.predict(X, {Theta1, Theta2});
     std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100 << "\n";
+    std::cout << "Press enter to continue\n";
+    std::cin.get();
 }
 
 void test2() {
@@ -156,42 +158,31 @@ void test3() {
 
     arma::mat thetaSizes;
     int input_layer_size  = 400;
-    int hidden_layer_size1 = 30;
-    int hidden_layer_size2 = 15;
-    int num_labels        = 10;
+    int hidden_layer_size1 = 20;
+    int num_labels         = 10;
     double lambda = 1;
+    int iteration = 200;
     
-    thetaSizes << input_layer_size << hidden_layer_size1 << hidden_layer_size2 << num_labels; // input, hidden, output
+    thetaSizes << input_layer_size << hidden_layer_size1 << num_labels; // input, hidden, output
     NeuralNetwork nn(thetaSizes, X, y, lambda);
 
     // Randomly initialize the weights to small values
     arma::mat initial_Theta1 = nn.randInitializeWeights(input_layer_size, hidden_layer_size1);
-    arma::mat initial_Theta2 = nn.randInitializeWeights(hidden_layer_size1, hidden_layer_size2);
-    arma::mat initial_Theta3 = nn.randInitializeWeights(hidden_layer_size2, num_labels);
-    
-    std::cout << "dbg1\n";
+    arma::mat initial_Theta2 = nn.randInitializeWeights(hidden_layer_size1, num_labels);
     
     // Unroll parameters
     //initial_nn_params = [initial_Theta1(:) ; initial_Theta2(:)];
     arma::mat initial_nn_params = join_cols( arma::vectorise( initial_Theta1 ), arma::vectorise( initial_Theta2 ));
-    initial_nn_params = join_cols( initial_nn_params, arma::vectorise( initial_Theta3 ));
-    
-    std::cout << "dbg2\n";
-    
-    fmincgRetVal frv = fmincg(nn, initial_nn_params, 50);
 
-    std::cout << "dbg3\n";
-    
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+    fmincgRetVal frv = fmincg(nn, initial_nn_params, iteration);
+
+    std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
+
     // Obtain Theta1 and Theta2 back from nn_params
-    /*
-    arma::mat Theta1 = arma::reshape(frv.m_NNPparams.rows(0,hidden_layer_size * (input_layer_size + 1)-1),
-                     hidden_layer_size, (input_layer_size + 1));
-    
-    arma::mat Theta2 = arma::reshape(frv.m_NNPparams.rows((hidden_layer_size * (input_layer_size + 1)),frv.m_NNPparams.n_rows-1),
-                     num_labels, (hidden_layer_size + 1));
-    */
     std::vector<arma::mat> thetas = nn.extractThetas(frv.m_NNPparams);
-    std::cout << "dbg4\n";
     arma::mat pred = nn.predict(X,thetas);
 
     std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100 << "\n";
