@@ -1,5 +1,6 @@
 #include "fmincg.h"
 #include <limits.h>
+#include <cmath>
 
 // function [X, fX, i] = fmincg(f, X, options, P1, P2, P3, P4, P5)
 // Minimize a continuous differentialble multivariate function. Starting point
@@ -129,7 +130,7 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
                     B = 3*(f3-f2)-z3*(d3+2*d2);
                     z2 = (sqrt(B*B-A*d2*z3*z3)-B)/A;       // numerical error possible - ok!
                 }
-                if( isnan(z2) || isinf(z2)) {
+                if( std::isnan(z2) || std::isinf(z2)) {
                     z2 = z3/2;                  // if we had a numerical problem then bisect
                 }
                 z2 = max(min(z2, INT*z3),(1-INT)*z3);  // don't accept too close to limits
@@ -155,7 +156,7 @@ fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter ) {
             A = 6*(f2-f3)/z3+3*(d2+d3);                      // make cubic extrapolation
             B = 3*(f3-f2)-z3*(d3+2*d2);
             z2 = -d2*z3*z3/(B+sqrt(B*B-A*d2*z3*z3));        // num. error possible - ok!
-            if( !isreal(z2) || isnan(z2) || isinf(z2) || z2 < 0 ){ // num prob or wrong sign?
+            if( !isreal(z2) || std::isnan(z2) || std::isinf(z2) || z2 < 0 ){ // num prob or wrong sign?
               if( limit < -0.5 ) {                              // if we have no upper limit
                 z2 = z1 * (EXT-1);                 // the extrapolate the maximum amount
               } else {
