@@ -157,6 +157,7 @@ arma::mat Png2Arma::process_file( size_t width, size_t height, bool gray )
     if( width != mWidth || height != mHeight ) {
         //std::cerr << "The image (" << mFileName << ") does not conform to the expected size!\n";
         //std::cerr << "expected size (width x height): " << width << "x" << height << "; image size: " << mWidth << "x" << mHeight << std::endl;
+        return arma::mat(0,0);
     }
     size_t x, y;
     for (y=0; y<mHeight && y < height; y++) {
@@ -168,11 +169,11 @@ arma::mat Png2Arma::process_file( size_t width, size_t height, bool gray )
             //       x, y, ptr[0], ptr[1], ptr[2], ptr[3]);
             if( gray ) {
                 // Y=0.2126R+0.7152G+0.0722B
-                retVal(0, y * width + x ) = 0.2126*ptr[0]+0.7152*ptr[1]+0.0722*ptr[2];
+                retVal(0, y * width + x ) = 0.2126*ptr[0]+0.7152*ptr[2]+0.0722*ptr[1];
             } else {
                 retVal(0, 3 * y * width + 3 * x + 0) = ptr[0];
-                retVal(0, 3 * y * width + 3 * x + 1) = ptr[1];
-                retVal(0, 3 * y * width + 3 * x + 2) = ptr[2];
+                retVal(0, 3 * y * width + 3 * x + 1) = ptr[2];
+                retVal(0, 3 * y * width + 3 * x + 2) = ptr[1];
             }
         }
     }

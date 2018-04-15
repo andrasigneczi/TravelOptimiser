@@ -2,6 +2,8 @@
 #include "neural_network.h"
 #include <neural_network.h>
 #include <fmincg.h>
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 
 namespace NeuralNetwork_ns {
     
@@ -236,22 +238,43 @@ public:
     }
 };
 
-
+double coc( const arma::mat& X, const arma::mat& y, int firstLayerSize );
 void test4() {
     arma::mat X, y;
     
     X.load("coc_trainingset.bin");
     y.load("coc_trainingset_result.bin");
-    
+
     // multiply the training set
-    for( int i = 0; i < 0; ++i ) {
+    for( int i = 0; i < 6; ++i ) {
         X = join_cols( X, X );
         y = join_cols( y, y );
     }
+    std::cout << "New size: " << size(X) << size(y);
+    coc( X, y, 13 );
+    coc( X, y, 13 );
+    coc( X, y, 42 );
+    /*
+    double lastAccuracy = 0;
+    int accuracyIndex = 0;
+    for( int i = 5; i < 50; ++i ) {
+        std::cout << "layer size: " << i << "\n";
+        double accuracy = coc( X, y, i );  
+        if( accuracy > lastAccuracy ) {
+            lastAccuracy = accuracy;
+            accuracyIndex = i;
+        }
+    }
+    
+    std::cout << "Best accuracy: " << lastAccuracy << "; layer size: " << accuracyIndex << "\n";
+    */
+}
+
+double coc( const arma::mat& X, const arma::mat& y, int secondLayerSize ) {
     
     // input, hidden1, ..., hddenN, output
-    arma::mat thetaSizes{X.n_cols, 20, 11, 10 };
-    double lambda = 1e-4;
+    arma::mat thetaSizes{(double)X.n_cols, 20, 10 };
+    double lambda = 1;
     int iteration = 100;
     
     //thetaSizes << input_layer_size << hidden_layer_size1 << num_labels; // input, hidden, output
@@ -260,6 +283,7 @@ void test4() {
 
     //std::cout << "dbg1\n";
     arma::mat initial_nn_params;
+    srand (time(NULL));
     for( size_t i = 0; i <= thetaSizes.n_cols-2; ++i ) {
         // Randomly initialize the weights to small values
         arma::mat initial_Theta = nn.randInitializeWeights(thetaSizes(0,i), thetaSizes(0,i+1));
@@ -295,8 +319,10 @@ void test4() {
     std::vector<arma::mat> thetas = nn.extractThetas(frv.m_NNPparams);
     arma::mat pred = nn.predict(X,thetas);
 
-    std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100 << "\n";
+    double accuracy = arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100;
+    std::cout << "Training Set Accuracy: " << accuracy << "\n";
     std::cout << "thetaSizes: " << thetaSizes << "; lambda: " << lambda << "\n";
+    return accuracy;
 }
 
 } // NeuralNetwork_ns

@@ -34,8 +34,10 @@ void runTests()
 	    }
 	    std::string newFileName = std::string("../COC/") + line;
         pa.read_png_file( newFileName.c_str());
-        arma::mat ts = pa.process_file(48,48, true);
+        arma::mat ts = pa.process_file(24,24, true);
         pa.close();
+        if( ts.n_cols == 0 )
+            continue;
         
         // read the TH number
         size_t pos1 = newFileName.find( "/TH/" );
