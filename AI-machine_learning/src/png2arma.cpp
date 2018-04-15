@@ -27,165 +27,156 @@ void abort_(const char * s, ...)
         abort();
 }
 
-int x, y;
-
-int width, height;
-png_byte color_type;
-png_byte bit_depth;
-
-png_structp png_ptr;
-png_infop info_ptr;
-int number_of_passes;
-png_bytep * row_pointers;
-
 void Png2Arma::read_png_file(const char* file_name)
 {
-        char header[8];    // 8 is the maximum size that can be checked
+    char header[8];    // 8 is the maximum size that can be checked
 
-        /* open file and test for it being a png */
-        FILE *fp = fopen(file_name, "rb");
-        if (!fp)
-                abort_("[read_png_file] File %s could not be opened for reading", file_name);
-        fread(header, 1, 8, fp);
-        if (png_sig_cmp((png_bytep)header, 0, 8))
-                abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
-
-
-        /* initialize stuff */
-        png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-
-        if (!png_ptr)
-                abort_("[read_png_file] png_create_read_struct failed");
-
-        info_ptr = png_create_info_struct(png_ptr);
-        if (!info_ptr)
-                abort_("[read_png_file] png_create_info_struct failed");
-
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[read_png_file] Error during init_io");
-
-        png_init_io(png_ptr, fp);
-        png_set_sig_bytes(png_ptr, 8);
-
-        png_read_info(png_ptr, info_ptr);
-
-        width = png_get_image_width(png_ptr, info_ptr);
-        height = png_get_image_height(png_ptr, info_ptr);
-        color_type = png_get_color_type(png_ptr, info_ptr);
-        bit_depth = png_get_bit_depth(png_ptr, info_ptr);
-
-        number_of_passes = png_set_interlace_handling(png_ptr);
-        png_read_update_info(png_ptr, info_ptr);
+    /* open file and test for it being a png */
+    FILE *fp = fopen(file_name, "rb");
+    if (!fp)
+            abort_("[read_png_file] File %s could not be opened for reading", file_name);
+    fread(header, 1, 8, fp);
+    if (png_sig_cmp((png_bytep)header, 0, 8))
+            abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
 
 
-        /* read file */
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[read_png_file] Error during read_image");
+    /* initialize stuff */
+    mPngPtr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
-        row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
-        for (y=0; y<height; y++)
-                row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(png_ptr,info_ptr));
+    if (!mPngPtr)
+            abort_("[read_png_file] png_create_read_struct failed");
 
-        png_read_image(png_ptr, row_pointers);
+    info_ptr = png_create_info_struct(mPngPtr);
+    if (!info_ptr)
+            abort_("[read_png_file] png_create_info_struct failed");
 
-        fclose(fp);
+    if (setjmp(png_jmpbuf(mPngPtr)))
+            abort_("[read_png_file] Error during init_io");
+
+    mFileName = file_name;
+    png_init_io(mPngPtr, fp);
+    png_set_sig_bytes(mPngPtr, 8);
+
+    png_read_info(mPngPtr, info_ptr);
+
+    mWidth = png_get_image_width(mPngPtr, info_ptr);
+    mHeight = png_get_image_height(mPngPtr, info_ptr);
+    mColorType = png_get_color_type(mPngPtr, info_ptr);
+    mBitDepth = png_get_bit_depth(mPngPtr, info_ptr);
+
+    number_of_passes = png_set_interlace_handling(mPngPtr);
+    png_read_update_info(mPngPtr, info_ptr);
+
+
+    /* read file */
+    if (setjmp(png_jmpbuf(mPngPtr)))
+            abort_("[read_png_file] Error during read_image");
+
+    row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * mHeight);
+    for (size_t y=0; y<mHeight; y++)
+            row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(mPngPtr,info_ptr));
+
+    png_read_image(mPngPtr, row_pointers);
+    fclose(fp);
 }
 
 void Png2Arma::close() {
-        /* cleanup heap allocation */
-    for (y=0; y<height; y++)
-            free(row_pointers[y]);
+    /* cleanup heap allocation */
+    for (size_t y=0; y<mHeight; y++)
+        free(row_pointers[y]);
     free(row_pointers);
-
 }
 
 void Png2Arma::write_png_file(const char* file_name)
 {
-        /* create file */
-        FILE *fp = fopen(file_name, "wb");
-        if (!fp)
-                abort_("[write_png_file] File %s could not be opened for writing", file_name);
+    /* create file */
+    FILE *fp = fopen(file_name, "wb");
+    if (!fp)
+            abort_("[write_png_file] File %s could not be opened for writing", file_name);
 
 
-        /* initialize stuff */
-        png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    /* initialize stuff */
+    mPngPtr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
-        if (!png_ptr)
-                abort_("[write_png_file] png_create_write_struct failed");
+    if (!mPngPtr)
+            abort_("[write_png_file] png_create_write_struct failed");
 
-        info_ptr = png_create_info_struct(png_ptr);
-        if (!info_ptr)
-                abort_("[write_png_file] png_create_info_struct failed");
+    info_ptr = png_create_info_struct(mPngPtr);
+    if (!info_ptr)
+            abort_("[write_png_file] png_create_info_struct failed");
 
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[write_png_file] Error during init_io");
+    if (setjmp(png_jmpbuf(mPngPtr)))
+            abort_("[write_png_file] Error during init_io");
 
-        png_init_io(png_ptr, fp);
-
-
-        /* write header */
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[write_png_file] Error during writing header");
-
-        png_set_IHDR(png_ptr, info_ptr, width, height,
-                     bit_depth, color_type, PNG_INTERLACE_NONE,
-                     PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-        png_write_info(png_ptr, info_ptr);
+    png_init_io(mPngPtr, fp);
 
 
-        /* write bytes */
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[write_png_file] Error during writing bytes");
+    /* write header */
+    if (setjmp(png_jmpbuf(mPngPtr)))
+            abort_("[write_png_file] Error during writing header");
 
-        png_write_image(png_ptr, row_pointers);
+    png_set_IHDR(mPngPtr, info_ptr, mWidth, mHeight,
+                 mBitDepth, mColorType, PNG_INTERLACE_NONE,
+                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+    png_write_info(mPngPtr, info_ptr);
 
 
-        /* end write */
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[write_png_file] Error during end of write");
+    /* write bytes */
+    if (setjmp(png_jmpbuf(mPngPtr)))
+            abort_("[write_png_file] Error during writing bytes");
 
-        png_write_end(png_ptr, NULL);
+    png_write_image(mPngPtr, row_pointers);
 
-        close();
-        fclose(fp);
+
+    /* end write */
+    if (setjmp(png_jmpbuf(mPngPtr)))
+            abort_("[write_png_file] Error during end of write");
+
+    png_write_end(mPngPtr, NULL);
+
+    close();
+    fclose(fp);
 }
 
 
-void Png2Arma::process_file(arma::mat& storage)
+arma::mat Png2Arma::process_file( size_t width, size_t height, bool gray )
 {
-        if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB)
-                abort_("[process_file] input file is PNG_COLOR_TYPE_RGB but must be PNG_COLOR_TYPE_RGBA "
-                       "(lacks the alpha channel)");
+    if (png_get_color_type(mPngPtr, info_ptr) == PNG_COLOR_TYPE_RGB)
+            abort_("[process_file] input file is PNG_COLOR_TYPE_RGB but must be PNG_COLOR_TYPE_RGBA "
+                   "(lacks the alpha channel)");
 
-        if (png_get_color_type(png_ptr, info_ptr) != PNG_COLOR_TYPE_RGBA)
-                abort_("[process_file] color_type of input file must be PNG_COLOR_TYPE_RGBA (%d) (is %d)",
-                       PNG_COLOR_TYPE_RGBA, png_get_color_type(png_ptr, info_ptr));
+    if (png_get_color_type(mPngPtr, info_ptr) != PNG_COLOR_TYPE_RGBA)
+            abort_("[process_file] color_type of input file must be PNG_COLOR_TYPE_RGBA (%d) (is %d)",
+                   PNG_COLOR_TYPE_RGBA, png_get_color_type(mPngPtr, info_ptr));
 
-        for (y=0; y<height; y++) {
-            arma::mat newRow(1,storage.n_cols);
-            
-            png_byte* row = row_pointers[y];
-            for (x=0; x<width; x++) {
+    int mul = 3;
+    if( gray )
+        mul = 1;
+    arma::mat retVal = arma::zeros( 1, mul * width * height );
+    if( width != mWidth || height != mHeight ) {
+        //std::cerr << "The image (" << mFileName << ") does not conform to the expected size!\n";
+        //std::cerr << "expected size (width x height): " << width << "x" << height << "; image size: " << mWidth << "x" << mHeight << std::endl;
+    }
+    size_t x, y;
+    for (y=0; y<mHeight && y < height; y++) {
+        png_byte* row = row_pointers[y];
+        for (x=0; x<mWidth && x < width; x++) {
 
-                if( (size_t)3*x >= storage.n_cols ) {
-                    std::cout << x << "\n";
-                    break;
-                }
-                    
-                png_byte* ptr = &(row[x*4]);
-                //printf("Pixel at position [ %d - %d ] has RGBA values: %d - %d - %d - %d\n",
-                //       x, y, ptr[0], ptr[1], ptr[2], ptr[3]);
-                newRow(0,3*x)   = ptr[0];
-                newRow(0,3*x+1) = ptr[1];
-                newRow(0,3*x+2) = ptr[2];
-
-                /* set red value to 0 and green value to the blue one */
-                //ptr[0] = 0;
-                //ptr[1] = ptr[2];
+            png_byte* ptr = &(row[x*4]);
+            //printf("Pixel at position [ %d - %d ] has RGBA values: %d - %d - %d - %d\n",
+            //       x, y, ptr[0], ptr[1], ptr[2], ptr[3]);
+            if( gray ) {
+                // Y=0.2126R+0.7152G+0.0722B
+                retVal(0, y * width + x ) = 0.2126*ptr[0]+0.7152*ptr[1]+0.0722*ptr[2];
+            } else {
+                retVal(0, 3 * y * width + 3 * x + 0) = ptr[0];
+                retVal(0, 3 * y * width + 3 * x + 1) = ptr[1];
+                retVal(0, 3 * y * width + 3 * x + 2) = ptr[2];
             }
-            storage = join_cols(storage, newRow);
         }
+    }
+    return retVal;
 }
 
 

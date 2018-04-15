@@ -1,0 +1,6 @@
+#!/bin/bash
+
+rm -fR ./Summer_converted
+cp -R Summer Summer_converted
+find ./Summer_converted -type f | awk '{ system( "convert -geometry 48x48 -depth 8 "$i" "$i ); }'
+find ./Summer_converted -type f > trainingset_filelist.txt
