@@ -4,6 +4,7 @@
 #include <iostream>
 #include <chrono>
 #include "png2arma.h"
+#include <armadillo>
 
 int main () {
     //LinearRegression::gradientDescentCalc();

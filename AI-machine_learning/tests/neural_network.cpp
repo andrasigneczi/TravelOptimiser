@@ -238,43 +238,47 @@ public:
     }
 };
 
-double coc( const arma::mat& X, const arma::mat& y, int firstLayerSize );
+double coc( const arma::mat& X, const arma::mat& y, const arma::mat& Xt, const arma::mat& yt, double layerSize );
 void test4() {
-    arma::mat X, y;
+    arma::mat X, y, Xt, yt;
     
     X.load("coc_trainingset.bin");
     y.load("coc_trainingset_result.bin");
+    Xt.load("coc_testset.bin");
+    yt.load("coc_testset_result.bin");
 
     // multiply the training set
-    for( int i = 0; i < 6; ++i ) {
+    /*
+    for( int i = 0; i < 0; ++i ) {
         X = join_cols( X, X );
         y = join_cols( y, y );
     }
     std::cout << "New size: " << size(X) << size(y);
     coc( X, y, 13 );
     coc( X, y, 13 );
-    coc( X, y, 42 );
-    /*
-    double lastAccuracy = 0;
-    int accuracyIndex = 0;
-    for( int i = 5; i < 50; ++i ) {
-        std::cout << "layer size: " << i << "\n";
-        double accuracy = coc( X, y, i );  
-        if( accuracy > lastAccuracy ) {
-            lastAccuracy = accuracy;
-            accuracyIndex = i;
-        }
+    */
+    coc( X, y, Xt, yt, 4500 );
+    if( 0 ) {
+        double lastAccuracy = 0;
+        int accuracyIndex = 0;
+        for( int i = 2400; i < 3000; i += 100 ) {
+            std::cout << "layer size: " << i << "\n";
+            double accuracy = coc( X, y, Xt, yt, (double)i );  
+            if( accuracy > lastAccuracy ) {
+                lastAccuracy = accuracy;
+                accuracyIndex = i;
+            }
     }
     
     std::cout << "Best accuracy: " << lastAccuracy << "; layer size: " << accuracyIndex << "\n";
-    */
+    }
 }
 
-double coc( const arma::mat& X, const arma::mat& y, int secondLayerSize ) {
+double coc( const arma::mat& X, const arma::mat& y, const arma::mat& Xt, const arma::mat& yt, double layerSize ) {
     
     // input, hidden1, ..., hddenN, output
-    arma::mat thetaSizes{(double)X.n_cols, 20, 10 };
-    double lambda = 1;
+    arma::mat thetaSizes{(double)X.n_cols, layerSize, 10 };
+    double lambda = 1e-1;
     int iteration = 100;
     
     //thetaSizes << input_layer_size << hidden_layer_size1 << num_labels; // input, hidden, output
@@ -315,13 +319,19 @@ double coc( const arma::mat& X, const arma::mat& y, int secondLayerSize ) {
     std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
 
+    thetaSizes.save( "coc_trained_theta_sizes.bin" );
+    frv.m_NNPparams.save( "coc_trained_thetas.bin" );
+    
     // Obtain Theta1 and Theta2 back from nn_params
     std::vector<arma::mat> thetas = nn.extractThetas(frv.m_NNPparams);
     arma::mat pred = nn.predict(X,thetas);
+    arma::mat pred2 = nn.predict(Xt,thetas);
 
     double accuracy = arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100;
+    double accuracy2 = arma::mean(arma::conv_to<arma::colvec>::from(pred2 == yt))*100;
     std::cout << "Training Set Accuracy: " << accuracy << "\n";
-    std::cout << "thetaSizes: " << thetaSizes << "; lambda: " << lambda << "\n";
+    std::cout << "Test Set Accuracy: " << accuracy2 << "\n";
+    std::cout << "thetaSizes: " << thetaSizes << "\nlambda: " << lambda << "\n";
     return accuracy;
 }
 

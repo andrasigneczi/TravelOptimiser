@@ -5,7 +5,8 @@
 
 class CostAndGradient {
 public:
-
+    static const double NOT_FOUND;
+    
     struct RetVal {
         double cost;
         arma::mat grad;

@@ -1,5 +1,6 @@
 #include "neural_network.h"
 #include <vector>
+#include <limits.h>
 
 CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params ) {
     
@@ -109,6 +110,7 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params ) {
     return mRetVal;
 }
 
+// special return value std::numeric_limits<double>::max(); means not found
 arma::mat NeuralNetwork::predict( const arma::mat& X, const std::vector<arma::mat>& thetas ) {
     size_t m = X.n_rows;
     arma::mat p = arma::zeros(m, 1);
@@ -120,7 +122,11 @@ arma::mat NeuralNetwork::predict( const arma::mat& X, const std::vector<arma::ma
     arma::mat M = arma::max(s,1);
     for( size_t i=0; i < m; ++i ) {
         //p(i,0) = as_scalar(arma::find( s.row(i)==M(i,0) )) + 1; // +1 because y is 1 based.
-        p(i,0) = mYMappper.fromYYtoY( as_scalar(arma::find( s.row(i)==M(i,0) )));
+        arma::uvec result = arma::find( s.row(i)==M(i,0) );
+        if( result.n_cols == 0 || result.n_rows == 0 )
+            p(i,0) = NOT_FOUND;
+        else
+            p(i,0) = mYMappper.fromYYtoY( result(0,0));
     }
     return p;
 }

@@ -10,6 +10,7 @@ public:
     using CostAndGradient::CostAndGradient;
     
     RetVal& calc( const arma::mat& nn_params ) override;
+    // special return value std::numeric_limits<double>::max(); means not found
     arma::mat predict( const arma::mat& X, const std::vector<arma::mat>& thetas );
     arma::mat sigmoid( const arma::mat& X, const arma::mat& theta );
     arma::mat sigmoidGradient( const arma::mat& z );
