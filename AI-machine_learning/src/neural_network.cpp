@@ -123,9 +123,9 @@ arma::mat NeuralNetwork::predict( const arma::mat& X, const std::vector<arma::ma
     for( size_t i=0; i < m; ++i ) {
         //p(i,0) = as_scalar(arma::find( s.row(i)==M(i,0) )) + 1; // +1 because y is 1 based.
         arma::uvec result = arma::find( s.row(i)==M(i,0) );
-        if( result.n_cols == 0 || result.n_rows == 0 )
-            p(i,0) = NOT_FOUND;
-        else
+        //if( result.n_cols == 0 || result.n_rows == 0 )
+        //    p(i,0) = NOT_FOUND;
+        //else
             p(i,0) = mYMappper.fromYYtoY( result(0,0));
     }
     return p;

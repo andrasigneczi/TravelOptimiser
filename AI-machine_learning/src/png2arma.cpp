@@ -35,7 +35,7 @@ void Png2Arma::read_png_file(const char* file_name)
     FILE *fp = fopen(file_name, "rb");
     if (!fp)
             abort_("[read_png_file] File %s could not be opened for reading", file_name);
-    fread(header, 1, 8, fp);
+    if(fread(header, 1, 8, fp)==0){};
     if (png_sig_cmp((png_bytep)header, 0, 8))
             abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
 
@@ -142,11 +142,14 @@ void Png2Arma::write_png_file(const char* file_name)
 
 arma::mat Png2Arma::process_file( size_t width, size_t height, bool gray )
 {
-    if (png_get_color_type(mPngPtr, info_ptr) == PNG_COLOR_TYPE_RGB)
-            abort_("[process_file] input file is PNG_COLOR_TYPE_RGB but must be PNG_COLOR_TYPE_RGBA "
-                   "(lacks the alpha channel)");
+    int multipler = 4;
+    if (png_get_color_type(mPngPtr, info_ptr) == PNG_COLOR_TYPE_RGB){
+            //abort_("[process_file] input file is PNG_COLOR_TYPE_RGB but must be PNG_COLOR_TYPE_RGBA "
+              //     "(lacks the alpha channel)");
+        multipler = 3;
+    }
 
-    if (png_get_color_type(mPngPtr, info_ptr) != PNG_COLOR_TYPE_RGBA)
+    else if (png_get_color_type(mPngPtr, info_ptr) != PNG_COLOR_TYPE_RGBA)
             abort_("[process_file] color_type of input file must be PNG_COLOR_TYPE_RGBA (%d) (is %d)",
                    PNG_COLOR_TYPE_RGBA, png_get_color_type(mPngPtr, info_ptr));
 
@@ -155,8 +158,8 @@ arma::mat Png2Arma::process_file( size_t width, size_t height, bool gray )
         mul = 1;
     arma::mat retVal = arma::zeros( 1, mul * width * height );
     if( width != mWidth || height != mHeight ) {
-        //std::cerr << "The image (" << mFileName << ") does not conform to the expected size!\n";
-        //std::cerr << "expected size (width x height): " << width << "x" << height << "; image size: " << mWidth << "x" << mHeight << std::endl;
+        std::cerr << "The image (" << mFileName << ") does not conform to the expected size!\n";
+        std::cerr << "expected size (width x height): " << width << "x" << height << "; image size: " << mWidth << "x" << mHeight << std::endl;
         return arma::mat(0,0);
     }
     size_t x, y;
@@ -164,7 +167,7 @@ arma::mat Png2Arma::process_file( size_t width, size_t height, bool gray )
         png_byte* row = row_pointers[y];
         for (x=0; x<mWidth && x < width; x++) {
 
-            png_byte* ptr = &(row[x*4]);
+            png_byte* ptr = &(row[x*multipler]);
             //printf("Pixel at position [ %d - %d ] has RGBA values: %d - %d - %d - %d\n",
             //       x, y, ptr[0], ptr[1], ptr[2], ptr[3]);
             if( gray ) {

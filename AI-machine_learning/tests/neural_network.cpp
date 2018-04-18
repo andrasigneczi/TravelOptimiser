@@ -247,17 +247,15 @@ void test4() {
     Xt.load("coc_testset.bin");
     yt.load("coc_testset_result.bin");
 
-    // multiply the training set
-    /*
-    for( int i = 0; i < 0; ++i ) {
+    // multiply the training set: totally useless!!!!
+  /*  
+    for( int i = 0; i < 3; ++i ) {
         X = join_cols( X, X );
         y = join_cols( y, y );
     }
     std::cout << "New size: " << size(X) << size(y);
-    coc( X, y, 13 );
-    coc( X, y, 13 );
-    */
-    coc( X, y, Xt, yt, 4500 );
+*/
+    coc( X, y, Xt, yt, 5000 );
     if( 0 ) {
         double lastAccuracy = 0;
         int accuracyIndex = 0;
@@ -268,17 +266,18 @@ void test4() {
                 lastAccuracy = accuracy;
                 accuracyIndex = i;
             }
+        }
+        std::cout << "Best accuracy: " << lastAccuracy << "; layer size: " << accuracyIndex << "\n";
     }
     
-    std::cout << "Best accuracy: " << lastAccuracy << "; layer size: " << accuracyIndex << "\n";
-    }
+    
 }
 
 double coc( const arma::mat& X, const arma::mat& y, const arma::mat& Xt, const arma::mat& yt, double layerSize ) {
     
     // input, hidden1, ..., hddenN, output
     arma::mat thetaSizes{(double)X.n_cols, layerSize, 10 };
-    double lambda = 1e-1;
+    double lambda = 1e-3;
     int iteration = 100;
     
     //thetaSizes << input_layer_size << hidden_layer_size1 << num_labels; // input, hidden, output
@@ -324,14 +323,37 @@ double coc( const arma::mat& X, const arma::mat& y, const arma::mat& Xt, const a
     
     // Obtain Theta1 and Theta2 back from nn_params
     std::vector<arma::mat> thetas = nn.extractThetas(frv.m_NNPparams);
+    
     arma::mat pred = nn.predict(X,thetas);
     arma::mat pred2 = nn.predict(Xt,thetas);
 
     double accuracy = arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100;
     double accuracy2 = arma::mean(arma::conv_to<arma::colvec>::from(pred2 == yt))*100;
-    std::cout << "Training Set Accuracy: " << accuracy << "\n";
-    std::cout << "Test Set Accuracy: " << accuracy2 << "\n";
+    //std::cout << "Training y:\n";
+    //std::cout << join_rows(y, pred) << std::endl;
+    /*
+    for( size_t i = 0; i < y.n_rows; ++i )
+        if( y(i,0) != pred(i,0))
+            std::cout << y(i,0) << " " << pred(i,0) << std::endl;
+    */        
+    std::cout << "Test y:\n";
+    //std::cout << join_rows(yt, pred2) << std::endl;
+    
+    for( size_t i = 0; i < yt.n_rows; ++i )
+        if( yt(i,0) != pred2(i,0))
+            std::cout << i + 1 << ". " << yt(i,0) << " " << pred2(i,0) << std::endl;
+    
+    std::cout << "Training Set Accuracy: " << accuracy << "%\n";
+    std::cout << "Test Set Accuracy: " << accuracy2 << "%\n";
     std::cout << "thetaSizes: " << thetaSizes << "\nlambda: " << lambda << "\n";
+    
+    
+    NeuralNetwork nn2(thetaSizes, Xt, yt, lambda, yMapper);
+    CostAndGradient::RetVal& rv = nn.calc(frv.m_NNPparams);
+    
+    std::cout << "Cost with training data: " << frv.mCost << "\niteration: " << frv.mI <<"\n";
+    std::cout << "\nCost with test data: " << rv.cost <<"\n";
+
     return accuracy;
 }
 
