@@ -255,7 +255,7 @@ void test4() {
     }
     std::cout << "New size: " << size(X) << size(y);
 */
-    coc( X, y, Xt, yt, 5000 );
+    coc( X, y, Xt, yt, 4000 );
     if( 0 ) {
         double lastAccuracy = 0;
         int accuracyIndex = 0;
