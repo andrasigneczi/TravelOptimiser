@@ -2,8 +2,8 @@
 
 rm -fR ./Summer_converted
 cp -R Summer Summer_converted
-find ./Summer_converted -type f | awk '{ system( "convert -geometry 24 -depth 8 "$i" "$i ); }'
-find ./Summer_converted -type f | awk '{system("file "$1);}' | grep -v "24 x 24" | awk '{ x=substr($1,0,length($1)-1); system("rm "x);}'
+find ./Summer_converted -type f | awk '{ system( "convert -geometry 24 -depth 8 "$i" png32:"$i ); }'
+find ./Summer_converted -type f | awk '{system("file "$1);}' | grep -v "24 x 24" | awk '{ x=substr($1,0,length($1)); system("rm "x);}'
 find ./Summer_converted -type f > trainingset_filelist.txt
 
 # convert backgroundimage foregroundimage -gravity center -compose over -composite resultimage

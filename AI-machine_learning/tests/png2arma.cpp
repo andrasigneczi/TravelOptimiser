@@ -13,7 +13,7 @@ void runTests()
 {
     DatasetGenerator dg( "coc_" );
     dg.generateDataset( "../COC/trainingset_filelist.txt", "../COC/", 24, 24, true, 
-                                        6000, 50, "/TH/" );
+                                        60000, 700, "/TH/" );
 }
 
 }// Png2Arma_ns

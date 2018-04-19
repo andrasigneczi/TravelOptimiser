@@ -149,9 +149,11 @@ arma::mat Png2Arma::process_file( size_t width, size_t height, bool gray )
         multipler = 3;
     }
 
-    else if (png_get_color_type(mPngPtr, info_ptr) != PNG_COLOR_TYPE_RGBA)
+    else if (png_get_color_type(mPngPtr, info_ptr) != PNG_COLOR_TYPE_RGBA) {
+	    std::cerr << mFileName << "\n";
             abort_("[process_file] color_type of input file must be PNG_COLOR_TYPE_RGBA (%d) (is %d)",
                    PNG_COLOR_TYPE_RGBA, png_get_color_type(mPngPtr, info_ptr));
+    }
 
     int mul = 3;
     if( gray )

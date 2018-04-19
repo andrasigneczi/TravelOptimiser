@@ -229,16 +229,16 @@ class COCYMappper : public CostAndGradient::YMappperIF {
 public:
     arma::mat fromYtoYY(double y, size_t num_labels ) override {
         arma::mat yy = arma::zeros(1,num_labels);
-        yy(0,y-2) = 1;
+        yy(0,y-1) = 1;
         return yy;
     }
     
     double fromYYtoY( size_t index ) override {
-        return index + 2; // the smallest TH number is 2
+        return index + 1; // the smallest TH number is 2
     }
 };
 
-double coc( const arma::mat& X, const arma::mat& y, const arma::mat& Xt, const arma::mat& yt, double layerSize );
+double coc( const arma::mat& X, const arma::mat& y, const arma::mat& Xt, const arma::mat& yt, double layerSize, double lambda );
 void test4() {
     arma::mat X, y, Xt, yt;
     
@@ -255,13 +255,13 @@ void test4() {
     }
     std::cout << "New size: " << size(X) << size(y);
 */
-    coc( X, y, Xt, yt, 4000 );
+    coc( X, y, Xt, yt, 8000, 3.0e-2 );
     if( 0 ) {
-        double lastAccuracy = 0;
+     double lastAccuracy = 0;
         int accuracyIndex = 0;
-        for( int i = 2400; i < 3000; i += 100 ) {
+        for( int i = 700; i < 1300; i += 100 ) {
             std::cout << "layer size: " << i << "\n";
-            double accuracy = coc( X, y, Xt, yt, (double)i );  
+            double accuracy = coc( X, y, Xt, yt, (double)i, 3.0e-2 );  
             if( accuracy > lastAccuracy ) {
                 lastAccuracy = accuracy;
                 accuracyIndex = i;
@@ -273,11 +273,11 @@ void test4() {
     
 }
 
-double coc( const arma::mat& X, const arma::mat& y, const arma::mat& Xt, const arma::mat& yt, double layerSize ) {
+double coc( const arma::mat& X, const arma::mat& y, const arma::mat& Xt, const arma::mat& yt, double layerSize, double lambda ) {
     
     // input, hidden1, ..., hddenN, output
-    arma::mat thetaSizes{(double)X.n_cols, layerSize, 10 };
-    double lambda = 1e-3;
+    arma::mat thetaSizes{(double)X.n_cols, layerSize,11 };
+    //double lambda = 1e-1;
     int iteration = 100;
     
     //thetaSizes << input_layer_size << hidden_layer_size1 << num_labels; // input, hidden, output
@@ -336,13 +336,13 @@ double coc( const arma::mat& X, const arma::mat& y, const arma::mat& Xt, const a
         if( y(i,0) != pred(i,0))
             std::cout << y(i,0) << " " << pred(i,0) << std::endl;
     */        
-    std::cout << "Test y:\n";
+    //std::cout << "Test y:\n";
     //std::cout << join_rows(yt, pred2) << std::endl;
-    
+    /*
     for( size_t i = 0; i < yt.n_rows; ++i )
         if( yt(i,0) != pred2(i,0))
             std::cout << i + 1 << ". " << yt(i,0) << " " << pred2(i,0) << std::endl;
-    
+    */
     std::cout << "Training Set Accuracy: " << accuracy << "%\n";
     std::cout << "Test Set Accuracy: " << accuracy2 << "%\n";
     std::cout << "thetaSizes: " << thetaSizes << "\nlambda: " << lambda << "\n";
