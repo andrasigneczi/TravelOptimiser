@@ -5,8 +5,11 @@
 #include <chrono>
 #include "png2arma.h"
 #include <armadillo>
+#include <QtWidgets/QApplication>
 
-int main () {
+int main (int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
     //LinearRegression::gradientDescentCalc();
     //std::cout << std::string( 80, '-' ) << std::endl;
     //LogisticRegression_ns::runTests();

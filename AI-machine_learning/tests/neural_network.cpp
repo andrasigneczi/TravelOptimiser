@@ -4,6 +4,7 @@
 #include <fmincg.h>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
+#include <QtGui/QImage>
 
 namespace NeuralNetwork_ns {
     
@@ -11,12 +12,14 @@ void test1();
 void test2();
 void test3();
 void test4();
+void coc_prediction_test();
 
 void runTests() {
-    //test1();
-    //test2();
-    //test3();
-    test4();
+    //test1(); // neural network prediction
+    //test2(); // neural network complex training
+    //test3(); // neural network simple training
+    // test4(); // coc training test
+    coc_prediction_test();
 }
 
 
@@ -38,7 +41,7 @@ public:
 };
 
 void test1() {
-    // neural network predict
+    // neural network prediction
     arma::mat X, y, Theta1, Theta2;
     
     Theta1.load("ex3weights_Theta1.bin");
@@ -355,6 +358,56 @@ double coc( const arma::mat& X, const arma::mat& y, const arma::mat& Xt, const a
     std::cout << "\nCost with test data: " << rv.cost <<"\n";
 
     return accuracy;
+}
+
+void coc_prediction_test() {
+    arma::mat thetaSizes;
+    arma::mat theta;
+    arma::mat X, y;
+    double lambda = 0;
+    
+    std::cout << "dbg1\n";
+    
+    thetaSizes.load( "./theta_n8000_l03/coc_trained_theta_sizes.bin" );
+    theta.load( "./theta_n8000_l03/coc_trained_thetas.bin" );
+    
+    std::cout << "dbg2\n";
+    
+    COCYMappper yMapper;
+    NeuralNetwork nn(thetaSizes, X, y, lambda, yMapper);
+    
+    std::cout << "dbg3\n";
+    
+    std::vector<arma::mat> thetas {nn.extractThetas(theta)};
+    
+    std::cout << "dbg4\n";
+    
+    QImage testmap;
+    
+    std::cout << "dbg5\n";
+    
+    if( testmap.load( "../COC/Processed/BlueStacks_ScreenShot1.jpg")) {
+        std::cout << "BlueStacks_ScreenShot1.jpg size: " << testmap.width() << " x " << testmap.height() << "\n";
+    }
+    
+    int width = 100;
+    for( size_t yp = 0; yp  + width < testmap.height(); yp += 4) {
+        std::cout << "yp: " << yp << "\n";
+        for( size_t xp = 0; xp  + width < testmap.width(); xp += 4) {
+            QImage tmp = testmap.copy( xp, yp, width, width ).scaled(24,24);
+            arma::mat retVal = arma::zeros( 1, 24*24 );
+            for( size_t i = 0; i < 24; ++i ) {
+                for( size_t j = 0; j < 24; ++j ) {
+                    QRgb rgb = tmp.pixel( j, i );
+                    retVal(0, i * 24 + j ) = 0.2126*qRed(rgb)+0.7152*qGreen(rgb)+0.0722*qBlue(rgb);
+                }
+            }
+            std::cout << nn.predict(retVal,thetas);
+        }
+    }
+    std::cout << "dbg5\n";
+    
+    //std::cout << "dbg6\n";
 }
 
 } // NeuralNetwork_ns

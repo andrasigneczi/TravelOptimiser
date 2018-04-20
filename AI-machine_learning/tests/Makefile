@@ -1,12 +1,12 @@
 CXX=g++
 CC=gcc
-CPPFLAGS= -O3 -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -I ../src -DARMA_USE_CXX11 -march=native
+CPPFLAGS= -O3 -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -I ../src -DARMA_USE_CXX11 -march=native -I/usr/include/qt5
 #CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -Wextra -pedantic -D__LINUX__ -pthread -Dsprintf_s=sprintf -I../..
 
-LDFLAGS=-fPIC -O3 -L../src -march=native
+LDFLAGS=-fPIC -O3 -L../src -march=native -L/usr/lib/x86_64-linux-gnu
 CFLAGS= -O3 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra
 
-LDLIBS=-lMachineLearning -lpthread -ldl -larmadillo -lpng
+LDLIBS=-lMachineLearning -lpthread -ldl -larmadillo -lQt5Gui -lQt5Core -lQt5Widgets
 OBJDIR=Debug
 
 SRCS1=main.cpp linear_regression.cpp logistic_regression.cpp neural_network.cpp png2arma.cpp
