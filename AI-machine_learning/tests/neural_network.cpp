@@ -18,8 +18,8 @@ void runTests() {
     //test1(); // neural network prediction
     //test2(); // neural network complex training
     //test3(); // neural network simple training
-    // test4(); // coc training test
-    coc_prediction_test();
+    test4(); // coc training test
+    //coc_prediction_test();
 }
 
 
@@ -107,7 +107,8 @@ void test2() {
     arma::mat g = nn.sigmoidGradient( testV );
     std::cout << "Sigmoid gradient evaluated at [-1 -0.5 0 0.5 1]:\n";
     std::cout << g << "\n";
-    
+    std::cout << "Press enter to continue\n";
+    std::cin.get();
     
     // Randomly initialize the weights to small values
     arma::mat initial_Theta1 = nn.randInitializeWeights(input_layer_size, hidden_layer_size);
@@ -166,11 +167,12 @@ void test2() {
     // Now, costFunction is a function that takes in only one argument (the
     // neural network parameters)
     //[nn_params, cost] = fmincg(costFunction, initial_nn_params, options);
-    fmincgRetVal frv = fmincg(nn, initial_nn_params, 200);
+    fmincgRetVal frv = fmincg(nn, initial_nn_params, 50);
     
     std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
-    
+    std::cout << "Cost: " << frv.mCost;
+
     // Obtain Theta1 and Theta2 back from nn_params
     /*
     Theta1 = arma::reshape(frv.m_NNPparams.rows(0,hidden_layer_size * (input_layer_size + 1)-1),
@@ -181,7 +183,7 @@ void test2() {
     */
     std::vector<arma::mat> thetas = nn.extractThetas(frv.m_NNPparams);
     arma::mat pred = nn.predict(X,thetas);
-    std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100 << "\n";
+    std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100. << "\n";
     std::cout << "Press enter to continue\n";
     std::cin.get();
 }
@@ -281,7 +283,7 @@ double coc( const arma::mat& X, const arma::mat& y, const arma::mat& Xt, const a
     // input, hidden1, ..., hddenN, output
     arma::mat thetaSizes{(double)X.n_cols, layerSize,11 };
     //double lambda = 1e-1;
-    int iteration = 100;
+    int iteration = 20;
     
     //thetaSizes << input_layer_size << hidden_layer_size1 << num_labels; // input, hidden, output
     COCYMappper yMapper;

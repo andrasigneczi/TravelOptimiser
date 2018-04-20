@@ -52,7 +52,7 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params ) {
     // cost calculation
     double J = 0;
     for( int k=0; k < num_labels; ++k ) {
-        J += as_scalar( 1/m*(-yy.col(k).t()*arma::log(h.col(k))-(1-yy.col(k)).t()*arma::log(1-h.col(k))));
+        J += as_scalar( 1./m*(-yy.col(k).t()*arma::log(h.col(k))-(1.-yy.col(k)).t()*arma::log(1.-h.col(k))));
     }
 
     // reguralization of the cost

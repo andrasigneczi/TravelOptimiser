@@ -1,6 +1,6 @@
 CXX=g++
 CC=gcc
-CPPFLAGS= -O3 -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -I ../src -DARMA_USE_CXX11 -march=native -I/usr/include/qt5
+CPPFLAGS= -O3 -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -I ../src -DARMA_USE_CXX11 -march=native -I/usr/include/qt5 -I/usr/include/x86_64-linux-gnu/qt5
 #CPPFLAGS= -O2 -s -DNDEBUG -std=c++11 -Wall -Wextra -pedantic -D__LINUX__ -pthread -Dsprintf_s=sprintf -I../..
 
 LDFLAGS=-fPIC -O3 -L../src -march=native -L/usr/lib/x86_64-linux-gnu

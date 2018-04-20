@@ -52,8 +52,8 @@
 //
 // modified by Andras Igneczi
 
-static bool min(int a, int b) { return a < b ? a : b; }
-static bool max(int a, int b) { return a < b ? b : a; }
+static double min(double a, double b) { return a < b ? a : b; }
+static double max(double a, double b) { return a < b ? b : a; }
 /*
 static bool isnan( const double& x ) {
     return x == arma::datum::nan;
