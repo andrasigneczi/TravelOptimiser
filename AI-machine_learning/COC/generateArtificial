@@ -1,26 +1,30 @@
 #!/bin/bash
 
-#for i in 2 3 4 5 6 7 8 9 10 11; do 
-#    rm ./Summer/Artificial/TH/$i/*;
-#done
+for i in 2 3 4 5 6 7 8 9 10 11; do 
+    rm ./Summer/Artificial/TH/$i/*;
+done
 
 #for i in 2 3 4 5 6 7 8 9 10 11; do 
 #    convert -geometry 100 big_transp_th$i.png small_transp_th$i.png
 #done
+
+for i in 2 3 4 5 6 7 8 9 10 11; do 
+    convert -geometry 100 small_transp_th$i.png small_transp_th$i.png
+done
 
 
 #rm tiles/*
 #ls screenshots | awk 'BEGIN {a=0;}{ system("convert screenshots/"$1" -crop 100x100 +repage tiles/tile"a"%04d.png");++a; } END {}';
 
 ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th2.png -gravity center -compose over -composite Summer/Artificial/TH/2/"$1 ); }'
-#ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th3.png -gravity center -compose over -composite Summer/Artificial/TH/3/"$1 ); }'
-#ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th4.png -gravity center -compose over -composite Summer/Artificial/TH/4/"$1 ); }'
-#ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th5.png -gravity center -compose over -composite Summer/Artificial/TH/5/"$1 ); }'
-#ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th6.png -gravity center -compose over -composite Summer/Artificial/TH/6/"$1 ); }'
-#ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th7.png -gravity center -compose over -composite Summer/Artificial/TH/7/"$1 ); }'
-#ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th8.png -gravity center -compose over -composite Summer/Artificial/TH/8/"$1 ); }'
-#ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th9.png -gravity center -compose over -composite Summer/Artificial/TH/9/"$1 ); }'
-#ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th10.png -gravity center -compose over -composite Summer/Artificial/TH/10/"$1 ); }'
-#ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th11.png -gravity center -compose over -composite Summer/Artificial/TH/11/"$1 ); }'
+ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th3.png -gravity center -compose over -composite Summer/Artificial/TH/3/"$1 ); }'
+ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th4.png -gravity center -compose over -composite Summer/Artificial/TH/4/"$1 ); }'
+ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th5.png -gravity center -compose over -composite Summer/Artificial/TH/5/"$1 ); }'
+ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th6.png -gravity center -compose over -composite Summer/Artificial/TH/6/"$1 ); }'
+ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th7.png -gravity center -compose over -composite Summer/Artificial/TH/7/"$1 ); }'
+ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th8.png -gravity center -compose over -composite Summer/Artificial/TH/8/"$1 ); }'
+ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th9.png -gravity center -compose over -composite Summer/Artificial/TH/9/"$1 ); }'
+ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th10.png -gravity center -compose over -composite Summer/Artificial/TH/10/"$1 ); }'
+ls tiles| awk '{ system( "convert tiles/"$1" small_transp_th11.png -gravity center -compose over -composite Summer/Artificial/TH/11/"$1 ); }'
 
-cp tiles/* Summer/Artificial/TH/1
+#cp tiles/* Summer/Artificial/TH/1

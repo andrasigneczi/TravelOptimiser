@@ -26,6 +26,15 @@ void DatasetGenerator::png2DataSet( std::string fileListPath, std::string pathMo
 	    if( line.length() == 0 ){
 	        break;
 	    }
+	    int sign = rowNumber % 4;
+	    if( sign == 0 )
+		std::cout << "\\\r" << std::flush;
+	    else if( sign == 1 )
+		std::cout << "|\r" << std::flush;
+	    else if( sign == 2 )
+		std::cout << "/\r" << std::flush;
+	    else if( sign == 3 )
+		std::cout << "-\r" << std::flush;
 	    std::string newFileName = pathModifier + line;
         pa.read_png_file( newFileName.c_str());
         arma::mat ts = pa.process_file(width,height,gray);
@@ -49,7 +58,8 @@ void DatasetGenerator::png2DataSet( std::string fileListPath, std::string pathMo
         if( mDataSet.n_cols == 0 ) {
             mDataSet = join_rows( ts, Y );
         } else {
-            mDataSet = join_cols( mDataSet, join_rows( ts, Y ));
+            //mDataSet = join_cols( mDataSet, join_rows( ts, Y ));
+	    mDataSet.insert_rows( mDataSet.n_rows, join_rows( ts, Y ));
         }
         line = "";
     }
@@ -76,33 +86,31 @@ void DatasetGenerator::separateTrainingAndTestSet( size_t maxTrainingsetSize, si
 
         if( it == levelPerItemCount.end()) {
             levelPerItemCount.emplace(y(0,0),1);
-            if( mTestSet.n_rows == 0 ) {
-                mTestSet = x;
-                mTestSetResult = y;
-            } else {
-                mTestSet = join_cols( mTestSet, x);
-                mTestSetResult = join_cols( mTestSetResult, y);
-            }
-            mTestSetFileNames.push_back( mRowFileNameMap[row] );
+            it = levelPerItemCount.find( mDataSet(i,mDataSet.n_cols-1));
         } else {
             ++it->second;
-            // The first two image from every TH level will be inserted into the training set
-            if( it->second < maxTestItemCountPerLabel /*|| y(0,0) == CostAndGradient::NOT_FOUND*/ ){
-                mTestSet = join_cols( mTestSet, x);
-                mTestSetResult = join_cols( mTestSetResult, y);
-                mTestSetFileNames.push_back( mRowFileNameMap[row] );
+        }
+
+        // The first two image from every TH level will be inserted into the training set
+        if( it->second < maxTestItemCountPerLabel /*|| y(0,0) == CostAndGradient::NOT_FOUND*/ ){
+            //mTestSet = join_cols( mTestSet, x);
+            mTestSet.insert_rows(mTestSet.n_rows, x);
+            //mTestSetResult = join_cols( mTestSetResult, y);
+            mTestSetResult.insert_rows(mTestSetResult.n_rows,y);
+            mTestSetFileNames.push_back( mRowFileNameMap[row] );
+        } else {
+            if( maxTrainingsetSize <= mTrainingSet.n_rows )
+                break;
+            if( mTrainingSet.n_rows == 0 ) {
+                mTrainingSet = x;
+                mTrainingSetResult = y;
             } else {
-                if( maxTrainingsetSize <= mTrainingSet.n_rows )
-                    break;
-                if( mTrainingSet.n_rows == 0 ) {
-                    mTrainingSet = x;
-                    mTrainingSetResult = y;
-                } else {
-                    mTrainingSet = join_cols( mTrainingSet, x);
-                    mTrainingSetResult = join_cols( mTrainingSetResult, y);
-                }
-                mTrainingSetFileNames.push_back( mRowFileNameMap[row]);
+                //mTrainingSet = join_cols( mTrainingSet, x);
+                mTrainingSet.insert_rows(mTrainingSet.n_rows,x);
+                //mTrainingSetResult = join_cols( mTrainingSetResult, y);
+                mTrainingSetResult.insert_rows(mTrainingSetResult.n_rows,y);
             }
+            mTrainingSetFileNames.push_back( mRowFileNameMap[row]);
         }
     }
 }
@@ -125,10 +133,10 @@ void DatasetGenerator::saveResult() {
     mTestSet.save(mFilePrefix + "testset.bin");
     mTestSetResult.save(mFilePrefix + "testset_result.bin");
     
-    std::cout << "Training set size: " << size(mTrainingSet);
-    std::cout << "Training set result size: " << size(mTrainingSetResult);
-    std::cout << "Test set size: " << size(mTestSet);
-    std::cout << "Test set result size: " << size(mTestSetResult);
+    std::cout << "Training set size: " << size(mTrainingSet) << "\n";
+    std::cout << "Training set result size: " << size(mTrainingSetResult) << "\n";
+    std::cout << "Test set size: " << size(mTestSet) << "\n";
+    std::cout << "Test set result size: " << size(mTestSetResult) << "\n";
     
     // saving the filenames
     std::ofstream  fileOut1(mFilePrefix + "trainingset_filelist.txt");
