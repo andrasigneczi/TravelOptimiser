@@ -14,8 +14,8 @@ void test2();
 void test3();
 
 void runTests() {
-    //test1(); // neural network prediction
-    //test2(); // neural network complex training
+    test1(); // neural network prediction
+    test2(); // neural network complex training
     //test3(); // neural network simple training
 }
 
@@ -171,13 +171,6 @@ void test2() {
     std::cout << "Cost: " << frv.mCost;
 
     // Obtain Theta1 and Theta2 back from nn_params
-    /*
-    Theta1 = arma::reshape(frv.m_NNPparams.rows(0,hidden_layer_size * (input_layer_size + 1)-1),
-                     hidden_layer_size, (input_layer_size + 1));
-    
-    Theta2 = arma::reshape(frv.m_NNPparams.rows((hidden_layer_size * (input_layer_size + 1)),frv.m_NNPparams.n_rows-1),
-                     num_labels, (hidden_layer_size + 1));
-    */
     std::vector<arma::mat> thetas = nn.extractThetas(frv.m_NNPparams);
     arma::mat pred = nn.predict(X,thetas);
     std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100. << "\n";

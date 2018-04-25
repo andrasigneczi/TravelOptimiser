@@ -206,7 +206,7 @@ void NeuralNetwork::checkNNGradients( double lambda /*= 0*/ ) {
     public:
         arma::mat fromYtoYY(double y, size_t num_labels ) override {
             arma::mat yy = arma::zeros(1,num_labels);
-            yy(0,y-1) = 1;
+            yy(0,y) = 1;
             return yy;
         }
         
