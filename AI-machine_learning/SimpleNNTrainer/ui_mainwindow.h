@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.2.1
+** Created by: Qt User Interface Compiler version 5.5.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -74,7 +74,7 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "COC-Legend", 0));
-        pushButton->setText(QApplication::translate("MainWindow", "Detect", 0));
+        pushButton->setText(QApplication::translate("MainWindow", "Capture", 0));
         pushButton_2->setText(QApplication::translate("MainWindow", "Tile", 0));
         pushButton_3->setText(QApplication::translate("MainWindow", "Train", 0));
         pushButton_4->setText(QApplication::translate("MainWindow", "Scan", 0));

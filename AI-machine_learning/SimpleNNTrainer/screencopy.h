@@ -5,16 +5,17 @@
 #include <armadillo>
 #include <neural_network.h>
 
+// Simple mapper from 0...
 class TH_YMappper : public CostAndGradient::YMappperIF {
 public:
     arma::mat fromYtoYY(double y, size_t num_labels ) override {
         arma::mat yy = arma::zeros(1,num_labels);
-        yy(0,y-1) = 1;
+        yy(0,y) = 1;
         return yy;
     }
 
     double fromYYtoY( size_t index ) override {
-        return index + 1; // the smallest TH number is 2
+        return index;
     }
 };
 
@@ -22,7 +23,7 @@ class ScreenCopy : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ScreenCopy(QPixmap& screenshot, QWidget *parent = 0);
+    explicit ScreenCopy(QWidget *parent = 0);
 
     void paintEvent(QPaintEvent* pe) override;
     void mouseMoveEvent(QMouseEvent*me) override;
@@ -32,6 +33,8 @@ public:
     void saveTiles();
     void trainNeuralNetwork();
     void scanScreenshot();
+    QRect getCanvasSize() { return mCanvasSize; }
+    void capture();
 
 signals:
 
@@ -40,7 +43,7 @@ public slots:
 private:
     void saveSelectedRect();
 
-    QPixmap& mScreenshot;
+    QPixmap mScreenshot;
     QImage mGrayMiniCopy;
     int mouseX;
     int mouseY;
@@ -52,6 +55,7 @@ private:
     arma::mat mResultset;
     TH_YMappper mThYMapper;
     std::vector<QRect> mPredictions;
+    QRect mCanvasSize;
 };
 
 #endif // SCREENCOPY_H

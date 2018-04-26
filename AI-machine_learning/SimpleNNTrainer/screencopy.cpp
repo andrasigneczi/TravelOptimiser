@@ -7,29 +7,46 @@
 #include <time.h>       /* time */
 #include <QtGui/QImage>
 #include <png2arma.h>
+#include <QScreen>
+#include <QApplication>
 
 const int small_image_width = 30;
-const std::string training_sets_folder = "/src/COC-Legend/training_sets/";
+const std::string training_sets_folder = "./training_sets/";
 const int copy_box_size = 100;
 const double minimize_rate = (double)small_image_width/(double)copy_box_size;
 const std::string training_set_prefix = "TH1_bg";
-double training_set_y = 1.;
+double training_set_y = 0.;
 
-ScreenCopy::ScreenCopy(QPixmap& screenshot, QWidget *parent) : QWidget(parent), mScreenshot(screenshot)
+ScreenCopy::ScreenCopy(QWidget *parent) : QWidget(parent)
 {
-    mGrayMiniCopy = mScreenshot.toImage().scaledToWidth(mScreenshot.width()*minimize_rate)
-                    .convertToFormat(QImage::Format_RGB32, Qt::MonoOnly);
+    move(100,0);
+    resize(1200,780);
     setMouseTracking(true);
     mouseX = 0;
     mouseY = 0;
     mousePressed = false;
     mousePressedX = 0;
     mousePressedY = 0;
+    mCanvasSize = QRect(0,0,0,0);
     mTrainingset.load(training_sets_folder + training_set_prefix + "_trainingset.bin");
     mResultset.load(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
     std::cout << "Training set size: " << mTrainingset.n_rows << " rows\n" << std::flush;
 }
 
+void ScreenCopy::capture() {
+    QScreen* screen = qApp->primaryScreen();
+    QRect g = screen->geometry();
+    if( mCanvasSize == QRect(0,0,0,0)) {
+        mScreenshot = screen->grabWindow(0,g.x(),g.y(),g.width(),g.height());
+    } else {
+        mScreenshot = screen->grabWindow(0,mCanvasSize.x(),mCanvasSize.y(),mCanvasSize.width(),mCanvasSize.height());
+    }
+    mGrayMiniCopy = mScreenshot.toImage().scaledToWidth(mScreenshot.width()*minimize_rate)
+                    .convertToFormat(QImage::Format_RGB32, Qt::MonoOnly);
+    mGrayMiniCopy.save("minicopy.png");
+    mScreenshot.save("screenshot.png");
+    repaint();
+}
 
 void ScreenCopy::paintEvent(QPaintEvent* pe) {
 
@@ -99,6 +116,13 @@ void ScreenCopy::keyPressEvent(QKeyEvent*ke) {
         std::cout << "y=" << training_set_y << "\n" << std::flush;
         return;
     }
+    else if( ke->key() == Qt::Key_Space) {
+        ke->accept();
+        mCanvasSize = geometry();
+        std::cout << "Canvas size: " << mCanvasSize.x() << ";" << mCanvasSize.y() << ";" << mCanvasSize.width() << ";" << mCanvasSize.height()
+                  << "\n" << std::flush;
+        return;
+    }
     QWidget::keyPressEvent(ke);
 }
 
@@ -110,7 +134,7 @@ void ScreenCopy::trainNeuralNetwork() {
     int iteration = 100;
     srand (time(NULL));
 
-    arma::mat thetaSizes{(double)mTrainingset.n_cols, 8000, 300, 2};
+    arma::mat thetaSizes{(double)mTrainingset.n_cols, 2000, 100, 2};
     NeuralNetwork nn(thetaSizes, mTrainingset, mResultset, lambda, mThYMapper);
 
     //std::cout << "dbg1\n";
@@ -128,6 +152,13 @@ void ScreenCopy::trainNeuralNetwork() {
             initial_nn_params = join_cols( initial_nn_params, arma::vectorise( initial_Theta ));
     }
     fmincgRetVal frv = fmincg(nn, initial_nn_params, iteration);
+
+    //std::cout << "Cost: " << frv.mCost;
+
+    // Obtain Theta1 and Theta2 back from nn_params
+    std::vector<arma::mat> thetas = nn.extractThetas(frv.m_NNPparams);
+    arma::mat pred = nn.predict(mTrainingset,thetas);
+    std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == mResultset))*100. << "\n";
 
     thetaSizes.save( training_sets_folder + training_set_prefix + "_trained_theta_sizes.bin" );
     frv.m_NNPparams.save( training_sets_folder + training_set_prefix + "_trained_thetas.bin" );
@@ -147,8 +178,8 @@ void ScreenCopy::scanScreenshot() {
     mPredictions.clear();
 
     arma::mat img = arma::zeros( 1, small_image_width*small_image_width );
-    for( int yp = 0; yp  + small_image_width < mGrayMiniCopy.height(); yp += 10) {
-        for( int xp = 0; xp  + small_image_width < mGrayMiniCopy.width(); xp += 10) {
+    for( int yp = 0; yp  + small_image_width < mGrayMiniCopy.height(); yp += 1) {
+        for( int xp = 0; xp  + small_image_width < mGrayMiniCopy.width(); xp += 1) {
 
             for( size_t i = 0; i < small_image_width; ++i ) {
                 for( size_t j = 0; j < small_image_width; ++j ) {
@@ -157,7 +188,7 @@ void ScreenCopy::scanScreenshot() {
                 }
             }
             arma::mat pred = nn.predict(img,thetas);
-            if( pred(0,0) == 2.0 ){
+            if( pred(0,0) == 1.0 ){
                 //std::cout << "position: " << xp*bigImageScale/width << ";" << yp*bigImageScale/width << " TH" << pred(0,0) << "\n";
                 mPredictions.push_back(QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size));
             }

@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "screencopy.h"
 
 namespace Ui {
 class MainWindow;
@@ -26,8 +27,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QWidget *myWindow;
-    QPixmap screenshot;
+    ScreenCopy myWindow;
 };
 
 #endif // MAINWINDOW_H
