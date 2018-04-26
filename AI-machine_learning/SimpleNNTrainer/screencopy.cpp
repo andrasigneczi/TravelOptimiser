@@ -1,3 +1,6 @@
+// TODO: 
+//     : QSettings usage
+
 #include "screencopy.h"
 #include <QPainter>
 #include <QMouseEvent>
@@ -9,13 +12,16 @@
 #include <png2arma.h>
 #include <QScreen>
 #include <QApplication>
+#include <QtCore/QSettings>
 
 const int small_image_width = 30;
 const std::string training_sets_folder = "./training_sets/";
-const int copy_box_size = 100;
-const double minimize_rate = (double)small_image_width/(double)copy_box_size;
+int copy_box_size = 100;
+double minimize_rate = (double)small_image_width/(double)copy_box_size;
 const std::string training_set_prefix = "TH1_bg";
 double training_set_y = 0.;
+double lambda = 0.1;
+int iteration = 100;
 
 ScreenCopy::ScreenCopy(QWidget *parent) : QWidget(parent)
 {
@@ -41,7 +47,7 @@ void ScreenCopy::capture() {
     } else {
         mScreenshot = screen->grabWindow(0,mCanvasSize.x(),mCanvasSize.y(),mCanvasSize.width(),mCanvasSize.height());
     }
-    mGrayMiniCopy = mScreenshot.toImage().scaledToWidth(mScreenshot.width()*minimize_rate)
+    mGrayMiniCopy = mScreenshot.toImage().scaledToWidth(mScreenshot.width()*minimize_rate,Qt::SmoothTransformation)
                     .convertToFormat(QImage::Format_RGB32, Qt::MonoOnly);
     mGrayMiniCopy.save("minicopy.png");
     mScreenshot.save("screenshot.png");
@@ -123,6 +129,16 @@ void ScreenCopy::keyPressEvent(QKeyEvent*ke) {
                   << "\n" << std::flush;
         return;
     }
+    else if( ke->key() == Qt::Key_Plus) {
+        ++copy_box_size;
+        minimize_rate = (double)small_image_width/(double)copy_box_size;
+        std::cout << "New copy_box_size: " << copy_box_size << std::endl << std::flush;
+    }
+    else if( ke->key() == Qt::Key_Minus) {
+        --copy_box_size;
+        minimize_rate = (double)small_image_width/(double)copy_box_size;
+        std::cout << "New copy_box_size: " << copy_box_size << std::endl << std::flush;
+    }
     QWidget::keyPressEvent(ke);
 }
 
@@ -130,8 +146,6 @@ void ScreenCopy::trainNeuralNetwork() {
     if( mTrainingset.n_cols == 0 )
         return;
 
-    double lambda = 0.1;
-    int iteration = 100;
     srand (time(NULL));
 
     arma::mat thetaSizes{(double)mTrainingset.n_cols, 2000, 100, 2};
@@ -168,7 +182,6 @@ void ScreenCopy::scanScreenshot() {
     arma::mat thetaSizes;
     arma::mat theta;
     arma::mat X, y;
-    double lambda = 0;
 
     thetaSizes.load( training_sets_folder + training_set_prefix + "_trained_theta_sizes.bin" );
     theta.load( training_sets_folder + training_set_prefix + "_trained_thetas.bin" );
