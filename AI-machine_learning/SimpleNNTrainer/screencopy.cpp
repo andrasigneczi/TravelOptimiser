@@ -135,11 +135,15 @@ void ScreenCopy::keyPressEvent(QKeyEvent*ke) {
         ++copy_box_size;
         minimize_rate = (double)small_image_width/(double)copy_box_size;
         std::cout << "New copy_box_size: " << copy_box_size << std::endl << std::flush;
+        mGrayMiniCopy = mScreenshot.toImage().scaledToWidth(mScreenshot.width()*minimize_rate,Qt::SmoothTransformation)
+                        .convertToFormat(QImage::Format_RGB32, Qt::MonoOnly);
     }
     else if( ke->key() == Qt::Key_Minus) {
         --copy_box_size;
         minimize_rate = (double)small_image_width/(double)copy_box_size;
         std::cout << "New copy_box_size: " << copy_box_size << std::endl << std::flush;
+        mGrayMiniCopy = mScreenshot.toImage().scaledToWidth(mScreenshot.width()*minimize_rate,Qt::SmoothTransformation)
+                        .convertToFormat(QImage::Format_RGB32, Qt::MonoOnly);
     }
     QWidget::keyPressEvent(ke);
 }
