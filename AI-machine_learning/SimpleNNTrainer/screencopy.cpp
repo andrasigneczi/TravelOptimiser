@@ -1,5 +1,7 @@
 // TODO: 
 //     : QSettings usage
+//     : egy bekapcsolható funkció, ami klikkelésre az adott pozíciótól +- irányba fel-le automatikusan kigenerálja a kisképeket
+//     : a trainingdatába.
 
 #include "screencopy.h"
 #include <QPainter>
@@ -14,14 +16,15 @@
 #include <QApplication>
 #include <QtCore/QSettings>
 
-const int small_image_width = 30;
+const int small_image_width = 16;
 const std::string training_sets_folder = "./training_sets/";
-int copy_box_size = 100;
+int copy_box_size = 80;
 double minimize_rate = (double)small_image_width/(double)copy_box_size;
 const std::string training_set_prefix = "TH1_bg";
 double training_set_y = 0.;
-double lambda = 0.1;
-int iteration = 100;
+double lambda = 0.0;
+int iteration = 300;
+int scanStepSize = 4;
 
 ScreenCopy::ScreenCopy(QWidget *parent) : QWidget(parent)
 {
@@ -58,14 +61,13 @@ void ScreenCopy::paintEvent(QPaintEvent* pe) {
 
     QPainter p(this);
     p.drawPixmap(0,0,mScreenshot);
-/*
     p.fillRect(0,0,500,60, QBrush(QColor("#444444")));
     p.setFont(QFont("times",22));
     p.setPen(QPen(QColor("#ff0000")));
     p.drawText(QRect(0,0,500,30), Qt::AlignLeft, (std::to_string(mouseX) + " " + std::to_string(mouseY)).c_str());
         //p.drawText(QRect(0,30,500,30), Qt::AlignLeft, (std::to_string(mousePressedX) + " " + std::to_string(mousePressedY)).c_str());
-    p.drawText(QRect(0,30,500,30), Qt::AlignLeft, QString("detected th numbers:") + " " + std::to_string(mPredictions.size()).c_str());
-*/
+//    p.drawText(QRect(0,30,500,30), Qt::AlignLeft, QString("detected th numbers:") + " " + std::to_string(mPredictions.size()).c_str());
+
     p.setPen(QPen(QColor("#ff6600"),2,Qt::DotLine));
     p.drawRect(mouseX, mouseY, copy_box_size, copy_box_size);
     QWidget::paintEvent(pe);
@@ -148,7 +150,7 @@ void ScreenCopy::trainNeuralNetwork() {
 
     srand (time(NULL));
 
-    arma::mat thetaSizes{(double)mTrainingset.n_cols, 2000, 100, 2};
+    arma::mat thetaSizes{(double)mTrainingset.n_cols, 8000, 2};
     NeuralNetwork nn(thetaSizes, mTrainingset, mResultset, lambda, mThYMapper);
 
     //std::cout << "dbg1\n";
@@ -172,7 +174,7 @@ void ScreenCopy::trainNeuralNetwork() {
     // Obtain Theta1 and Theta2 back from nn_params
     std::vector<arma::mat> thetas = nn.extractThetas(frv.m_NNPparams);
     arma::mat pred = nn.predict(mTrainingset,thetas);
-    std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == mResultset))*100. << "\n";
+    std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == mResultset))*100. << "\n";
 
     thetaSizes.save( training_sets_folder + training_set_prefix + "_trained_theta_sizes.bin" );
     frv.m_NNPparams.save( training_sets_folder + training_set_prefix + "_trained_thetas.bin" );
@@ -189,10 +191,10 @@ void ScreenCopy::scanScreenshot() {
     std::vector<arma::mat> thetas {nn.extractThetas(theta)};
 
     mPredictions.clear();
-
+    int bgcounter = 0;
     arma::mat img = arma::zeros( 1, small_image_width*small_image_width );
-    for( int yp = 0; yp  + small_image_width < mGrayMiniCopy.height(); yp += 1) {
-        for( int xp = 0; xp  + small_image_width < mGrayMiniCopy.width(); xp += 1) {
+    for( int yp = 0; yp  + small_image_width < mGrayMiniCopy.height(); yp += scanStepSize) {
+        for( int xp = 0; xp  + small_image_width < mGrayMiniCopy.width(); xp += scanStepSize) {
 
             for( size_t i = 0; i < small_image_width; ++i ) {
                 for( size_t j = 0; j < small_image_width; ++j ) {
@@ -204,9 +206,14 @@ void ScreenCopy::scanScreenshot() {
             if( pred(0,0) == 1.0 ){
                 //std::cout << "position: " << xp*bigImageScale/width << ";" << yp*bigImageScale/width << " TH" << pred(0,0) << "\n";
                 mPredictions.push_back(QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size));
+            } else if( pred(0,0) == 0.0 ){
+                ++bgcounter;
+            } else {
+                std::cout << "What is this? " << pred(0,0) << "\n" << std::endl;
             }
         }
     }
+    std::cout << "bgcounter: " << bgcounter << "\n" << std::flush;
     std::cout << "Found TH count: " << mPredictions.size() << "\n" << std::flush;
     if( mPredictions.size() < 20 ) {
         for_each(mPredictions.begin(),mPredictions.end(),
@@ -215,22 +222,31 @@ void ScreenCopy::scanScreenshot() {
 }
 
 void ScreenCopy::saveSelectedRect() {
-    arma::mat img = arma::zeros( 1, small_image_width*small_image_width );
 
-    for( size_t i = 0; i < small_image_width; ++i ) {
-        for( size_t j = 0; j < small_image_width; ++j ) {
-            QRgb rgb = mGrayMiniCopy.pixel( mousePressedX *minimize_rate  + j, mousePressedY *minimize_rate+ i );
-            img(0, i * small_image_width + j ) = rgb;
+    int yp = mousePressedY *minimize_rate - scanStepSize;
+    if( yp < 0 ) yp = 0;
+    int xp = mousePressedX *minimize_rate - scanStepSize;
+    if( xp < 0 ) xp = 0;
+
+    for( int imgCountY = 0; imgCountY < 2* scanStepSize; ++imgCountY, ++yp ) {
+        for( int imgCountX = 0; imgCountX < 2* scanStepSize; ++imgCountX, ++xp ) {
+            arma::mat img = arma::zeros( 1, small_image_width*small_image_width );
+            for( size_t i = 0; i < small_image_width; ++i ) {
+                for( size_t j = 0; j < small_image_width; ++j ) {
+                    QRgb rgb = mGrayMiniCopy.pixel( xp  + j, yp + i );
+                    img(0, i * small_image_width + j ) = rgb;
+                }
+            }
+            //mGrayMiniCopy.copy(mousePressedX *minimize_rate, mousePressedY *minimize_rate, small_image_width, small_image_width)
+            //                  .save("selectedrect.png");
+            if( mTrainingset.n_cols == 0 )
+                mTrainingset = img;
+            else
+                mTrainingset.insert_rows(mTrainingset.n_rows, img);
+            mResultset.insert_rows(mResultset.n_rows, arma::mat{training_set_y}); // TODO: TH level
         }
     }
-    mGrayMiniCopy.copy(mousePressedX *minimize_rate, mousePressedY *minimize_rate, small_image_width, small_image_width)
-                      .save("selectedrect.png");
 
-    if( mTrainingset.n_cols == 0 )
-        mTrainingset = img;
-    else
-        mTrainingset.insert_rows(mTrainingset.n_rows, img);
-    mResultset.insert_rows(mResultset.n_rows, arma::mat{training_set_y}); // TODO: TH level
     mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
     mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
     std::cout << "Training set size: " << mTrainingset.n_rows << " rows\n" << std::flush;
