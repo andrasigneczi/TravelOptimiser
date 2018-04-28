@@ -6,12 +6,14 @@
 #include "screencopy.h"
 #include <QPainter>
 #include <QMouseEvent>
+#ifdef __LINUX__
 #include <unistd.h>
+#endif
 #include <fmincg.h>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include <QtGui/QImage>
-#include <png2arma.h>
+//#include <png2arma.h>
 #include <QScreen>
 #include <QApplication>
 #include <QtCore/QSettings>
