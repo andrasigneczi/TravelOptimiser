@@ -33,3 +33,13 @@ void MainWindow::on_pushButton_4_clicked()
 {
     myWindow.scanScreenshot();
 }
+
+void MainWindow::on_pushButton_5_clicked()
+{
+    // TODO: confirmation dialog + empty the training set
+}
+
+void MainWindow::on_pushButton_6_clicked()
+{
+    myWindow.extractTrainingSet();
+}

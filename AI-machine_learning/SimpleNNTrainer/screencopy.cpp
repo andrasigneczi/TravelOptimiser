@@ -18,15 +18,16 @@
 #include <QApplication>
 #include <QtCore/QSettings>
 
-const int small_image_width = 16;
+const int small_image_width = 50;
 const std::string training_sets_folder = "./training_sets/";
 int copy_box_size = 80;
 double minimize_rate = (double)small_image_width/(double)copy_box_size;
-const std::string training_set_prefix = "TH1_bg";
+const std::string training_set_prefix = "TH11_plus_BG";
 double training_set_y = 0.;
-double lambda = 0.0;
-int iteration = 300;
+double lambda = 0.001;
+int iteration = 2000;
 int scanStepSize = 4;
+arma::mat thetaSizes{(double)small_image_width*small_image_width, 10000, 2};
 
 ScreenCopy::ScreenCopy(QWidget *parent) : QWidget(parent)
 {
@@ -156,7 +157,6 @@ void ScreenCopy::trainNeuralNetwork() {
 
     srand (time(NULL));
 
-    arma::mat thetaSizes{(double)mTrainingset.n_cols, 8000, 2};
     NeuralNetwork nn(thetaSizes, mTrainingset, mResultset, lambda, mThYMapper);
 
     //std::cout << "dbg1\n";
@@ -234,12 +234,12 @@ void ScreenCopy::saveSelectedRect() {
     int xp = mousePressedX *minimize_rate - scanStepSize;
     if( xp < 0 ) xp = 0;
 
-    for( int imgCountY = 0; imgCountY < 2* scanStepSize; ++imgCountY, ++yp ) {
-        for( int imgCountX = 0; imgCountX < 2* scanStepSize; ++imgCountX, ++xp ) {
+    for( int imgCountY = 0; imgCountY < 2* scanStepSize; ++imgCountY ) {
+        for( int imgCountX = 0; imgCountX < 2* scanStepSize; ++imgCountX ) {
             arma::mat img = arma::zeros( 1, small_image_width*small_image_width );
             for( size_t i = 0; i < small_image_width; ++i ) {
                 for( size_t j = 0; j < small_image_width; ++j ) {
-                    QRgb rgb = mGrayMiniCopy.pixel( xp  + j, yp + i );
+                    QRgb rgb = mGrayMiniCopy.pixel( xp  + imgCountX + j, yp + imgCountY + i );
                     img(0, i * small_image_width + j ) = rgb;
                 }
             }
@@ -279,4 +279,17 @@ void ScreenCopy::saveTiles() {
     mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
     mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
     std::cout << "Training set size: " << mTrainingset.n_rows << " rows\n" << std::flush;
+}
+
+void ScreenCopy::extractTrainingSet() {
+    //std::cout <<  mTrainingset.n_rows << ";" << mTrainingset.n_cols << "\n" << std::flush;
+    QImage img(small_image_width,small_image_width, QImage::Format_RGB32);
+    char name[100];
+    for( size_t i = 0; i < mTrainingset.n_rows; ++i ) {
+        for( size_t j = 0; j < mTrainingset.n_cols; ++j ) {
+            img.setPixel(j%small_image_width,j/small_image_width, mTrainingset(i, j));
+        }
+        sprintf(name, "tmp/%u_%04lu.png", (int)mResultset(i,0), i);
+        img.save(name);
+    }
 }

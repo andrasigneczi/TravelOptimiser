@@ -12,12 +12,9 @@ TARGET = SimpleNNTrainer
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    screencopy.cpp
+SOURCES += main.cpp mainwindow.cpp screencopy.cpp
 
-HEADERS  += mainwindow.h \
-    screencopy.h
+HEADERS  += mainwindow.h screencopy.h
 
 FORMS    += mainwindow.ui
 

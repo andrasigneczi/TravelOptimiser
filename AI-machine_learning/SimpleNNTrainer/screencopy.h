@@ -35,6 +35,7 @@ public:
     void scanScreenshot();
     QRect getCanvasSize() { return mCanvasSize; }
     void capture();
+    void extractTrainingSet();
 
 signals:
 

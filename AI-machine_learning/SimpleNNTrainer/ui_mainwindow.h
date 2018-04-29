@@ -31,6 +31,8 @@ public:
     QPushButton *pushButton_2;
     QPushButton *pushButton_3;
     QPushButton *pushButton_4;
+    QPushButton *pushButton_5;
+    QPushButton *pushButton_6;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -54,6 +56,12 @@ public:
         pushButton_4 = new QPushButton(centralWidget);
         pushButton_4->setObjectName(QStringLiteral("pushButton_4"));
         pushButton_4->setGeometry(QRect(20, 160, 99, 27));
+        pushButton_5 = new QPushButton(centralWidget);
+        pushButton_5->setObjectName(QStringLiteral("pushButton_5"));
+        pushButton_5->setGeometry(QRect(160, 10, 151, 27));
+        pushButton_6 = new QPushButton(centralWidget);
+        pushButton_6->setObjectName(QStringLiteral("pushButton_6"));
+        pushButton_6->setGeometry(QRect(180, 70, 141, 27));
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -78,6 +86,8 @@ public:
         pushButton_2->setText(QApplication::translate("MainWindow", "Tile", 0));
         pushButton_3->setText(QApplication::translate("MainWindow", "Train", 0));
         pushButton_4->setText(QApplication::translate("MainWindow", "Scan", 0));
+        pushButton_5->setText(QApplication::translate("MainWindow", "Delete training set", 0));
+        pushButton_6->setText(QApplication::translate("MainWindow", "Extract training set", 0));
     } // retranslateUi
 
 };
