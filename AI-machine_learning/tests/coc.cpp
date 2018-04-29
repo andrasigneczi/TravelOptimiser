@@ -6,6 +6,7 @@
 #include <time.h>       /* time */
 #include <QtGui/QImage>
 #include <png2arma.h>
+#include <qcustomplot.h>
 
 namespace COC_ns {
     
@@ -14,12 +15,16 @@ void coc_prediction_test();
 void coc_one_TH_test();
 void coc_TH9_test();
 void coc_background_training_set_generator();
+void coc_learningCurve();
+void coc_validationCurve();
 
 void runTests() {
     //test4(); // coc training test
     //coc_prediction_test();
     //coc_one_TH_test();
     //coc_TH9_test();
+    //coc_learningCurve();
+    coc_validationCurve();
 }
 
 
@@ -315,15 +320,41 @@ void coc_TH9_test() {
 }
 
 void coc_background_training_set_generator() {
-    // 1. legyen a gray átméretezett mScreenshot_cp, amiről készül a training set.
-    // 2. Ctrl + left click törölje az adott négyzetet a screenshotról.
-    // 3. Checkgroup a panelra a lehetséges y értékellel. A trainingset innen veszi majd az y értékét.
-    // 4. Key_Q: darabolja fel a képernyőt és adja a trainingsethez mindet.
-    
-    // int newWidth = mScreenshot.width()*24./100.; // 24 %
-    // QImage img_gray = mScreenshot.toImage().scaledToWidth(newWidth,Qt::SmoothTransformation)
-    // .convertToFormat(QImage::Format_RGB32, Qt::MonoOnly);
-    // img_gray.save();
+}
+
+class COCYMappper2 : public CostAndGradient::YMappperIF {
+public:
+    arma::mat fromYtoYY(double y, size_t num_labels ) override {
+        arma::mat yy = arma::zeros(1,num_labels);
+        yy(0,y) = 1;
+        return yy;
+    }
+
+    double fromYYtoY( size_t index ) override {
+        return index;
+    }
+};
+
+void coc_learningCurve() {
+    arma::mat X, y, thetaSizes;
+    X.load("/src/TravelOptimizer/AI-machine_learning/SimpleNNTrainer/training_sets_90%/TH11_plus_BG_trainingset.bin");
+    y.load("/src/TravelOptimizer/AI-machine_learning/SimpleNNTrainer/training_sets_90%/TH11_plus_BG_trainingset_result.bin");
+
+    thetaSizes << 40*40 << 10000 << 2; // input, hidden, output
+    COCYMappper2 yMapper;
+    NeuralNetwork nn(thetaSizes, X, y, 1, yMapper);
+    nn.plotLearningCurve(new QCustomPlot);
+}
+
+void coc_validationCurve() {
+    arma::mat X, y, thetaSizes;
+    X.load("/src/TravelOptimizer/AI-machine_learning/SimpleNNTrainer/training_sets_90%/TH11_plus_BG_trainingset.bin");
+    y.load("/src/TravelOptimizer/AI-machine_learning/SimpleNNTrainer/training_sets_90%/TH11_plus_BG_trainingset_result.bin");
+
+    thetaSizes << 40*40 << 5000 << 2; // input, hidden, output
+    COCYMappper2 yMapper;
+    NeuralNetwork nn(thetaSizes, X, y, 1, yMapper);
+    nn.plotValidationCurve(new QCustomPlot,5);
 }
 
 } // COC_ns

@@ -13,19 +13,22 @@ namespace NeuralNetwork_ns {
 void test1();
 void test2();
 void test3();
-void test_ex5();
+void test_ex5_learningCurve();
+void test_ex5_validationCurve();
 
 void runTests() {
     //test1(); // neural network prediction
     //test2(); // neural network complex training
     //test3(); // neural network simple training
-    test_ex5();
+    //test_ex5_learningCurve();
+    test_ex5_validationCurve();
 }
 
 
 class TestYMappper : public CostAndGradient::YMappperIF {
 public:
     arma::mat fromYtoYY(double y, size_t num_labels ) override {
+        //std::cout << "mapper " << num_labels << " " << y << "\n" << std::flush;
         arma::mat yy = arma::zeros(1,num_labels);
         if( y == 0 ) {
             yy(0,9) = 1;
@@ -223,50 +226,34 @@ void test3() {
 
 }
 
-void test_ex5() {
+void test_ex5_learningCurve() {
 
     // Learning Curve for NN
-    // Validation curve for Selecting Lambda
+    arma::mat X, y, thetaSizes;
+    X.load("ex3data1_X.bin");
+    y.load("ex3data1_y.bin");
+    //X = X.rows(0,1000);
+    //y = y.rows(0,1000);
 
-    QCustomPlot* customPlot = new QCustomPlot;
-//  demoName = "Simple Demo";
-  
-  // add two new graphs and set their look:
-  customPlot->addGraph();
-  customPlot->graph(0)->setPen(QPen(Qt::blue)); // line color blue for first graph
-  customPlot->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 20))); // first graph will be filled with translucent blue
-  customPlot->addGraph();
-  customPlot->graph(1)->setPen(QPen(Qt::red)); // line color red for second graph
-  // generate some points of data (y0 for first, y1 for second graph):
-  QVector<double> x(251), y0(251), y1(251);
-  for (int i=0; i<251; ++i)
-  {
-    x[i] = i;
-    y0[i] = qExp(-i/150.0)*qCos(i/10.0); // exponentially decaying cosine
-    y1[i] = qExp(-i/150.0);              // exponential envelope
-  }
-  // configure right and top axis to show ticks but no labels:
-  // (see QCPAxisRect::setupFullAxesBox for a quicker method to do this)
-  customPlot->xAxis2->setVisible(true);
-  customPlot->xAxis2->setTickLabels(false);
-  customPlot->yAxis2->setVisible(true);
-  customPlot->yAxis2->setTickLabels(false);
-  // make left and bottom axes always transfer their ranges to right and top axes:
-//  connect(customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->xAxis2, SLOT(setRange(QCPRange)));
-//  connect(customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->yAxis2, SLOT(setRange(QCPRange)));
-  // pass data points to graphs:
-  customPlot->graph(0)->setData(x, y0);
-  customPlot->graph(1)->setData(x, y1);
-  // let the ranges scale themselves so graph 0 fits perfectly in the visible area:
-  customPlot->graph(0)->rescaleAxes();
-  // same thing for graph 1, but only enlarge ranges (in case graph 1 is smaller than graph 0):
-  customPlot->graph(1)->rescaleAxes(true);
-  // Note: we could have also just called customPlot->rescaleAxes(); instead
-  // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
-  customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    thetaSizes << 400 << 20 << 10; // input, hidden, output
+    TestYMappper yMapper;
+    NeuralNetwork nn(thetaSizes, X, y, 1, yMapper);
+    //std::cout << "dbg2.5\n" << std::flush;
+    nn.plotLearningCurve(new QCustomPlot);
+}
 
-  customPlot->resize(1200,780);
-  customPlot->show();
+void test_ex5_validationCurve() {
+
+    // Learning Curve for NN
+    arma::mat X, y, thetaSizes;
+    X.load("ex3data1_X.bin");
+    y.load("ex3data1_y.bin");
+
+    thetaSizes << 400 << 20 << 10; // input, hidden, output
+    TestYMappper yMapper;
+    NeuralNetwork nn(thetaSizes, X, y, 1, yMapper);
+    //std::cout << "dbg2.5\n" << std::flush;
+    nn.plotValidationCurve(new QCustomPlot,10);
 }
 
 } // NeuralNetwork_ns

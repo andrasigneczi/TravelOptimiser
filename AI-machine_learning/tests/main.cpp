@@ -1,6 +1,7 @@
 #include "linear_regression.h"
 #include "logistic_regression.h"
 #include "neural_network.h"
+#include "coc.h"
 #include <iostream>
 #include <chrono>
 #include "png2arma.h"
@@ -49,7 +50,8 @@ int main (int argc, char* argv[]) {
     //Png2Arma_ns::runTests();
 
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    NeuralNetwork_ns::runTests();
+    //NeuralNetwork_ns::runTests();
+    COC_ns::runTests();
     //std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     //std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() <<std::endl;
 

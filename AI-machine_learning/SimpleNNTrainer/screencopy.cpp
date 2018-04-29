@@ -24,8 +24,8 @@ int copy_box_size = 80;
 double minimize_rate = (double)small_image_width/(double)copy_box_size;
 const std::string training_set_prefix = "TH11_plus_BG";
 double training_set_y = 0.;
-double lambda = 0.001;
-int iteration = 2000;
+double lambda = 0.1;
+int iteration = 150;
 int scanStepSize = 4;
 arma::mat thetaSizes{(double)small_image_width*small_image_width, 10000, 2};
 
@@ -294,8 +294,8 @@ void ScreenCopy::extractTrainingSet() {
     //std::cout <<  mTrainingset.n_rows << ";" << mTrainingset.n_cols << "\n" << std::flush;
     QImage img(small_image_width,small_image_width, QImage::Format_RGB32);
     char name[100];
-    for( int i = 0; i < mTrainingset.n_rows; ++i ) {
-        for( int j = 0; j < mTrainingset.n_cols; ++j ) {
+    for( size_t i = 0; i < mTrainingset.n_rows; ++i ) {
+        for( size_t j = 0; j < mTrainingset.n_cols; ++j ) {
             img.setPixel(j%small_image_width,j/small_image_width, mTrainingset(i, j));
         }
         sprintf(name, "tmp/%u_%04lu.png", (unsigned)mResultset(i,0), (unsigned long)i);

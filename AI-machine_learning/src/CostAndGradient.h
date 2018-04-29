@@ -21,7 +21,7 @@ public:
     CostAndGradient( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda, YMappperIF& yMappper )
     : mLayerSizes( layerSizes), mX( X ), mY( y ), mLambda( lambda ), mYMappper( yMappper ){}
     
-    virtual RetVal& calc( const arma::mat& nn_params ) = 0;
+    virtual RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) = 0;
     void setLambda( double lambda ) { mLambda = lambda; }
     
 protected:

@@ -1,8 +1,10 @@
 #include "neural_network.h"
 #include <vector>
 #include <limits.h>
+#include "fmincg.h"
+#include <qcustomplot.h>
 
-CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params ) {
+CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool costOnly ) {
     
     // Reshape nn_params back into the parameters Theta1-ThetaN, the weight matrices
     // for our n layer neural network
@@ -35,31 +37,40 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params ) {
         }
     }
     
-    //std::cout << "dbgX 3\n";
-    
+    //std::cout << "dbgX 3 " << m << "\n" << std::flush;
+
     // the last 'a' is the 'h'
     arma::mat& h = aVec[aVec.size()-1]; // 5000 x 10
-    
+
+    //std::cout << "dbgX 3.1 " << m << "\n" << std::flush;
+
     // extract the 'y' to 'binary' format
     arma::mat yy = arma::zeros(m,num_labels); // 5000 x 10
-    
+
+    //std::cout << "dbgX 3.2 " << m << "\n" << std::flush;
+
     for( int i=0; i < m; ++i ) {
+        //std::cout << "before mapper " << i << "\n" << std::flush;
         yy.row(i) = mYMappper.fromYtoYY( mY(i,0), num_labels );
     }
     
     //std::cout << "dbgX 4\n";
     
     // cost calculation
-    double J = 0;
+    mRetVal.cost = 0;
     for( int k=0; k < num_labels; ++k ) {
-        J += as_scalar( 1./m*(-yy.col(k).t()*arma::log(h.col(k))-(1.-yy.col(k)).t()*arma::log(1.-h.col(k))));
+        mRetVal.cost += as_scalar( 1./m*(-yy.col(k).t()*arma::log(h.col(k))-(1.-yy.col(k)).t()*arma::log(1.-h.col(k))));
     }
 
     // reguralization of the cost
     for( size_t i = 0; i < thetas.size(); ++i ) {
-        J += mLambda/2./m*sum(vectorise(arma::pow(thetas[i].cols(1,thetas[i].n_cols-1),2)));
+        mRetVal.cost += mLambda/2./m*sum(vectorise(arma::pow(thetas[i].cols(1,thetas[i].n_cols-1),2)));
     }
     
+    if( costOnly ) {
+        return mRetVal;
+    }
+
     //std::cout << "dbgX 5\n";
     
     // compute deltas
@@ -105,7 +116,6 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params ) {
         }
     }
     //std::cout << "dbgX 8\n";
-    mRetVal.cost = J;
     
     return mRetVal;
 }
@@ -256,4 +266,137 @@ std::vector<arma::mat> NeuralNetwork::extractThetas( const arma::mat& nn_params 
     thetas[hiddenLayerCount] = arma::reshape(nn_params.rows(pos, nn_params.n_rows-1), 
                      num_labels, (act_layer_size + 1));
     return thetas;
+}
+
+arma::mat NeuralNetwork::train(int iteration, bool verbose) {
+    arma::mat initial_nn_params;
+    srand (time(NULL));
+    for( size_t i = 0; i <= mLayerSizes.n_cols-2; ++i ) {
+        arma::mat initial_Theta = randInitializeWeights(mLayerSizes(0,i), mLayerSizes(0,i+1));
+
+        if( i == 0 )
+            initial_nn_params = arma::vectorise( initial_Theta );
+        else
+            initial_nn_params = join_cols( initial_nn_params, arma::vectorise( initial_Theta ));
+    }
+
+    fmincgRetVal frv = fmincg(*this, initial_nn_params, iteration, verbose);
+    return frv.m_NNPparams;
+}
+
+arma::mat NeuralNetwork::learningCurve(arma::mat& Xval, arma::mat& yval) {
+    arma::mat retv = arma::zeros(mX.n_rows, 3);
+    NeuralNetwork nn2(mLayerSizes, Xval, yval, 0, mYMappper);
+
+    for( size_t m = 0; m < mX.n_rows; ++m ) {
+        std::cout << "Lerarning curve step number " << m << "\r" << std::flush;
+        arma::mat X = mX.rows(0,m);
+        arma::mat Y = mY.rows(0,m);
+        NeuralNetwork nn(mLayerSizes, X, Y, mLambda, mYMappper);
+        arma::mat thetas = nn.train(1,false);
+        nn.setLambda(0);
+        retv(m,0) = m;
+        retv(m,1) = nn.calc( thetas, true ).cost;
+        retv(m,2) = nn2.calc( thetas, true ).cost;
+    }
+    return retv;
+}
+
+arma::mat NeuralNetwork::validationCurve(arma::mat& Xval, arma::mat& yval, int iteration) {
+    std::vector<double> lambda_vec{0, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10};
+    arma::mat retv = arma::zeros(lambda_vec.size(), 3);
+    NeuralNetwork nn2(mLayerSizes, Xval, yval, 0, mYMappper);
+
+    for( size_t i = 0; i < lambda_vec.size(); ++i ) {
+        std::cout << "Validation curve step number " << i << "\r" << std::flush;
+        setLambda(lambda_vec[i]);
+        arma::mat thetas = train(iteration,false);
+
+        setLambda(0);
+        retv(i,0) = lambda_vec[i];
+        retv(i,1) = calc( thetas, true ).cost;
+        retv(i,2) = nn2.calc( thetas, true ).cost;
+    }
+    return retv;
+}
+
+void NeuralNetwork::plotLearningCurve(QCustomPlot* customPlot) {
+    arma::mat X, y, thetaSizes;
+    arma::mat dataset = join_rows( mX, mY );
+    shuffle(dataset);
+
+    //std::cout << "dbg1\n" << std::flush;
+    int training_set_size = dataset.n_rows * 0.7;
+    X = dataset.rows(0,training_set_size).cols(0,dataset.n_cols-2);
+    y = dataset.rows(0,training_set_size).cols(dataset.n_cols-1,dataset.n_cols-1);
+    arma::mat Xval = dataset.rows(training_set_size+1, dataset.n_rows - 1).cols(0,dataset.n_cols-2);
+    arma::mat Yval = dataset.rows(training_set_size+1,dataset.n_rows - 1).cols(dataset.n_cols-1,dataset.n_cols-1);
+    //std::cout << "dbg2\n" << std::flush;
+
+    NeuralNetwork nn(mLayerSizes, X, y, 1, mYMappper);
+    //std::cout << "dbg2.5\n" << std::flush;
+    arma::mat lcv = nn.learningCurve(Xval, Yval);
+    //std::cout << "dbg3\n" << std::flush;
+
+    plotMatrix(customPlot, lcv);
+}
+
+void NeuralNetwork::plotValidationCurve(QCustomPlot* customPlot, int iteration) {
+    arma::mat X, y, thetaSizes;
+    arma::mat dataset = join_rows( mX, mY );
+    shuffle(dataset);
+
+    //std::cout << "dbg1\n" << std::flush;
+    int training_set_size = dataset.n_rows * 0.7;
+    X = dataset.rows(0,training_set_size).cols(0,dataset.n_cols-2);
+    y = dataset.rows(0,training_set_size).cols(dataset.n_cols-1,dataset.n_cols-1);
+    arma::mat Xval = dataset.rows(training_set_size+1, dataset.n_rows - 1).cols(0,dataset.n_cols-2);
+    arma::mat Yval = dataset.rows(training_set_size+1,dataset.n_rows - 1).cols(dataset.n_cols-1,dataset.n_cols-1);
+    //std::cout << "dbg2\n" << std::flush;
+
+    NeuralNetwork nn(mLayerSizes, X, y, 1, mYMappper);
+    //std::cout << "dbg2.5\n" << std::flush;
+    arma::mat lcv = nn.validationCurve(Xval, Yval, iteration);
+    //std::cout << "dbg3\n" << std::flush;
+
+    plotMatrix(customPlot, lcv);
+}
+
+void NeuralNetwork::plotMatrix( QCustomPlot* customPlot, const arma::mat& matrix ) {
+  // add two new graphs and set their look:
+  customPlot->addGraph();
+  customPlot->graph(0)->setPen(QPen(Qt::blue)); // line color blue for first graph
+  customPlot->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 20))); // first graph will be filled with translucent blue
+  customPlot->addGraph();
+  customPlot->graph(1)->setPen(QPen(Qt::red)); // line color red for second graph
+  // generate some points of data (y0 for first, y1 for second graph):
+  QVector<double> x(matrix.n_rows), y0(matrix.n_rows), y1(matrix.n_rows);
+  for (size_t i=0; i<matrix.n_rows; ++i)
+  {
+    x[i] = matrix(i,0);
+    y0[i] = matrix(i,1);
+    y1[i] = matrix(i,2);
+  }
+  // configure right and top axis to show ticks but no labels:
+  // (see QCPAxisRect::setupFullAxesBox for a quicker method to do this)
+  customPlot->xAxis2->setVisible(true);
+  customPlot->xAxis2->setTickLabels(false);
+  customPlot->yAxis2->setVisible(true);
+  customPlot->yAxis2->setTickLabels(false);
+  // make left and bottom axes always transfer their ranges to right and top axes:
+//  connect(customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->xAxis2, SLOT(setRange(QCPRange)));
+//  connect(customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->yAxis2, SLOT(setRange(QCPRange)));
+  // pass data points to graphs:
+  customPlot->graph(0)->setData(x, y0);
+  customPlot->graph(1)->setData(x, y1);
+  // let the ranges scale themselves so graph 0 fits perfectly in the visible area:
+  customPlot->graph(0)->rescaleAxes();
+  // same thing for graph 1, but only enlarge ranges (in case graph 1 is smaller than graph 0):
+  customPlot->graph(1)->rescaleAxes(true);
+  // Note: we could have also just called customPlot->rescaleAxes(); instead
+  // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
+  customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+
+  customPlot->resize(1200,780);
+  customPlot->show();
 }

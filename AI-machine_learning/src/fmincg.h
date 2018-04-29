@@ -15,6 +15,6 @@ struct fmincgRetVal {
     int mI;
 };
 
-fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter );
+fmincgRetVal fmincg( CostAndGradient& f, arma::mat X, int maxIter, bool verbose = true );
 
 #endif
