@@ -18,7 +18,7 @@
 #include <QApplication>
 #include <QtCore/QSettings>
 
-const int small_image_width = 50;
+const int small_image_width = 40;
 const std::string training_sets_folder = "./training_sets/";
 int copy_box_size = 80;
 double minimize_rate = (double)small_image_width/(double)copy_box_size;
@@ -57,19 +57,26 @@ void ScreenCopy::capture() {
                     .convertToFormat(QImage::Format_RGB32, Qt::MonoOnly);
     mGrayMiniCopy.save("minicopy.png");
     mScreenshot.save("screenshot.png");
-    repaint();
+    updateTrainingSetStat();
 }
 
 void ScreenCopy::paintEvent(QPaintEvent* pe) {
 
     QPainter p(this);
     p.drawPixmap(0,0,mScreenshot);
-    p.fillRect(0,0,500,60, QBrush(QColor("#444444")));
-    p.setFont(QFont("times",22));
+    //p.fillRect(0,0,500,60, QBrush(QColor("#444444")));
+    p.setFont(QFont("times",18));
     p.setPen(QPen(QColor("#ff0000")));
     p.drawText(QRect(0,0,500,30), Qt::AlignLeft, (std::to_string(mouseX) + " " + std::to_string(mouseY)).c_str());
         //p.drawText(QRect(0,30,500,30), Qt::AlignLeft, (std::to_string(mousePressedX) + " " + std::to_string(mousePressedY)).c_str());
 //    p.drawText(QRect(0,30,500,30), Qt::AlignLeft, QString("detected th numbers:") + " " + std::to_string(mPredictions.size()).c_str());
+
+    int textpos = 0;
+    for( auto it = mTrainingSetStat.begin(); it != mTrainingSetStat.end(); ++it ){
+        p.drawText(QRect(textpos,30,500,100), Qt::AlignLeft, QString("y:") + QString::number( it->first ) +
+                   "=>" + QString::number( it->second ));
+        textpos += 150;
+    }
 
     p.setPen(QPen(QColor("#ff6600"),2,Qt::DotLine));
     p.drawRect(mouseX, mouseY, copy_box_size, copy_box_size);
@@ -202,8 +209,8 @@ void ScreenCopy::scanScreenshot() {
     for( int yp = 0; yp  + small_image_width < mGrayMiniCopy.height(); yp += scanStepSize) {
         for( int xp = 0; xp  + small_image_width < mGrayMiniCopy.width(); xp += scanStepSize) {
 
-            for( size_t i = 0; i < small_image_width; ++i ) {
-                for( size_t j = 0; j < small_image_width; ++j ) {
+            for( int i = 0; i < small_image_width; ++i ) {
+                for( int j = 0; j < small_image_width; ++j ) {
                     QRgb rgb = mGrayMiniCopy.pixel( xp + j, yp + i );
                     img(0, i * small_image_width + j ) = rgb;
                 }
@@ -237,8 +244,8 @@ void ScreenCopy::saveSelectedRect() {
     for( int imgCountY = 0; imgCountY < 2* scanStepSize; ++imgCountY ) {
         for( int imgCountX = 0; imgCountX < 2* scanStepSize; ++imgCountX ) {
             arma::mat img = arma::zeros( 1, small_image_width*small_image_width );
-            for( size_t i = 0; i < small_image_width; ++i ) {
-                for( size_t j = 0; j < small_image_width; ++j ) {
+            for( int i = 0; i < small_image_width; ++i ) {
+                for( int j = 0; j < small_image_width; ++j ) {
                     QRgb rgb = mGrayMiniCopy.pixel( xp  + imgCountX + j, yp + imgCountY + i );
                     img(0, i * small_image_width + j ) = rgb;
                 }
@@ -256,6 +263,7 @@ void ScreenCopy::saveSelectedRect() {
     mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
     mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
     std::cout << "Training set size: " << mTrainingset.n_rows << " rows\n" << std::flush;
+    updateTrainingSetStat();
 }
 
 void ScreenCopy::saveTiles() {
@@ -263,8 +271,8 @@ void ScreenCopy::saveTiles() {
     for( int yp = 0; yp  + small_image_width < mGrayMiniCopy.height(); yp += small_image_width) {
         for( int xp = 0; xp  + small_image_width < mGrayMiniCopy.width(); xp += small_image_width) {
 
-            for( size_t i = 0; i < small_image_width; ++i ) {
-                for( size_t j = 0; j < small_image_width; ++j ) {
+            for( int i = 0; i < small_image_width; ++i ) {
+                for( int j = 0; j < small_image_width; ++j ) {
                     QRgb rgb = mGrayMiniCopy.pixel( xp + j, yp + i );
                     img(0, i * small_image_width + j ) = rgb;
                 }
@@ -279,17 +287,40 @@ void ScreenCopy::saveTiles() {
     mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
     mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
     std::cout << "Training set size: " << mTrainingset.n_rows << " rows\n" << std::flush;
+    updateTrainingSetStat();
 }
 
 void ScreenCopy::extractTrainingSet() {
     //std::cout <<  mTrainingset.n_rows << ";" << mTrainingset.n_cols << "\n" << std::flush;
     QImage img(small_image_width,small_image_width, QImage::Format_RGB32);
     char name[100];
-    for( size_t i = 0; i < mTrainingset.n_rows; ++i ) {
-        for( size_t j = 0; j < mTrainingset.n_cols; ++j ) {
+    for( int i = 0; i < mTrainingset.n_rows; ++i ) {
+        for( int j = 0; j < mTrainingset.n_cols; ++j ) {
             img.setPixel(j%small_image_width,j/small_image_width, mTrainingset(i, j));
         }
-        sprintf(name, "tmp/%u_%04lu.png", (int)mResultset(i,0), i);
+        sprintf(name, "tmp/%u_%04lu.png", (unsigned)mResultset(i,0), (unsigned long)i);
         img.save(name);
     }
+}
+
+void ScreenCopy::updateTrainingSetStat(){
+    mTrainingSetStat.clear();
+    for( size_t i = 0; i < mResultset.n_rows; ++i ){
+        auto it = mTrainingSetStat.find(mResultset(i,0));
+        if( it != mTrainingSetStat.end()) {
+            ++it->second;
+        } else {
+            mTrainingSetStat.emplace((int)mResultset(i,0),1);
+        }
+    }
+    repaint();
+}
+
+void ScreenCopy::deleteTrainingSet() {
+    mTrainingset.clear();
+    mResultset.clear();
+    mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
+    mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
+    std::cout << "Training set size: " << mTrainingset.n_rows << " rows\n" << std::flush;
+    updateTrainingSetStat();
 }

@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <armadillo>
 #include <neural_network.h>
+#include <map>
 
 // Simple mapper from 0...
 class TH_YMappper : public CostAndGradient::YMappperIF {
@@ -36,6 +37,8 @@ public:
     QRect getCanvasSize() { return mCanvasSize; }
     void capture();
     void extractTrainingSet();
+    void updateTrainingSetStat();
+    void deleteTrainingSet();
 
 signals:
 
@@ -57,6 +60,7 @@ private:
     TH_YMappper mThYMapper;
     std::vector<QRect> mPredictions;
     QRect mCanvasSize;
+    std::map<int,int> mTrainingSetStat;
 };
 
 #endif // SCREENCOPY_H
