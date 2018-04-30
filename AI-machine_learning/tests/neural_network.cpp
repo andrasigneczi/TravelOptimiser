@@ -18,10 +18,10 @@ void test_ex5_validationCurve();
 
 void runTests() {
     //test1(); // neural network prediction
-    //test2(); // neural network complex training
+    test2(); // neural network complex training
     //test3(); // neural network simple training
     //test_ex5_learningCurve();
-    test_ex5_validationCurve();
+    //test_ex5_validationCurve();
 }
 
 

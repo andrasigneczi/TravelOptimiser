@@ -126,8 +126,8 @@ arma::mat NeuralNetwork::predict( const arma::mat& X, const std::vector<arma::ma
     arma::mat p = arma::zeros(m, 1);
     arma::mat s = X;
     for( size_t i = 0; i < thetas.size(); ++i ) {
-        s = join_rows( arma::ones(m, 1), s);
-        s=sigmoid(s,thetas[i].t());
+        s = std::move(join_rows( arma::ones(m, 1), s));
+        s=std::move(sigmoid(s,thetas[i].t()));
     }
     arma::mat M = arma::max(s,1);
     for( size_t i=0; i < m; ++i ) {
@@ -360,6 +360,7 @@ void NeuralNetwork::plotValidationCurve(QCustomPlot* customPlot, int iteration) 
     //std::cout << "dbg3\n" << std::flush;
 
     plotMatrix(customPlot, lcv);
+    std::cout << "\n" << lcv << "\n" << std::flush;
 }
 
 void NeuralNetwork::plotMatrix( QCustomPlot* customPlot, const arma::mat& matrix ) {

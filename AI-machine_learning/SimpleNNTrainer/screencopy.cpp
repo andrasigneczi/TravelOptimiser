@@ -25,7 +25,7 @@ double minimize_rate = (double)small_image_width/(double)copy_box_size;
 const std::string training_set_prefix = "TH11_plus_BG";
 double training_set_y = 0.;
 double lambda = 0.1;
-int iteration = 150;
+int iteration = 1000;
 int scanStepSize = 4;
 arma::mat thetaSizes{(double)small_image_width*small_image_width, 10000, 2};
 

@@ -348,13 +348,13 @@ void coc_learningCurve() {
 
 void coc_validationCurve() {
     arma::mat X, y, thetaSizes;
-    X.load("/src/TravelOptimizer/AI-machine_learning/SimpleNNTrainer/training_sets_90%/TH11_plus_BG_trainingset.bin");
-    y.load("/src/TravelOptimizer/AI-machine_learning/SimpleNNTrainer/training_sets_90%/TH11_plus_BG_trainingset_result.bin");
+    X.load("/src/TravelOptimizer/AI-machine_learning/SimpleNNTrainer/training_sets/TH11_plus_BG_trainingset.bin");
+    y.load("/src/TravelOptimizer/AI-machine_learning/SimpleNNTrainer/training_sets/TH11_plus_BG_trainingset_result.bin");
 
-    thetaSizes << 40*40 << 5000 << 2; // input, hidden, output
+    thetaSizes << 40*40 << 4000 << 1000 << 200 << 2; // input, hidden, output
     COCYMappper2 yMapper;
     NeuralNetwork nn(thetaSizes, X, y, 1, yMapper);
-    nn.plotValidationCurve(new QCustomPlot,5);
+    nn.plotValidationCurve(new QCustomPlot,10);
 }
 
 } // COC_ns
