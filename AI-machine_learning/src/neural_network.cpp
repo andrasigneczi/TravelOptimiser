@@ -2,7 +2,7 @@
 #include <vector>
 #include <limits.h>
 #include "fmincg.h"
-#include <qcustomplot.h>
+#include "qcustomplot.h"
 
 CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool costOnly ) {
     

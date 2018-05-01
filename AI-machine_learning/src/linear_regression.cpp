@@ -87,7 +87,7 @@ arma::mat GradientDescent::calcL( const arma::mat& dataSet, const arma::mat& the
 
         //mTheta = mTheta - (alpha/m*delta*X).t();
         mTheta(0) = mTheta(0) - arma::as_scalar((alpha/m*delta*X.col(0)).t());
-        for( long long j = 1; j < X.n_cols; ++j ) {
+        for( size_t j = 1; j < X.n_cols; ++j ) {
             mTheta(j) = mTheta(j)*(1-alpha*lambda/m) - arma::as_scalar(alpha/m*(delta*X.col(j)).t());
         }
         if( threshold > 0.0 && i % 1000 == 0 ) {

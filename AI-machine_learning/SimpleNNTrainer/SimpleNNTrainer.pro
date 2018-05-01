@@ -31,7 +31,7 @@ QMAKE_CXXFLAGS += -std=c++11 -O3 -Wall -Wextra -pedantic -D__LINUX__  -pthread -
 
 QMAKE_CXX = g++
 
-unix:!macx: LIBS += -L$$PWD/../src/ -lMachineLearning -lqcustomplot
+unix:!macx: LIBS += -L$$PWD/../src/ -lMachineLearning  -lQt5PrintSupport -larmadillo
 }
 
 INCLUDEPATH += $$PWD/../src

@@ -32,7 +32,7 @@ arma::mat LogisticRegression::gradientDescentWithReguralization( const arma::mat
         
         mTheta(0) = mTheta(0) - arma::as_scalar((alpha/m*delta*X.col(0)).t());
         
-        for( long j = 1; j < mTheta.n_rows; ++j )
+        for( size_t j = 1; j < mTheta.n_rows; ++j )
             mTheta(j) = mTheta(j) - arma::as_scalar( alpha*( (1/m*delta*X.col(j)).t() + lambda/m*mTheta(j) ) );
         if( i % 10000 == 0 ) {
             std::cout << "iteration: " << i << std::endl;

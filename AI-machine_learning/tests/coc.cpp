@@ -6,7 +6,7 @@
 #include <time.h>       /* time */
 #include <QtGui/QImage>
 #include <png2arma.h>
-#include <qcustomplot.h>
+#include "qcustomplot.h"
 
 namespace COC_ns {
     

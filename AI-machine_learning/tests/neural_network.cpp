@@ -6,7 +6,7 @@
 #include <time.h>       /* time */
 #include <QtGui/QImage>
 #include <png2arma.h>
-#include <qcustomplot.h>
+#include "qcustomplot.h"
 
 namespace NeuralNetwork_ns {
     
@@ -20,8 +20,8 @@ void runTests() {
     //test1(); // neural network prediction
     test2(); // neural network complex training
     //test3(); // neural network simple training
-    //test_ex5_learningCurve();
-    //test_ex5_validationCurve();
+    test_ex5_learningCurve();
+    test_ex5_validationCurve();
 }
 
 
