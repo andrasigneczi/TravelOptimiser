@@ -51,7 +51,7 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool c
 
     for( int i=0; i < m; ++i ) {
         //std::cout << "before mapper " << i << "\n" << std::flush;
-        yy.row(i) = mYMappper.fromYtoYY( mY(i,0), num_labels );
+        yy(i, mYMappper.fromYtoYY( mY(i,0))) = 1;
     }
     
     //std::cout << "dbgX 4\n";
@@ -214,10 +214,8 @@ void NeuralNetwork::checkNNGradients( double lambda /*= 0*/ ) {
     //[cost, grad] = costFunc(nn_params);
     class DummyMapper : public CostAndGradient::YMappperIF {
     public:
-        arma::mat fromYtoYY(double y, size_t num_labels ) override {
-            arma::mat yy = arma::zeros(1,num_labels);
-            yy(0,y) = 1;
-            return yy;
+        double fromYtoYY(double y) override {
+            return y;
         }
         
         double fromYYtoY( size_t index ) override {

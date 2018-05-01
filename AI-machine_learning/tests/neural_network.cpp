@@ -27,15 +27,13 @@ void runTests() {
 
 class TestYMappper : public CostAndGradient::YMappperIF {
 public:
-    arma::mat fromYtoYY(double y, size_t num_labels ) override {
+    double fromYtoYY(double y ) override {
         //std::cout << "mapper " << num_labels << " " << y << "\n" << std::flush;
-        arma::mat yy = arma::zeros(1,num_labels);
+        //arma::mat yy = arma::zeros(1,num_labels);
         if( y == 0 ) {
-            yy(0,9) = 1;
-        } else {
-            yy(0,y-1) = 1;
+            return 9;
         }
-        return yy;
+        return y-1;
     }
     
     double fromYYtoY( size_t index ) override {

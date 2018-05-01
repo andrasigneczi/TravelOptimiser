@@ -30,10 +30,8 @@ void runTests() {
 
 class COCYMappper : public CostAndGradient::YMappperIF {
 public:
-    arma::mat fromYtoYY(double y, size_t num_labels ) override {
-        arma::mat yy = arma::zeros(1,num_labels);
-        yy(0,y-1) = 1;
-        return yy;
+    double fromYtoYY(double y) override {
+        return y-1;
     }
     
     double fromYYtoY( size_t index ) override {
@@ -324,10 +322,8 @@ void coc_background_training_set_generator() {
 
 class COCYMappper2 : public CostAndGradient::YMappperIF {
 public:
-    arma::mat fromYtoYY(double y, size_t num_labels ) override {
-        arma::mat yy = arma::zeros(1,num_labels);
-        yy(0,y) = 1;
-        return yy;
+    double fromYtoYY(double y ) override {
+        return y;
     }
 
     double fromYYtoY( size_t index ) override {

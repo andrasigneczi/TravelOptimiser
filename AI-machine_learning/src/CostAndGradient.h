@@ -14,7 +14,7 @@ public:
     
     class YMappperIF {
     public:
-        virtual arma::mat fromYtoYY(double y, size_t num_labels ) = 0;
+        virtual double fromYtoYY(double y ) = 0;
         virtual double fromYYtoY( size_t index ) = 0;
     };
     

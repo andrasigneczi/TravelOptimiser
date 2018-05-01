@@ -14,6 +14,7 @@
 
 int main (int argc, char* argv[]) {
     //QCoreApplication app(argc, argv);
+    std::cout << "dbg\n";
     QApplication app(argc, argv);
 
     QSettings settings("test.ini", QSettings::IniFormat);
@@ -24,16 +25,6 @@ int main (int argc, char* argv[]) {
     std::cout << settings.value("BuildingName1").toString().toUtf8().constData() << "\n";
     std::cout << settings.value("BuildingName2").toString().toUtf8().constData() << "\n";
     std::cout << settings.value("BuildingName3").toString().toUtf8().constData() << "\n";
-    /*
-    std::cout << QString("test").toUtf8().constData() << "\n";
-    std::cout << "---" << settings.value("BuildingName").toString().toUtf8().constData() << "\n";
-    
-    QHash<QString, QString> values;
-    foreach (const QString &childKey, settings.childKeys()){
-        values.insert(childKey, settings.value(childKey).toString());
-        std::cout << "dbg5: " << childKey.toUtf8().constData() << " " << settings.value(childKey).toString().toUtf8().constData() << "\n";
-    }
-    */
     settings.endGroup();
     
     settings.beginGroup("Others");
@@ -50,8 +41,8 @@ int main (int argc, char* argv[]) {
     //Png2Arma_ns::runTests();
 
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    //NeuralNetwork_ns::runTests();
-    COC_ns::runTests();
+    NeuralNetwork_ns::runTests();
+    //COC_ns::runTests();
     //std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     //std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() <<std::endl;
 
