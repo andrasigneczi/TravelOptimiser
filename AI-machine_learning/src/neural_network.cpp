@@ -319,17 +319,9 @@ arma::mat NeuralNetwork::validationCurve(arma::mat& Xval, arma::mat& yval, int i
 }
 
 void NeuralNetwork::plotLearningCurve(QCustomPlot* customPlot) {
-    arma::mat X, y, thetaSizes;
-    arma::mat dataset = join_rows( mX, mY );
-    shuffle(dataset);
+    arma::mat X, y, thetaSizes, Xval, Yval;
 
-    //std::cout << "dbg1\n" << std::flush;
-    int training_set_size = dataset.n_rows * 0.7;
-    X = dataset.rows(0,training_set_size).cols(0,dataset.n_cols-2);
-    y = dataset.rows(0,training_set_size).cols(dataset.n_cols-1,dataset.n_cols-1);
-    arma::mat Xval = dataset.rows(training_set_size+1, dataset.n_rows - 1).cols(0,dataset.n_cols-2);
-    arma::mat Yval = dataset.rows(training_set_size+1,dataset.n_rows - 1).cols(dataset.n_cols-1,dataset.n_cols-1);
-    //std::cout << "dbg2\n" << std::flush;
+    prepareTrainingAndValidationSet(X, y, Xval, Yval);
 
     NeuralNetwork nn(mLayerSizes, X, y, 1, mYMappper);
     //std::cout << "dbg2.5\n" << std::flush;
@@ -340,17 +332,9 @@ void NeuralNetwork::plotLearningCurve(QCustomPlot* customPlot) {
 }
 
 void NeuralNetwork::plotValidationCurve(QCustomPlot* customPlot, int iteration) {
-    arma::mat X, y, thetaSizes;
-    arma::mat dataset = join_rows( mX, mY );
-    shuffle(dataset);
+    arma::mat X, y, thetaSizes, Xval, Yval;
 
-    //std::cout << "dbg1\n" << std::flush;
-    int training_set_size = dataset.n_rows * 0.7;
-    X = dataset.rows(0,training_set_size).cols(0,dataset.n_cols-2);
-    y = dataset.rows(0,training_set_size).cols(dataset.n_cols-1,dataset.n_cols-1);
-    arma::mat Xval = dataset.rows(training_set_size+1, dataset.n_rows - 1).cols(0,dataset.n_cols-2);
-    arma::mat Yval = dataset.rows(training_set_size+1,dataset.n_rows - 1).cols(dataset.n_cols-1,dataset.n_cols-1);
-    //std::cout << "dbg2\n" << std::flush;
+    prepareTrainingAndValidationSet(X, y, Xval, Yval);
 
     NeuralNetwork nn(mLayerSizes, X, y, 1, mYMappper);
     //std::cout << "dbg2.5\n" << std::flush;
@@ -398,4 +382,100 @@ void NeuralNetwork::plotMatrix( QCustomPlot* customPlot, const arma::mat& matrix
 
   customPlot->resize(1200,780);
   customPlot->show();
+}
+
+void NeuralNetwork::prepareTrainingAndValidationSet(arma::mat& X, arma::mat& y, arma::mat& Xval, arma::mat& Yval) {
+    arma::mat dataset = join_rows( mX, mY );
+    shuffle(dataset);
+
+    // 70% of every single label will be taken into the training set,
+    // the others will be put into the validation set
+    std::map<const double,size_t> dataSetStat;
+    for( size_t i = 0; i < dataset.n_rows; ++i ){
+        auto it = dataSetStat.find(mY(i,0));
+        if( it != dataSetStat.end()) {
+            ++it->second;
+        } else {
+            dataSetStat.emplace((int)mY(i,0),1);
+        }
+    }
+    std::for_each(dataSetStat.begin(),dataSetStat.end(),[](std::pair<const double,size_t>&x){ x.second *= .7; });
+
+    for( size_t i = 0; i < dataset.n_rows; ++i ) {
+        double yv = dataset(i,dataset.n_cols - 1);
+        arma::mat x = dataset.rows(i,i).cols(0,dataset.n_cols-2);
+        auto it = dataSetStat.find(yv);
+        if(it->second > 0 ) {
+            --it->second;
+            if(X.n_cols == 0){
+                X = x;
+                y = arma::mat{yv};
+            } else {
+                X.insert_rows(X.n_rows, x);
+                y.insert_rows(y.n_rows, arma::mat{yv});
+            }
+        } else {
+            if(Xval.n_cols == 0){
+                Xval = x;
+                Yval = arma::mat{yv};
+            } else {
+                Xval.insert_rows(Xval.n_rows, x);
+                Yval.insert_rows(Yval.n_rows, arma::mat{yv});
+            }
+        }
+    }
+}
+
+NeuralNetwork::TrainParams NeuralNetwork::searchTrainParams( int minLayerSize, int maxLayerSize, int stepSize ) {
+    TrainParams retVal {0,0,1.0e+10};
+    arma::mat X, y, thetaSizes = mLayerSizes, Xval, Yval;
+
+    prepareTrainingAndValidationSet(X, y, Xval, Yval);
+
+    X.save("trainParams_X.bin");
+    y.save("trainParams_y.bin");
+    Xval.save("trainParams_Xval.bin");
+    Yval.save("trainParams_Yval.bin");
+
+    for( int layerSize = minLayerSize; layerSize <= maxLayerSize; layerSize += stepSize ) {
+        std::cout << "Layer size: " << layerSize << "\n" << std::flush;
+        thetaSizes(0,1) = layerSize;
+        NeuralNetwork nn(thetaSizes, X, y, 1, mYMappper);
+        //std::cout << "dbg2.5\n" << std::flush;
+        arma::mat lcv = nn.validationCurve(Xval, Yval, 5);
+        for( size_t i = 0; i < lcv.n_rows; ++i ) {
+            if( lcv(i,2) < retVal.cost ) {
+                retVal.lambda = lcv(i,0);
+                retVal.cost = lcv(i,2);
+                retVal.layerSize = layerSize;
+            }
+        }
+    }
+    return retVal;
+}
+
+NeuralNetwork::TrainParams NeuralNetwork::searchTrainParams2( int minLayerSize, int maxLayerSize, int stepSize ) {
+    TrainParams retVal {0,0,1.0e+10};
+    arma::mat X, y, thetaSizes = mLayerSizes, Xval, Yval;
+
+    X.load("trainParams_X.bin");
+    y.load("trainParams_y.bin");
+    Xval.load("trainParams_Xval.bin");
+    Yval.load("trainParams_Yval.bin");
+
+    for( int layerSize = minLayerSize; layerSize <= maxLayerSize; layerSize += stepSize ) {
+        std::cout << "Layer size: " << layerSize << "\n" << std::flush;
+        thetaSizes(0,1) = layerSize;
+        NeuralNetwork nn(thetaSizes, X, y, 1, mYMappper);
+        //std::cout << "dbg2.5\n" << std::flush;
+        arma::mat lcv = nn.validationCurve(Xval, Yval, 5);
+        for( size_t i = 0; i < lcv.n_rows; ++i ) {
+            if( lcv(i,2) < retVal.cost ) {
+                retVal.lambda = lcv(i,0);
+                retVal.cost = lcv(i,2);
+                retVal.layerSize = layerSize;
+            }
+        }
+    }
+    return retVal;
 }

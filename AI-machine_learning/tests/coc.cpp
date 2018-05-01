@@ -17,6 +17,8 @@ void coc_TH9_test();
 void coc_background_training_set_generator();
 void coc_learningCurve();
 void coc_validationCurve();
+void coc_th11_train_params_searching();
+void coc_train_and_test();
 
 void runTests() {
     //test4(); // coc training test
@@ -24,18 +26,20 @@ void runTests() {
     //coc_one_TH_test();
     //coc_TH9_test();
     //coc_learningCurve();
-    coc_validationCurve();
+    //coc_validationCurve();
+    //coc_th11_train_params_searching();
+    coc_train_and_test();
 }
 
 
 class COCYMappper : public CostAndGradient::YMappperIF {
 public:
     double fromYtoYY(double y) override {
-        return y-1;
+        return y;
     }
     
     double fromYYtoY( size_t index ) override {
-        return index + 1; // the smallest TH number is 2
+        return index;
     }
 };
 
@@ -351,6 +355,64 @@ void coc_validationCurve() {
     COCYMappper2 yMapper;
     NeuralNetwork nn(thetaSizes, X, y, 1, yMapper);
     nn.plotValidationCurve(new QCustomPlot,10);
+}
+
+void coc_th11_train_params_searching() {
+    arma::mat X, y, thetaSizes;
+    X.load("TH11_plus_BG_trainingset.bin");
+    y.load("TH11_plus_BG_trainingset_result.bin");
+
+    thetaSizes << 24*24 << 0 << 2; // input, hidden, output
+    COCYMappper2 yMapper;
+    NeuralNetwork nn(thetaSizes, X, y, 1, yMapper);
+    NeuralNetwork::TrainParams tp = nn.searchTrainParams(1000,8000,200);
+    std::cout << "Cost: " << tp.cost << "\nLayer size: " << tp.layerSize << "\nLambda: " << tp.lambda << "\n";
+    tp = nn.searchTrainParams2(tp.layerSize-150,tp.layerSize+150,50);
+    std::cout << "Cost: " << tp.cost << "\nLayer size: " << tp.layerSize << "\nLambda: " << tp.lambda << "\n";
+    tp = nn.searchTrainParams2(tp.layerSize-40,tp.layerSize+40,10);
+    std::cout << "Cost: " << tp.cost << "\nLayer size: " << tp.layerSize << "\nLambda: " << tp.lambda << "\n";
+    tp = nn.searchTrainParams2(tp.layerSize-5,tp.layerSize+5,1);
+    std::cout << "Cost: " << tp.cost << "\nLayer size: " << tp.layerSize << "\nLambda: " << tp.lambda << "\n";
+}
+
+// 3800, 0.003
+// 3850, 10
+void coc_train_and_test() {
+    arma::mat thetaSizes, Xtraining, Ytraining, Xval, Yval;
+    thetaSizes << 24*24 << 3850 << 2; // input, hidden, output
+
+    std::cout << "Loading data...\n" << std::flush;
+
+    //X.load("TH11_plus_BG_trainingset.bin");
+    //y.load("TH11_plus_BG_trainingset_result.bin");
+    Xtraining.load("trainParams_X.bin");
+    Ytraining.load("trainParams_y.bin");
+    Xval.load("trainParams_Xval.bin");
+    Yval.load("trainParams_Yval.bin");
+
+    COCYMappper2 yMapper;
+    //NeuralNetwork nn(thetaSizes, X, y, 1, yMapper);
+
+    //std::cout << "Preparing training and validation set...\n";
+
+    //nn.prepareTrainingAndValidationSet(Xtraining, Ytraining, Xval, Yval);
+    //NeuralNetwork nn(thetaSizes, Xtraining, Ytraining, 0.003, yMapper);
+    NeuralNetwork nn(thetaSizes, Xtraining, Ytraining, 10.0, yMapper);
+    arma::mat trainedThetas = nn.train(100);
+
+    thetaSizes.save( "coc_trained_theta_sizes.bin" );
+    trainedThetas.save( "coc_trained_thetas.bin" );
+
+    std::vector<arma::mat> thetas = nn.extractThetas(trainedThetas);
+
+    std::cout << "\nPrediction test...\n";
+
+    arma::mat pred = nn.predict(Xval,thetas);
+
+    double accuracy = arma::mean(arma::conv_to<arma::colvec>::from(pred == Yval))*100;
+
+    std::cout << "Validation Set Accuracy: " << accuracy << "%\n";
+    std::cout << "thetaSizes: " << thetaSizes << "\n";
 }
 
 } // COC_ns

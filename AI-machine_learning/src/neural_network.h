@@ -9,6 +9,12 @@ class QCustomPlot;
 
 class NeuralNetwork : public CostAndGradient {
 public:
+    struct TrainParams {
+        int layerSize;
+        double lambda;
+        double cost;
+    };
+
     using CostAndGradient::CostAndGradient;
 
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override;
@@ -24,6 +30,10 @@ public:
     arma::mat train(int iteration, bool verbose = true);
     void plotLearningCurve(QCustomPlot* customPlot);
     void plotValidationCurve(QCustomPlot* customPlot,int iteration);
+    TrainParams searchTrainParams( int minLayerSize, int maxLayerSize, int stepSize );
+    TrainParams searchTrainParams2( int minLayerSize, int maxLayerSize, int stepSize );
+    void prepareTrainingAndValidationSet(arma::mat& X, arma::mat& y, arma::mat& Xval, arma::mat& Yval);
+
 private:
     arma::mat learningCurve(arma::mat& Xval, arma::mat& yval);
     arma::mat validationCurve(arma::mat& Xval, arma::mat& yval, int iteration);
