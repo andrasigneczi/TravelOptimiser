@@ -438,7 +438,7 @@ NeuralNetwork::TrainParams NeuralNetwork::searchTrainParams( int minLayerSize, i
     Yval.save("trainParams_Yval.bin");
 
     for( int layerSize = minLayerSize; layerSize <= maxLayerSize; layerSize += stepSize ) {
-        std::cout << "Layer size: " << layerSize << "\n" << std::flush;
+        std::cout << "\nLayer size: " << layerSize << "\n" << std::flush;
         thetaSizes(0,1) = layerSize;
         NeuralNetwork nn(thetaSizes, X, y, 1, mYMappper);
         //std::cout << "dbg2.5\n" << std::flush;
