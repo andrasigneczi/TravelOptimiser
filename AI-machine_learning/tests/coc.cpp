@@ -18,6 +18,7 @@ void coc_background_training_set_generator();
 void coc_learningCurve();
 void coc_validationCurve();
 void coc_th11_train_params_searching();
+void coc_th11_train();
 
 void runTests() {
     //test4(); // coc training test
@@ -26,7 +27,8 @@ void runTests() {
     //coc_TH9_test();
     //coc_learningCurve();
     //coc_validationCurve();
-    coc_th11_train_params_searching();
+    //coc_th11_train_params_searching();
+    coc_th11_train();
 }
 
 
@@ -395,6 +397,36 @@ void coc_th11_train_params_searching() {
 
     nn = new NeuralNetwork(thetaSizes, Xtraining, Ytraining, tp.lambda, yMapper);
     arma::mat trainedThetas = nn->train(1000);
+
+    thetaSizes.save( "coc_trained_theta_sizes.bin" );
+    trainedThetas.save( "coc_trained_thetas.bin" );
+
+    std::vector<arma::mat> thetas = nn->extractThetas(trainedThetas);
+
+    std::cout << "\nPrediction test...\n";
+
+    arma::mat pred = nn->predict(Xval,thetas);
+
+    double accuracy = arma::mean(arma::conv_to<arma::colvec>::from(pred == Yval))*100;
+
+    std::cout << "Validation Set Accuracy: " << accuracy << "%\n";
+    std::cout << "thetaSizes: " << thetaSizes << "\n";
+    delete nn;
+}
+
+void coc_th11_train() {
+    std::cout << "Loading data...\n" << std::flush;
+
+    arma::mat Xtraining, Ytraining, Xval, Yval,thetaSizes;
+    thetaSizes.load("TH11_plus_BG_thetasizes.bin");
+    Xtraining.load("trainParams_X.bin");
+    Ytraining.load("trainParams_y.bin");
+    Xval.load("trainParams_Xval.bin");
+    Yval.load("trainParams_Yval.bin");
+
+    COCYMappper2 yMapper;
+    NeuralNetwork* nn = new NeuralNetwork(thetaSizes, Xtraining, Ytraining, 0.1, yMapper);
+    arma::mat trainedThetas = nn->train(100);
 
     thetaSizes.save( "coc_trained_theta_sizes.bin" );
     trainedThetas.save( "coc_trained_thetas.bin" );

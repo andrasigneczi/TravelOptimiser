@@ -33,6 +33,7 @@ public:
     TrainParams searchTrainParams( int minLayerSize, int maxLayerSize, int stepSize );
     TrainParams searchTrainParams2( int minLayerSize, int maxLayerSize, int stepSize );
     void prepareTrainingAndValidationSet(arma::mat& X, arma::mat& y, arma::mat& Xval, arma::mat& Yval);
+    void removeDuplication(arma::mat& dataset);
 
 private:
     arma::mat learningCurve(arma::mat& Xval, arma::mat& yval);

@@ -3,6 +3,9 @@
 #include <limits.h>
 #include "fmincg.h"
 #include "qcustomplot.h"
+#include <QCryptographicHash>
+#include <set>
+#include <string>
 
 CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool costOnly ) {
     
@@ -387,6 +390,7 @@ void NeuralNetwork::plotMatrix( QCustomPlot* customPlot, const arma::mat& matrix
 void NeuralNetwork::prepareTrainingAndValidationSet(arma::mat& X, arma::mat& y, arma::mat& Xval, arma::mat& Yval) {
     arma::mat dataset = join_rows( mX, mY );
     shuffle(dataset);
+    removeDuplication(dataset);
 
     // 70% of every single label will be taken into the training set,
     // the others will be put into the validation set
@@ -478,4 +482,26 @@ NeuralNetwork::TrainParams NeuralNetwork::searchTrainParams2( int minLayerSize, 
         }
     }
     return retVal;
+}
+
+void NeuralNetwork::removeDuplication(arma::mat& dataset) {
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    std::set<std::string> hashes;
+    std::vector<size_t> marked;
+    for( size_t m = 0; m < dataset.n_rows; ++m ) {
+        for( size_t j = 0; j < dataset.n_cols; ++j ) {
+            double v = dataset(m, j);
+            hash.addData((char*)&v, (int)sizeof(v));
+        }
+        std::string h = hash.result().toStdString();
+        if( hashes.find(h) != hashes.end()) {
+            marked.push_back(m);
+        }
+        hash.reset();
+    }
+
+    for( auto it = marked.rbegin(); it != marked.rend(); ++it ) {
+        // remove a row from dataset
+        dataset.shed_row(*it);
+    }
 }
