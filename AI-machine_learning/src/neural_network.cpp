@@ -2,7 +2,10 @@
 #include <vector>
 #include <limits.h>
 #include "fmincg.h"
-#include "qcustomplot.h"
+#include <QCryptographicHash>
+#include <set>
+#include <string>
+#include "Util.h"
 
 CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool costOnly ) {
     
@@ -212,7 +215,7 @@ void NeuralNetwork::checkNNGradients( double lambda /*= 0*/ ) {
     //                               num_labels, X, y, lambda);
     
     //[cost, grad] = costFunc(nn_params);
-    class DummyMapper : public CostAndGradient::YMappperIF {
+    class DummyMapper : public YMappperIF {
     public:
         double fromYtoYY(double y) override {
             return y;
@@ -321,116 +324,36 @@ arma::mat NeuralNetwork::validationCurve(arma::mat& Xval, arma::mat& yval, int i
 void NeuralNetwork::plotLearningCurve(QCustomPlot* customPlot) {
     arma::mat X, y, thetaSizes, Xval, Yval;
 
-    prepareTrainingAndValidationSet(X, y, Xval, Yval);
+    Util::prepareTrainingAndValidationSet(mX, mY, X, y, Xval, Yval);
 
     NeuralNetwork nn(mLayerSizes, X, y, 1, mYMappper);
     //std::cout << "dbg2.5\n" << std::flush;
     arma::mat lcv = nn.learningCurve(Xval, Yval);
     //std::cout << "dbg3\n" << std::flush;
 
-    plotMatrix(customPlot, lcv);
+    Util::plotMatrix(customPlot, lcv);
 }
 
 void NeuralNetwork::plotValidationCurve(QCustomPlot* customPlot, int iteration) {
     arma::mat X, y, thetaSizes, Xval, Yval;
 
-    prepareTrainingAndValidationSet(X, y, Xval, Yval);
+    Util::prepareTrainingAndValidationSet(mX, mY, X, y, Xval, Yval);
 
     NeuralNetwork nn(mLayerSizes, X, y, 1, mYMappper);
     //std::cout << "dbg2.5\n" << std::flush;
     arma::mat lcv = nn.validationCurve(Xval, Yval, iteration);
     //std::cout << "dbg3\n" << std::flush;
 
-    plotMatrix(customPlot, lcv);
+    Util::plotMatrix(customPlot, lcv);
     std::cout << "\n" << lcv << "\n" << std::flush;
 }
 
-void NeuralNetwork::plotMatrix( QCustomPlot* customPlot, const arma::mat& matrix ) {
-  // add two new graphs and set their look:
-  customPlot->addGraph();
-  customPlot->graph(0)->setPen(QPen(Qt::blue)); // line color blue for first graph
-  customPlot->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 20))); // first graph will be filled with translucent blue
-  customPlot->addGraph();
-  customPlot->graph(1)->setPen(QPen(Qt::red)); // line color red for second graph
-  // generate some points of data (y0 for first, y1 for second graph):
-  QVector<double> x(matrix.n_rows), y0(matrix.n_rows), y1(matrix.n_rows);
-  for (size_t i=0; i<matrix.n_rows; ++i)
-  {
-    x[i] = matrix(i,0);
-    y0[i] = matrix(i,1);
-    y1[i] = matrix(i,2);
-  }
-  // configure right and top axis to show ticks but no labels:
-  // (see QCPAxisRect::setupFullAxesBox for a quicker method to do this)
-  customPlot->xAxis2->setVisible(true);
-  customPlot->xAxis2->setTickLabels(false);
-  customPlot->yAxis2->setVisible(true);
-  customPlot->yAxis2->setTickLabels(false);
-  // make left and bottom axes always transfer their ranges to right and top axes:
-//  connect(customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->xAxis2, SLOT(setRange(QCPRange)));
-//  connect(customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->yAxis2, SLOT(setRange(QCPRange)));
-  // pass data points to graphs:
-  customPlot->graph(0)->setData(x, y0);
-  customPlot->graph(1)->setData(x, y1);
-  // let the ranges scale themselves so graph 0 fits perfectly in the visible area:
-  customPlot->graph(0)->rescaleAxes();
-  // same thing for graph 1, but only enlarge ranges (in case graph 1 is smaller than graph 0):
-  customPlot->graph(1)->rescaleAxes(true);
-  // Note: we could have also just called customPlot->rescaleAxes(); instead
-  // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
-  customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-
-  customPlot->resize(1200,780);
-  customPlot->show();
-}
-
-void NeuralNetwork::prepareTrainingAndValidationSet(arma::mat& X, arma::mat& y, arma::mat& Xval, arma::mat& Yval) {
-    arma::mat dataset = join_rows( mX, mY );
-    shuffle(dataset);
-
-    // 70% of every single label will be taken into the training set,
-    // the others will be put into the validation set
-    std::map<const double,size_t> dataSetStat;
-    for( size_t i = 0; i < dataset.n_rows; ++i ){
-        auto it = dataSetStat.find(mY(i,0));
-        if( it != dataSetStat.end()) {
-            ++it->second;
-        } else {
-            dataSetStat.emplace((int)mY(i,0),1);
-        }
-    }
-    std::for_each(dataSetStat.begin(),dataSetStat.end(),[](std::pair<const double,size_t>&x){ x.second *= .7; });
-
-    for( size_t i = 0; i < dataset.n_rows; ++i ) {
-        double yv = dataset(i,dataset.n_cols - 1);
-        arma::mat x = dataset.rows(i,i).cols(0,dataset.n_cols-2);
-        auto it = dataSetStat.find(yv);
-        if(it->second > 0 ) {
-            --it->second;
-            if(X.n_cols == 0){
-                X = x;
-                y = arma::mat{yv};
-            } else {
-                X.insert_rows(X.n_rows, x);
-                y.insert_rows(y.n_rows, arma::mat{yv});
-            }
-        } else {
-            if(Xval.n_cols == 0){
-                Xval = x;
-                Yval = arma::mat{yv};
-            } else {
-                Xval.insert_rows(Xval.n_rows, x);
-                Yval.insert_rows(Yval.n_rows, arma::mat{yv});
-            }
-        }
-    }
-}
 
 NeuralNetwork::TrainParams NeuralNetwork::searchTrainParams( int minLayerSize, int maxLayerSize, int stepSize ) {
     TrainParams retVal {0,0,1.0e+10};
     arma::mat X, y, thetaSizes = mLayerSizes, Xval, Yval;
 
-    prepareTrainingAndValidationSet(X, y, Xval, Yval);
+    Util::prepareTrainingAndValidationSet(mX, mY, X, y, Xval, Yval);
 
     X.save("trainParams_X.bin");
     y.save("trainParams_y.bin");

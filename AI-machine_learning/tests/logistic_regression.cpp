@@ -8,7 +8,6 @@ namespace LogisticRegression_ns {
 void test1();
 void test2();
 void test3();
-void test4();
 
 void runTests() {
     //arma::mat dataSet;
@@ -31,7 +30,6 @@ void runTests() {
     test1();
     //test2();
     test3();
-    test4();
 }
 
 void test1() {
@@ -55,8 +53,8 @@ void test1() {
 
     LogisticRegression lr;
     // Compute and display initial cost and gradient
-    double costValue = lr.cost(X, y, initial_theta);
-    arma::mat grad = lr.gradient(X, y, initial_theta);
+    double costValue = lr.cost(X, y, initial_theta,0);
+    arma::mat grad = lr.gradient(X, y, initial_theta,0);
     
     std::cout << "Cost at initial theta (zeros): " << costValue << std::endl;
     std::cout << "Expected cost (approx): 0.693" << std::endl;
@@ -69,8 +67,8 @@ void test1() {
     arma::mat test_theta;
     test_theta << -24 << arma::endr << 0.2 << arma::endr << 0.2;
     
-    costValue = lr.cost(X, y, test_theta);
-    grad = lr.gradient(X, y, test_theta);
+    costValue = lr.cost(X, y, test_theta,0);
+    grad = lr.gradient(X, y, test_theta,0);
     
     std::cout << "\nCost at test theta: " << costValue << std::endl;
     std::cout << "Expected cost (approx): 0.218\n";
@@ -78,7 +76,7 @@ void test1() {
     std::cout << grad << "\n";
     std::cout << "Expected gradients (approx):\n 0.043\n 2.566\n 2.647\n";
     
-    arma::mat theta = lr.gradientDescent( X, y, initial_theta, 0.003, 1.2E+7 );
+    arma::mat theta = lr.gradientDescentWithReguralization( X, y, initial_theta, 0.003, 0, 1.2E+7 );
     // fminunc(@(t)(costFunctionReg(t, X, y, lambda)), initial_theta, options);
     /*
     arma::mat thetaSizes;
@@ -87,7 +85,7 @@ void test1() {
     arma::mat& theta = rv.m_NNPparams;
     */
     std::cout << "\nGradient descent:\n";
-    costValue = lr.cost(X, y, theta);
+    costValue = lr.cost(X, y, theta, 0);
     std::cout << "Cost at theta: " << costValue << std::endl;
     //std::cout << "Cost at theta: " << rv.mCost << std::endl;
     std::cout << "Expected cost (approx): 0.203\n";
@@ -185,12 +183,5 @@ void test3() {
     // "ex3weights_Theta2.bin"
 }
 
-void test4() {
-    // Neural Networks
-    // "ex3data1_X.bin"
-    // "ex3data1_y.bin"
-    // "ex3weights_Theta1.bin"
-    // "ex3weights_Theta2.bin"
-}
 
 } // LogisticRegression_ns

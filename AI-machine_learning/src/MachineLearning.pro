@@ -13,11 +13,13 @@ TEMPLATE = lib
 CONFIG += shared
 
 SOURCES += linear_regression.cpp logistic_regression.cpp fmincg.cpp neural_network.cpp png2arma.cpp CostAndGradient.cpp \
-      datasetgenerator.cpp Util.cpp qcustomplot.cpp
+      datasetgenerator.cpp Util.cpp qcustomplot.cpp \
+    support_vector_machine.cpp
 
 
-HEADERS  += linear_regression.h logistic_regression.h fmincg.cpp neural_network.h png2arma.h CostAndGradient.h \
-      datasetgenerator.h Util.h qcustomplot.h
+HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h png2arma.h CostAndGradient.h \
+      datasetgenerator.h Util.h qcustomplot.h \
+    support_vector_machine.h
 
 
 #FORMS    += mainwindow.ui
@@ -34,6 +36,7 @@ QMAKE_CXXFLAGS += -std=c++11 -O3 -Wall -Wextra -pedantic -D__LINUX__  -pthread -
 #-I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtCore -I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtGui \
                   -I/usr/include/qt5/QtPrintSupport
 QMAKE_CXX = g++
+INCLUDEPATH += ../libsvm-3.22
 
 
 #unix:!macx: LIBS +=

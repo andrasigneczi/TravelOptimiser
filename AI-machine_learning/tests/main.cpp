@@ -13,9 +13,9 @@
 
 
 int main (int argc, char* argv[]) {
-    QCoreApplication app(argc, argv);
+    //QCoreApplication app(argc, argv);
     std::cout << "dbg\n";
-    //QApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     QSettings settings("test.ini", QSettings::IniFormat);
     //settings.sync();
@@ -50,5 +50,6 @@ int main (int argc, char* argv[]) {
 //  QMainWindow w;
 //  w.show();
 
-  return 0; // app.exec();
+  //return 0;
+  app.exec();
 }
