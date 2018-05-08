@@ -7,7 +7,7 @@
 
 class QCustomPlot;
 
-class NeuralNetwork : public CostAndGradient {
+class NeuralNetwork final : public CostAndGradient {
 public:
     struct TrainParams {
         int layerSize;

@@ -403,11 +403,14 @@ void coc_th11_train_params_searching() {
 
     std::cout << "\nPrediction test...\n";
 
-    arma::mat pred = nn->predict(Xval,thetas);
+    arma::mat pred1 = nn->predict(Xtraining,thetas);
+    arma::mat pred2 = nn->predict(Xval,thetas);
 
-    double accuracy = arma::mean(arma::conv_to<arma::colvec>::from(pred == Yval))*100;
+    double accuracy1 = arma::mean(arma::conv_to<arma::colvec>::from(pred1 == Ytraining))*100;
+    double accuracy2 = arma::mean(arma::conv_to<arma::colvec>::from(pred2 == Yval))*100;
 
-    std::cout << "Validation Set Accuracy: " << accuracy << "%\n";
+    std::cout << "Training Set Accuracy: " << accuracy1 << "%\n";
+    std::cout << "Validation Set Accuracy: " << accuracy2 << "%\n";
     std::cout << "thetaSizes: " << thetaSizes << "\n";
     delete nn;
 }
