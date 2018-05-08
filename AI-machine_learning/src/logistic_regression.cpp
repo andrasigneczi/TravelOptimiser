@@ -1,25 +1,19 @@
 #include "logistic_regression.h"
 #include <stdio.h>
+#include <fmincg.h>
 
-// Feature Scaling Data
-struct FCData{
-    double range;
-    double average;
-};
+const arma::mat dummy;
+LogisticRegression::LogisticRegression( const arma::mat& X, const arma::mat& y, double lambda, bool featureScaling )
+    : CostAndGradient( dummy, y, lambda ) {
+    if( featureScaling )
+        mX = this->featureScaling(X, true);
+    else
+        mX = X;
+}
 
-arma::mat LogisticRegression::gradientDescent( const arma::mat& X, const arma::mat& y, const arma::mat& theta, double alpha, long long iteration ) {
-    // number of the training datas
-    double m = y.n_rows;
-    mTheta = theta;
-    
-    for( long long i = 0; i < iteration; ++i ) {
-        arma::mat delta = (sigmoid(X,mTheta) - y).t();
-        mTheta = mTheta - (alpha/m*delta*X).t();
-        if( i % 10000 == 0 ) {
-            std::cout << "iteration: " << i << std::endl;
-        }
-    }
-    return mTheta;
+LogisticRegression::LogisticRegression()
+    : CostAndGradient( dummy, dummy, 0 ) {
+
 }
 
 arma::mat LogisticRegression::gradientDescentWithReguralization( const arma::mat& X, const arma::mat& y, const arma::mat& theta, double alpha, double lambda, long long iteration ) {
@@ -34,8 +28,8 @@ arma::mat LogisticRegression::gradientDescentWithReguralization( const arma::mat
         
         for( size_t j = 1; j < mTheta.n_rows; ++j )
             mTheta(j) = mTheta(j) - arma::as_scalar( alpha*( (1/m*delta*X.col(j)).t() + lambda/m*mTheta(j) ) );
-        if( i % 10000 == 0 ) {
-            std::cout << "iteration: " << i << std::endl;
+        if( i % 100 == 0 ) {
+            std::cout << "iteration: " << i << "\r" << std::flush;
         }
     }
     return mTheta;
@@ -44,20 +38,18 @@ arma::mat LogisticRegression::gradientDescentWithReguralization( const arma::mat
 arma::mat LogisticRegression::predict( const arma::mat& X, const arma::mat& theta ) {
     double m = X.n_rows; // Number of training examples
     arma::mat p = arma::zeros(m, 1);
-    
-    // change elements of A greater than 0.5 to 1
-    p.elem( arma::find( sigmoid(X,theta) >= 0.5 ) ).ones();
-    return p;
-}
 
-double LogisticRegression::cost( const arma::mat& X, const arma::mat& y, const arma::mat& theta ) {
-    // z = X*theta;
-    // h = 1/(1+e^(-z));
-    // J = 1/m*(-y'*log(h)-(1-y)'*log(1-h));
-    
-    const arma::mat h = sigmoid( X, theta );
-    double m = X.n_rows;
-    return 1.0/m*as_scalar(-y.t()*arma::log(h)-(1.0-y).t()*arma::log(1.0-h));
+    arma::mat X2 = X;
+    if( mFCData.n_rows > 0 ) {
+        for( size_t i = 0; i < X2.n_cols; ++i ) {
+            if( mFCData(i,0) != 0)
+                X2.col(i) = (X2.col(i) - mFCData(i,1))/(mFCData(i,0));
+        }
+    }
+
+    // change elements of A greater than 0.5 to 1
+    p.elem( arma::find( sigmoid(X2,theta) >= 0.5 ) ).ones();
+    return p;
 }
 
 double LogisticRegression::cost( const arma::mat& X, const arma::mat& y, const arma::mat& theta, double lambda ) {
@@ -69,13 +61,6 @@ double LogisticRegression::cost( const arma::mat& X, const arma::mat& y, const a
     double m = X.n_rows;
     return 1.0/m*as_scalar(-y.t()*arma::log(h)-(1.0-y).t()*arma::log(1.0-h))
     + lambda/2.0/m*arma::as_scalar(arma::sum(arma::pow(theta.rows(1,theta.n_rows-1),2)));
-}
-
-arma::mat LogisticRegression::gradient( const arma::mat& X, const arma::mat& y, const arma::mat& theta ) {
-    // grad=1/m*(h-y)'*X;    
-    const arma::mat h = sigmoid( X, theta );
-    double m = X.n_rows;
-    return 1.0/m*(h-y).t()*X;
 }
 
 arma::mat LogisticRegression::gradient( const arma::mat& X, const arma::mat& y, const arma::mat& theta, double lambda ) {
@@ -101,7 +86,66 @@ arma::mat LogisticRegression::sigmoid( const arma::mat& X, const arma::mat& thet
     return 1.0/(1.0+arma::exp(z));
 }
 
-CostAndGradient::RetVal& LogisticRegressionV2::calc( const arma::mat& nn_params, bool costOnly ) {
+arma::mat LogisticRegression::learningCurve(const arma::mat& Xval, const arma::mat& Yval, double lambda, long long iteration, int stepSize) {
+    arma::mat retv = arma::zeros(mX.n_rows, 3);
+    arma::mat initial_theta = arma::zeros(mX.n_cols, 1);
+    arma::mat XvalC = featureScaling(Xval, false);
+    for( size_t m = 0; m < mX.n_rows; m += stepSize ) {
+        std::cout << "Lerarning curve step number " << m << "\r" << std::flush;
+        arma::mat X = mX.rows(0,m);
+        arma::mat Y = mY.rows(0,m);
+        //arma::mat theta = lr.gradientDescentWithReguralization( X, Y, initial_theta, alpha, lambda, iteration );
+        LogisticRegression lr(X, Y, lambda, false);
+        fmincgRetVal rv = fmincg(lr,initial_theta,iteration,false);
+        //std:: cout << theta;
+        //break;
+
+        retv(m,0) = m;
+        retv(m,1) = cost( X, Y, rv.m_NNPparams, 0 );
+        retv(m,2) = cost( XvalC, Yval, rv.m_NNPparams, 0 );
+    }
+    return retv;
+}
+
+arma::mat LogisticRegression::validationCurve(const arma::mat& Xval, const arma::mat& Yval, long long iteration) {
+    std::vector<double> lambda_vec{0, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10};
+    arma::mat retv = arma::zeros(lambda_vec.size(), 3);
+    arma::mat initial_theta = arma::zeros(mX.n_cols, 1);
+    arma::mat XvalC = featureScaling(Xval, false);
+    for( size_t i = 0; i < lambda_vec.size(); ++i ) {
+        std::cout << "Validation curve step number " << i << "\r" << std::flush;
+        setLambda(lambda_vec[i]);
+        //arma::mat theta = lr.gradientDescentWithReguralization( Xtraining, Ytraining, initial_theta, alpha, lambda_vec[i], iteration );
+        fmincgRetVal rv = fmincg(*this,initial_theta,iteration,false);
+
+        retv(i,0) = lambda_vec[i];
+        retv(i,1) = cost( mX, mY, rv.m_NNPparams, 0 );
+        retv(i,2) = cost( XvalC, Yval, rv.m_NNPparams, 0 );
+    }
+    return retv;
+}
+
+arma::mat LogisticRegression::featureScaling( const arma::mat& oX, bool saveFactors ) {
+    // Feature scaling has to be done for every single feature one by one
+    arma::mat X = oX;
+    mFCData = arma::zeros(X.n_cols,2);
+    for( size_t i = 0; i < X.n_cols; ++i ) {
+        double range = arma::as_scalar(max(X.col(i))) - arma::as_scalar(min(X.col(i)));
+        double average = arma::as_scalar(mean(X.col(i)));
+
+        if( saveFactors ) {
+            mFCData(i,0) = range;
+            mFCData(i,1) = average;
+        }
+
+        if( range != 0.0 ) {
+            X.col(i) = (X.col(i) - average)/range;
+        }
+    }
+    return X;
+}
+
+CostAndGradient::RetVal& LogisticRegression::calc( const arma::mat& nn_params, bool costOnly ) {
     const arma::mat& theta = nn_params;
 
     const arma::mat z = -mX*theta;

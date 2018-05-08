@@ -7,7 +7,7 @@
 
 class QCustomPlot;
 
-class NeuralNetwork : public CostAndGradient {
+class NeuralNetwork final: public CostAndGradient {
 public:
     struct TrainParams {
         int layerSize;
@@ -15,7 +15,19 @@ public:
         double cost;
     };
 
-    using CostAndGradient::CostAndGradient;
+    class YMappperIF {
+    public:
+        virtual double fromYtoYY(double y ) = 0;
+        virtual double fromYYtoY( size_t index ) = 0;
+    };
+
+    //using CostAndGradient::CostAndGradient;
+    NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda, YMappperIF& yMappper )
+        : CostAndGradient(X, y, lambda)
+        , mLayerSizes(layerSizes)
+        , mYMappper(yMappper)
+    {}
+
 
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override;
     // special return value std::numeric_limits<double>::max(); means not found
@@ -32,13 +44,13 @@ public:
     void plotValidationCurve(QCustomPlot* customPlot,int iteration);
     TrainParams searchTrainParams( int minLayerSize, int maxLayerSize, int stepSize );
     TrainParams searchTrainParams2( int minLayerSize, int maxLayerSize, int stepSize );
-    void prepareTrainingAndValidationSet(arma::mat& X, arma::mat& y, arma::mat& Xval, arma::mat& Yval);
     void removeDuplication(arma::mat& dataset);
 
 private:
     arma::mat learningCurve(arma::mat& Xval, arma::mat& yval);
     arma::mat validationCurve(arma::mat& Xval, arma::mat& yval, int iteration);
-    static void plotMatrix( QCustomPlot* customPlot, const arma::mat& matrix );
+    const arma::mat& mLayerSizes; // input layer, hidden1, hidden2, ..., output
+    YMappperIF& mYMappper;
 };
 
 template<typename T>

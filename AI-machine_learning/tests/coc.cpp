@@ -7,6 +7,8 @@
 #include <QtGui/QImage>
 #include <png2arma.h>
 #include "qcustomplot.h"
+#include <logistic_regression.h>
+#include "Util.h"
 
 namespace COC_ns {
     
@@ -19,6 +21,10 @@ void coc_learningCurve();
 void coc_validationCurve();
 void coc_th11_train_params_searching();
 void coc_th11_train();
+void logistic_regression();
+void learning_validation_curve();
+void logistic_regression_fmincg();
+void full_paramtest_logitic_regression();
 
 void runTests() {
     //test4(); // coc training test
@@ -28,11 +34,15 @@ void runTests() {
     //coc_learningCurve();
     //coc_validationCurve();
     //coc_th11_train_params_searching();
-    coc_th11_train();
+    //coc_th11_train();
+    //logistic_regression();
+    //learning_validation_curve();
+    //logistic_regression_fmincg();
+    full_paramtest_logitic_regression();
 }
 
 
-class COCYMappper : public CostAndGradient::YMappperIF {
+class COCYMappper : public NeuralNetwork::YMappperIF {
 public:
     double fromYtoYY(double y) override {
         return y;
@@ -324,7 +334,7 @@ void coc_TH9_test() {
 void coc_background_training_set_generator() {
 }
 
-class COCYMappper2 : public CostAndGradient::YMappperIF {
+class COCYMappper2 : public NeuralNetwork::YMappperIF {
 public:
     double fromYtoYY(double y ) override {
         return y;
@@ -442,6 +452,157 @@ void coc_th11_train() {
     std::cout << "Validation Set Accuracy: " << accuracy << "%\n";
     std::cout << "thetaSizes: " << thetaSizes << "\n";
     delete nn;
+}
+
+void logistic_regression() {
+    std::cout << "Loading data...\n" << std::flush;
+
+    arma::mat Xtraining, Ytraining, Xval, Yval;
+    Xtraining.load("trainParams_X.bin");
+    Ytraining.load("trainParams_y.bin");
+    Xval.load("trainParams_Xval.bin");
+    Yval.load("trainParams_Yval.bin");
+
+    double n = Xtraining.n_cols;
+    double m = Ytraining.n_rows;
+
+    // let's insert a column filled with ones
+    Xtraining.insert_cols(0, arma::ones<arma::mat>(m,1));
+    Xval.insert_cols(0, arma::ones<arma::mat>(Yval.n_rows,1));
+
+    // Initialize fitting parameters
+    arma::mat initial_theta = arma::zeros(n + 1, 1);
+
+    LogisticRegression lr;
+    Xtraining = lr.featureScaling(Xtraining,true);
+    //lr.featurScaling(Xval);
+    double alpha = 0.3;
+    double lambda = 1.0e-11;
+    long long iteration = 1e+5;
+    std::cout << "Calculating gradient descent...\n";
+    arma::mat theta = lr.gradientDescentWithReguralization( Xtraining, Ytraining, initial_theta, alpha, lambda, iteration );
+    arma::mat p = lr.predict(Xtraining,theta);
+    std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Ytraining)) * 100 << "\n";
+    p = lr.predict(Xval,theta);
+    std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
+}
+
+void learning_validation_curve() {
+    std::cout << "Loading data...\n" << std::flush;
+
+    arma::mat Xtraining, Ytraining, Xval, Yval;
+    Xtraining.load("trainParams_X.bin");
+    Ytraining.load("trainParams_y.bin");
+    Xval.load("trainParams_Xval.bin");
+    Yval.load("trainParams_Yval.bin");
+
+    std::cout << "Training set size: " << Xtraining.n_rows << "\n";
+    //std::cout << "Feature scaling...\n";
+    //Xtraining = lr.featureScaling(Xtraining);
+    //Xval = lr.featureScaling(Xval);
+
+    double lambda = 1.0e-0;
+    long long iteration = 1;
+
+    std::cout << "Learning curve...\n";
+    LogisticRegression lr(Xtraining, Ytraining,lambda, true);
+    arma::mat lcv = lr.learningCurve(Xval, Yval, lambda, iteration,10);
+    Util::plotMatrix(new QCustomPlot, lcv);
+    std::cout << "\n" << lcv << "\n" << std::flush;
+    std::cout << "Validation curve...\n";
+    arma::mat lcv2 = lr.validationCurve(Xval, Yval, iteration);
+    Util::plotMatrix(new QCustomPlot, lcv2);
+    std::cout << "\n" << lcv2 << "\n" << std::flush;
+}
+
+void logistic_regression_fmincg() {
+    std::cout << "Loading data...\n" << std::flush;
+
+    arma::mat Xtraining, Ytraining, Xval, Yval;
+    Xtraining.load("trainParams_X.bin");
+    Ytraining.load("trainParams_y.bin");
+    Xval.load("trainParams_Xval.bin");
+    Yval.load("trainParams_Yval.bin");
+
+    double n = Xtraining.n_cols;
+    double m = Ytraining.n_rows;
+
+    // let's insert a column filled with ones
+    Xtraining.insert_cols(0, arma::ones<arma::mat>(m,1));
+    Xval.insert_cols(0, arma::ones<arma::mat>(Yval.n_rows,1));
+
+    // Initialize fitting parameters
+    arma::mat initial_theta = arma::zeros(n + 1, 1);
+
+    double lambda = 3.0e-6;
+    long long iteration = 2e+2;
+    //std::cout << "Calculating gradient descent...\n";
+    //arma::mat theta = lr.gradientDescentWithReguralization( Xtraining, Ytraining, initial_theta, alpha, lambda, iteration );
+    LogisticRegression lr(Xtraining, Ytraining, lambda, true );
+    fmincgRetVal frv = fmincg(lr, initial_theta, iteration, true);
+    arma::mat& theta = frv.m_NNPparams;
+
+    arma::mat p = lr.predict(Xtraining,theta);
+    std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Ytraining)) * 100 << "\n";
+    p = lr.predict(Xval,theta);
+    std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
+}
+
+void full_paramtest_logitic_regression() {
+    arma::mat X, y, Xtraining, Ytraining, Xval, Yval;
+
+    std::cout << "Reading data set...\n";
+    /*
+    X.load("TH11_plus_BG_trainingset.bin");
+    y.load("TH11_plus_BG_trainingset_result.bin");
+
+    std::cout << "Data set size: " << X.n_rows << "\n";
+    std::cout << "Prepare training and validation set...\n";
+    Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval);
+    std::cout << "Training set size: " << Xtraining.n_rows << "\n";
+    std::cout << "Validation set size: " << Xval.n_rows << "\n";
+*/
+    Xtraining.load("trainParams_X.bin");
+    Ytraining.load("trainParams_y.bin");
+    Xval.load("trainParams_Xval.bin");
+    Yval.load("trainParams_Yval.bin");
+
+    double n = Xtraining.n_cols;
+    double m = Ytraining.n_rows;
+    int small_image_width = (int)sqrt(Xval.n_cols);
+
+    // let's insert a column filled with ones
+    Xtraining.insert_cols(0, arma::ones<arma::mat>(m,1));
+    Xval.insert_cols(0, arma::ones<arma::mat>(Yval.n_rows,1));
+
+    // Initialize fitting parameters
+    arma::mat initial_theta = arma::zeros(n + 1, 1);
+
+    double lambda = 0;
+    long long iteration = 2e+2;
+    LogisticRegression lr(Xtraining, Ytraining, lambda, true );
+    fmincgRetVal frv = fmincg(lr, initial_theta, iteration, true);
+    arma::mat& theta = frv.m_NNPparams;
+
+    arma::mat p = lr.predict(Xtraining,theta);
+    std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Ytraining)) * 100 << "\n";
+    p = lr.predict(Xval,theta);
+    std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
+
+    QImage img(small_image_width,small_image_width, QImage::Format_RGB32);
+
+    for( size_t i = 0; i < p.n_rows; ++i) {
+        if( p(i,0) != Yval(i,0)) {
+            std::cout << "Expected: " << Yval(i,0) << "; Predicted: " << p(i,0) << "\n" << std::flush;
+
+            char name[100];
+            for( size_t j = 1; j < Xval.n_cols; ++j ) {
+                img.setPixel((j-1)%small_image_width,(j-1)/small_image_width, Xval(i, j));
+            }
+            sprintf(name, "tmp2/wrong_%lu_e%i_p%i.png", i, (int)Yval(i,0), (int)p(i,0));
+            img.save(name);
+        }
+    }
 }
 
 } // COC_ns

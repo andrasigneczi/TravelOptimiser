@@ -25,7 +25,7 @@ void runTests() {
 }
 
 
-class TestYMappper : public CostAndGradient::YMappperIF {
+class TestYMappper : public NeuralNetwork::YMappperIF {
 public:
     double fromYtoYY(double y ) override {
         //std::cout << "mapper " << num_labels << " " << y << "\n" << std::flush;
