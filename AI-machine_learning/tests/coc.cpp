@@ -25,6 +25,7 @@ void logistic_regression();
 void learning_validation_curve();
 void logistic_regression_fmincg();
 void full_paramtest_logitic_regression();
+void logistic_regression_one_vs_all();
 
 void runTests() {
     //test4(); // coc training test
@@ -38,7 +39,8 @@ void runTests() {
     //logistic_regression();
     //learning_validation_curve();
     //logistic_regression_fmincg();
-    full_paramtest_logitic_regression();
+    //full_paramtest_logitic_regression();
+    logistic_regression_one_vs_all();
 }
 
 
@@ -582,7 +584,7 @@ void full_paramtest_logitic_regression() {
     arma::mat initial_theta = arma::zeros(n + 1, 1);
 
     double lambda = 0;
-    long long iteration = 2e+2;
+    long long iteration = 3e+2;
     LogisticRegression lr(Xtraining, Ytraining, lambda, true );
     fmincgRetVal frv = fmincg(lr, initial_theta, iteration, true);
     arma::mat& theta = frv.m_NNPparams;
@@ -606,6 +608,28 @@ void full_paramtest_logitic_regression() {
             img.save(name);
         }
     }
+}
+
+void logistic_regression_one_vs_all() {
+    arma::mat X, y, Xtraining, Ytraining, Xval, Yval;
+
+    std::cout << "Reading data set...\n";
+    Xtraining.load("trainParams_X.bin");
+    Ytraining.load("trainParams_y.bin");
+    Xval.load("trainParams_Xval.bin");
+    Yval.load("trainParams_Yval.bin");
+
+    double lambda = 0;
+    LogisticRegression lr(Xtraining, Ytraining, lambda, true );
+
+    std::cout << "contructor finished...\n";
+
+    arma::mat theta = lr.trainOneVsAll(2,200,true);
+
+    arma::mat p = lr.predictOneVsAll(Xtraining,theta);
+    std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Ytraining)) * 100 << "\n";
+    p = lr.predictOneVsAll(Xval,theta);
+    std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
 }
 
 } // COC_ns

@@ -3,8 +3,12 @@
 #include <fmincg.h>
 
 const arma::mat dummy;
-LogisticRegression::LogisticRegression( const arma::mat& X, const arma::mat& y, double lambda, bool featureScaling )
-    : CostAndGradient( (featureScaling ? this->featureScaling(X, true) : X), y, lambda ) {
+LogisticRegression::LogisticRegression( const arma::mat X, const arma::mat y, double lambda, bool featureScaling )
+    : CostAndGradient( X, y, lambda ) {
+
+    if(featureScaling) {
+        mX = this->featureScaling(X, true);
+    }
 }
 
 LogisticRegression::LogisticRegression()
@@ -121,7 +125,7 @@ arma::mat LogisticRegression::validationCurve(const arma::mat& Xval, const arma:
     return retv;
 }
 
-arma::mat LogisticRegression::featureScaling( const arma::mat& oX, bool saveFactors ) {
+arma::mat LogisticRegression::featureScaling( const arma::mat oX, bool saveFactors ) {
     // Feature scaling has to be done for every single feature one by one
     arma::mat X = oX;
     mFCData = arma::zeros(X.n_cols,2);
@@ -180,20 +184,23 @@ arma::mat LogisticRegression::trainOneVsAll(size_t num_labels, int iteration, bo
         all_theta(i,:) = temp';
     end;
 */ 
-    arma::mat all_theta = arma::zeros(num_labels, mX.n_cols + 1);
+    mTheta = arma::zeros(num_labels, mX.n_cols + 1);
     arma::mat XSave = mX;
     arma::mat YSave = mY;
     mX.insert_cols(0,arma::ones(mX.n_rows,1));
     
     for( size_t i = 0; i < num_labels; ++i ) {
         arma::mat initial_theta = arma::zeros(mX.n_cols, 1);
+        // exchanging the values to zero, if it isn't equals to i, otherwise it will be 1
         mY = arma::conv_to<arma::mat>::from(arma::all( (YSave == i), 1 ));
         fmincgRetVal frv = fmincg(*this, initial_theta, iteration, verbose);
-        all_theta.row(i) = frv.m_NNPparams;
+        if(verbose)
+            std::cout << std::endl;
+        mTheta.row(i) = frv.m_NNPparams.t();
     }
     mX = XSave;
     mY = YSave;
-    return all_theta;
+    return mTheta;
 }
 
 arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X, const arma::mat& theta ) {
@@ -219,7 +226,7 @@ arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X, const arma::m
         p(i) = find(s(i,:)==M(i));
     end;
 */
-    double m = X.n_rows; // Number of training examples
+    double m = X.n_rows;
     arma::mat p = arma::zeros(m, 1);
 
     arma::mat X2 = X;
@@ -229,12 +236,26 @@ arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X, const arma::m
                 X2.col(i) = (X2.col(i) - mFCData(i,1))/(mFCData(i,0));
         }
     }
-
     X2.insert_cols(0,arma::ones(m,1));
-    arma::mat s = sigmoid(X2,theta);
-    arma::mat M = arma::max(s);
+    arma::mat s = sigmoid(X2,theta.t());
+    arma::mat M = arma::max(s,1);
     for( size_t i = 0; i < X.n_rows; ++i ){
-        p(i,0) = as_scalar(arma::find(s.row(i) == M(i,0)));
+        arma::uvec result = arma::find(s.row(i) == M(i,0));
+        p(i,0) = result(0,0);
     }
     return p;
+}
+
+arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X ) {
+    return predictOneVsAll(X,mTheta);
+}
+
+void LogisticRegression::saveThetaAndFeatureScaling(std::string fileNamePrefix) {
+    mTheta.save((fileNamePrefix + "_theta.bin").c_str());
+    mFCData.save((fileNamePrefix + "_fcdata.bin").c_str());
+}
+
+void LogisticRegression::loadThetaAndFeatureScaling(std::string fileNamePrefix) {
+    mTheta.load((fileNamePrefix + "_theta.bin").c_str());
+    mFCData.load((fileNamePrefix + "_fcdata.bin").c_str());
 }

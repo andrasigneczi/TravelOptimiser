@@ -7,7 +7,7 @@
 
 class LogisticRegression : public CostAndGradient {
 public:
-    LogisticRegression( const arma::mat& X, const arma::mat& y, double lambda, bool featureScaling );
+    LogisticRegression( const arma::mat X, const arma::mat y, double lambda, bool featureScaling );
     LogisticRegression();
 
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override;
@@ -22,10 +22,13 @@ public:
     
     arma::mat learningCurve(const arma::mat& Xval, const arma::mat& Yval, double lambda, long long iteration, int stepSize);
     arma::mat validationCurve(const arma::mat& Xval, const arma::mat& Yval, long long iteration);
-    arma::mat featureScaling( const arma::mat& X, bool saveFactors );
+    arma::mat featureScaling( const arma::mat X, bool saveFactors );
     
     arma::mat trainOneVsAll(size_t num_labels, int iteration, bool verbose = true);
     arma::mat predictOneVsAll( const arma::mat& X, const arma::mat& theta );
+    arma::mat predictOneVsAll( const arma::mat& X );
+    void saveThetaAndFeatureScaling(std::string fileNamePrefix);
+    void loadThetaAndFeatureScaling(std::string fileNamePrefix);
 
 private:
 

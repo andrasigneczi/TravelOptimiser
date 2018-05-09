@@ -10,7 +10,7 @@ public:
         arma::mat grad;
     };
     
-    CostAndGradient( const arma::mat& X, const arma::mat& y, double lambda )
+    CostAndGradient( const arma::mat X, const arma::mat y, double lambda )
     : mX( X ), mY( y ), mLambda( lambda ){}
     
     virtual RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) = 0;
