@@ -54,15 +54,14 @@ void plotMatrix( QCustomPlot* customPlot, const arma::mat& matrix ) {
 
 void removeDuplication(arma::mat& dataset) {
     QCryptographicHash hash(QCryptographicHash::Md5);
-    std::set<std::string> hashes;
+    std::set<QByteArray> hashes;
     std::vector<size_t> marked;
     for( size_t m = 0; m < dataset.n_rows; ++m ) {
         for( size_t j = 0; j < dataset.n_cols; ++j ) {
             double v = dataset(m, j);
             hash.addData((char*)&v, (int)sizeof(v));
         }
-        std::string h = hash.result().toStdString();
-        if( hashes.find(h) != hashes.end()) {
+        if( hashes.find(hash.result()) != hashes.end()) {
             marked.push_back(m);
         }
         hash.reset();

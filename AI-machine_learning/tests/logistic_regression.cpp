@@ -28,7 +28,7 @@ void runTests() {
     //dataSet.save("ex4data1_y.bin", arma::arma_binary);
 
     test1();
-    //test2();
+    test2();
     test3();
 }
 

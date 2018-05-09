@@ -18,7 +18,7 @@ public:
     
 protected:
     arma::mat mX;
-    const arma::mat& mY;
+    arma::mat mY;
     double mLambda;
     RetVal mRetVal;
 };
