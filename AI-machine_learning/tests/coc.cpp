@@ -34,13 +34,13 @@ void runTests() {
     //coc_TH9_test();
     //coc_learningCurve();
     //coc_validationCurve();
-    //coc_th11_train_params_searching();
+    coc_th11_train_params_searching();
     //coc_th11_train();
     //logistic_regression();
     //learning_validation_curve();
     //logistic_regression_fmincg();
     //full_paramtest_logitic_regression();
-    logistic_regression_one_vs_all();
+    //logistic_regression_one_vs_all();
 }
 
 
@@ -369,12 +369,9 @@ void coc_validationCurve() {
     nn.plotValidationCurve(new QCustomPlot,10);
 }
 
-// 3800, 0.003
-// 3850, 10
-
-//5378
-//0.1
-//0.264999
+//2986
+//0.3
+//-nan
 void coc_th11_train_params_searching() {
     arma::mat X, y, thetaSizes;
     X.load("TH11_plus_BG_trainingset.bin");
@@ -383,7 +380,7 @@ void coc_th11_train_params_searching() {
     thetaSizes << 24*24 << 0 << 2; // input, hidden, output
     COCYMappper2 yMapper;
     NeuralNetwork* nn = new NeuralNetwork(thetaSizes, X, y, 1, yMapper);
-    NeuralNetwork::TrainParams tp = nn->searchTrainParams(1000,8000,200);
+    NeuralNetwork::TrainParams tp = nn->searchTrainParams(500,5000,200);
     std::cout << "Cost: " << tp.cost << "\nLayer size: " << tp.layerSize << "\nLambda: " << tp.lambda << "\n";
     tp = nn->searchTrainParams2(tp.layerSize-150,tp.layerSize+150,50);
     std::cout << "Cost: " << tp.cost << "\nLayer size: " << tp.layerSize << "\nLambda: " << tp.lambda << "\n";
@@ -407,8 +404,8 @@ void coc_th11_train_params_searching() {
     Xval.load("trainParams_Xval.bin");
     Yval.load("trainParams_Yval.bin");
 
-    nn = new NeuralNetwork(thetaSizes, Xtraining, Ytraining, tp.lambda, yMapper);
-    arma::mat trainedThetas = nn->train(1000);
+    nn = new NeuralNetwork(thetaSizes, Xtraining, Ytraining, tp.lambda, yMapper, true);
+    arma::mat trainedThetas = nn->train(300);
 
     thetaSizes.save( "coc_trained_theta_sizes.bin" );
     trainedThetas.save( "coc_trained_thetas.bin" );
@@ -440,8 +437,8 @@ void coc_th11_train() {
     Yval.load("trainParams_Yval.bin");
 
     COCYMappper2 yMapper;
-    NeuralNetwork* nn = new NeuralNetwork(thetaSizes, Xtraining, Ytraining, 0.1, yMapper);
-    arma::mat trainedThetas = nn->train(100);
+    NeuralNetwork* nn = new NeuralNetwork(thetaSizes, Xtraining, Ytraining, 0.1, yMapper, true);
+    arma::mat trainedThetas = nn->train(20);
 
     thetaSizes.save( "coc_trained_theta_sizes.bin" );
     trainedThetas.save( "coc_trained_thetas.bin" );
@@ -459,6 +456,11 @@ void coc_th11_train() {
     delete nn;
 }
 
+// *******************************************************************************************************-
+// *******************************************************************************************************-
+// ********************************** LOGISTIC REGRESSION ************************************************-
+// *******************************************************************************************************-
+// *******************************************************************************************************-
 void logistic_regression() {
     std::cout << "Loading data...\n" << std::flush;
 

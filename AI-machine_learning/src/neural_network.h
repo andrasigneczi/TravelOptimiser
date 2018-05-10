@@ -22,12 +22,7 @@ public:
     };
 
     //using CostAndGradient::CostAndGradient;
-    NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda, YMappperIF& yMappper )
-        : CostAndGradient(X, y, lambda)
-        , mLayerSizes(layerSizes)
-        , mYMappper(yMappper)
-    {}
-
+    NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda, YMappperIF& yMappper, bool featureScaling = false );
 
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override;
     // special return value std::numeric_limits<double>::max(); means not found

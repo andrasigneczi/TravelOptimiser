@@ -15,12 +15,15 @@ public:
     
     virtual RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) = 0;
     void setLambda( double lambda ) { mLambda = lambda; }
-    
+
+    virtual arma::mat featureScaling( const arma::mat X, bool saveFactors );
+
 protected:
     arma::mat mX;
     arma::mat mY;
     double mLambda;
     RetVal mRetVal;
+    arma::mat mFCData;
 };
 
 #endif // __COSTANDGRADIENT_H__

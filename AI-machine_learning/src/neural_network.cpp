@@ -7,6 +7,16 @@
 #include <string>
 #include "Util.h"
 
+NeuralNetwork::NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda, YMappperIF& yMappper, bool featureScaling )
+    : CostAndGradient(X, y, lambda)
+    , mLayerSizes(layerSizes)
+    , mYMappper(yMappper)
+{
+    if(featureScaling) {
+        mX = this->featureScaling(X, true);
+    }
+}
+
 CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool costOnly ) {
     
     // Reshape nn_params back into the parameters Theta1-ThetaN, the weight matrices
@@ -128,6 +138,14 @@ arma::mat NeuralNetwork::predict( const arma::mat& X, const std::vector<arma::ma
     size_t m = X.n_rows;
     arma::mat p = arma::zeros(m, 1);
     arma::mat s = X;
+
+    if( mFCData.n_rows > 0 ) {
+        for( size_t i = 0; i < s.n_cols; ++i ) {
+            if( mFCData(i,0) != 0)
+                s.col(i) = (s.col(i) - mFCData(i,1))/(mFCData(i,0));
+        }
+    }
+
     for( size_t i = 0; i < thetas.size(); ++i ) {
         s = std::move(join_rows( arma::ones(m, 1), s));
         s=std::move(sigmoid(s,thetas[i].t()));
@@ -306,7 +324,7 @@ arma::mat NeuralNetwork::learningCurve(arma::mat& Xval, arma::mat& yval) {
 arma::mat NeuralNetwork::validationCurve(arma::mat& Xval, arma::mat& yval, int iteration) {
     std::vector<double> lambda_vec{0, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10};
     arma::mat retv = arma::zeros(lambda_vec.size(), 3);
-    NeuralNetwork nn2(mLayerSizes, Xval, yval, 0, mYMappper);
+    NeuralNetwork nn2(mLayerSizes, Xval, yval, 0, mYMappper, true);
 
     for( size_t i = 0; i < lambda_vec.size(); ++i ) {
         std::cout << "Validation curve step number " << i << "\r" << std::flush;
@@ -363,7 +381,7 @@ NeuralNetwork::TrainParams NeuralNetwork::searchTrainParams( int minLayerSize, i
     for( int layerSize = minLayerSize; layerSize <= maxLayerSize; layerSize += stepSize ) {
         std::cout << "\nLayer size: " << layerSize << "\n" << std::flush;
         thetaSizes(0,1) = layerSize;
-        NeuralNetwork nn(thetaSizes, X, y, 1, mYMappper);
+        NeuralNetwork nn(thetaSizes, X, y, 1, mYMappper, true);
         //std::cout << "dbg2.5\n" << std::flush;
         arma::mat lcv = nn.validationCurve(Xval, Yval, 5);
         for( size_t i = 0; i < lcv.n_rows; ++i ) {
@@ -389,7 +407,7 @@ NeuralNetwork::TrainParams NeuralNetwork::searchTrainParams2( int minLayerSize, 
     for( int layerSize = minLayerSize; layerSize <= maxLayerSize; layerSize += stepSize ) {
         std::cout << "Layer size: " << layerSize << "\n" << std::flush;
         thetaSizes(0,1) = layerSize;
-        NeuralNetwork nn(thetaSizes, X, y, 1, mYMappper);
+        NeuralNetwork nn(thetaSizes, X, y, 1, mYMappper, true);
         //std::cout << "dbg2.5\n" << std::flush;
         arma::mat lcv = nn.validationCurve(Xval, Yval, 5);
         for( size_t i = 0; i < lcv.n_rows; ++i ) {
