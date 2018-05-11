@@ -4,4 +4,16 @@
 *.so
 *.so.*
 moc_*.*
-
+/.idea
+/Webhost/target/classes
+/mozilla
+/target/classes
+target
+/AI-searching/AI-searching/Debug
+/AI-searching/AI-searching/Release
+/AI-searching/AI-searching/.vs/AI-searching/v14/.suo
+/AI-searching/AI-searching/AI-searching.VC.VC.opendb
+/AI-searching/AI-searching/AI-searching.VC.db
+/AI-searching/AI-searching/AI-searching.vcxproj.user
+/AI-searching/sqlite/sqlite3.def
+/AI-searching/sqlite/sqlite3.dll 
