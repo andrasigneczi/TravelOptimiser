@@ -7,7 +7,7 @@
 #include <map>
 
 // Simple mapper from 0...
-class TH_YMappper : public CostAndGradient::YMappperIF {
+class TH_YMappper : public NeuralNetwork::YMappperIF {
 public:
     double fromYtoYY(double y) override {
         return y;
@@ -32,6 +32,7 @@ public:
     void saveTiles();
     void trainNeuralNetwork();
     void scanScreenshot();
+    void scanScreenshot_lr();
     QRect getCanvasSize() { return mCanvasSize; }
     void capture();
     void extractTrainingSet();

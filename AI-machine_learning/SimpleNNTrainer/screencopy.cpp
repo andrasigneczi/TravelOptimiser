@@ -17,8 +17,9 @@
 #include <QScreen>
 #include <QApplication>
 #include <QtCore/QSettings>
+#include "logistic_regression.h"
 
-const int small_image_width = 40;
+const int small_image_width = 24;
 const std::string training_sets_folder = "./training_sets/";
 int copy_box_size = 80;
 double minimize_rate = (double)small_image_width/(double)copy_box_size;
@@ -216,6 +217,42 @@ void ScreenCopy::scanScreenshot() {
                 }
             }
             arma::mat pred = nn.predict(img,thetas);
+            if( pred(0,0) == 1.0 ){
+                //std::cout << "position: " << xp*bigImageScale/width << ";" << yp*bigImageScale/width << " TH" << pred(0,0) << "\n";
+                mPredictions.push_back(QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size));
+            } else if( pred(0,0) == 0.0 ){
+                ++bgcounter;
+            } else {
+                std::cout << "What is this? " << pred(0,0) << "\n" << std::endl;
+            }
+        }
+    }
+    std::cout << "bgcounter: " << bgcounter << "\n" << std::flush;
+    std::cout << "Found TH count: " << mPredictions.size() << "\n" << std::flush;
+    if( mPredictions.size() < 20 ) {
+        for_each(mPredictions.begin(),mPredictions.end(),
+          [&](const QRect& r) {std::cout << r.x() << ";" << r.y() << ";" << r.width() << ";" << r.height() << "\n" << std::flush; });
+    }
+}
+
+void ScreenCopy::scanScreenshot_lr() {
+    arma::mat X, y;
+
+    LogisticRegression lr;
+    lr.loadThetaAndFeatureScaling("log_reg");
+    mPredictions.clear();
+    int bgcounter = 0;
+    arma::mat img = arma::zeros( 1, small_image_width*small_image_width );
+    for( int yp = 0; yp  + small_image_width < mGrayMiniCopy.height(); yp += scanStepSize) {
+        for( int xp = 0; xp  + small_image_width < mGrayMiniCopy.width(); xp += scanStepSize) {
+
+            for( int i = 0; i < small_image_width; ++i ) {
+                for( int j = 0; j < small_image_width; ++j ) {
+                    QRgb rgb = mGrayMiniCopy.pixel( xp + j, yp + i );
+                    img(0, i * small_image_width + j ) = rgb;
+                }
+            }
+            arma::mat pred = lr.predictOneVsAll(img);
             if( pred(0,0) == 1.0 ){
                 //std::cout << "position: " << xp*bigImageScale/width << ";" << yp*bigImageScale/width << " TH" << pred(0,0) << "\n";
                 mPredictions.push_back(QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size));
