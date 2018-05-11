@@ -6,12 +6,22 @@
 
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = MachineLearning
 TEMPLATE = lib
 CONFIG += shared
 
+
+win32 {
+SOURCES += linear_regression.cpp logistic_regression.cpp fmincg.cpp neural_network.cpp CostAndGradient.cpp \
+      Util.cpp qcustomplot.cpp
+
+
+HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h png2arma.h CostAndGradient.h \
+      Util.h qcustomplot.h
+
+} else {
 SOURCES += linear_regression.cpp logistic_regression.cpp fmincg.cpp neural_network.cpp png2arma.cpp CostAndGradient.cpp \
       datasetgenerator.cpp Util.cpp qcustomplot.cpp \
     support_vector_machine.cpp
@@ -21,6 +31,7 @@ HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h 
       datasetgenerator.h Util.h qcustomplot.h \
     support_vector_machine.h
 
+}
 
 #FORMS    += mainwindow.ui
 
@@ -30,6 +41,7 @@ INCLUDEPATH += d:\armadillo-8.500.0\include
 SOURCES += ../src/neural_network.cpp ../src/fmincg.cpp
 LIBS += d:/armadillo-8.500.0/Release/armadillo.lib d:/armadillo-8.500.0/examples/lib_win64/blas_win64_MT.lib
 LIBS += d:/armadillo-8.500.0/examples/lib_win64/lapack_win64_MT.lib
+DEFINES += QCUSTOMPLOT_COMPILE_LIBRARY
 } else {
 QMAKE_CXXFLAGS += -std=c++11 -O3 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -I ../src -DARMA_USE_CXX11 -march=native \ 
                    -I/usr/include/qt5 -DQCUSTOMPLOT_COMPILE_LIBRARY

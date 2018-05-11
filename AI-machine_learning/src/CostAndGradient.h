@@ -2,8 +2,9 @@
 #define __COSTANDGRADIENT_H__
 
 #include <armadillo>
+#include <QtCore/QtGlobal>
 
-class CostAndGradient {
+class Q_DECL_EXPORT CostAndGradient {
 public:
     struct RetVal {
         double cost;

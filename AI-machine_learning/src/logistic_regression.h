@@ -4,8 +4,9 @@
 #include <armadillo>
 #include <vector>
 #include "CostAndGradient.h"
+#include <QtCore/QtGlobal>
 
-class LogisticRegression : public CostAndGradient {
+class Q_DECL_EXPORT LogisticRegression : public CostAndGradient {
 public:
     LogisticRegression( const arma::mat& X, const arma::mat& y, double lambda, bool featureScaling );
     LogisticRegression();

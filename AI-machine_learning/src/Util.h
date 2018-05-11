@@ -4,13 +4,14 @@
 #include <string>
 #include "qcustomplot.h"
 #include <armadillo>
+#include <QtCore/QtGlobal>
 
 namespace Util {
     
-    std::string trim(const std::string& str);
-    void plotMatrix( QCustomPlot* customPlot, const arma::mat& matrix );
-    void removeDuplication(arma::mat& dataset);
-    void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arma::mat& Xtraining, arma::mat& Ytraining, arma::mat& Xval, arma::mat& Yval);
+    Q_DECL_EXPORT std::string trim(const std::string& str);
+    Q_DECL_EXPORT void plotMatrix( QCustomPlot* customPlot, const arma::mat& matrix );
+    Q_DECL_EXPORT void removeDuplication(arma::mat& dataset);
+    Q_DECL_EXPORT void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arma::mat& Xtraining, arma::mat& Ytraining, arma::mat& Xval, arma::mat& Yval);
     
 } // namespace Util
 
