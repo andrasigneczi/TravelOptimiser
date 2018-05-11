@@ -639,9 +639,9 @@ void logistic_regression_one_vs_all() {
     arma::mat theta = lr.trainOneVsAll(2,200,true);
     lr.saveThetaAndFeatureScaling("log_reg");
 
-    arma::mat p = lr.predictOneVsAll(Xtraining,theta);
+    arma::mat p = lr.predictOneVsAll(Xtraining,theta,false);
     std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Ytraining)) * 100 << "\n";
-    p = lr.predictOneVsAll(Xval,theta);
+    p = lr.predictOneVsAll(Xval,theta,false);
     std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
 }
 

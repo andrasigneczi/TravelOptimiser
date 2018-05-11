@@ -183,7 +183,7 @@ arma::mat LogisticRegression::trainOneVsAll(size_t num_labels, int iteration, bo
     return mTheta;
 }
 
-arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X, const arma::mat& theta ) {
+arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X, const arma::mat& theta, bool copyValue ) {
 /*
     m = size(X, 1);
     num_labels = size(all_theta, 1);
@@ -207,7 +207,7 @@ arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X, const arma::m
     end;
 */
     double m = X.n_rows;
-    arma::mat p = arma::zeros(m, 1);
+    arma::mat p = arma::zeros(m, (copyValue?2:1));
 
     arma::mat X2 = X;
     if( mFCData.n_rows > 0 ) {
@@ -222,12 +222,14 @@ arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X, const arma::m
     for( size_t i = 0; i < X.n_rows; ++i ){
         arma::uvec result = arma::find(s.row(i) == M(i,0));
         p(i,0) = result(0,0);
+        if(copyValue)
+            p(i,1) = M(i,0);
     }
     return p;
 }
 
-arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X ) {
-    return predictOneVsAll(X,mTheta);
+arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X, bool copyValue ) {
+    return predictOneVsAll(X,mTheta,copyValue);
 }
 
 void LogisticRegression::saveThetaAndFeatureScaling(std::string fileNamePrefix) {

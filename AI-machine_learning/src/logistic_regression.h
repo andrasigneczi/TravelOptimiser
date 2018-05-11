@@ -24,8 +24,8 @@ public:
     arma::mat validationCurve(const arma::mat& Xval, const arma::mat& Yval, long long iteration);
     
     arma::mat trainOneVsAll(size_t num_labels, int iteration, bool verbose = true);
-    arma::mat predictOneVsAll( const arma::mat& X, const arma::mat& theta );
-    arma::mat predictOneVsAll( const arma::mat& X );
+    arma::mat predictOneVsAll( const arma::mat& X, const arma::mat& theta, bool copyValue );
+    arma::mat predictOneVsAll( const arma::mat& X, bool copyValue );
     void saveThetaAndFeatureScaling(std::string fileNamePrefix);
     void loadThetaAndFeatureScaling(std::string fileNamePrefix);
 

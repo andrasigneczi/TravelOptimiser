@@ -79,6 +79,11 @@ void ScreenCopy::paintEvent(QPaintEvent* pe) {
         textpos += 150;
     }
 
+    p.setPen(QPen(QColor("#ffffff"),1,Qt::SolidLine));
+    for( size_t i = 0; i < mPredictions.size(); ++i ){
+        p.drawRect(mPredictions[i]);
+    }
+
     p.setPen(QPen(QColor("#ff6600"),2,Qt::DotLine));
     p.drawRect(mouseX, mouseY, copy_box_size, copy_box_size);
     QWidget::paintEvent(pe);
@@ -252,10 +257,11 @@ void ScreenCopy::scanScreenshot_lr() {
                     img(0, i * small_image_width + j ) = rgb;
                 }
             }
-            arma::mat pred = lr.predictOneVsAll(img);
+            arma::mat pred = lr.predictOneVsAll(img,true);
             if( pred(0,0) == 1.0 ){
                 //std::cout << "position: " << xp*bigImageScale/width << ";" << yp*bigImageScale/width << " TH" << pred(0,0) << "\n";
                 mPredictions.push_back(QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size));
+                std::cout << pred(0,1) << "\n" << std::flush;
             } else if( pred(0,0) == 0.0 ){
                 ++bgcounter;
             } else {
