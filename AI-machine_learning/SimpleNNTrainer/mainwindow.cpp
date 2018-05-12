@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    //connect(findChild<QPushButton*>("SaveTrainingSet"), SIGNAL(clicked()), this, SLOT(on_SaveTrainingSet_clicked()));
 }
 
 MainWindow::~MainWindow()
@@ -26,7 +27,8 @@ void MainWindow::on_pushButton_2_clicked()
 
 void MainWindow::on_pushButton_3_clicked()
 {
-    myWindow.trainNeuralNetwork();
+    //myWindow.trainNeuralNetwork();
+    myWindow.trainLogisticRegression();
 }
 
 void MainWindow::on_pushButton_4_clicked()
@@ -44,4 +46,9 @@ void MainWindow::on_pushButton_5_clicked()
 void MainWindow::on_pushButton_6_clicked()
 {
     myWindow.extractTrainingSet();
+}
+
+void MainWindow::on_pushButton_7_clicked()
+{
+    myWindow.saveTrainingSet();
 }

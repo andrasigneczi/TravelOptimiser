@@ -31,6 +31,7 @@ public:
     void keyPressEvent(QKeyEvent*ke) override;
     void saveTiles();
     void trainNeuralNetwork();
+    void trainLogisticRegression();
     void scanScreenshot();
     void scanScreenshot_lr();
     QRect getCanvasSize() { return mCanvasSize; }
@@ -38,6 +39,7 @@ public:
     void extractTrainingSet();
     void updateTrainingSetStat();
     void deleteTrainingSet();
+    void saveTrainingSet();
 
 signals:
 
@@ -55,7 +57,9 @@ private:
     int mousePressedY;
 
     arma::mat mTrainingset;
+    arma::mat mTrainingsetNewCollection;
     arma::mat mResultset;
+    arma::mat mResultsetNewCollection;
     TH_YMappper mThYMapper;
     std::vector<QRect> mPredictions;
     QRect mCanvasSize;

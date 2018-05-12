@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.5.1
+** Created by: Qt User Interface Compiler version 5.10.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -33,6 +33,7 @@ public:
     QPushButton *pushButton_4;
     QPushButton *pushButton_5;
     QPushButton *pushButton_6;
+    QPushButton *pushButton_7;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -62,10 +63,13 @@ public:
         pushButton_6 = new QPushButton(centralWidget);
         pushButton_6->setObjectName(QStringLiteral("pushButton_6"));
         pushButton_6->setGeometry(QRect(180, 70, 141, 27));
+        pushButton_7 = new QPushButton(centralWidget);
+        pushButton_7->setObjectName(QStringLiteral("pushButton_7"));
+        pushButton_7->setGeometry(QRect(180, 150, 131, 28));
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 400, 25));
+        menuBar->setGeometry(QRect(0, 0, 400, 26));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -81,13 +85,14 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "COC-Legend", 0));
-        pushButton->setText(QApplication::translate("MainWindow", "Capture", 0));
-        pushButton_2->setText(QApplication::translate("MainWindow", "Tile", 0));
-        pushButton_3->setText(QApplication::translate("MainWindow", "Train", 0));
-        pushButton_4->setText(QApplication::translate("MainWindow", "Scan", 0));
-        pushButton_5->setText(QApplication::translate("MainWindow", "Delete training set", 0));
-        pushButton_6->setText(QApplication::translate("MainWindow", "Extract training set", 0));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "COC-Legend", nullptr));
+        pushButton->setText(QApplication::translate("MainWindow", "Capture", nullptr));
+        pushButton_2->setText(QApplication::translate("MainWindow", "Tile", nullptr));
+        pushButton_3->setText(QApplication::translate("MainWindow", "Train", nullptr));
+        pushButton_4->setText(QApplication::translate("MainWindow", "Scan", nullptr));
+        pushButton_5->setText(QApplication::translate("MainWindow", "Delete training set", nullptr));
+        pushButton_6->setText(QApplication::translate("MainWindow", "Extract training set", nullptr));
+        pushButton_7->setText(QApplication::translate("MainWindow", "Save Training Set", nullptr));
     } // retranslateUi
 
 };

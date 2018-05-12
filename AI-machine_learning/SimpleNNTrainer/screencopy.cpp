@@ -65,7 +65,8 @@ void ScreenCopy::paintEvent(QPaintEvent* pe) {
 
     QPainter p(this);
     p.drawPixmap(0,0,mScreenshot);
-    //p.fillRect(0,0,500,60, QBrush(QColor("#444444")));
+    //p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    p.fillRect(0,0,500,100, QBrush(QColor("#444444")));
     p.setFont(QFont("times",18));
     p.setPen(QPen(QColor("#ff0000")));
     p.drawText(QRect(0,0,500,30), Qt::AlignLeft, (std::to_string(mouseX) + " " + std::to_string(mouseY)).c_str());
@@ -74,9 +75,24 @@ void ScreenCopy::paintEvent(QPaintEvent* pe) {
 
     int textpos = 0;
     for( auto it = mTrainingSetStat.begin(); it != mTrainingSetStat.end(); ++it ){
+        if( it->first == training_set_y ){
+            p.setFont(QFont("times",18,QFont::Bold));
+            p.setPen(QPen(QColor("#ffff00")));
+        } else {
+            p.setFont(QFont("times",18, QFont::Normal));
+            p.setPen(QPen(QColor("#ff0000")));
+        }
         p.drawText(QRect(textpos,30,500,100), Qt::AlignLeft, QString("y:") + QString::number( it->first ) +
                    "=>" + QString::number( it->second ));
-        textpos += 150;
+        textpos += 250;
+    }
+
+    if( mTrainingSetStat.find(training_set_y) == mTrainingSetStat.end()){
+        p.setFont(QFont("times",18,QFont::Bold));
+        p.setPen(QPen(QColor("#ffff00")));
+        p.drawText(QRect(textpos,30,500,100), Qt::AlignLeft, QString("y:") + QString::number( training_set_y ) +
+                   "=>0");
+        textpos += 250;
     }
 
     p.setPen(QPen(QColor("#ffffff"),1,Qt::SolidLine));
@@ -138,6 +154,7 @@ void ScreenCopy::keyPressEvent(QKeyEvent*ke) {
         if( ke->modifiers() == Qt::ControlModifier)
             training_set_y += 10;
         std::cout << "y=" << training_set_y << "\n" << std::flush;
+        repaint();
         return;
     }
     else if( ke->key() == Qt::Key_Space) {
@@ -153,6 +170,8 @@ void ScreenCopy::keyPressEvent(QKeyEvent*ke) {
         std::cout << "New copy_box_size: " << copy_box_size << std::endl << std::flush;
         mGrayMiniCopy = mScreenshot.toImage().scaledToWidth(mScreenshot.width()*minimize_rate,Qt::SmoothTransformation)
                         .convertToFormat(QImage::Format_RGB32, Qt::MonoOnly);
+        repaint();
+        return;
     }
     else if( ke->key() == Qt::Key_Minus) {
         --copy_box_size;
@@ -160,6 +179,8 @@ void ScreenCopy::keyPressEvent(QKeyEvent*ke) {
         std::cout << "New copy_box_size: " << copy_box_size << std::endl << std::flush;
         mGrayMiniCopy = mScreenshot.toImage().scaledToWidth(mScreenshot.width()*minimize_rate,Qt::SmoothTransformation)
                         .convertToFormat(QImage::Format_RGB32, Qt::MonoOnly);
+        repaint();
+        return;
     }
     QWidget::keyPressEvent(ke);
 }
@@ -197,6 +218,17 @@ void ScreenCopy::trainNeuralNetwork() {
 
     thetaSizes.save( training_sets_folder + training_set_prefix + "_trained_theta_sizes.bin" );
     frv.m_NNPparams.save( training_sets_folder + training_set_prefix + "_trained_thetas.bin" );
+}
+
+void ScreenCopy::trainLogisticRegression() {
+    if( mTrainingset.n_cols == 0 )
+        return;
+
+    double lambda = 1e-3;
+    LogisticRegression lr(mTrainingset, mResultset, lambda, true );
+
+    lr.trainOneVsAll(2,200,true);
+    lr.saveThetaAndFeatureScaling("log_reg");
 }
 
 void ScreenCopy::scanScreenshot() {
@@ -295,16 +327,16 @@ void ScreenCopy::saveSelectedRect() {
             }
             //mGrayMiniCopy.copy(mousePressedX *minimize_rate, mousePressedY *minimize_rate, small_image_width, small_image_width)
             //                  .save("selectedrect.png");
-            if( mTrainingset.n_cols == 0 )
-                mTrainingset = img;
+            if( mTrainingsetNewCollection.n_cols == 0 )
+                mTrainingsetNewCollection = img;
             else
-                mTrainingset.insert_rows(mTrainingset.n_rows, img);
-            mResultset.insert_rows(mResultset.n_rows, arma::mat{training_set_y}); // TODO: TH level
+                mTrainingsetNewCollection.insert_rows(mTrainingsetNewCollection.n_rows, img);
+            mResultsetNewCollection.insert_rows(mResultsetNewCollection.n_rows, arma::mat{training_set_y}); // TODO: TH level
         }
     }
 
-    mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
-    mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
+    //mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
+    //mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
     std::cout << "Training set size: " << mTrainingset.n_rows << " rows\n" << std::flush;
     updateTrainingSetStat();
 }
@@ -320,15 +352,15 @@ void ScreenCopy::saveTiles() {
                     img(0, i * small_image_width + j ) = rgb;
                 }
             }
-            if( mTrainingset.n_cols == 0 )
-                mTrainingset = img;
+            if( mTrainingsetNewCollection.n_cols == 0 )
+                mTrainingsetNewCollection = img;
             else
-                mTrainingset.insert_rows(mTrainingset.n_rows, img);
-            mResultset.insert_rows(mResultset.n_rows, arma::mat{training_set_y}); // TODO: TH level
+                mTrainingsetNewCollection.insert_rows(mTrainingsetNewCollection.n_rows, img);
+            mResultsetNewCollection.insert_rows(mResultsetNewCollection.n_rows, arma::mat{training_set_y}); // TODO: TH level
         }
     }
-    mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
-    mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
+    //mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
+    //mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
     std::cout << "Training set size: " << mTrainingset.n_rows << " rows\n" << std::flush;
     updateTrainingSetStat();
 }
@@ -356,14 +388,35 @@ void ScreenCopy::updateTrainingSetStat(){
             mTrainingSetStat.emplace((int)mResultset(i,0),1);
         }
     }
+    for( size_t i = 0; i < mResultsetNewCollection.n_rows; ++i ){
+        auto it = mTrainingSetStat.find(mResultsetNewCollection(i,0));
+        if( it != mTrainingSetStat.end()) {
+            ++it->second;
+        } else {
+            mTrainingSetStat.emplace((int)mResultsetNewCollection(i,0),1);
+        }
+    }
     repaint();
 }
 
 void ScreenCopy::deleteTrainingSet() {
     mTrainingset.clear();
+    mTrainingsetNewCollection.clear();
     mResultset.clear();
-    mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
-    mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
+    mResultsetNewCollection.clear();
+    //mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
+    //mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
+    saveTrainingSet();
     std::cout << "Training set size: " << mTrainingset.n_rows << " rows\n" << std::flush;
     updateTrainingSetStat();
+}
+
+void ScreenCopy::saveTrainingSet() {
+    mTrainingset.insert_rows(mTrainingset.n_rows, mTrainingsetNewCollection);
+    mTrainingsetNewCollection.clear();
+    mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
+
+    mResultset.insert_rows(mResultset.n_rows, mResultsetNewCollection);
+    mResultsetNewCollection.clear();
+    mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
 }
