@@ -183,6 +183,23 @@ arma::mat LogisticRegression::trainOneVsAll(size_t num_labels, int iteration, bo
     return mTheta;
 }
 
+arma::mat LogisticRegression::trainOne(double label, int iteration, bool verbose) {
+    arma::mat XSave = mX;
+    arma::mat YSave = mY;
+    mX.insert_cols(0,arma::ones(mX.n_rows,1));
+
+    arma::mat initial_theta = arma::zeros(mX.n_cols, 1);
+    // exchanging the values to zero, if it isn't equals to i, otherwise it will be 1
+    mY = arma::conv_to<arma::mat>::from(arma::all( (YSave == label), 1 ));
+    fmincgRetVal frv = fmincg(*this, initial_theta, iteration, verbose);
+    if(verbose)
+        std::cout << std::endl;
+    mTheta = frv.m_NNPparams;
+    mX = XSave;
+    mY = YSave;
+    return mTheta;
+}
+
 arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X, const arma::mat& theta, bool copyValue ) {
 /*
     m = size(X, 1);
@@ -240,4 +257,50 @@ void LogisticRegression::saveThetaAndFeatureScaling(std::string fileNamePrefix) 
 void LogisticRegression::loadThetaAndFeatureScaling(std::string fileNamePrefix) {
     mTheta.load((fileNamePrefix + "_theta.bin").c_str());
     mFCData.load((fileNamePrefix + "_fcdata.bin").c_str());
+}
+
+arma::mat LogisticRegression::validationCurveOne(double label, const arma::mat& Xval, const arma::mat& Yval, long long iteration) {
+    std::vector<double> lambda_vec{0, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10};
+    arma::mat retv = arma::zeros(lambda_vec.size(), 3);
+    //arma::mat initial_theta = arma::zeros(mX.n_cols, 1);
+    arma::mat XvalC = featureScaling(Xval, false);
+    XvalC.insert_cols(0,arma::ones(XvalC.n_rows,1));
+    arma::mat YvalC = arma::conv_to<arma::mat>::from(arma::all( (Yval == label), 1 ));
+    arma::mat YC = arma::conv_to<arma::mat>::from(arma::all( (mY == label), 1 ));
+    arma::mat X = join_rows(arma::ones(mX.n_rows,1), mX);
+
+    for( size_t i = 0; i < lambda_vec.size(); ++i ) {
+        std::cout << "Validation curve step number " << i << "\r" << std::flush;
+        setLambda(lambda_vec[i]);
+        arma::mat theta = trainOne(label, iteration, false);
+
+        retv(i,0) = lambda_vec[i];
+        retv(i,1) = cost( X, YC, theta, 0 );
+        retv(i,2) = cost( XvalC, YvalC, theta, 0 );
+    }
+    return retv;
+}
+
+arma::mat LogisticRegression::learningCurveOne(double label, const arma::mat& Xval, const arma::mat& Yval, double lambda, long long iteration, int stepSize) {
+    arma::mat retv = arma::zeros(mX.n_rows, 3);
+    //arma::mat initial_theta = arma::zeros(mX.n_cols, 1);
+    arma::mat XvalC = featureScaling(Xval, false);
+    XvalC.insert_cols(0,arma::ones(XvalC.n_rows,1));
+    arma::mat YvalC = arma::conv_to<arma::mat>::from(arma::all( (Yval == label), 1 ));
+    for( size_t m = 0; m < mX.n_rows; m += stepSize ) {
+        std::cout << "Lerarning curve step number " << m << "\r" << std::flush;
+        arma::mat X = mX.rows(0,m);
+        arma::mat Y = mY.rows(0,m);
+        LogisticRegression lr(X, Y, lambda, false);
+        arma::mat theta = lr.trainOne(label, iteration, false);
+        //std:: cout << theta;
+        //break;
+
+        X.insert_cols(0,arma::ones(X.n_rows,1));
+        arma::mat YC = arma::conv_to<arma::mat>::from(arma::all( (Y == label), 1 ));
+        retv(m,0) = m;
+        retv(m,1) = cost( X, YC, theta, 0 );
+        retv(m,2) = cost( XvalC, YvalC, theta, 0 );
+    }
+    return retv;
 }

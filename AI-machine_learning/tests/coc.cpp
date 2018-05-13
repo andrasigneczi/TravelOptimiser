@@ -26,6 +26,7 @@ void learning_validation_curve();
 void logistic_regression_fmincg();
 void full_paramtest_logitic_regression();
 void logistic_regression_one_vs_all();
+void learning_validation_curve_OneVsAll();
 
 void runTests() {
     //test4(); // coc training test
@@ -41,6 +42,7 @@ void runTests() {
     //logistic_regression_fmincg();
     //full_paramtest_logitic_regression();
     logistic_regression_one_vs_all();
+    //learning_validation_curve_OneVsAll();
 }
 
 
@@ -615,7 +617,8 @@ void full_paramtest_logitic_regression() {
 void logistic_regression_one_vs_all() {
     arma::mat X, y, Xtraining, Ytraining, Xval, Yval;
 
-    if(0){
+    int scenario = 3;
+    if(scenario==1){
         X.load("TH11_plus_BG_trainingset.bin");
         y.load("TH11_plus_BG_trainingset_result.bin");
 
@@ -624,11 +627,14 @@ void logistic_regression_one_vs_all() {
         Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval);
         std::cout << "Training set size: " << Xtraining.n_rows << "\n";
         std::cout << "Validation set size: " << Xval.n_rows << "\n";
-    } else {
+    } else if(scenario==2){
         Xtraining.load("trainParams_X.bin");
         Ytraining.load("trainParams_y.bin");
         Xval.load("trainParams_Xval.bin");
         Yval.load("trainParams_Yval.bin");
+    } else if(scenario==3){
+        Xtraining.load("TH11_plus_BG_trainingset.bin");
+        Ytraining.load("TH11_plus_BG_trainingset_result.bin");
     }
 
     double lambda = 1e-3;
@@ -636,13 +642,67 @@ void logistic_regression_one_vs_all() {
 
     std::cout << "contructor finished...\n";
 
-    arma::mat theta = lr.trainOneVsAll(2,200,true);
+    std::map<double,int> labels;
+    for(size_t i = 0; i < Ytraining.n_rows; ++i) {
+        if( labels.find(Ytraining(i,0)) == labels.end()) {
+            labels.emplace(Ytraining(i,0),1);
+        }
+    }
+    //arma::mat theta = lr.trainOneVsAll(labels.size(),400,true);
+    arma::mat theta = lr.trainOneVsAll(4,800,true);
     lr.saveThetaAndFeatureScaling("log_reg");
 
     arma::mat p = lr.predictOneVsAll(Xtraining,theta,false);
     std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Ytraining)) * 100 << "\n";
-    p = lr.predictOneVsAll(Xval,theta,false);
-    std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
+    if(scenario!=3) {
+        p = lr.predictOneVsAll(Xval,theta,false);
+        std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
+    }
+}
+
+void learning_validation_curve_OneVsAll() {
+    std::cout << "Loading data...\n" << std::flush;
+
+    arma::mat X, y, Xtraining, Ytraining, Xval, Yval;
+
+    int scenario = 1;
+    if(scenario==1){
+        X.load("TH11_plus_BG_trainingset.bin");
+        y.load("TH11_plus_BG_trainingset_result.bin");
+
+        std::cout << "Data set size: " << X.n_rows << "\n";
+        std::cout << "Prepare training and validation set...\n";
+        Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval);
+        std::cout << "Training set size: " << Xtraining.n_rows << "\n";
+        std::cout << "Validation set size: " << Xval.n_rows << "\n";
+    } else if(scenario==2){
+        Xtraining.load("trainParams_X.bin");
+        Ytraining.load("trainParams_y.bin");
+        Xval.load("trainParams_Xval.bin");
+        Yval.load("trainParams_Yval.bin");
+    } else if(scenario==3){
+        Xtraining.load("TH11_plus_BG_trainingset.bin");
+        Ytraining.load("TH11_plus_BG_trainingset_result.bin");
+    }
+
+    std::cout << "Training set size: " << Xtraining.n_rows << "\n";
+    //std::cout << "Feature scaling...\n";
+    //Xtraining = lr.featureScaling(Xtraining);
+    //Xval = lr.featureScaling(Xval);
+
+    double lambda = 1.0e-0;
+    long long iteration = 1;
+    double test_y = 3;
+
+    std::cout << "Learning curve...\n";
+    LogisticRegression lr(Xtraining, Ytraining,lambda, true);
+    arma::mat lcv = lr.learningCurveOne(test_y, Xval, Yval, lambda, iteration,500);
+    Util::plotMatrix(new QCustomPlot, lcv);
+    std::cout << "\n" << lcv << "\n" << std::flush;
+    std::cout << "Validation curve...\n";
+    arma::mat lcv2 = lr.validationCurveOne(test_y, Xval, Yval, iteration);
+    Util::plotMatrix(new QCustomPlot, lcv2);
+    std::cout << "\n" << lcv2 << "\n" << std::flush;
 }
 
 } // COC_ns

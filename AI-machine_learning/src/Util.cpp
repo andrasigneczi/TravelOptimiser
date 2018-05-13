@@ -89,30 +89,32 @@ void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arm
             dataSetStat.emplace((int)y(i,0),1);
         }
     }
-    std::for_each(dataSetStat.begin(),dataSetStat.end(),[](std::pair<const double,size_t>&x){ x.second *= .7; });
 
-    for( size_t i = 0; i < dataset.n_rows; ++i ) {
+    size_t row_num = 0;
+    std::for_each(dataSetStat.begin(),dataSetStat.end(),[&row_num](std::pair<const double,size_t>&x){ x.second *= .7; row_num += x.second; });
+    Xtraining = arma::mat(row_num, X.n_cols);
+    Ytraining = arma::mat(row_num, 1);
+    Xval = arma::mat(dataset.n_rows - row_num, X.n_cols);
+    Yval = arma::mat(dataset.n_rows - row_num, 1);
+
+    for( size_t i = 0, curr_row_t = 0, curr_row_v = 0; i < dataset.n_rows; ++i ) {
         std::cout << "row: " << i << "\r" << std::flush;
         double yv = dataset(i,dataset.n_cols - 1);
         arma::mat x = dataset.rows(i,i).cols(0,dataset.n_cols-2);
         auto it = dataSetStat.find(yv);
         if(it->second > 0 ) {
             --it->second;
-            if(Xtraining.n_cols == 0){
-                Xtraining = x;
-                Ytraining = arma::mat{yv};
-            } else {
-                Xtraining.insert_rows(Xtraining.n_rows, x);
-                Ytraining.insert_rows(Ytraining.n_rows, arma::mat{yv});
-            }
+            if( curr_row_t >= row_num )
+                throw "prepareTrainingAndValidationSet";
+            Xtraining.row(curr_row_t) = x;
+            Ytraining.row(curr_row_t) = arma::mat{yv};
+            ++curr_row_t;
         } else {
-            if(Xval.n_cols == 0){
-                Xval = x;
-                Yval = arma::mat{yv};
-            } else {
-                Xval.insert_rows(Xval.n_rows, x);
-                Yval.insert_rows(Yval.n_rows, arma::mat{yv});
-            }
+            if( curr_row_v >= Xval.n_rows )
+                throw "prepareTrainingAndValidationSet";
+            Xval.row(curr_row_v) = x;
+            Yval.row(curr_row_v) = arma::mat{yv};
+            ++curr_row_v;
         }
     }
 }

@@ -29,7 +29,9 @@ public:
     arma::mat predictOneVsAll( const arma::mat& X, bool copyValue );
     void saveThetaAndFeatureScaling(std::string fileNamePrefix);
     void loadThetaAndFeatureScaling(std::string fileNamePrefix);
-
+    arma::mat validationCurveOne(double label, const arma::mat& Xval, const arma::mat& Yval, long long iteration);
+    arma::mat learningCurveOne(double label, const arma::mat& Xval, const arma::mat& Yval, double lambda, long long iteration, int stepSize);
+    arma::mat trainOne(double label, int iteration, bool verbose);
 private:
 
     long double Abs( long double x ) { return x > 0 ? x : -x; }
