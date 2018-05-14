@@ -617,7 +617,7 @@ void full_paramtest_logitic_regression() {
 void logistic_regression_one_vs_all() {
     arma::mat X, y, Xtraining, Ytraining, Xval, Yval;
 
-    int scenario = 3;
+    int scenario = 1;
     if(scenario==1){
         X.load("TH11_plus_BG_trainingset.bin");
         y.load("TH11_plus_BG_trainingset_result.bin");
@@ -637,7 +637,7 @@ void logistic_regression_one_vs_all() {
         Ytraining.load("TH11_plus_BG_trainingset_result.bin");
     }
 
-    double lambda = 1e-3;
+    double lambda = 0;
     LogisticRegression lr(Xtraining, Ytraining, lambda, true );
 
     std::cout << "contructor finished...\n";
@@ -648,14 +648,14 @@ void logistic_regression_one_vs_all() {
             labels.emplace(Ytraining(i,0),1);
         }
     }
-    //arma::mat theta = lr.trainOneVsAll(labels.size(),400,true);
-    arma::mat theta = lr.trainOneVsAll(4,800,true);
+    lr.trainOneVsAll(labels.size(),400,true);
+    //lr.trainOneVsAll(4,800,true);
     lr.saveThetaAndFeatureScaling("log_reg");
 
-    arma::mat p = lr.predictOneVsAll(Xtraining,theta,false);
+    arma::mat p = lr.predictOneVsAll(Xtraining,false);
     std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Ytraining)) * 100 << "\n";
     if(scenario!=3) {
-        p = lr.predictOneVsAll(Xval,theta,false);
+        p = lr.predictOneVsAll(Xval,false);
         std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
     }
 }
@@ -692,7 +692,7 @@ void learning_validation_curve_OneVsAll() {
 
     double lambda = 1.0e-0;
     long long iteration = 1;
-    double test_y = 3;
+    double test_y = 5;
 
     std::cout << "Learning curve...\n";
     LogisticRegression lr(Xtraining, Ytraining,lambda, true);

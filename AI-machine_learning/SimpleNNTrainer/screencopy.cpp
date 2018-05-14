@@ -66,7 +66,7 @@ void ScreenCopy::paintEvent(QPaintEvent* pe) {
     QPainter p(this);
     p.drawPixmap(0,0,mScreenshot);
     //p.setCompositionMode(QPainter::CompositionMode_SourceOver);
-    p.fillRect(0,0,500,100, QBrush(QColor("#444444")));
+    p.fillRect(0,0,1500,100, QBrush(QColor("#444444")));
     p.setFont(QFont("times",18));
     p.setPen(QPen(QColor("#ff0000")));
     p.drawText(QRect(0,0,500,30), Qt::AlignLeft, (std::to_string(mouseX) + " " + std::to_string(mouseY)).c_str());
@@ -82,7 +82,7 @@ void ScreenCopy::paintEvent(QPaintEvent* pe) {
             p.setFont(QFont("times",18, QFont::Normal));
             p.setPen(QPen(QColor("#ff0000")));
         }
-        p.drawText(QRect(textpos,30,500,100), Qt::AlignLeft, QString("y:") + QString::number( it->first ) +
+        p.drawText(QRect(textpos,30,500,100), Qt::AlignLeft, y2String(it->first) +
                    "=>" + QString::number( it->second ));
         textpos += 250;
     }
@@ -90,14 +90,17 @@ void ScreenCopy::paintEvent(QPaintEvent* pe) {
     if( mTrainingSetStat.find(training_set_y) == mTrainingSetStat.end()){
         p.setFont(QFont("times",18,QFont::Bold));
         p.setPen(QPen(QColor("#ffff00")));
-        p.drawText(QRect(textpos,30,500,100), Qt::AlignLeft, QString("y:") + QString::number( training_set_y ) +
+        p.drawText(QRect(textpos,30,500,100), Qt::AlignLeft, y2String( training_set_y ) +
                    "=>0");
         textpos += 250;
     }
 
     p.setPen(QPen(QColor("#ffffff"),1,Qt::SolidLine));
     for( size_t i = 0; i < mPredictions.size(); ++i ){
-        p.drawRect(mPredictions[i]);
+        if( mPredictions[i].y == training_set_y ){
+            p.drawRect(mPredictions[i].rect);
+            p.drawText(mPredictions[i].rect, Qt::AlignLeft, y2String( mPredictions[i].y ));
+        }
     }
 
     p.setPen(QPen(QColor("#ff6600"),2,Qt::DotLine));
@@ -256,7 +259,7 @@ void ScreenCopy::scanScreenshot() {
             arma::mat pred = nn.predict(img,thetas);
             if( pred(0,0) == 1.0 ){
                 //std::cout << "position: " << xp*bigImageScale/width << ";" << yp*bigImageScale/width << " TH" << pred(0,0) << "\n";
-                mPredictions.push_back(QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size));
+                mPredictions.push_back({1,QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size)});
             } else if( pred(0,0) == 0.0 ){
                 ++bgcounter;
             } else {
@@ -266,10 +269,12 @@ void ScreenCopy::scanScreenshot() {
     }
     std::cout << "bgcounter: " << bgcounter << "\n" << std::flush;
     std::cout << "Found TH count: " << mPredictions.size() << "\n" << std::flush;
+    /*
     if( mPredictions.size() < 20 ) {
         for_each(mPredictions.begin(),mPredictions.end(),
           [&](const QRect& r) {std::cout << r.x() << ";" << r.y() << ";" << r.width() << ";" << r.height() << "\n" << std::flush; });
     }
+    */
 }
 
 void ScreenCopy::scanScreenshot_lr() {
@@ -290,23 +295,23 @@ void ScreenCopy::scanScreenshot_lr() {
                 }
             }
             arma::mat pred = lr.predictOneVsAll(img,true);
-            if( pred(0,0) == 1.0 ){
-                //std::cout << "position: " << xp*bigImageScale/width << ";" << yp*bigImageScale/width << " TH" << pred(0,0) << "\n";
-                mPredictions.push_back(QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size));
-                std::cout << pred(0,1) << "\n" << std::flush;
-            } else if( pred(0,0) == 0.0 ){
+            if( pred(0,0) == 0.0 ){
                 ++bgcounter;
-            } else {
-                std::cout << "What is this? " << pred(0,0) << "\n" << std::endl;
+            } else  {
+                //std::cout << "position: " << xp*bigImageScale/width << ";" << yp*bigImageScale/width << " TH" << pred(0,0) << "\n";
+                mPredictions.push_back({pred(0,0),QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size)});
+                std::cout << pred(0,1) << "\n" << std::flush;
             }
         }
     }
     std::cout << "bgcounter: " << bgcounter << "\n" << std::flush;
     std::cout << "Found TH count: " << mPredictions.size() << "\n" << std::flush;
+    /*
     if( mPredictions.size() < 20 ) {
         for_each(mPredictions.begin(),mPredictions.end(),
           [&](const QRect& r) {std::cout << r.x() << ";" << r.y() << ";" << r.width() << ";" << r.height() << "\n" << std::flush; });
     }
+    */
 }
 
 void ScreenCopy::saveSelectedRect() {
@@ -419,4 +424,17 @@ void ScreenCopy::saveTrainingSet() {
     mResultset.insert_rows(mResultset.n_rows, mResultsetNewCollection);
     mResultsetNewCollection.clear();
     mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
+}
+
+QString ScreenCopy::y2String(int y){
+    switch(y){
+    case 0:return "BG";
+    case 1:return "TH11";
+    case 2:return "TH8";
+    case 3:return "TH9";
+    case 4:return "TH7";
+    case 5:return "TH10";
+    default:return "????";
+    }
+    return "";
 }

@@ -10,7 +10,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QDebug>
 #include <QMainWindow>
-
+#include "Util.h"
 
 int main (int argc, char* argv[]) {
     //QCoreApplication app(argc, argv);
@@ -42,7 +42,7 @@ int main (int argc, char* argv[]) {
 
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     //NeuralNetwork_ns::runTests();
-    COC_ns::runTests();
+    //COC_ns::runTests();
     //std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     //std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() <<std::endl;
 
@@ -52,10 +52,11 @@ int main (int argc, char* argv[]) {
 
   //return 0;
 
-    //arma::mat ttt;
-    //ttt << 1 << arma::endr << 2 << arma::endr << 3 << arma::endr << 4 << arma::endr << 5;
+    arma::mat ttt;
+    ttt << 1 << 10 << arma::endr << 2 << 20 << arma::endr << 3 << 30 << arma::endr << 4 << 40 << arma::endr << 5 << 50;
     //std::cout << arma::conv_to<arma::mat>::from(arma::all( (ttt == 5), 1 ));
-
+    std::cout << ttt;
+    std::cout << Util::mapFeature(ttt.col(0), ttt.col(1));
 
   app.exec();
 }

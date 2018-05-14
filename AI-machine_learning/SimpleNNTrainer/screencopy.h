@@ -46,7 +46,13 @@ signals:
 public slots:
 
 private:
+    struct prediction {
+        double y;
+        QRect rect;
+    };
+
     void saveSelectedRect();
+    QString y2String(int y);
 
     QPixmap mScreenshot;
     QImage mGrayMiniCopy;
@@ -61,7 +67,7 @@ private:
     arma::mat mResultset;
     arma::mat mResultsetNewCollection;
     TH_YMappper mThYMapper;
-    std::vector<QRect> mPredictions;
+    std::vector<prediction> mPredictions;
     QRect mCanvasSize;
     std::map<int,int> mTrainingSetStat;
 };

@@ -119,4 +119,16 @@ void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arm
     }
 }
 
+arma::mat mapFeature( arma::mat X1, arma::mat X2 ){
+    int degree = 6;
+    arma::mat out = arma::mat(X1.n_rows, 0);
+    for( int i = 1; i <=degree; ++i ){
+        for( int j = 0; j <= i; ++j ) {
+            //(X1.^(i-j)).*(X2.^j);
+            out = join_rows(out, arma::pow(X1,i-j)%(arma::pow(X2,j)));
+        }
+    }
+    return out;
+}
+
 } // namespace Util
