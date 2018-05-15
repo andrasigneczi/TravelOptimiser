@@ -2,6 +2,7 @@
 #include "logistic_regression.h"
 #include "neural_network.h"
 #include "coc.h"
+#include "support_vector_machine.h"
 #include <iostream>
 #include <chrono>
 #include "png2arma.h"
@@ -13,9 +14,9 @@
 #include "Util.h"
 
 int main (int argc, char* argv[]) {
-    //QCoreApplication app(argc, argv);
+    QCoreApplication app(argc, argv);
     std::cout << "dbg\n";
-    QApplication app(argc, argv);
+    //QApplication app(argc, argv);
 
     QSettings settings("test.ini", QSettings::IniFormat);
     //settings.sync();
@@ -43,6 +44,7 @@ int main (int argc, char* argv[]) {
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     //NeuralNetwork_ns::runTests();
     //COC_ns::runTests();
+    SVM_ns::runTests();
     //std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     //std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() <<std::endl;
 
@@ -57,6 +59,26 @@ int main (int argc, char* argv[]) {
     //std::cout << arma::conv_to<arma::mat>::from(arma::all( (ttt == 5), 1 ));
     std::cout << ttt;
     std::cout << Util::mapFeature(ttt.col(0), ttt.col(1));
+    arma::mat X,y,Xval,yval;
+    X.load("spamTest_Xtest.txt");
+    y.load("spamTest_ytest.txt");
+    X.save("spamTest_Xtest.bin");
+    y.save("spamTest_ytest.bin");
 
-  app.exec();
+    X.load("ex6data2_X.txt");
+    y.load("ex6data2_y.txt");
+    X.save("ex6data2_X.bin");
+    y.save("ex6data2_y.bin");
+
+    X.load("ex6data3_X.txt");
+    y.load("ex6data3_y.txt");
+    X.save("ex6data3_X.bin");
+    y.save("ex6data3_y.bin");
+
+    X.load("ex6data3_Xval.txt");
+    y.load("ex6data3_yval.txt");
+    X.save("ex6data3_Xval.bin");
+    y.save("ex6data3_yval.bin");
+*/
+  //app.exec();
 }
