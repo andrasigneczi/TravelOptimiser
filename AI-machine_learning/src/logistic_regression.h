@@ -33,12 +33,13 @@ public:
     arma::mat learningCurveOne(double label, const arma::mat& Xval, const arma::mat& Yval, double lambda, long long iteration, int stepSize);
     arma::mat trainOne(double label, int iteration, bool verbose);
     arma::mat mapFeature(const arma::mat& X);
+    void setFeatureMappingDegree(int degree) { mFeatureMappingDegree = degree; }
 
 private:
 
     long double Abs( long double x ) { return x > 0 ? x : -x; }
     arma::mat mTheta;
-    const int mFeatureMappingDegree;
+    int mFeatureMappingDegree;
 };
 
 #endif // __LOGISTIC_REGRESSION__

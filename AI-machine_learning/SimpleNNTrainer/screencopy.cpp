@@ -228,7 +228,7 @@ void ScreenCopy::trainLogisticRegression() {
         return;
 
     double lambda = 1e-3;
-    LogisticRegression lr(mTrainingset, mResultset, lambda, true );
+    LogisticRegression lr(mTrainingset, mResultset, lambda, true, 3 );
 
     lr.trainOneVsAll(2,200,true);
     lr.saveThetaAndFeatureScaling("log_reg");
@@ -281,6 +281,7 @@ void ScreenCopy::scanScreenshot_lr() {
     arma::mat X, y;
 
     LogisticRegression lr;
+    lr.setFeatureMappingDegree(3);
     lr.loadThetaAndFeatureScaling("log_reg");
     mPredictions.clear();
     int bgcounter = 0;
@@ -297,7 +298,7 @@ void ScreenCopy::scanScreenshot_lr() {
             arma::mat pred = lr.predictOneVsAll(img,true);
             if( pred(0,0) == 0.0 ){
                 ++bgcounter;
-            } else  {
+            } else  if(pred(0,1) > 0.5){
                 //std::cout << "position: " << xp*bigImageScale/width << ";" << yp*bigImageScale/width << " TH" << pred(0,0) << "\n";
                 mPredictions.push_back({pred(0,0),QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size)});
                 std::cout << pred(0,1) << "\n" << std::flush;

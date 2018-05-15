@@ -41,8 +41,8 @@ void runTests() {
     //learning_validation_curve();
     //logistic_regression_fmincg();
     //full_paramtest_logitic_regression();
-    //logistic_regression_one_vs_all();
-    learning_validation_curve_OneVsAll();
+    logistic_regression_one_vs_all();
+    //learning_validation_curve_OneVsAll();
 }
 
 
@@ -691,7 +691,7 @@ void learning_validation_curve_OneVsAll() {
     //Xval = lr.featureScaling(Xval);
 
     double lambda = 1.0e-0;
-    long long iteration = 1;
+    long long iteration = 10;
     double test_y = 2;
 
     std::cout << "Learning curve...\n";
