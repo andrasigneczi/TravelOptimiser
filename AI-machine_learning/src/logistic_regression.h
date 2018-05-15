@@ -8,7 +8,7 @@
 
 class Q_DECL_EXPORT LogisticRegression : public CostAndGradient {
 public:
-    LogisticRegression( const arma::mat& X, const arma::mat& y, double lambda, bool featureScaling );
+    LogisticRegression( const arma::mat& X, const arma::mat& y, double lambda, bool featureScaling, int featureMappingDegree );
     LogisticRegression();
 
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override;
@@ -32,10 +32,13 @@ public:
     arma::mat validationCurveOne(double label, const arma::mat& Xval, const arma::mat& Yval, long long iteration);
     arma::mat learningCurveOne(double label, const arma::mat& Xval, const arma::mat& Yval, double lambda, long long iteration, int stepSize);
     arma::mat trainOne(double label, int iteration, bool verbose);
+    arma::mat mapFeature(const arma::mat& X);
+
 private:
 
     long double Abs( long double x ) { return x > 0 ? x : -x; }
     arma::mat mTheta;
+    const int mFeatureMappingDegree;
 };
 
 #endif // __LOGISTIC_REGRESSION__

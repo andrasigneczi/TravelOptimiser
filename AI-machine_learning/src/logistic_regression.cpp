@@ -1,18 +1,21 @@
 #include "logistic_regression.h"
 #include <stdio.h>
 #include <fmincg.h>
+#include "Util.h"
 
 const arma::mat dummy;
-LogisticRegression::LogisticRegression( const arma::mat& X, const arma::mat& y, double lambda, bool featureScaling )
-    : CostAndGradient( X, y, lambda ) {
+LogisticRegression::LogisticRegression( const arma::mat& X, const arma::mat& y, double lambda, bool featureScaling, const int featureMappingDegree )
+    : CostAndGradient( X, y, lambda ), mFeatureMappingDegree(featureMappingDegree) {
 
     if(featureScaling) {
         mX = this->featureScaling(X, true);
     }
+
+    mX = this->mapFeature(mX);
 }
 
 LogisticRegression::LogisticRegression()
-    : CostAndGradient( dummy, dummy, 0 ) {
+    : CostAndGradient( dummy, dummy, 0 ), mFeatureMappingDegree(0) {
 
 }
 
@@ -95,7 +98,7 @@ arma::mat LogisticRegression::learningCurve(const arma::mat& Xval, const arma::m
         arma::mat X = mX.rows(0,m);
         arma::mat Y = mY.rows(0,m);
         //arma::mat theta = lr.gradientDescentWithReguralization( X, Y, initial_theta, alpha, lambda, iteration );
-        LogisticRegression lr(X, Y, lambda, false);
+        LogisticRegression lr(X, Y, lambda, false,false);
         fmincgRetVal rv = fmincg(lr,initial_theta,iteration,false);
         //std:: cout << theta;
         //break;
@@ -233,6 +236,8 @@ arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X, const arma::m
                 X2.col(i) = (X2.col(i) - mFCData(i,1))/(mFCData(i,0));
         }
     }
+
+    X2 = mapFeature(X2);
     X2.insert_cols(0,arma::ones(m,1));
     arma::mat s = sigmoid(X2,theta.t());
     arma::mat M = arma::max(s,1);
@@ -264,6 +269,7 @@ arma::mat LogisticRegression::validationCurveOne(double label, const arma::mat& 
     arma::mat retv = arma::zeros(lambda_vec.size(), 3);
     //arma::mat initial_theta = arma::zeros(mX.n_cols, 1);
     arma::mat XvalC = featureScaling(Xval, false);
+    XvalC = mapFeature(XvalC);
     XvalC.insert_cols(0,arma::ones(XvalC.n_rows,1));
     arma::mat YvalC = arma::conv_to<arma::mat>::from(arma::all( (Yval == label), 1 ));
     arma::mat YC = arma::conv_to<arma::mat>::from(arma::all( (mY == label), 1 ));
@@ -285,13 +291,14 @@ arma::mat LogisticRegression::learningCurveOne(double label, const arma::mat& Xv
     arma::mat retv = arma::zeros(mX.n_rows, 3);
     //arma::mat initial_theta = arma::zeros(mX.n_cols, 1);
     arma::mat XvalC = featureScaling(Xval, false);
+    XvalC = mapFeature(XvalC);
     XvalC.insert_cols(0,arma::ones(XvalC.n_rows,1));
     arma::mat YvalC = arma::conv_to<arma::mat>::from(arma::all( (Yval == label), 1 ));
     for( size_t m = 0; m < mX.n_rows; m += stepSize ) {
         std::cout << "Lerarning curve step number " << m << "\r" << std::flush;
         arma::mat X = mX.rows(0,m);
         arma::mat Y = mY.rows(0,m);
-        LogisticRegression lr(X, Y, lambda, false);
+        LogisticRegression lr(X, Y, lambda, false, false);
         arma::mat theta = lr.trainOne(label, iteration, false);
         //std:: cout << theta;
         //break;
@@ -303,4 +310,13 @@ arma::mat LogisticRegression::learningCurveOne(double label, const arma::mat& Xv
         retv(m,2) = cost( XvalC, YvalC, theta, 0 );
     }
     return retv;
+}
+
+arma::mat LogisticRegression::mapFeature(const arma::mat& X) {
+    if( mFeatureMappingDegree > 0 ) {
+        size_t pos = X.n_cols/2;
+        //X2 = join_rows( X2, Util::mapFeature(X2.cols(pos-13,pos), X2.cols(pos+1, pos + 14)));
+        return Util::mapFeature(X.cols(0,pos-1), X.cols(pos, X.n_cols - 1), mFeatureMappingDegree);
+    }
+    return X;
 }

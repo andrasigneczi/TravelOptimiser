@@ -41,8 +41,8 @@ void runTests() {
     //learning_validation_curve();
     //logistic_regression_fmincg();
     //full_paramtest_logitic_regression();
-    logistic_regression_one_vs_all();
-    //learning_validation_curve_OneVsAll();
+    //logistic_regression_one_vs_all();
+    learning_validation_curve_OneVsAll();
 }
 
 
@@ -514,7 +514,7 @@ void learning_validation_curve() {
     long long iteration = 1;
 
     std::cout << "Learning curve...\n";
-    LogisticRegression lr(Xtraining, Ytraining,lambda, true);
+    LogisticRegression lr(Xtraining, Ytraining,lambda, true,0);
     arma::mat lcv = lr.learningCurve(Xval, Yval, lambda, iteration,10);
     Util::plotMatrix(new QCustomPlot, lcv);
     std::cout << "\n" << lcv << "\n" << std::flush;
@@ -547,7 +547,7 @@ void logistic_regression_fmincg() {
     long long iteration = 2e+2;
     //std::cout << "Calculating gradient descent...\n";
     //arma::mat theta = lr.gradientDescentWithReguralization( Xtraining, Ytraining, initial_theta, alpha, lambda, iteration );
-    LogisticRegression lr(Xtraining, Ytraining, lambda, true );
+    LogisticRegression lr(Xtraining, Ytraining, lambda, true,0 );
     fmincgRetVal frv = fmincg(lr, initial_theta, iteration, true);
     arma::mat& theta = frv.m_NNPparams;
 
@@ -589,7 +589,7 @@ void full_paramtest_logitic_regression() {
 
     double lambda = 1e-3;
     long long iteration = 1e+2;
-    LogisticRegression lr(Xtraining, Ytraining, lambda, true );
+    LogisticRegression lr(Xtraining, Ytraining, lambda, true,0 );
     fmincgRetVal frv = fmincg(lr, initial_theta, iteration, true);
     arma::mat& theta = frv.m_NNPparams;
 
@@ -637,8 +637,8 @@ void logistic_regression_one_vs_all() {
         Ytraining.load("TH11_plus_BG_trainingset_result.bin");
     }
 
-    double lambda = 0;
-    LogisticRegression lr(Xtraining, Ytraining, lambda, true );
+    double lambda = 0.001;
+    LogisticRegression lr(Xtraining, Ytraining, lambda, true, 3 );
 
     std::cout << "contructor finished...\n";
 
@@ -692,10 +692,10 @@ void learning_validation_curve_OneVsAll() {
 
     double lambda = 1.0e-0;
     long long iteration = 1;
-    double test_y = 5;
+    double test_y = 2;
 
     std::cout << "Learning curve...\n";
-    LogisticRegression lr(Xtraining, Ytraining,lambda, true);
+    LogisticRegression lr(Xtraining, Ytraining,lambda, true,3);
     arma::mat lcv = lr.learningCurveOne(test_y, Xval, Yval, lambda, iteration,500);
     Util::plotMatrix(new QCustomPlot, lcv);
     std::cout << "\n" << lcv << "\n" << std::flush;
