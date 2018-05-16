@@ -18,6 +18,7 @@
 #include <QApplication>
 #include <QtCore/QSettings>
 #include "logistic_regression.h"
+#include "support_vector_machine.h"
 
 const int small_image_width = 24;
 const std::string training_sets_folder = "./training_sets/";
@@ -313,6 +314,39 @@ void ScreenCopy::scanScreenshot_lr() {
           [&](const QRect& r) {std::cout << r.x() << ";" << r.y() << ";" << r.width() << ";" << r.height() << "\n" << std::flush; });
     }
     */
+}
+
+void ScreenCopy::scanScreenshot_svm() {
+    arma::mat X, y;
+
+    struct svm_model *model = svm_load_model("svm_model.bin");
+    support_vector_machine svm;
+    svm.loadFeatureScaling("coc_");
+    
+    mPredictions.clear();
+    int bgcounter = 0;
+    arma::mat img = arma::zeros( 1, small_image_width*small_image_width );
+    for( int yp = 0; yp  + small_image_width < mGrayMiniCopy.height(); yp += scanStepSize) {
+        for( int xp = 0; xp  + small_image_width < mGrayMiniCopy.width(); xp += scanStepSize) {
+
+            for( int i = 0; i < small_image_width; ++i ) {
+                for( int j = 0; j < small_image_width; ++j ) {
+                    QRgb rgb = mGrayMiniCopy.pixel( xp + j, yp + i );
+                    img(0, i * small_image_width + j ) = rgb;
+                }
+            }
+            arma::mat pred = svm.predict(img,model);
+            if( pred(0,0) == 0.0 ){
+                ++bgcounter;
+            } else  if(pred(0,1) > 0.5){
+                //std::cout << "position: " << xp*bigImageScale/width << ";" << yp*bigImageScale/width << " TH" << pred(0,0) << "\n";
+                mPredictions.push_back({pred(0,0),QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size)});
+                std::cout << pred(0,1) << "\n" << std::flush;
+            }
+        }
+    }
+    std::cout << "bgcounter: " << bgcounter << "\n" << std::flush;
+    std::cout << "Found TH count: " << mPredictions.size() << "\n" << std::flush;
 }
 
 void ScreenCopy::saveSelectedRect() {

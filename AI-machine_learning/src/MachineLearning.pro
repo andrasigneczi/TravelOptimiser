@@ -23,13 +23,11 @@ HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h 
 
 } else {
 SOURCES += linear_regression.cpp logistic_regression.cpp fmincg.cpp neural_network.cpp png2arma.cpp CostAndGradient.cpp \
-      datasetgenerator.cpp Util.cpp qcustomplot.cpp \
-    support_vector_machine.cpp
+      datasetgenerator.cpp Util.cpp qcustomplot.cpp support_vector_machine.cpp
 
 
 HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h png2arma.h CostAndGradient.h \
-      datasetgenerator.h Util.h qcustomplot.h \
-    support_vector_machine.h
+      datasetgenerator.h Util.h qcustomplot.h support_vector_machine.h
 
 }
 
@@ -46,7 +44,7 @@ DEFINES += QCUSTOMPLOT_COMPILE_LIBRARY
 QMAKE_CXXFLAGS += -std=c++11 -O3 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -I ../src -DARMA_USE_CXX11 -march=native \ 
                    -I/usr/include/qt5 -DQCUSTOMPLOT_COMPILE_LIBRARY
 #-I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtCore -I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtGui \
-                  -I/usr/include/qt5/QtPrintSupport
+#                  -I/usr/include/qt5/QtPrintSupport
 QMAKE_CXX = g++
 INCLUDEPATH += ../libsvm-3.22
 

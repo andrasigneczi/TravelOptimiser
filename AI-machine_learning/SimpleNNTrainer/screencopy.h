@@ -34,6 +34,7 @@ public:
     void trainLogisticRegression();
     void scanScreenshot();
     void scanScreenshot_lr();
+    void scanScreenshot_svm();
     QRect getCanvasSize() { return mCanvasSize; }
     void capture();
     void extractTrainingSet();

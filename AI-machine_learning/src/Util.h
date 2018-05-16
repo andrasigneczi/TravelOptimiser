@@ -5,13 +5,17 @@
 #include "qcustomplot.h"
 #include <armadillo>
 #include <QtCore/QtGlobal>
+#include <set>
+
+#define UNUSED(x) (void)(x)
 
 namespace Util {
     
     Q_DECL_EXPORT std::string trim(const std::string& str);
     Q_DECL_EXPORT void plotMatrix( QCustomPlot* customPlot, const arma::mat& matrix );
     Q_DECL_EXPORT void removeDuplication(arma::mat& dataset);
-    Q_DECL_EXPORT void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arma::mat& Xtraining, arma::mat& Ytraining, arma::mat& Xval, arma::mat& Yval);
+    Q_DECL_EXPORT void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arma::mat& Xtraining, arma::mat& Ytraining, arma::mat& Xval, arma::mat& Yval,
+                                                       std::set<double> ignored_labels = std::set<double>());
     Q_DECL_EXPORT arma::mat mapFeature( arma::mat X1, arma::mat X2, int degree );
     
 } // namespace Util

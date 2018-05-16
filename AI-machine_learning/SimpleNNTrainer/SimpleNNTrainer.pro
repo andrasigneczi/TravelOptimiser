@@ -28,11 +28,11 @@ LIBS += c:/Users/Andras/IdeaProjects/TravelOptimizer/AI-machine_learning/build-M
 } else {
 QMAKE_CXXFLAGS += -std=c++11 -O3 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -I ../src -DARMA_USE_CXX11 -march=native \ 
                   -I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtCore -I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtGui \
-                  -I/usr/include/qt5/QtPrintSupport -I/usr/include/qt5
+                  -I/usr/include/qt5/QtPrintSupport -I/usr/include/qt5 -I../libsvm-3.22
 
 QMAKE_CXX = g++
 
-unix:!macx: LIBS += -L$$PWD/../src/ -lMachineLearning  -lQt5PrintSupport -larmadillo
+unix:!macx: LIBS += -L$$PWD/../src/ -lMachineLearning  -lQt5PrintSupport -larmadillo -L../libsvm-3.22 -lsvm
 }
 
 INCLUDEPATH += $$PWD/../src

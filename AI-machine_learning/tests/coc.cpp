@@ -8,6 +8,7 @@
 #include <png2arma.h>
 #include "qcustomplot.h"
 #include <logistic_regression.h>
+#include <support_vector_machine.h>
 #include "Util.h"
 
 namespace COC_ns {
@@ -27,6 +28,7 @@ void logistic_regression_fmincg();
 void full_paramtest_logitic_regression();
 void logistic_regression_one_vs_all();
 void learning_validation_curve_OneVsAll();
+void support_vector_machine_one_vs_all();
 
 void runTests() {
     //test4(); // coc training test
@@ -41,8 +43,9 @@ void runTests() {
     //learning_validation_curve();
     //logistic_regression_fmincg();
     //full_paramtest_logitic_regression();
-    logistic_regression_one_vs_all();
+    //logistic_regression_one_vs_all();
     //learning_validation_curve_OneVsAll();
+    support_vector_machine_one_vs_all();
 }
 
 
@@ -703,6 +706,55 @@ void learning_validation_curve_OneVsAll() {
     arma::mat lcv2 = lr.validationCurveOne(test_y, Xval, Yval, iteration);
     Util::plotMatrix(new QCustomPlot, lcv2);
     std::cout << "\n" << lcv2 << "\n" << std::flush;
+}
+
+void support_vector_machine_one_vs_all() {
+    arma::mat Xtraining, Ytraining, Xval, Yval;
+
+    int scenario = 3;
+    if(scenario==1){
+        arma::mat X, y;
+        X.load("TH11_plus_BG_trainingset.bin");
+        y.load("TH11_plus_BG_trainingset_result.bin");
+
+        std::cout << "Data set size: " << X.n_rows << "\n";
+        std::cout << "Prepare training and validation set...\n";
+        Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval);
+        std::cout << "Training set size: " << Xtraining.n_rows << "\n";
+        std::cout << "Validation set size: " << Xval.n_rows << "\n";
+    } else if(scenario==2){
+        Xtraining.load("trainParams_X.bin");
+        Ytraining.load("trainParams_y.bin");
+        Xval.load("trainParams_Xval.bin");
+        Yval.load("trainParams_Yval.bin");
+    } else if(scenario==3){
+        Xtraining.load("coc_trainingset.bin");
+        Ytraining.load("coc_trainingset_result.bin");
+        Xval.load("coc_testset.bin");
+        Yval.load("coc_testset_result.bin");
+    }
+    
+    std::cout << "svm starting...\n";
+    support_vector_machine svm(Xtraining, Ytraining, true, 0 );
+    struct svm_parameter& spa = svm.getParameter();
+    spa.C = 100;
+    
+    std::cout << "contructor finished...\n";
+    std::cout << "training starting...\n";
+
+    auto* model = svm.train();
+    svm_save_model("coc_svm_model.bin",model);
+    svm.saveFeatureScaling("coc_");
+    
+    std::cout << "training finished...\n";
+    std::cout << "prediction starting...\n";
+
+    arma::mat p = svm.predict(Xtraining,model);
+    std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Ytraining)) * 100 << "\n";
+    //if(scenario!=3) {
+        p = svm.predict(Xval,model);
+        std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
+    //}
 }
 
 } // COC_ns

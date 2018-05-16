@@ -14,9 +14,9 @@
 #include "Util.h"
 
 int main (int argc, char* argv[]) {
-    //QCoreApplication app(argc, argv);
+    QCoreApplication app(argc, argv);
     std::cout << "dbg\n";
-    QApplication app(argc, argv);
+    //QApplication app(argc, argv);
 
     QSettings settings("test.ini", QSettings::IniFormat);
     //settings.sync();
@@ -80,5 +80,5 @@ int main (int argc, char* argv[]) {
     X.save("ex6data3_Xval.bin");
     y.save("ex6data3_yval.bin");
 */
-  app.exec();
+  //app.exec();
 }

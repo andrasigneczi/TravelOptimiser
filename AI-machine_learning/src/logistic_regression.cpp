@@ -3,7 +3,7 @@
 #include <fmincg.h>
 #include "Util.h"
 
-const arma::mat dummy;
+static const arma::mat dummy;
 LogisticRegression::LogisticRegression( const arma::mat& X, const arma::mat& y, double lambda, bool featureScaling, const int featureMappingDegree )
     : CostAndGradient( X, y, lambda ), mFeatureMappingDegree(featureMappingDegree) {
 
@@ -171,15 +171,21 @@ arma::mat LogisticRegression::trainOneVsAll(size_t num_labels, int iteration, bo
     arma::mat XSave = mX;
     arma::mat YSave = mY;
     mX.insert_cols(0,arma::ones(mX.n_rows,1));
-    
-    for( size_t i = 0; i < num_labels; ++i ) {
+    std::set<double> labels;
+    for(size_t i = 0; i < YSave.n_rows; ++i)
+        labels.insert(YSave(i,0));
+        
+    //for( size_t i = 0; i < num_labels; ++i ) {
+    size_t i = 0;
+    for(auto it = labels.begin(); it != labels.end(); ++it) {
         arma::mat initial_theta = arma::zeros(mX.n_cols, 1);
         // exchanging the values to zero, if it isn't equals to i, otherwise it will be 1
-        mY = arma::conv_to<arma::mat>::from(arma::all( (YSave == i), 1 ));
+        mY = arma::conv_to<arma::mat>::from(arma::all( (YSave == *it), 1 ));
         fmincgRetVal frv = fmincg(*this, initial_theta, iteration, verbose);
         if(verbose)
             std::cout << std::endl;
         mTheta.row(i) = frv.m_NNPparams.t();
+        ++i;
     }
     mX = XSave;
     mY = YSave;

@@ -73,7 +73,8 @@ void removeDuplication(arma::mat& dataset) {
     }
 }
 
-void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arma::mat& Xtraining, arma::mat& Ytraining, arma::mat& Xval, arma::mat& Yval) {
+void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arma::mat& Xtraining, arma::mat& Ytraining, arma::mat& Xval, arma::mat& Yval,
+                                                       std::set<double> ignored_labels) {
     arma::mat dataset = join_rows( X, y );
     shuffle(dataset);
     Util::removeDuplication(dataset);
@@ -82,11 +83,13 @@ void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arm
     // the others will be put into the validation set
     std::map<const double,size_t> dataSetStat;
     for( size_t i = 0; i < dataset.n_rows; ++i ){
-        auto it = dataSetStat.find(y(i,0));
+        double yv = y(i,0);
+        auto it = dataSetStat.find(yv);
         if( it != dataSetStat.end()) {
             ++it->second;
         } else {
-            dataSetStat.emplace((int)y(i,0),1);
+            if(ignored_labels.find(yv) == ignored_labels.end())
+                dataSetStat.emplace(yv,1);
         }
     }
 
@@ -99,7 +102,11 @@ void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arm
 
     for( size_t i = 0, curr_row_t = 0, curr_row_v = 0; i < dataset.n_rows; ++i ) {
         std::cout << "row: " << i << "\r" << std::flush;
+
         double yv = dataset(i,dataset.n_cols - 1);
+        if(ignored_labels.find(yv) != ignored_labels.end())
+            continue;
+
         arma::mat x = dataset.rows(i,i).cols(0,dataset.n_cols-2);
         auto it = dataSetStat.find(yv);
         if(it->second > 0 ) {
