@@ -24,7 +24,7 @@ const int small_image_width = 24;
 const std::string training_sets_folder = "./training_sets/";
 int copy_box_size = 80;
 double minimize_rate = (double)small_image_width/(double)copy_box_size;
-const std::string training_set_prefix = "TH11_plus_BG";
+const std::string training_set_prefix = "TH_plus_BG";
 double training_set_y = 0.;
 double lambda = 0.1;
 int iteration = 1000;
@@ -283,19 +283,23 @@ void ScreenCopy::scanScreenshot_lr() {
 
     enum TH {
         TH11,
-        TH8
+        TH8,
+        TH9
     };
 
-    std::vector<LogisticRegression> lr(2);
-    std::vector<double> thresholds{0.5,0.84};
-    std::vector<double> mapping{1.,2.};
+    std::vector<LogisticRegression> lr(3);
+    std::vector<double> thresholds{0.9, 0.9, 0.9};
+    std::vector<double> mapping{1., 2., 3.};
 
     //LogisticRegression lr_th11;
-    lr[TH11].setFeatureMappingDegree(2);
+    lr[TH11].setFeatureMappingDegree(3);
     lr[TH11].loadThetaAndFeatureScaling("th11");
 
     lr[TH8].setFeatureMappingDegree(3);
     lr[TH8].loadThetaAndFeatureScaling("th8");
+
+    lr[TH9].setFeatureMappingDegree(3);
+    lr[TH9].loadThetaAndFeatureScaling("th9");
 
     mPredictions.clear();
     arma::mat img = arma::zeros( 1, small_image_width*small_image_width );
@@ -308,7 +312,7 @@ void ScreenCopy::scanScreenshot_lr() {
                     img(0, i * small_image_width + j ) = rgb;
                 }
             }
-            for( int i = TH11; i <= TH8; ++i ) {
+            for( int i = TH11; i <= TH9; ++i ) {
                 arma::mat pred = lr[i].predict(img,thresholds[i]);
                 if( pred(0,0) == 1. ) {
                     mPredictions.push_back({mapping[i],QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size)});
