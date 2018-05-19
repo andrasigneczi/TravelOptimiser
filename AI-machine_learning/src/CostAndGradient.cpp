@@ -8,14 +8,15 @@ arma::mat CostAndGradient::featureScaling( const arma::mat oX, bool saveFactors 
         double range = arma::as_scalar(max(X.col(i))) - arma::as_scalar(min(X.col(i)));
         double average = arma::as_scalar(mean(X.col(i)));
 
+        if( range == 0 )
+            range = 1;
+
         if( saveFactors ) {
             mFCData(i,0) = range;
             mFCData(i,1) = average;
         }
 
-        if( range != 0.0 ) {
-            X.col(i) = (X.col(i) - average)/range;
-        }
+        X.col(i) = (X.col(i) - average)/range;
     }
     return X;
 }

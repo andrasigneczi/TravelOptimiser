@@ -12,6 +12,7 @@ LogisticRegression::LogisticRegression( const arma::mat& X, const arma::mat& y, 
     }
 
     mX = this->mapFeature(mX);
+    std::cout << "X size after feature mapping: " << size(mX) << "\n";
 }
 
 LogisticRegression::LogisticRegression()
@@ -36,23 +37,6 @@ arma::mat LogisticRegression::gradientDescentWithReguralization( const arma::mat
         }
     }
     return mTheta;
-}
-
-arma::mat LogisticRegression::predict( const arma::mat& X, const arma::mat& theta ) {
-    double m = X.n_rows; // Number of training examples
-    arma::mat p = arma::zeros(m, 1);
-
-    arma::mat X2 = X;
-    if( mFCData.n_rows > 0 ) {
-        for( size_t i = 0; i < X2.n_cols; ++i ) {
-            if( mFCData(i,0) != 0)
-                X2.col(i) = (X2.col(i) - mFCData(i,1))/(mFCData(i,0));
-        }
-    }
-
-    // change elements of A greater than 0.5 to 1
-    p.elem( arma::find( sigmoid(X2,theta) >= 0.5 ) ).ones();
-    return p;
 }
 
 double LogisticRegression::cost( const arma::mat& X, const arma::mat& y, const arma::mat& theta, double lambda ) {
@@ -153,7 +137,7 @@ CostAndGradient::RetVal& LogisticRegression::calc( const arma::mat& nn_params, b
     return mRetVal;
 }
 
-arma::mat LogisticRegression::trainOneVsAll(size_t num_labels, int iteration, bool verbose) {
+arma::mat LogisticRegression::trainOneVsAll(int iteration, bool verbose) {
 /*
     m = size(X, 1);
     n = size(X, 2);
@@ -167,14 +151,14 @@ arma::mat LogisticRegression::trainOneVsAll(size_t num_labels, int iteration, bo
         all_theta(i,:) = temp';
     end;
 */ 
-    mTheta = arma::zeros(num_labels, mX.n_cols + 1);
     arma::mat XSave = mX;
     arma::mat YSave = mY;
     mX.insert_cols(0,arma::ones(mX.n_rows,1));
     std::set<double> labels;
     for(size_t i = 0; i < YSave.n_rows; ++i)
         labels.insert(YSave(i,0));
-        
+    mTheta = arma::zeros(labels.size(), mX.n_cols);
+
     //for( size_t i = 0; i < num_labels; ++i ) {
     size_t i = 0;
     for(auto it = labels.begin(); it != labels.end(); ++it) {
@@ -209,6 +193,41 @@ arma::mat LogisticRegression::trainOne(double label, int iteration, bool verbose
     return mTheta;
 }
 
+arma::mat LogisticRegression::train(int iteration, bool verbose) {
+    arma::mat XSave = mX;
+    mX.insert_cols(0,arma::ones(mX.n_rows,1));
+
+    arma::mat initial_theta = arma::zeros(mX.n_cols, 1);
+    fmincgRetVal frv = fmincg(*this, initial_theta, iteration, verbose);
+    if(verbose)
+        std::cout << std::endl;
+    mTheta = frv.m_NNPparams;
+    mX = XSave;
+    return mTheta;
+}
+
+arma::mat LogisticRegression::predict( const arma::mat& X, const arma::mat& theta, double threshold ) {
+    double m = X.n_rows; // Number of training examples
+    arma::mat p = arma::zeros(m, 1);
+
+    arma::mat X2 = X;
+    if( mFCData.n_rows > 0 ) {
+        for( size_t i = 0; i < X2.n_cols; ++i ) {
+            if( mFCData(i,0) != 0)
+                X2.col(i) = (X2.col(i) - mFCData(i,1))/(mFCData(i,0));
+        }
+    }
+    X2 = mapFeature(X2);
+    X2.insert_cols(0,arma::ones(m,1));
+    // change elements of A greater than 0.5 to 1
+    p.elem( arma::find( sigmoid(X2,theta) >= threshold ) ).ones();
+    return p;
+}
+
+arma::mat LogisticRegression::predict( const arma::mat& X, double threshold ) {
+    return predict(X,mTheta,threshold);
+}
+
 arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X, const arma::mat& theta, bool copyValue ) {
 /*
     m = size(X, 1);
@@ -238,8 +257,7 @@ arma::mat LogisticRegression::predictOneVsAll( const arma::mat& X, const arma::m
     arma::mat X2 = X;
     if( mFCData.n_rows > 0 ) {
         for( size_t i = 0; i < X2.n_cols; ++i ) {
-            if( mFCData(i,0) != 0)
-                X2.col(i) = (X2.col(i) - mFCData(i,1))/(mFCData(i,0));
+            X2.col(i) = (X2.col(i) - mFCData(i,1))/(mFCData(i,0));
         }
     }
 
@@ -321,8 +339,31 @@ arma::mat LogisticRegression::learningCurveOne(double label, const arma::mat& Xv
 arma::mat LogisticRegression::mapFeature(const arma::mat& X) {
     if( mFeatureMappingDegree > 0 ) {
         size_t pos = X.n_cols/2;
-        //X2 = join_rows( X2, Util::mapFeature(X2.cols(pos-13,pos), X2.cols(pos+1, pos + 14)));
-        return Util::mapFeature(X.cols(0,pos-1), X.cols(pos, X.n_cols - 1), mFeatureMappingDegree);
+        //return Util::mapFeature(X.cols(0,pos-1), X.cols(pos, X.n_cols - 1), mFeatureMappingDegree);
+        const int halfSize = 200;
+        return Util::mapFeature(X.cols(pos-halfSize,pos-1), X.cols(pos, pos+halfSize-1), mFeatureMappingDegree);
     }
     return X;
+}
+
+double LogisticRegression::searchThreshold( const arma::mat& X, const arma::mat& Y ) {
+    double beg = 0., end = 1., step = 0.1, bestAccuracy = 0., threshold = 0.;
+    while( true ) {
+        for( double i = beg; i <= end; i += step ) {
+            arma::mat p = predict(X, i);
+            double accuracy = arma::mean(arma::conv_to<arma::colvec>::from(p == Y)) * 100;
+            if( bestAccuracy < accuracy ) {
+                bestAccuracy = accuracy;
+                threshold = i;
+            }
+            std::cout << "Threshold searching: " << i << "                \r" << std::flush;
+        }
+        if( threshold == beg || threshold == end || step == 1e-4 )
+            break;
+        beg = threshold - step;
+        end = threshold + step;
+        step /= 10.;
+    }
+    std::cout << "\n";
+    return threshold;
 }

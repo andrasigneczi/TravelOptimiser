@@ -74,38 +74,49 @@ void removeDuplication(arma::mat& dataset) {
 }
 
 void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arma::mat& Xtraining, arma::mat& Ytraining, arma::mat& Xval, arma::mat& Yval,
-                                                       std::set<double> ignored_labels) {
+                                                       std::set<double> ignored_labels, size_t itemLimitPerLabel) {
     arma::mat dataset = join_rows( X, y );
     shuffle(dataset);
     Util::removeDuplication(dataset);
 
     // 70% of every single label will be taken into the training set,
     // the others will be put into the validation set
+    size_t accepted_num = 0;
     std::map<const double,size_t> dataSetStat;
     for( size_t i = 0; i < dataset.n_rows; ++i ){
         double yv = y(i,0);
         auto it = dataSetStat.find(yv);
         if( it != dataSetStat.end()) {
             ++it->second;
+            ++accepted_num;
         } else {
-            if(ignored_labels.find(yv) == ignored_labels.end())
+            if(ignored_labels.find(yv) == ignored_labels.end()){
                 dataSetStat.emplace(yv,1);
+                ++accepted_num;
+            }
         }
     }
 
     size_t row_num = 0;
-    std::for_each(dataSetStat.begin(),dataSetStat.end(),[&row_num](std::pair<const double,size_t>&x){ x.second *= .7; row_num += x.second; });
+    std::for_each(dataSetStat.begin(),dataSetStat.end(),
+                    [&row_num,itemLimitPerLabel](std::pair<const double,size_t>&x){
+                        x.second *= .7;
+                        if(itemLimitPerLabel > 0 && x.second > itemLimitPerLabel)
+                            x.second = itemLimitPerLabel;
+                        row_num += x.second;
+                    });
     Xtraining = arma::mat(row_num, X.n_cols);
     Ytraining = arma::mat(row_num, 1);
-    Xval = arma::mat(dataset.n_rows - row_num, X.n_cols);
-    Yval = arma::mat(dataset.n_rows - row_num, 1);
+    Xval = arma::mat(accepted_num - row_num, X.n_cols);
+    Yval = arma::mat(accepted_num - row_num, 1);
 
     for( size_t i = 0, curr_row_t = 0, curr_row_v = 0; i < dataset.n_rows; ++i ) {
         std::cout << "row: " << i << "\r" << std::flush;
 
         double yv = dataset(i,dataset.n_cols - 1);
-        if(ignored_labels.find(yv) != ignored_labels.end())
+        if(ignored_labels.find(yv) != ignored_labels.end()){
             continue;
+        }
 
         arma::mat x = dataset.rows(i,i).cols(0,dataset.n_cols-2);
         auto it = dataSetStat.find(yv);

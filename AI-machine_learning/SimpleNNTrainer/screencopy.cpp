@@ -231,7 +231,7 @@ void ScreenCopy::trainLogisticRegression() {
     double lambda = 1e-3;
     LogisticRegression lr(mTrainingset, mResultset, lambda, true, 3 );
 
-    lr.trainOneVsAll(2,200,true);
+    lr.trainOneVsAll(200,true);
     lr.saveThetaAndFeatureScaling("log_reg");
 }
 
@@ -281,11 +281,23 @@ void ScreenCopy::scanScreenshot() {
 void ScreenCopy::scanScreenshot_lr() {
     arma::mat X, y;
 
-    LogisticRegression lr;
-    lr.setFeatureMappingDegree(3);
-    lr.loadThetaAndFeatureScaling("log_reg");
+    enum TH {
+        TH11,
+        TH8
+    };
+
+    std::vector<LogisticRegression> lr(2);
+    std::vector<double> thresholds{0.5,0.84};
+    std::vector<double> mapping{1.,2.};
+
+    //LogisticRegression lr_th11;
+    lr[TH11].setFeatureMappingDegree(2);
+    lr[TH11].loadThetaAndFeatureScaling("th11");
+
+    lr[TH8].setFeatureMappingDegree(3);
+    lr[TH8].loadThetaAndFeatureScaling("th8");
+
     mPredictions.clear();
-    int bgcounter = 0;
     arma::mat img = arma::zeros( 1, small_image_width*small_image_width );
     for( int yp = 0; yp  + small_image_width < mGrayMiniCopy.height(); yp += scanStepSize) {
         for( int xp = 0; xp  + small_image_width < mGrayMiniCopy.width(); xp += scanStepSize) {
@@ -296,17 +308,15 @@ void ScreenCopy::scanScreenshot_lr() {
                     img(0, i * small_image_width + j ) = rgb;
                 }
             }
-            arma::mat pred = lr.predictOneVsAll(img,true);
-            if( pred(0,0) == 0.0 ){
-                ++bgcounter;
-            } else  if(pred(0,1) > 0.5){
-                //std::cout << "position: " << xp*bigImageScale/width << ";" << yp*bigImageScale/width << " TH" << pred(0,0) << "\n";
-                mPredictions.push_back({pred(0,0),QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size)});
-                std::cout << pred(0,1) << "\n" << std::flush;
+            for( int i = TH11; i <= TH8; ++i ) {
+                arma::mat pred = lr[i].predict(img,thresholds[i]);
+                if( pred(0,0) == 1. ) {
+                    mPredictions.push_back({mapping[i],QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size)});
+                    break;
+                }
             }
         }
     }
-    std::cout << "bgcounter: " << bgcounter << "\n" << std::flush;
     std::cout << "Found TH count: " << mPredictions.size() << "\n" << std::flush;
     /*
     if( mPredictions.size() < 20 ) {
@@ -377,7 +387,7 @@ void ScreenCopy::saveSelectedRect() {
 
     //mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
     //mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
-    std::cout << "Training set size: " << mTrainingset.n_rows << " rows\n" << std::flush;
+    std::cout << "Training set size: " << mTrainingset.n_rows + mTrainingsetNewCollection.n_rows << " rows\n" << std::flush;
     updateTrainingSetStat();
 }
 
@@ -396,12 +406,12 @@ void ScreenCopy::saveTiles() {
                 mTrainingsetNewCollection = img;
             else
                 mTrainingsetNewCollection.insert_rows(mTrainingsetNewCollection.n_rows, img);
-            mResultsetNewCollection.insert_rows(mResultsetNewCollection.n_rows, arma::mat{training_set_y}); // TODO: TH level
+            mResultsetNewCollection.insert_rows(mResultsetNewCollection.n_rows, arma::mat{0}); // 0: background!!
         }
     }
     //mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
     //mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
-    std::cout << "Training set size: " << mTrainingset.n_rows << " rows\n" << std::flush;
+    std::cout << "Training set size: " << mTrainingset.n_rows + mTrainingsetNewCollection.n_rows << " rows\n" << std::flush;
     updateTrainingSetStat();
 }
 

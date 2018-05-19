@@ -24,7 +24,7 @@ void coc_th11_train_params_searching();
 void coc_th11_train();
 void logistic_regression();
 void learning_validation_curve();
-void logistic_regression_fmincg();
+void logistic_regression_class();
 void full_paramtest_logitic_regression();
 void logistic_regression_one_vs_all();
 void learning_validation_curve_OneVsAll();
@@ -41,11 +41,11 @@ void runTests() {
     //coc_th11_train();
     //logistic_regression();
     //learning_validation_curve();
-    //logistic_regression_fmincg();
+    logistic_regression_class();
     //full_paramtest_logitic_regression();
     //logistic_regression_one_vs_all();
     //learning_validation_curve_OneVsAll();
-    support_vector_machine_one_vs_all();
+    //support_vector_machine_one_vs_all();
 }
 
 
@@ -527,36 +527,121 @@ void learning_validation_curve() {
     std::cout << "\n" << lcv2 << "\n" << std::flush;
 }
 
-void logistic_regression_fmincg() {
+/*
+ * y 0: bg; 1: TH11
+lambda = 1.e-2;
+iteration = 8e+2;
+degree: 5
+Iteration 800 | Cost: 0.00134053
+Training Set Accuracy: 100
+Validation Set Accuracy: 99.3437
+-----------------------------------
+lambda = 1.e-1;
+degree: 5
+Iteration 667 | Cost: 0.00521039
+Training Set Accuracy: 99.9602
+Validation Set Accuracy: 99.3901
+----------------------------------
+lambda = 1.e-1;
+degree: 4
+Iteration 800 | Cost: 0.00523354
+Training Set Accuracy: 99.9602
+Validation Set Accuracy: 99.3901
+---------------------------------
+lambda = 1.e-2;
+degree: 3
+X size after feature mapping: 40169x1800
+Iteration 800 | Cost: 0.00140252
+Training Set Accuracy: 100
+Validation Set Accuracy: 99.3379
+---------------------------------
+lambda = 5.e-2;
+degree: 3
+Iteration 800 | Cost: 0.00370337
+Training Set Accuracy: 100
+Validation Set Accuracy: 99.3495
+---------------------------------
+lambda = 1.e-1;
+degree: 3
+Iteration 692 | Cost: 0.00536877
+Training Set Accuracy: 99.9577
+Validation Set Accuracy: 99.3553
+---------------------------------
+lambda = 3.e-1;
+degree: 3
+X size after feature mapping: 40169x1800
+Iteration 548 | Cost: 0.00897353
+Training Set Accuracy: 99.9228
+Validation Set Accuracy: 99.3669
+---------------------------------
+lambda = 2.e-1;
+degree: 2
+X size after feature mapping: 40169x1000
+Iteration 641 | Cost: 0.00829155
+Training Set Accuracy: 99.9228
+Validation Set Accuracy: 99.3379
+
+
+y 0: bg; 1: TH8
+---------------------------------
+lambda = 2.e-1;
+degree: 4
+Iteration 800 | Cost: 0.0390943
+Training Set Accuracy: 99.3628
+Validation Set Accuracy: 96.7212
+---------------------------------
+lambda = 1.e-2;
+degree: 3
+X size after feature mapping: 42056x1800
+Iteration 800 | Cost: 0.0172917
+Threshold: 0.82
+Training Set Accuracy: 99.3247
+Validation Set Accuracy: 97.3537
+*/
+
+void logistic_regression_class() {
+
+    double lambda = 3.e-1;
+    long long iteration = 8e+2;
+    int degree = 3;
+    const char* prefix = "th11";
+    std::set<double> ignore_list{2,3,4,5};
+    double test_th = 1;
+
     std::cout << "Loading data...\n" << std::flush;
 
     arma::mat Xtraining, Ytraining, Xval, Yval;
-    Xtraining.load("trainParams_X.bin");
-    Ytraining.load("trainParams_y.bin");
-    Xval.load("trainParams_Xval.bin");
-    Yval.load("trainParams_Yval.bin");
+    int scenario = 1;
+    if(scenario==1){
+        arma::mat X, y;
+        X.load("TH11_plus_BG_trainingset.bin");
+        y.load("TH11_plus_BG_trainingset_result.bin");
 
-    double n = Xtraining.n_cols;
-    double m = Ytraining.n_rows;
+        std::cout << "Data set size: " << X.n_rows << "\n";
+        std::cout << "Prepare training and validation set...\n";
+        //y = arma::conv_to<arma::mat>::from(arma::all( (y != 0), 1 ));
+        Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval, ignore_list);
 
-    // let's insert a column filled with ones
-    Xtraining.insert_cols(0, arma::ones<arma::mat>(m,1));
-    Xval.insert_cols(0, arma::ones<arma::mat>(Yval.n_rows,1));
+        Ytraining = arma::conv_to<arma::mat>::from(arma::all( (Ytraining == test_th), 1 ));
+        Yval = arma::conv_to<arma::mat>::from(arma::all( (Yval == test_th), 1 ));
 
-    // Initialize fitting parameters
-    arma::mat initial_theta = arma::zeros(n + 1, 1);
+        std::cout << "Training set size: " << Xtraining.n_rows << "\n";
+        std::cout << "Validation set size: " << Xval.n_rows << "\n";
+    } else if(scenario==2){
+        Xtraining.load("trainParams_X.bin");
+        Ytraining.load("trainParams_y.bin");
+        Xval.load("trainParams_Xval.bin");
+        Yval.load("trainParams_Yval.bin");
+    }
 
-    double lambda = 3.0e-6;
-    long long iteration = 2e+2;
-    //std::cout << "Calculating gradient descent...\n";
-    //arma::mat theta = lr.gradientDescentWithReguralization( Xtraining, Ytraining, initial_theta, alpha, lambda, iteration );
-    LogisticRegression lr(Xtraining, Ytraining, lambda, true,0 );
-    fmincgRetVal frv = fmincg(lr, initial_theta, iteration, true);
-    arma::mat& theta = frv.m_NNPparams;
-
-    arma::mat p = lr.predict(Xtraining,theta);
+    LogisticRegression lr(Xtraining, Ytraining, lambda, true, degree );
+    arma::mat theta = lr.train(iteration,true);
+    lr.saveThetaAndFeatureScaling(prefix);
+    double threshold = lr.searchThreshold(Xval, Yval);
+    std::cout << "Threshold: " << threshold << std::endl;
+    arma::mat p = lr.predict(Xtraining,threshold);
     std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Ytraining)) * 100 << "\n";
-    p = lr.predict(Xval,theta);
+    p = lr.predict(Xval,threshold);
     std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
 }
 
@@ -618,16 +703,17 @@ void full_paramtest_logitic_regression() {
 }
 
 void logistic_regression_one_vs_all() {
-    arma::mat X, y, Xtraining, Ytraining, Xval, Yval;
+    arma::mat Xtraining, Ytraining, Xval, Yval;
 
     int scenario = 1;
     if(scenario==1){
+        arma::mat X, y;
         X.load("TH11_plus_BG_trainingset.bin");
         y.load("TH11_plus_BG_trainingset_result.bin");
 
         std::cout << "Data set size: " << X.n_rows << "\n";
         std::cout << "Prepare training and validation set...\n";
-        Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval);
+        Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval,{2});
         std::cout << "Training set size: " << Xtraining.n_rows << "\n";
         std::cout << "Validation set size: " << Xval.n_rows << "\n";
     } else if(scenario==2){
@@ -640,18 +726,14 @@ void logistic_regression_one_vs_all() {
         Ytraining.load("TH11_plus_BG_trainingset_result.bin");
     }
 
-    double lambda = 0.001;
-    LogisticRegression lr(Xtraining, Ytraining, lambda, true, 3 );
+    std::cout << size(Xtraining) << "\n" << size(Ytraining) << "\n";
+
+    double lambda = 1e-4;
+    LogisticRegression lr(Xtraining, Ytraining, lambda, true, 4 );
 
     std::cout << "contructor finished...\n";
 
-    std::map<double,int> labels;
-    for(size_t i = 0; i < Ytraining.n_rows; ++i) {
-        if( labels.find(Ytraining(i,0)) == labels.end()) {
-            labels.emplace(Ytraining(i,0),1);
-        }
-    }
-    lr.trainOneVsAll(labels.size(),400,true);
+    lr.trainOneVsAll(400,true);
     //lr.trainOneVsAll(4,800,true);
     lr.saveThetaAndFeatureScaling("log_reg");
 
@@ -711,7 +793,7 @@ void learning_validation_curve_OneVsAll() {
 void support_vector_machine_one_vs_all() {
     arma::mat Xtraining, Ytraining, Xval, Yval;
 
-    int scenario = 3;
+    int scenario = 1;
     if(scenario==1){
         arma::mat X, y;
         X.load("TH11_plus_BG_trainingset.bin");
@@ -719,7 +801,7 @@ void support_vector_machine_one_vs_all() {
 
         std::cout << "Data set size: " << X.n_rows << "\n";
         std::cout << "Prepare training and validation set...\n";
-        Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval);
+        Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval, std::set<double>(), 2000);
         std::cout << "Training set size: " << Xtraining.n_rows << "\n";
         std::cout << "Validation set size: " << Xval.n_rows << "\n";
     } else if(scenario==2){
@@ -738,6 +820,10 @@ void support_vector_machine_one_vs_all() {
     support_vector_machine svm(Xtraining, Ytraining, true, 0 );
     struct svm_parameter& spa = svm.getParameter();
     spa.C = 100;
+    //spa.svm_type = NU_SVC;
+    spa.gamma = 0.0001;
+    spa.eps = 1;
+    spa.shrinking = 0;
     
     std::cout << "contructor finished...\n";
     std::cout << "training starting...\n";
@@ -753,8 +839,9 @@ void support_vector_machine_one_vs_all() {
     std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Ytraining)) * 100 << "\n";
     //if(scenario!=3) {
         p = svm.predict(Xval,model);
-        std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
+        std::cout << "\nValidation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
     //}
 }
 
 } // COC_ns
+

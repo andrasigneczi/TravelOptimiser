@@ -94,7 +94,8 @@ arma::mat support_vector_machine::predict( const arma::mat& X, struct svm_model*
     //X2 = mapFeature(X2);
     
     struct svm_problem problem = prepare_svm_problem(X2,p);
-    for( size_t i = 0; i < X.n_rows; ++i ){
+    for( size_t i = 0; i < X2.n_rows; ++i ){
+        std::cout << (i+1) << "/" << X2.n_rows << "\r" << std::flush;
         p(i,0) = svm_predict(model, problem.x[i]);
     }
     return p;

@@ -35,8 +35,8 @@ void MainWindow::on_pushButton_4_clicked()
 {
     myWindow.hide();
     myWindow.capture();
-    //myWindow.scanScreenshot_lr();
-    myWindow.scanScreenshot_svm();
+    myWindow.scanScreenshot_lr();
+    //myWindow.scanScreenshot_svm();
     myWindow.show();
 }
 
