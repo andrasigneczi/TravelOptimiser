@@ -49,7 +49,7 @@ ScreenCopy::ScreenCopy(QWidget *parent) : QWidget(parent)
 
 void ScreenCopy::capture() {
     QScreen* screen = qApp->primaryScreen();
-    QRect g = screen->geometry();
+    //QRect g = screen->geometry();
     if( mCanvasSize == QRect(0,0,0,0)) {
         //mScreenshot = screen->grabWindow(0,g.x(),g.y(),g.width(),g.height());
         mScreenshot = screen->grabWindow(0,66,93,1544,855);
@@ -460,15 +460,35 @@ void ScreenCopy::saveTiles() {
     updateTrainingSetStat();
 }
 
-void ScreenCopy::extractTrainingSet() {
+void ScreenCopy::extractTrainingSet(double yFilter) {
     //std::cout <<  mTrainingset.n_rows << ";" << mTrainingset.n_cols << "\n" << std::flush;
-    QImage img(small_image_width,small_image_width, QImage::Format_RGB32);
+    //QImage img(small_image_width,small_image_width, QImage::Format_RGB32);
+    // 100 x 100 training picture will be stored on one big image
+    int imgPerRow = 100;
+    int imgPosX = 0, imgPosY = 0;
+    QImage img(small_image_width*imgPerRow, small_image_width*imgPerRow, QImage::Format_RGB32);
     char name[100];
+    size_t nextImgToSave = 0;
+
     for( size_t i = 0; i < mTrainingset.n_rows; ++i ) {
+        if( yFilter != -1 && mResultset(i,0) != yFilter )
+            continue;
+            
+        imgPosX = (nextImgToSave%imgPerRow)*small_image_width;
+        imgPosY = (nextImgToSave/imgPerRow)%imgPerRow;
         for( size_t j = 0; j < mTrainingset.n_cols; ++j ) {
-            img.setPixel(j%small_image_width,j/small_image_width, mTrainingset(i, j));
+            img.setPixel(imgPosX + (j%small_image_width), imgPosY + (j/small_image_width), mTrainingset(i, j));
         }
-        sprintf(name, "tmp/%u_%04lu.png", (unsigned)mResultset(i,0), (unsigned long)i);
+        
+        if( imgPosY == 99 && imgPosX == 99) {
+            sprintf(name, "tmp/stamps_%d_%04lu.png", (int)yFilter, (unsigned long)i);
+            img.save(name);
+        }
+        ++nextImgToSave;
+    }
+
+    if( imgPosY != 99 || imgPosX != 99) {
+        sprintf(name, "tmp/stamps_%d_%04lu.png", (int)yFilter, (unsigned long)mTrainingset.n_rows);
         img.save(name);
     }
 }
@@ -527,4 +547,8 @@ QString ScreenCopy::y2String(int y){
     default:return "????";
     }
     return "";
+}
+
+double ScreenCopy::getSelectedLabel() {
+    return training_set_y;
 }

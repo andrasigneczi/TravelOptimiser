@@ -49,7 +49,7 @@ void MainWindow::on_pushButton_5_clicked()
 
 void MainWindow::on_pushButton_6_clicked()
 {
-    myWindow.extractTrainingSet();
+    myWindow.extractTrainingSet(myWindow.getSelectedLabel());
 }
 
 void MainWindow::on_pushButton_7_clicked()

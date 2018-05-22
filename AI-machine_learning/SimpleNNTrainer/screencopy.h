@@ -38,10 +38,11 @@ public:
     void scanScreenshot_svm();
     QRect getCanvasSize() { return mCanvasSize; }
     void capture();
-    void extractTrainingSet();
+    void extractTrainingSet(double yFilter=-1);
     void updateTrainingSetStat();
     void deleteTrainingSet();
     void saveTrainingSet();
+    double getSelectedLabel();
 
 signals:
 
