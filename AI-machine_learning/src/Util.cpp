@@ -79,6 +79,7 @@ void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arm
     shuffle(dataset);
     Util::removeDuplication(dataset);
 
+    const double percentage = 0.99;
     // 70% of every single label will be taken into the training set,
     // the others will be put into the validation set
     size_t accepted_num = 0;
@@ -99,8 +100,8 @@ void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arm
 
     size_t row_num = 0;
     std::for_each(dataSetStat.begin(),dataSetStat.end(),
-                    [&row_num,itemLimitPerLabel](std::pair<const double,size_t>&x){
-                        x.second *= .7;
+                    [&row_num,itemLimitPerLabel,percentage](std::pair<const double,size_t>&x){
+                        x.second *= percentage;
                         if(itemLimitPerLabel > 0 && x.second > itemLimitPerLabel)
                             x.second = itemLimitPerLabel;
                         row_num += x.second;

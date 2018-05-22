@@ -28,13 +28,13 @@ const std::string training_set_prefix = "TH_plus_BG";
 double training_set_y = 0.;
 double lambda = 0.1;
 int iteration = 1000;
-int scanStepSize = 4;
+int scanStepSize = 1;
 arma::mat thetaSizes{(double)small_image_width*small_image_width, 10000, 2};
 
 ScreenCopy::ScreenCopy(QWidget *parent) : QWidget(parent)
 {
-    move(100,0);
-    resize(1200,780);
+    move(66,93);
+    resize(1544,875);
     setMouseTracking(true);
     mouseX = 0;
     mouseY = 0;
@@ -51,7 +51,8 @@ void ScreenCopy::capture() {
     QScreen* screen = qApp->primaryScreen();
     QRect g = screen->geometry();
     if( mCanvasSize == QRect(0,0,0,0)) {
-        mScreenshot = screen->grabWindow(0,g.x(),g.y(),g.width(),g.height());
+        //mScreenshot = screen->grabWindow(0,g.x(),g.y(),g.width(),g.height());
+        mScreenshot = screen->grabWindow(0,66,93,1544,855);
     } else {
         mScreenshot = screen->grabWindow(0,mCanvasSize.x(),mCanvasSize.y(),mCanvasSize.width(),mCanvasSize.height());
     }
@@ -284,14 +285,16 @@ void ScreenCopy::scanScreenshot_lr() {
     enum TH {
         TH11,
         TH8,
-        TH9
+        TH9,
+        TH7,
+        TH10
     };
 
-    std::vector<LogisticRegression> lr(3);
-    std::vector<double> thresholds{0.9, 0.9, 0.9};
-    std::vector<double> mapping{1., 2., 3.};
+    std::vector<LogisticRegression> lr(5);
+    //std::vector<double> thresholds{0.99999, 0.99, 0.95, 0.5, 0.95};
+    std::vector<double> thresholds{0.5, 0.99, 0.95, 0.5, 0.95};
+    std::vector<double> mapping{1., 2., 3., 4., 5.};
 
-    //LogisticRegression lr_th11;
     lr[TH11].setFeatureMappingDegree(3);
     lr[TH11].loadThetaAndFeatureScaling("th11");
 
@@ -301,10 +304,17 @@ void ScreenCopy::scanScreenshot_lr() {
     lr[TH9].setFeatureMappingDegree(3);
     lr[TH9].loadThetaAndFeatureScaling("th9");
 
+    lr[TH7].setFeatureMappingDegree(3);
+    lr[TH7].loadThetaAndFeatureScaling("th7");
+
+    lr[TH10].setFeatureMappingDegree(3);
+    lr[TH10].loadThetaAndFeatureScaling("th10");
+
     mPredictions.clear();
     arma::mat img = arma::zeros( 1, small_image_width*small_image_width );
-    for( int yp = 0; yp  + small_image_width < mGrayMiniCopy.height(); yp += scanStepSize) {
-        for( int xp = 0; xp  + small_image_width < mGrayMiniCopy.width(); xp += scanStepSize) {
+    bool stop = false;
+    for( int yp = 0; yp  + small_image_width < mGrayMiniCopy.height() && !stop; yp += scanStepSize) {
+        for( int xp = 0; xp  + small_image_width < mGrayMiniCopy.width() && !stop; xp += scanStepSize) {
 
             for( int i = 0; i < small_image_width; ++i ) {
                 for( int j = 0; j < small_image_width; ++j ) {
@@ -312,22 +322,53 @@ void ScreenCopy::scanScreenshot_lr() {
                     img(0, i * small_image_width + j ) = rgb;
                 }
             }
-            for( int i = TH11; i <= TH9; ++i ) {
+            for( int i = TH11; i <= TH11; ++i ) {
                 arma::mat pred = lr[i].predict(img,thresholds[i]);
                 if( pred(0,0) == 1. ) {
                     mPredictions.push_back({mapping[i],QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size)});
+                    //stop = true;
+                    std::cout << "Found: " << y2String(mapping[i]).toLocal8Bit().data() << std::endl;
                     break;
                 }
             }
         }
     }
-    std::cout << "Found TH count: " << mPredictions.size() << "\n" << std::flush;
+    //std::cout << "Found TH count: " << mPredictions.size() << "\n" << std::flush;
     /*
     if( mPredictions.size() < 20 ) {
         for_each(mPredictions.begin(),mPredictions.end(),
           [&](const QRect& r) {std::cout << r.x() << ";" << r.y() << ";" << r.width() << ";" << r.height() << "\n" << std::flush; });
     }
     */
+}
+
+void ScreenCopy::scanScreenshot_lr_onevsall() {
+    arma::mat X, y;
+    LogisticRegression lr;
+    lr.setFeatureMappingDegree(3);
+    lr.loadThetaAndFeatureScaling("th_onevsall2");
+
+    mPredictions.clear();
+    arma::mat img = arma::zeros( 1, small_image_width*small_image_width );
+    bool stop = false;
+    for( int yp = 0; yp  + small_image_width < mGrayMiniCopy.height() && !stop; yp += scanStepSize) {
+        for( int xp = 0; xp  + small_image_width < mGrayMiniCopy.width() && !stop; xp += scanStepSize) {
+
+            for( int i = 0; i < small_image_width; ++i ) {
+                for( int j = 0; j < small_image_width; ++j ) {
+                    QRgb rgb = mGrayMiniCopy.pixel( xp + j, yp + i );
+                    img(0, i * small_image_width + j ) = rgb;
+                }
+            }
+            arma::mat pred = lr.predictOneVsAll(img,true);
+            if( pred(0,0) > 0. && pred(0,1) >= 0.5 ) {
+                mPredictions.push_back({pred(0,0),QRect(xp/minimize_rate,yp/minimize_rate,copy_box_size,copy_box_size)});
+                //stop = true;
+                //break;
+            }
+        }
+    }
+    std::cout << "Found TH count: " << mPredictions.size() << "\n" << std::flush;
 }
 
 void ScreenCopy::scanScreenshot_svm() {

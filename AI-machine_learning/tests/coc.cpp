@@ -25,7 +25,6 @@ void coc_th11_train();
 void logistic_regression();
 void learning_validation_curve();
 void logistic_regression_class();
-void full_paramtest_logitic_regression();
 void logistic_regression_one_vs_all();
 void learning_validation_curve_OneVsAll();
 void support_vector_machine_one_vs_all();
@@ -42,7 +41,6 @@ void runTests() {
     //logistic_regression();
     //learning_validation_curve();
     logistic_regression_class();
-    //full_paramtest_logitic_regression();
     //logistic_regression_one_vs_all();
     //learning_validation_curve_OneVsAll();
     //support_vector_machine_one_vs_all();
@@ -598,24 +596,58 @@ Threshold: 0.82
 Training Set Accuracy: 99.3247
 Validation Set Accuracy: 97.3537
 */
-
+void logistic_regression_class(double lambda,int degree,const char* prefix,std::set<double> ignore_list,double test_th);
 void logistic_regression_class() {
 
-    double lambda = 3.e-1;
-    long long iteration = 8e+2;
+    double lambda = 1.e-1;
     int degree = 3;
-    const char* prefix = "th11";
     std::set<double> ignore_list{2,3,4,5};
     double test_th = 1;
+    const char* prefix = "th11";
+    logistic_regression_class(lambda,degree,prefix,ignore_list,test_th);
 
-    std::cout << "Loading data...\n" << std::flush;
+/*
+    lambda = 1.e-2;
+    degree = 3;
+    ignore_list = {1,3,4,5};
+    test_th = 2;
+    prefix = "th8";
+    logistic_regression_class(lambda,degree,prefix,ignore_list,test_th);
+
+    lambda = 1.e-2;
+    degree = 3;
+    ignore_list = {1,2,4,5};
+    test_th = 3;
+    prefix = "th9";
+    logistic_regression_class(lambda,degree,prefix,ignore_list,test_th);
+
+    lambda = 1.e-2;
+    degree = 3;
+    ignore_list = {1,2,3,5};
+    test_th = 4;
+    prefix = "th7";
+    logistic_regression_class(lambda,degree,prefix,ignore_list,test_th);
+
+    lambda = 1.e-2;
+    degree = 3;
+    ignore_list = {1,2,3,4};
+    test_th = 5;
+    prefix = "th10";
+    logistic_regression_class(lambda,degree,prefix,ignore_list,test_th);
+    */
+}
+
+void logistic_regression_class(double lambda,int degree,const char* prefix,std::set<double> ignore_list,double test_th) {
+
+    long long iteration = 8e+2;
+    std::cout << "logistic_regression_class " << prefix << "\nLoading data...\n" << std::flush;
 
     arma::mat Xtraining, Ytraining, Xval, Yval;
     int scenario = 1;
     if(scenario==1){
         arma::mat X, y;
-        X.load("TH11_plus_BG_trainingset.bin");
-        y.load("TH11_plus_BG_trainingset_result.bin");
+        X.load("TH_plus_BG_trainingset.bin");
+        y.load("TH_plus_BG_trainingset_result.bin");
 
         std::cout << "Data set size: " << X.n_rows << "\n";
         std::cout << "Prepare training and validation set...\n";
@@ -634,72 +666,15 @@ void logistic_regression_class() {
         Yval.load("trainParams_Yval.bin");
     }
 
-    LogisticRegression lr(Xtraining, Ytraining, lambda, true, degree );
+    LogisticRegression lr(Xtraining, Ytraining, lambda, false, degree );
     arma::mat theta = lr.train(iteration,true);
     lr.saveThetaAndFeatureScaling(prefix);
-    double threshold = lr.searchThreshold(Xval, Yval);
+    double threshold = 0.5; //lr.searchThreshold(Xval, Yval);
     std::cout << "Threshold: " << threshold << std::endl;
     arma::mat p = lr.predict(Xtraining,threshold);
     std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Ytraining)) * 100 << "\n";
     p = lr.predict(Xval,threshold);
     std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
-}
-
-void full_paramtest_logitic_regression() {
-    arma::mat X, y, Xtraining, Ytraining, Xval, Yval;
-
-    std::cout << "Reading data set...\n";
-    if(1){
-        X.load("TH11_plus_BG_trainingset.bin");
-        y.load("TH11_plus_BG_trainingset_result.bin");
-
-        std::cout << "Data set size: " << X.n_rows << "\n";
-        std::cout << "Prepare training and validation set...\n";
-        Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval);
-        std::cout << "Training set size: " << Xtraining.n_rows << "\n";
-        std::cout << "Validation set size: " << Xval.n_rows << "\n";
-    } else {
-        Xtraining.load("trainParams_X.bin");
-        Ytraining.load("trainParams_y.bin");
-        Xval.load("trainParams_Xval.bin");
-        Yval.load("trainParams_Yval.bin");
-    }
-    double n = Xtraining.n_cols;
-    double m = Ytraining.n_rows;
-    int small_image_width = (int)sqrt(Xval.n_cols);
-
-    // let's insert a column filled with ones
-    Xtraining.insert_cols(0, arma::ones<arma::mat>(m,1));
-    Xval.insert_cols(0, arma::ones<arma::mat>(Yval.n_rows,1));
-
-    // Initialize fitting parameters
-    arma::mat initial_theta = arma::zeros(n + 1, 1);
-
-    double lambda = 1e-3;
-    long long iteration = 1e+2;
-    LogisticRegression lr(Xtraining, Ytraining, lambda, true,0 );
-    fmincgRetVal frv = fmincg(lr, initial_theta, iteration, true);
-    arma::mat& theta = frv.m_NNPparams;
-
-    arma::mat p = lr.predict(Xtraining,theta);
-    std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Ytraining)) * 100 << "\n";
-    p = lr.predict(Xval,theta);
-    std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
-
-    QImage img(small_image_width,small_image_width, QImage::Format_RGB32);
-
-    for( size_t i = 0; i < p.n_rows; ++i) {
-        if( p(i,0) != Yval(i,0)) {
-            std::cout << "Expected: " << Yval(i,0) << "; Predicted: " << p(i,0) << "\n" << std::flush;
-
-            char name[100];
-            for( size_t j = 1; j < Xval.n_cols; ++j ) {
-                img.setPixel((j-1)%small_image_width,(j-1)/small_image_width, Xval(i, j));
-            }
-            sprintf(name, "tmp2/wrong_%lu_e%i_p%i.png", i, (int)Yval(i,0), (int)p(i,0));
-            img.save(name);
-        }
-    }
 }
 
 void logistic_regression_one_vs_all() {
@@ -708,12 +683,12 @@ void logistic_regression_one_vs_all() {
     int scenario = 1;
     if(scenario==1){
         arma::mat X, y;
-        X.load("TH11_plus_BG_trainingset.bin");
-        y.load("TH11_plus_BG_trainingset_result.bin");
+        X.load("TH_plus_BG_trainingset.bin");
+        y.load("TH_plus_BG_trainingset_result.bin");
 
         std::cout << "Data set size: " << X.n_rows << "\n";
         std::cout << "Prepare training and validation set...\n";
-        Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval,{2});
+        Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval);
         std::cout << "Training set size: " << Xtraining.n_rows << "\n";
         std::cout << "Validation set size: " << Xval.n_rows << "\n";
     } else if(scenario==2){
@@ -728,19 +703,21 @@ void logistic_regression_one_vs_all() {
 
     std::cout << size(Xtraining) << "\n" << size(Ytraining) << "\n";
 
-    double lambda = 1e-4;
-    LogisticRegression lr(Xtraining, Ytraining, lambda, true, 4 );
+    double lambda = 1e-2;
+    LogisticRegression lr(Xtraining, Ytraining, lambda, true, 3 );
 
     std::cout << "contructor finished...\n";
 
     lr.trainOneVsAll(400,true);
     //lr.trainOneVsAll(4,800,true);
-    lr.saveThetaAndFeatureScaling("log_reg");
+    lr.saveThetaAndFeatureScaling("th_onevsall2");
 
     arma::mat p = lr.predictOneVsAll(Xtraining,false);
+    //p = p + arma::ones(p.n_rows,1);
     std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Ytraining)) * 100 << "\n";
     if(scenario!=3) {
         p = lr.predictOneVsAll(Xval,false);
+        //p = p + arma::ones(p.n_rows,1);
         std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
     }
 }

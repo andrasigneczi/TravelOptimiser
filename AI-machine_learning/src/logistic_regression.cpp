@@ -221,6 +221,7 @@ arma::mat LogisticRegression::predict( const arma::mat& X, const arma::mat& thet
     X2.insert_cols(0,arma::ones(m,1));
     // change elements of A greater than 0.5 to 1
     p.elem( arma::find( sigmoid(X2,theta) >= threshold ) ).ones();
+    //p = arma::conv_to<arma::mat>::from(arma::all( (sigmoid(X2,theta) >= threshold), 1 ));
     return p;
 }
 
@@ -339,9 +340,9 @@ arma::mat LogisticRegression::learningCurveOne(double label, const arma::mat& Xv
 arma::mat LogisticRegression::mapFeature(const arma::mat& X) {
     if( mFeatureMappingDegree > 0 ) {
         size_t pos = X.n_cols/2;
-        //return Util::mapFeature(X.cols(0,pos-1), X.cols(pos, X.n_cols - 1), mFeatureMappingDegree);
-        const int halfSize = 200;
-        return Util::mapFeature(X.cols(pos-halfSize,pos-1), X.cols(pos, pos+halfSize-1), mFeatureMappingDegree);
+        return Util::mapFeature(X.cols(0,pos-1), X.cols(pos, X.n_cols - 1), mFeatureMappingDegree);
+        //const int halfSize = 200;
+        //return Util::mapFeature(X.cols(pos-halfSize,pos-1), X.cols(pos, pos+halfSize-1), mFeatureMappingDegree);
     }
     return X;
 }
@@ -352,7 +353,7 @@ double LogisticRegression::searchThreshold( const arma::mat& X, const arma::mat&
         for( double i = beg; i <= end; i += step ) {
             arma::mat p = predict(X, i);
             double accuracy = arma::mean(arma::conv_to<arma::colvec>::from(p == Y)) * 100;
-            if( bestAccuracy < accuracy ) {
+            if( bestAccuracy <= accuracy ) {
                 bestAccuracy = accuracy;
                 threshold = i;
             }
