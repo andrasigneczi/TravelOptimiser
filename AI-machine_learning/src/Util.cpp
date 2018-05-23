@@ -79,7 +79,7 @@ void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arm
     shuffle(dataset);
     Util::removeDuplication(dataset);
 
-    const double percentage = 0.99;
+    const double percentage = 0.7;
     // 70% of every single label will be taken into the training set,
     // the others will be put into the validation set
     size_t accepted_num = 0;

@@ -475,19 +475,21 @@ void ScreenCopy::extractTrainingSet(double yFilter) {
             continue;
             
         imgPosX = (nextImgToSave%imgPerRow)*small_image_width;
-        imgPosY = (nextImgToSave/imgPerRow)%imgPerRow;
+        imgPosY = ((nextImgToSave/imgPerRow)%imgPerRow)*small_image_width;
+        std::cout << "imgPosX: " << imgPosX << "imgPosY: " << imgPosY << "\n";
         for( size_t j = 0; j < mTrainingset.n_cols; ++j ) {
             img.setPixel(imgPosX + (j%small_image_width), imgPosY + (j/small_image_width), mTrainingset(i, j));
         }
         
-        if( imgPosY == 99 && imgPosX == 99) {
+        if( imgPosY == small_image_width*(imgPerRow-1) && imgPosX == small_image_width*(imgPerRow-1)) {
             sprintf(name, "tmp/stamps_%d_%04lu.png", (int)yFilter, (unsigned long)i);
             img.save(name);
+            img.fill(Qt::GlobalColor::white);
         }
         ++nextImgToSave;
     }
 
-    if( imgPosY != 99 || imgPosX != 99) {
+    if( imgPosY != small_image_width*(imgPerRow-1) || imgPosX != small_image_width*(imgPerRow-1)) {
         sprintf(name, "tmp/stamps_%d_%04lu.png", (int)yFilter, (unsigned long)mTrainingset.n_rows);
         img.save(name);
     }

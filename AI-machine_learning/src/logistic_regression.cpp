@@ -194,7 +194,6 @@ arma::mat LogisticRegression::trainOne(double label, int iteration, bool verbose
 }
 
 arma::mat LogisticRegression::train(int iteration, bool verbose) {
-    arma::mat XSave = mX;
     mX.insert_cols(0,arma::ones(mX.n_rows,1));
 
     arma::mat initial_theta = arma::zeros(mX.n_cols, 1);
@@ -202,7 +201,6 @@ arma::mat LogisticRegression::train(int iteration, bool verbose) {
     if(verbose)
         std::cout << std::endl;
     mTheta = frv.m_NNPparams;
-    mX = XSave;
     return mTheta;
 }
 

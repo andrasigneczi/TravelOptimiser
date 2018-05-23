@@ -599,7 +599,7 @@ Validation Set Accuracy: 97.3537
 void logistic_regression_class(double lambda,int degree,const char* prefix,std::set<double> ignore_list,double test_th);
 void logistic_regression_class() {
 
-    double lambda = 1.e-1;
+    double lambda = 1.e-5;
     int degree = 3;
     std::set<double> ignore_list{2,3,4,5};
     double test_th = 1;
@@ -666,7 +666,7 @@ void logistic_regression_class(double lambda,int degree,const char* prefix,std::
         Yval.load("trainParams_Yval.bin");
     }
 
-    LogisticRegression lr(Xtraining, Ytraining, lambda, false, degree );
+    LogisticRegression lr(Xtraining, Ytraining, lambda, true, degree );
     arma::mat theta = lr.train(iteration,true);
     lr.saveThetaAndFeatureScaling(prefix);
     double threshold = 0.5; //lr.searchThreshold(Xval, Yval);
