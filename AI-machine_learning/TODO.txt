@@ -1,6 +1,16 @@
-- export images from coc dataset into big images
+TODO
+----
+- Anomaly detection
+- stohastic and mini-batch gradient descent for neural network
 - fminunc implementation
-- stohastic and mini-batch gradient descent for logistic regression
 - online learning algorithm
 - CUDA
 - Map Reduce
+- K-Mean
+- PCA
+
+
+DONE
+----
+- export images from coc dataset into big images
+- stohastic and mini-batch gradient descent for logistic regression

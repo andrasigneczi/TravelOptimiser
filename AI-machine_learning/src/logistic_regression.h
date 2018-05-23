@@ -37,6 +37,11 @@ public:
     arma::mat mapFeature(const arma::mat& X);
     void setFeatureMappingDegree(int degree) { mFeatureMappingDegree = degree; }
     double searchThreshold( const arma::mat& X, const arma::mat& Y );
+    arma::mat stochasticGradientDescent( const arma::mat& X, const arma::mat& y, const arma::mat& theta, double alpha, long long iteration );
+    arma::mat miniBatchGradientDescent( const arma::mat& X, const arma::mat& y, const arma::mat& theta, double alpha, long long iteration );
+    arma::mat stochasticGradientDescent( double alpha, long long iteration );
+    arma::mat miniBatchGradientDescent( double alpha, long long iteration );
+    
 private:
 
     long double Abs( long double x ) { return x > 0 ? x : -x; }

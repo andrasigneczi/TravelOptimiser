@@ -8,6 +8,7 @@ namespace LogisticRegression_ns {
 void test1();
 void test2();
 void test3();
+void test4();
 
 void runTests() {
     //arma::mat dataSet;
@@ -27,9 +28,10 @@ void runTests() {
     //std::cout << arma::size( dataSet ) << "\n";
     //dataSet.save("ex4data1_y.bin", arma::arma_binary);
 
-    test1();
-    test2();
-    test3();
+    //test1();
+    //test2();
+    //test3();
+    test4();
 }
 
 void test1() {
@@ -76,7 +78,7 @@ void test1() {
     std::cout << grad << "\n";
     std::cout << "Expected gradients (approx):\n 0.043\n 2.566\n 2.647\n";
     
-    arma::mat theta = lr.gradientDescentWithReguralization( X, y, initial_theta, 0.003, 0, 1.2E+7 );
+    arma::mat theta = lr.gradientDescentWithReguralization( X, y, initial_theta, 0.003, 0, 1.2E+6 );
     // fminunc(@(t)(costFunctionReg(t, X, y, lambda)), initial_theta, options);
     /*
     arma::mat thetaSizes;
@@ -101,7 +103,7 @@ void test1() {
     std::cout << "Expected value: 0.775 +/- 0.002\n\n";
     
     // Compute accuracy on our training set
-    arma::mat p = lr.predict(X,theta);
+    arma::mat p = lr.predict(X.cols(1,X.n_cols-1),theta);
     std::cout << "Train Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == y)) * 100 << "\n";
     std::cout << "Expected accuracy (approx): 89.0\n";
 
@@ -170,10 +172,11 @@ void test2() {
     arma::mat theta = lr.gradientDescentWithReguralization( X, y, initial_theta, 0.0006, 1.0, 1.2E+6 );
 
     // Compute accuracy on our training set
-    arma::mat p = lr.predict(X,theta);
+    arma::mat p = lr.predict(X.cols(1,X.n_cols-1),theta);
     std::cout << "Train Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == y))*100 << "\n";
     std::cout << "Expected accuracy (with lambda = 1): 83.1 (approx)\n";
 }
+
 
 void test3() {
     // One-vs-all
@@ -181,6 +184,32 @@ void test3() {
     // "ex3data1_y.bin"
     // "ex3weights_Theta1.bin"
     // "ex3weights_Theta2.bin"
+}
+
+void test4() {
+    arma::mat dataSet;
+    dataSet.load( "../Octave/machine-learning-ex2/ex2/ex2data2.txt" );
+    
+    // The  last column of the dataset is the result column
+    arma::mat y = dataSet.col(dataSet.n_cols - 1);
+ 
+    // input training feature dataset
+    arma::mat X = dataSet.cols(0,dataSet.n_cols-2);
+
+    LogisticRegression lr(X,y,0,false,6);
+    LogisticRegression lr2(X,y,0,false,6);
+
+    std::cout << "\nStochastic Gradient Descent:\n";
+    lr.stochasticGradientDescent( 0.0006, 1.2E+6 );
+    std::cout << "\nMini-Batch Gradient Descent:\n";
+    lr2.miniBatchGradientDescent( 0.0006, 1.2E+6 );
+
+    // Compute accuracy on our training set
+    arma::mat p = lr.predict(X);
+    arma::mat p2 = lr2.predict(X);
+    std::cout << "Stochastic Gradient Descent Train Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == y))*100 << "\n";
+    std::cout << "Mini-Batch Gradient Descent Train Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p2 == y))*100 << "\n";
+    std::cout << "Expected accuracy: 83.1 (approx)\n";
 }
 
 
