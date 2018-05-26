@@ -226,14 +226,19 @@ void ScreenCopy::trainNeuralNetwork() {
 }
 
 void ScreenCopy::trainLogisticRegression() {
-    if( mTrainingset.n_cols == 0 )
+    if( mTrainingsetNewCollection.n_cols == 0 )
         return;
 
+    const char* prefix = "th11";
     double lambda = 1e-3;
-    LogisticRegression lr(mTrainingset, mResultset, lambda, true, 3 );
+    LogisticRegression lr(mTrainingsetNewCollection, mResultsetNewCollection, lambda, true, 3 );
+    std::vector<arma::mat> thetaAndFS = lr.loadThetaAndFeatureScaling(prefix);
+    //lr.train(thetaAndFS[0], 1,true);
+    lr.stochasticGradientDescent(thetaAndFS[0],1e-6,5000);
 
-    lr.trainOneVsAll(200,true);
-    lr.saveThetaAndFeatureScaling("log_reg");
+    lr.saveThetaAndFeatureScaling(prefix);
+    mTrainingsetNewCollection.clear();
+    mResultsetNewCollection.clear();
 }
 
 void ScreenCopy::scanScreenshot() {
@@ -292,7 +297,7 @@ void ScreenCopy::scanScreenshot_lr() {
 
     std::vector<LogisticRegression> lr(5);
     //std::vector<double> thresholds{0.99999, 0.99, 0.95, 0.5, 0.95};
-    std::vector<double> thresholds{0.5, 0.99, 0.95, 0.5, 0.95};
+    std::vector<double> thresholds{0.9, 0.99, 0.95, 0.5, 0.95};
     std::vector<double> mapping{1., 2., 3., 4., 5.};
 
     lr[TH11].setFeatureMappingDegree(3);
@@ -464,9 +469,10 @@ void ScreenCopy::extractTrainingSet(double yFilter) {
     //std::cout <<  mTrainingset.n_rows << ";" << mTrainingset.n_cols << "\n" << std::flush;
     //QImage img(small_image_width,small_image_width, QImage::Format_RGB32);
     // 100 x 100 training picture will be stored on one big image
-    int imgPerRow = 100;
+    const int imgPerRow = 100;
     int imgPosX = 0, imgPosY = 0;
     QImage img(small_image_width*imgPerRow, small_image_width*imgPerRow, QImage::Format_RGB32);
+    img.fill(Qt::GlobalColor::white);
     char name[100];
     size_t nextImgToSave = 0;
 
@@ -476,7 +482,7 @@ void ScreenCopy::extractTrainingSet(double yFilter) {
             
         imgPosX = (nextImgToSave%imgPerRow)*small_image_width;
         imgPosY = ((nextImgToSave/imgPerRow)%imgPerRow)*small_image_width;
-        std::cout << "imgPosX: " << imgPosX << "imgPosY: " << imgPosY << "\n";
+        std::cout << "imgPosX: " << imgPosX << "  imgPosY: " << imgPosY << "\n";
         for( size_t j = 0; j < mTrainingset.n_cols; ++j ) {
             img.setPixel(imgPosX + (j%small_image_width), imgPosY + (j/small_image_width), mTrainingset(i, j));
         }
@@ -484,6 +490,8 @@ void ScreenCopy::extractTrainingSet(double yFilter) {
         if( imgPosY == small_image_width*(imgPerRow-1) && imgPosX == small_image_width*(imgPerRow-1)) {
             sprintf(name, "tmp/stamps_%d_%04lu.png", (int)yFilter, (unsigned long)i);
             img.save(name);
+            //img.fill(Qt::GlobalColor::white);
+            img = QImage(small_image_width*imgPerRow, small_image_width*imgPerRow, QImage::Format_RGB32);
             img.fill(Qt::GlobalColor::white);
         }
         ++nextImgToSave;
@@ -553,4 +561,25 @@ QString ScreenCopy::y2String(int y){
 
 double ScreenCopy::getSelectedLabel() {
     return training_set_y;
+}
+
+void ScreenCopy::correctDataset() {
+    /*
+    size_t counter = 0;
+    for( size_t i = mTrainingset.n_rows-1; i!= 0; --i ) {
+        if( mResultset(i,0) == 3.) {
+            mResultset(i,0) = 2;
+            ++counter;
+            if( counter == 5 ) {
+                break;
+            }
+        }
+    }
+    */
+    extractTrainingSet(0.);
+    extractTrainingSet(1.);
+    extractTrainingSet(2.);
+    extractTrainingSet(3.);
+    extractTrainingSet(4.);
+    extractTrainingSet(5.);
 }

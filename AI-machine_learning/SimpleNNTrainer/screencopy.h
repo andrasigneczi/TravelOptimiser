@@ -43,6 +43,7 @@ public:
     void deleteTrainingSet();
     void saveTrainingSet();
     double getSelectedLabel();
+    void correctDataset();
 
 signals:
 

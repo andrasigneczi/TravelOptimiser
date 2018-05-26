@@ -35,18 +35,30 @@ arma::mat LogisticRegression::gradientDescentWithReguralization( const arma::mat
         for( size_t j = 1; j < mTheta.n_rows; ++j )
             mTheta(j) = mTheta(j) - arma::as_scalar( alpha*( (1/m*delta*X.col(j)).t() + lambda/m*mTheta(j) ) );
         if( i % 100 == 0 ) {
-            std::cout << "iteration: " << i << "\r" << std::flush;
+            std::cout << "iteration: " << i << "                          \r" << std::flush;
         }
     }
     return mTheta;
+}
+
+arma::mat LogisticRegression::gradientDescentWithReguralization( const arma::mat& theta, double alpha, double lambda, long long iteration ) {
+    mX.insert_cols(0,arma::ones(mX.n_rows,1));
+    return gradientDescentWithReguralization(mX,mY,theta,alpha,lambda,iteration);
+}
+
+arma::mat LogisticRegression::gradientDescentWithReguralization( double alpha, long long iteration ) {
+    mX.insert_cols(0,arma::ones(mX.n_rows,1));
+    arma::mat initial_theta = arma::zeros(mX.n_cols, 1);
+    return gradientDescentWithReguralization(mX,mY,initial_theta,alpha,mLambda,iteration);
 }
 
 arma::mat LogisticRegression::stochasticGradientDescent( const arma::mat& X, const arma::mat& y, const arma::mat& theta, double alpha, long long iteration ) {
     // number of the training datas
     double m = y.n_rows;
     mTheta = theta;
-    
+    const double alpha2 = (alpha==0?1e+300:1./alpha);
     for( long long i = 0; i < iteration; ++i ) {
+        alpha = 1./(alpha2+(double)i);
         for( size_t l = 0; l < m; ++l ) {
             arma::mat delta = (sigmoid(X.row(l),mTheta) - y.row(l)).t();
             
@@ -54,10 +66,8 @@ arma::mat LogisticRegression::stochasticGradientDescent( const arma::mat& X, con
             
             for( size_t j = 1; j < mTheta.n_rows; ++j )
                 mTheta(j) = mTheta(j) - arma::as_scalar( alpha*( (delta*X.row(l).col(j)).t()));
-            if( i % 100 == 0 ) {
-                std::cout << "iteration: " << i << "\r" << std::flush;
-            }
         }
+        std::cout << "iteration: " << i << "\r" << std::flush;
     }
     return mTheta;
 }
@@ -76,12 +86,20 @@ arma::mat LogisticRegression::miniBatchGradientDescent( const arma::mat& X, cons
             
             for( size_t j = 1; j < mTheta.n_rows; ++j )
                 mTheta(j) = mTheta(j) - arma::as_scalar( alpha*( (1./(double)batcSize*delta*X.rows(l,l_end).col(j)).t()));
-            if( i % 100 == 0 ) {
-                std::cout << "iteration: " << i << "                       \r" << std::flush;
-            }
         }
+        std::cout << "iteration: " << i << "                       \r" << std::flush;
     }
     return mTheta;
+}
+
+arma::mat LogisticRegression::stochasticGradientDescent( const arma::mat& theta, double alpha, long long iteration ) {
+    mX.insert_cols(0,arma::ones(mX.n_rows,1));
+    return stochasticGradientDescent(mX,mY,theta,alpha,iteration);
+}
+
+arma::mat LogisticRegression::miniBatchGradientDescent( const arma::mat& theta, double alpha, long long iteration ) {
+    mX.insert_cols(0,arma::ones(mX.n_rows,1));
+    return miniBatchGradientDescent(mX,mY,theta,alpha,iteration);
 }
 
 arma::mat LogisticRegression::stochasticGradientDescent( double alpha, long long iteration ) {
@@ -261,6 +279,26 @@ arma::mat LogisticRegression::train(int iteration, bool verbose) {
     return mTheta;
 }
 
+arma::mat LogisticRegression::train(arma::mat initial_theta, int iteration, bool verbose) {
+    mX.insert_cols(0,arma::ones(mX.n_rows,1));
+
+    fmincgRetVal frv = fmincg(*this, initial_theta, iteration, verbose);
+    if(verbose)
+        std::cout << std::endl;
+    mTheta = frv.m_NNPparams;
+    return mTheta;
+}
+
+arma::mat LogisticRegression::applyFeatureScalingValues(arma::mat X) {
+    if( mFCData.n_rows > 0 ) {
+        for( size_t i = 0; i < X.n_cols; ++i ) {
+            if( mFCData(i,0) != 0)
+                X.col(i) = (X.col(i) - mFCData(i,1))/(mFCData(i,0));
+        }
+    }
+    return X;
+}
+
 arma::mat LogisticRegression::predict( const arma::mat& X, const arma::mat& theta, double threshold ) {
     double m = X.n_rows; // Number of training examples
     arma::mat p = arma::zeros(m, 1);
@@ -339,9 +377,10 @@ void LogisticRegression::saveThetaAndFeatureScaling(std::string fileNamePrefix) 
     mFCData.save((fileNamePrefix + "_fcdata.bin").c_str());
 }
 
-void LogisticRegression::loadThetaAndFeatureScaling(std::string fileNamePrefix) {
+std::vector<arma::mat> LogisticRegression::loadThetaAndFeatureScaling(std::string fileNamePrefix) {
     mTheta.load((fileNamePrefix + "_theta.bin").c_str());
     mFCData.load((fileNamePrefix + "_fcdata.bin").c_str());
+    return std::vector<arma::mat>{mTheta, mFCData};
 }
 
 arma::mat LogisticRegression::validationCurveOne(double label, const arma::mat& Xval, const arma::mat& Yval, long long iteration) {
@@ -395,7 +434,9 @@ arma::mat LogisticRegression::learningCurveOne(double label, const arma::mat& Xv
 arma::mat LogisticRegression::mapFeature(const arma::mat& X) {
     if( mFeatureMappingDegree > 0 ) {
         size_t pos = X.n_cols/2;
-        return Util::mapFeature(X.cols(0,pos-1), X.cols(pos, X.n_cols - 1), mFeatureMappingDegree);
+        arma::mat X1 = X.cols(0,pos-1);
+        arma::mat X2 = X.cols(pos, X.n_cols - 1);
+        return Util::mapFeature(X1, X2, mFeatureMappingDegree);
         //const int halfSize = 200;
         //return Util::mapFeature(X.cols(pos-halfSize,pos-1), X.cols(pos, pos+halfSize-1), mFeatureMappingDegree);
     }

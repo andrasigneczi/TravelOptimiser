@@ -16,8 +16,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    myWindow.capture();
-    myWindow.show();
+    //myWindow.capture();
+    myWindow.correctDataset();
+    //myWindow.show();
 }
 
 void MainWindow::on_pushButton_2_clicked()

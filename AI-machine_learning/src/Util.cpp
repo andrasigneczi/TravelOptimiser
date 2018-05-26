@@ -74,12 +74,11 @@ void removeDuplication(arma::mat& dataset) {
 }
 
 void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arma::mat& Xtraining, arma::mat& Ytraining, arma::mat& Xval, arma::mat& Yval,
-                                                       std::set<double> ignored_labels, size_t itemLimitPerLabel) {
+                                                       std::set<double> ignored_labels, size_t itemLimitPerLabel, const double percentage) {
     arma::mat dataset = join_rows( X, y );
     shuffle(dataset);
     Util::removeDuplication(dataset);
 
-    const double percentage = 0.7;
     // 70% of every single label will be taken into the training set,
     // the others will be put into the validation set
     size_t accepted_num = 0;
@@ -138,7 +137,7 @@ void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arm
     }
 }
 
-arma::mat mapFeature( arma::mat X1, arma::mat X2, int degree ){
+arma::mat mapFeature( const arma::mat& X1, const arma::mat& X2, int degree ){
     arma::mat out = arma::mat(X1.n_rows, 0);
     for( int i = 1; i <=degree; ++i ){
         for( int j = 0; j <= i; ++j ) {

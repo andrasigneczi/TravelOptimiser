@@ -23,11 +23,11 @@ HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h 
 
 } else {
 SOURCES += linear_regression.cpp logistic_regression.cpp fmincg.cpp neural_network.cpp png2arma.cpp CostAndGradient.cpp \
-      datasetgenerator.cpp Util.cpp qcustomplot.cpp support_vector_machine.cpp
+      datasetgenerator.cpp Util.cpp qcustomplot.cpp support_vector_machine.cpp logistic_regression_v2.cpp
 
 
 HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h png2arma.h CostAndGradient.h \
-      datasetgenerator.h Util.h qcustomplot.h support_vector_machine.h
+      datasetgenerator.h Util.h qcustomplot.h support_vector_machine.h logistic_regression_v2.h
 
 }
 
