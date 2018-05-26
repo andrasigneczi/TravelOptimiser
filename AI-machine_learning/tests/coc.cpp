@@ -31,6 +31,7 @@ void learning_validation_curve_OneVsAll();
 void support_vector_machine_one_vs_all();
 void logistic_regression_kinda_minibatch();
 void logistic_regression_v2();
+void logistic_regression_v2_continue();
 
 void runTests() {
     //test4(); // coc training test
@@ -48,7 +49,8 @@ void runTests() {
     //learning_validation_curve_OneVsAll();
     //support_vector_machine_one_vs_all();
     //logistic_regression_kinda_minibatch();
-    logistic_regression_v2();
+    //logistic_regression_v2();
+    logistic_regression_v2_continue();
 }
 
 
@@ -956,12 +958,11 @@ void logistic_regression_kinda_minibatch() {
 }
 
 void logistic_regression_v2() {
-    const long long iteration = 8e+3;
+    const long long iteration = 8e+0;
     const double alpha = 1e-2;
-    const double lambda = 1e-3;
-    const int degree = 4;
-    const char* prefix = "th11_batch";
-    const size_t orig_batch_size = 5000;
+    const int degree = 3;
+    const char* prefix = "lrv2_th11_minibatch";
+    const size_t batch_size = 5000;
 
     std::cout << "logistic_regression_v2\nLoading data...\n" << std::flush;
 
@@ -982,6 +983,8 @@ void logistic_regression_v2() {
 
         std::cout << "Training set size: " << Xtraining.n_rows << "\n";
         std::cout << "Validation set size: " << Xval.n_rows << "\n";
+        Xval.save(std::string(prefix) + "_Xval.bin");
+        Yval.save(std::string(prefix) + "_Yval.bin");
     } else if(scenario==2){
         Xtraining.load("trainParams_X.bin");
         Ytraining.load("trainParams_y.bin");
@@ -989,9 +992,28 @@ void logistic_regression_v2() {
         Yval.load("trainParams_Yval.bin");
     }
 
-    LogisticRegressionV2 lr(Xtraining,Ytraining,lambda,true,4,5000);
+    LogisticRegressionV2 lr(Xtraining,Ytraining,true,degree,batch_size);
     lr.miniBatchGradientDescent(true,alpha,iteration);
-    lr.saveThetaAndFeatureScaling("lrv2_minibatch");
+    lr.saveCurrentStatus(prefix);
+}
+
+void logistic_regression_v2_continue() {
+    const long long iteration = 2e+2;
+    const double alpha = 1e-2;
+    const char* prefix = "lrv2_th11_minibatch";
+
+    LogisticRegressionV2 lr;
+    lr.loadCurrentStatus(prefix);
+    lr.miniBatchGradientDescent(false,alpha,iteration);
+    lr.saveCurrentStatus(prefix);
+    std::cout << "\nTraining Set Accuracy: " << lr.accuracy() << "\n";
+
+    arma::mat Xval, Yval;
+    Xval.load(std::string(prefix) + "_Xval.bin");
+    Yval.load(std::string(prefix) + "_Yval.bin");
+
+    arma::mat p = lr.predict(Xval);
+    std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
 }
 
 } // COC_ns

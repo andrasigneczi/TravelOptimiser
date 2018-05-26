@@ -15,7 +15,6 @@
 
 int main (int argc, char* argv[]) {
     QCoreApplication app(argc, argv);
-    std::cout << "dbg\n";
     //QApplication app(argc, argv);
 
     QSettings settings("test.ini", QSettings::IniFormat);
@@ -23,9 +22,9 @@ int main (int argc, char* argv[]) {
     settings.beginGroup("General");
     
     //settings.setValue("BuildingName1", settings.value("BuildingName1").toInt() + 1);
-    std::cout << settings.value("BuildingName1").toString().toUtf8().constData() << "\n";
-    std::cout << settings.value("BuildingName2").toString().toUtf8().constData() << "\n";
-    std::cout << settings.value("BuildingName3").toString().toUtf8().constData() << "\n";
+    //std::cout << settings.value("BuildingName1").toString().toUtf8().constData() << "\n";
+    //std::cout << settings.value("BuildingName2").toString().toUtf8().constData() << "\n";
+    //std::cout << settings.value("BuildingName3").toString().toUtf8().constData() << "\n";
     settings.endGroup();
     
     settings.beginGroup("Others");
@@ -53,12 +52,18 @@ int main (int argc, char* argv[]) {
 //  w.show();
 
   //return 0;
-/*
+    /*
+
     arma::mat ttt;
     ttt << 1 << 10 << 11 << 12 << arma::endr << 2 << 20 << 21 << 22 << arma::endr << 3 << 30 << 31 << 32 << arma::endr
         << 4 << 40 << 41 << 42 << arma::endr << 5 << 50 << 51 << 52;
+
+    //std::cout << ttt << "\n\n";
+    //ttt.elem( arma::find( ttt == 5 ) ).ones();
+    //std::cout << ttt;
     //std::cout << arma::conv_to<arma::mat>::from(arma::all( (ttt == 5), 1 ));
-    std::cout << ttt;
+    //std::cout << arma::any((ttt >= 30),1);
+
     std::cout << Util::mapFeature(ttt.cols(0,1), ttt.cols(2,3));
     arma::mat X,y,Xval,yval;
     X.load("spamTest_Xtest.txt");
