@@ -37,7 +37,7 @@ public:
                           size_t batchSize );
     LogisticRegressionV2(){}
     arma::mat sigmoid( const arma::mat& X, const arma::mat& theta ) {return 1.0/(1.0+arma::exp(-X*theta));}
-    arma::mat miniBatchGradientDescent( bool initTheta, double alpha, long long iteration );
+    arma::mat miniBatchGradientDescent( bool initTheta, double alpha, double lambda, long long iteration );
     void saveThetaAndFeatureScaling( std::string fileNamePrefix );
     std::vector<arma::mat> loadThetaAndFeatureScaling( std::string fileNamePrefix );
     void deleteMappedFiles() { mFM.deleteMappedFiles(); }

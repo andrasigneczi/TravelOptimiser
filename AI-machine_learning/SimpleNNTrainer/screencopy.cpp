@@ -297,11 +297,11 @@ void ScreenCopy::scanScreenshot_lr() {
 
     std::vector<LogisticRegression> lr(5);
     //std::vector<double> thresholds{0.99999, 0.99, 0.95, 0.5, 0.95};
-    std::vector<double> thresholds{0.9, 0.99, 0.95, 0.5, 0.95};
+    std::vector<double> thresholds{0.999995, 0.99, 0.95, 0.5, 0.95};
     std::vector<double> mapping{1., 2., 3., 4., 5.};
 
     lr[TH11].setFeatureMappingDegree(3);
-    lr[TH11].loadThetaAndFeatureScaling("th11");
+    lr[TH11].loadThetaAndFeatureScaling("lrv2_th11_minibatch");
 
     lr[TH8].setFeatureMappingDegree(3);
     lr[TH8].loadThetaAndFeatureScaling("th8");

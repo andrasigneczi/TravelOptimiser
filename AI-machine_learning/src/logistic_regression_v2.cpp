@@ -110,7 +110,7 @@ arma::mat LogisticRegressionV2::featureScaling( const arma::mat& oX, bool saveFa
     return X;
 }
 
-arma::mat LogisticRegressionV2::miniBatchGradientDescent( bool initTheta, double alpha, long long iteration ) {
+arma::mat LogisticRegressionV2::miniBatchGradientDescent( bool initTheta, double alpha, double lambda, long long iteration ) {
     if( initTheta ) {
         mTheta = arma::zeros(mFM.getColNum(), 1);
     }
@@ -127,7 +127,7 @@ arma::mat LogisticRegressionV2::miniBatchGradientDescent( bool initTheta, double
             arma::mat delta = (sigmoid(X,mTheta) - mY.rows(l,l_end)).t();
             mTheta(0) = mTheta(0) - arma::as_scalar((alpha/(double)X.n_rows*delta*X.col(0)).t());
             for( size_t j = 1; j < mTheta.n_rows; ++j )
-                mTheta(j) = mTheta(j) - arma::as_scalar( alpha*( (1./(double)X.n_rows*delta*X.col(j)).t()));
+                mTheta(j) = mTheta(j) - arma::as_scalar( alpha*( (1./(double)X.n_rows*delta*X.col(j)).t() + lambda/(double)X.n_rows*mTheta(j)));
         }
 
         std::cout << "mini-batch iteration: " << i + 1 << "                       \r" << std::flush;

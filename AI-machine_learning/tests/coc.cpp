@@ -963,6 +963,7 @@ void logistic_regression_v2() {
     const int degree = 3;
     const char* prefix = "lrv2_th11_minibatch";
     const size_t batch_size = 5000;
+    const double lambda = 1e-3;
 
     std::cout << "logistic_regression_v2\nLoading data...\n" << std::flush;
 
@@ -993,18 +994,19 @@ void logistic_regression_v2() {
     }
 
     LogisticRegressionV2 lr(Xtraining,Ytraining,true,degree,batch_size);
-    lr.miniBatchGradientDescent(true,alpha,iteration);
+    lr.miniBatchGradientDescent(true,alpha,lambda,iteration);
     lr.saveCurrentStatus(prefix);
 }
 
 void logistic_regression_v2_continue() {
     const long long iteration = 2e+2;
-    const double alpha = 1e-2;
+    const double alpha = 1e-1;
     const char* prefix = "lrv2_th11_minibatch";
+    const double lambda = 1e-3;
 
     LogisticRegressionV2 lr;
     lr.loadCurrentStatus(prefix);
-    lr.miniBatchGradientDescent(false,alpha,iteration);
+    lr.miniBatchGradientDescent(false,alpha,lambda,iteration);
     lr.saveCurrentStatus(prefix);
     std::cout << "\nTraining Set Accuracy: " << lr.accuracy() << "\n";
 
