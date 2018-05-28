@@ -32,6 +32,8 @@ void support_vector_machine_one_vs_all();
 void logistic_regression_kinda_minibatch();
 void logistic_regression_v2();
 void logistic_regression_v2_continue();
+void logistic_regression_v2_onevsall();
+void logistic_regression_v2_onevsall_continue();
 
 void runTests() {
     //test4(); // coc training test
@@ -50,7 +52,9 @@ void runTests() {
     //support_vector_machine_one_vs_all();
     //logistic_regression_kinda_minibatch();
     //logistic_regression_v2();
-    logistic_regression_v2_continue();
+    //logistic_regression_v2_continue();
+    //logistic_regression_v2_onevsall();
+    logistic_regression_v2_onevsall_continue();
 }
 
 
@@ -1015,6 +1019,67 @@ void logistic_regression_v2_continue() {
     Yval.load(std::string(prefix) + "_Yval.bin");
 
     arma::mat p = lr.predict(Xval);
+    std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
+}
+
+void logistic_regression_v2_onevsall() {
+    const long long iteration = 8e+0;
+    const double alpha = 1e-2;
+    const int degree = 3;
+    const char* prefix = "lrv2_minibatch_onevsall";
+    const size_t batch_size = 5000;
+    const double lambda = 1e-3;
+
+    std::cout << "logistic_regression_v2\nLoading data...\n" << std::flush;
+
+    arma::mat Xtraining, Ytraining, Xval, Yval;
+    int scenario = 1;
+    if(scenario==1){
+        arma::mat X, y;
+        X.load("TH_plus_BG_trainingset.bin");
+        y.load("TH_plus_BG_trainingset_result.bin");
+
+        std::cout << "Data set size: " << X.n_rows << "\n";
+        std::cout << "Prepare training and validation set...\n";
+        //y = arma::conv_to<arma::mat>::from(arma::all( (y == 1), 1 ));
+        Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval);
+
+        //Ytraining = arma::conv_to<arma::mat>::from(arma::all( (Ytraining == test_th), 1 ));
+        //Yval = arma::conv_to<arma::mat>::from(arma::all( (Yval == test_th), 1 ));
+
+        std::cout << "Training set size: " << Xtraining.n_rows << "\n";
+        std::cout << "Validation set size: " << Xval.n_rows << "\n";
+        Xval.save(std::string(prefix) + "_Xval.bin");
+        Yval.save(std::string(prefix) + "_Yval.bin");
+    } else if(scenario==2){
+        Xtraining.load("trainParams_X.bin");
+        Ytraining.load("trainParams_y.bin");
+        Xval.load("trainParams_Xval.bin");
+        Yval.load("trainParams_Yval.bin");
+    }
+
+    LogisticRegressionV2 lr(Xtraining,Ytraining,true,degree,batch_size);
+    lr.miniBatchGradientDescentOneVsAll(true,alpha,lambda,iteration);
+    lr.saveCurrentStatus(prefix);
+}
+
+void logistic_regression_v2_onevsall_continue() {
+    const long long iteration = 1e+0;
+    const double alpha = 1e-1;
+    const char* prefix = "lrv2_minibatch_onevsall";
+    const double lambda = 1e-3;
+
+    LogisticRegressionV2 lr;
+    lr.loadCurrentStatus(prefix);
+    lr.miniBatchGradientDescentOneVsAll(false,alpha,lambda,iteration);
+    lr.saveCurrentStatus(prefix);
+    std::cout << "\nTraining Set Accuracy: " << lr.accuracyOneVsAll(false) << "\n";
+
+    arma::mat Xval, Yval;
+    Xval.load(std::string(prefix) + "_Xval.bin");
+    Yval.load(std::string(prefix) + "_Yval.bin");
+
+    arma::mat p = lr.predictOneVsAll(Xval);
     std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
 }
 

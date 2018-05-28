@@ -5,6 +5,7 @@
 #include <vector>
 #include <QtCore/QtGlobal>
 #include <string>
+#include <set>
 
 class Q_DECL_EXPORT FeatureMapper {
 public:
@@ -38,6 +39,7 @@ public:
     LogisticRegressionV2(){}
     arma::mat sigmoid( const arma::mat& X, const arma::mat& theta ) {return 1.0/(1.0+arma::exp(-X*theta));}
     arma::mat miniBatchGradientDescent( bool initTheta, double alpha, double lambda, long long iteration );
+    arma::mat miniBatchGradientDescentOneVsAll( bool initTheta, double alpha, double lambda, long long iteration );
     void saveThetaAndFeatureScaling( std::string fileNamePrefix );
     std::vector<arma::mat> loadThetaAndFeatureScaling( std::string fileNamePrefix );
     void deleteMappedFiles() { mFM.deleteMappedFiles(); }
@@ -46,13 +48,10 @@ public:
     void saveCurrentStatus(std::string fileNamePrefix);
     void loadCurrentStatus(std::string fileNamePrefix);
     double accuracy(double threshold = 0.5);
+    double accuracyOneVsAll(bool copyValue);
     arma::mat predict( const arma::mat& X, double threshold = 0.5 );
+    arma::mat predictOneVsAll( const arma::mat& X );
 
-    /*
-    arma::mat trainOneVsAll( int iteration, bool verbose = true, bool calcAccuracy = true );
-    arma::mat predictOneVsAll( const arma::mat& X, const arma::mat& theta, bool copyValue );
-
-*/
     arma::mat featureScaling( const arma::mat& X, bool saveFactors );
 
 private:
@@ -65,6 +64,7 @@ private:
     size_t mBatchSize;
     FeatureMapper mFM;
     arma::mat mTheta;
+    std::vector<double> mLabels;
 };
 
 #endif // __LOGISTIC_REGRESSION_V2_H__

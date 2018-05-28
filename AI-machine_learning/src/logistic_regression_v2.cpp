@@ -123,7 +123,7 @@ arma::mat LogisticRegressionV2::miniBatchGradientDescent( bool initTheta, double
                 break;
             size_t l = index * mBatchSize;
             size_t l_end = l + X.n_rows - 1;
-
+            //std::cout << "X: " << size(X) << "; Y: " << size(mY) << "; theta: " << size(mTheta) << "\n";
             arma::mat delta = (sigmoid(X,mTheta) - mY.rows(l,l_end)).t();
             mTheta(0) = mTheta(0) - arma::as_scalar((alpha/(double)X.n_rows*delta*X.col(0)).t());
             for( size_t j = 1; j < mTheta.n_rows; ++j )
@@ -132,6 +132,39 @@ arma::mat LogisticRegressionV2::miniBatchGradientDescent( bool initTheta, double
 
         std::cout << "mini-batch iteration: " << i + 1 << "                       \r" << std::flush;
     }
+    return mTheta;
+}
+
+arma::mat LogisticRegressionV2::miniBatchGradientDescentOneVsAll( bool initTheta, double alpha, double lambda, long long iteration ) {
+    arma::mat YSave = mY;
+
+    mLabels.clear();
+    std::set<double> labels;
+    for(size_t i = 0; i < YSave.n_rows; ++i)
+        labels.insert(YSave(i,0));
+    for(auto it = labels.begin(); it != labels.end(); ++it)
+        mLabels.push_back(*it);
+
+    arma::mat theta;
+    if( initTheta ) {
+        theta = arma::zeros(mLabels.size(), mFM.getColNum());
+    } else {
+        theta = mTheta;
+    }
+
+    size_t i = 0;
+    for(auto it = mLabels.begin(); it != mLabels.end(); ++it) {
+        std::cout << "Taining label " << *it << "\n";
+        // exchanging the values to zero, if it isn't equals to i, otherwise it will be 1
+        mY = arma::conv_to<arma::mat>::from(arma::all( (YSave == *it), 1 ));
+        mTheta = theta.row(i).t();
+        miniBatchGradientDescent(false, alpha, lambda, iteration );
+        std::cout << std::endl;
+        theta.row(i) = mTheta.t();
+        ++i;
+    }
+    mY = YSave;
+    mTheta = theta;
     return mTheta;
 }
 
@@ -151,9 +184,18 @@ void LogisticRegressionV2::saveCurrentStatus(std::string fileNamePrefix) {
     saveFeatureMappedFileNames(fileNamePrefix);
     mY.save(fileNamePrefix + "_y.bin");
 
+    // saving degree
     int degree = mFM.getDegree();
     std::ofstream output(fileNamePrefix +"_other.bin", std::ios::binary | std::ios::trunc | std::ios::out);
     output.write((const char*)&degree, sizeof(degree));
+
+    // saving labels
+    size_t labelSetSize = mLabels.size();
+    output.write((const char*)&labelSetSize, sizeof(labelSetSize));
+    for(auto it = mLabels.begin(); it != mLabels.end(); ++it) {
+        double x = *it;
+        output.write((const char*)&x, sizeof(x));
+    }
 }
 
 void LogisticRegressionV2::loadCurrentStatus(std::string fileNamePrefix) {
@@ -166,10 +208,21 @@ void LogisticRegressionV2::loadCurrentStatus(std::string fileNamePrefix) {
     int degree;
     input.read((char*)&degree, sizeof(degree));
     mFM.setDegree(degree);
+
+    mLabels.clear();
+    size_t labelSetSize;
+    input.read((char*)&labelSetSize, sizeof(labelSetSize));
+    if( labelSetSize > 0 ) {
+        double x;
+        for( size_t i = 0; i < labelSetSize; ++i ) {
+            input.read((char*)&x, sizeof(x));
+            mLabels.push_back(x);
+        }
+    }
 }
 
 arma::mat LogisticRegressionV2::evaluate( const arma::mat& theta, size_t m ) {
-    arma::mat q = arma::zeros(m, 1);
+    arma::mat q = arma::zeros(m, theta.n_cols);
 
     for( size_t index = 0; ;++index) {
         arma::mat X = mFM.get(index);
@@ -211,6 +264,53 @@ arma::mat LogisticRegressionV2::predict( const arma::mat& X, double threshold ) 
     }
     fm.deleteMappedFiles();
     return arma::conv_to<arma::mat>::from(arma::all( (p >= threshold), 1 ));
+}
+
+double LogisticRegressionV2::accuracyOneVsAll(bool copyValue) {
+    arma::mat p = arma::zeros(mY.n_rows, (copyValue?2:1));
+    arma::mat s = evaluate(mTheta.t(), mY.n_rows);
+
+    arma::mat M = arma::max(s,1);
+    for( size_t i = 0; i < mY.n_rows; ++i ){
+        arma::uvec result = arma::find(s.row(i) == M(i,0));
+        double label = mLabels[(int)result(0,0)];
+        p(i,0) = label;
+        if(copyValue)
+            p(i,1) = M(i,0);
+    }
+    return arma::mean(arma::conv_to<arma::colvec>::from(p == mY)) * 100.;
+}
+
+arma::mat LogisticRegressionV2::predictOneVsAll( const arma::mat& X ) {
+    arma::mat X2 = X;
+    if(mFCData.n_rows > 0) {
+        X2 = applyFeatureScalingValues(X2);
+    }
+    FeatureMapper fm(X2,mFM.getDegree());
+    fm.doMapping(mBatchSize);
+
+    arma::mat s = arma::zeros(X2.n_rows, mTheta.n_rows);
+    arma::mat thetaT = mTheta.t();
+    for( size_t index = 0; ;++index) {
+        arma::mat XX = fm.get(index);
+        if(XX.n_rows == 0)
+            break;
+
+        size_t l = index * mBatchSize;
+        size_t l_end = l + XX.n_rows - 1;
+        s.rows(l,l_end) = sigmoid(XX,thetaT);
+    }
+    fm.deleteMappedFiles();
+
+    arma::mat p = arma::zeros(X2.n_rows, 1);
+    arma::mat M = arma::max(s,1);
+    for( size_t i = 0; i < s.n_rows; ++i ){
+        arma::uvec result = arma::find(s.row(i) == M(i,0));
+        double label = mLabels[(int)result(0,0)];
+        p(i,0) = label;
+    }
+
+    return p;
 }
 
 arma::mat LogisticRegressionV2::applyFeatureScalingValues(arma::mat X) {
