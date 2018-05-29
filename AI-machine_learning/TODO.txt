@@ -1,5 +1,6 @@
 TODO
 ----
+- ArrayFire with my data set http://arrayfire.org/docs/index.htm
 - Anomaly detection
 - stohastic and mini-batch gradient descent for neural network
 - fminunc implementation
