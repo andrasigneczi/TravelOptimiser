@@ -14,10 +14,12 @@ public:
     void doMapping(size_t batchSize);
     arma::mat get(size_t index);
     size_t getColNum(){ return mColNum; }
+    void setColNum(size_t colNum){ mColNum = colNum; }
     void deleteMappedFiles();
     void saveFeatureMappedFileNames( std::string fileNamePrefix );
     void loadFeatureMappedFileNames( std::string fileNamePrefix );
     size_t getBatchSize() { return mBatchSize; }
+    void setBatchSize(size_t batchSize) { mBatchSize = batchSize; }
     int getDegree() { return mDegree; }
     void setDegree(int degree) { mDegree = degree; }
 

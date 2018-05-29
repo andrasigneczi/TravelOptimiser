@@ -44,6 +44,7 @@ public:
     void saveTrainingSet();
     double getSelectedLabel();
     void correctDataset();
+    void savePredictionsAs0();
 
 signals:
 
@@ -65,6 +66,8 @@ private:
     bool mousePressed;
     int mousePressedX;
     int mousePressedY;
+    int selectionX;
+    int selectionY;
 
     arma::mat mTrainingset;
     arma::mat mTrainingsetNewCollection;
@@ -74,6 +77,7 @@ private:
     std::vector<prediction> mPredictions;
     QRect mCanvasSize;
     std::map<int,int> mTrainingSetStat;
+    bool mSelectionMode;
 };
 
 #endif // SCREENCOPY_H

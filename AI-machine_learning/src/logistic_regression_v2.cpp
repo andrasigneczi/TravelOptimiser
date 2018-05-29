@@ -74,9 +74,6 @@ void FeatureMapper::loadFeatureMappedFileNames( std::string fileNamePrefix ) {
     std::ifstream is(fileNamePrefix + "_feature_maps_file_names.txt");
     std::istream_iterator<std::string> start(is), end;
     mFileNames = std::vector<std::string>(start, end);
-    arma::mat X = get(0);
-    mBatchSize = X.n_rows;
-    mColNum = X.n_cols;
 }
 
 LogisticRegressionV2::LogisticRegressionV2( const arma::mat& X, const arma::mat& y, bool featureScaling, int featureMappingDegree, size_t batchSize )
@@ -188,6 +185,9 @@ void LogisticRegressionV2::saveCurrentStatus(std::string fileNamePrefix) {
     int degree = mFM.getDegree();
     std::ofstream output(fileNamePrefix +"_other.bin", std::ios::binary | std::ios::trunc | std::ios::out);
     output.write((const char*)&degree, sizeof(degree));
+    output.write((const char*)&mBatchSize, sizeof(mBatchSize));
+    size_t colNum = mFM.getColNum();
+    output.write((const char*)&colNum, sizeof(colNum));
 
     // saving labels
     size_t labelSetSize = mLabels.size();
@@ -200,15 +200,22 @@ void LogisticRegressionV2::saveCurrentStatus(std::string fileNamePrefix) {
 
 void LogisticRegressionV2::loadCurrentStatus(std::string fileNamePrefix) {
     loadThetaAndFeatureScaling(fileNamePrefix);
+    std::cout << "dbgX1\n";
     loadFeatureMappedFileNames(fileNamePrefix);
-    mBatchSize = mFM.getBatchSize();
+    std::cout << "dbgX2\n";
     mY.load(fileNamePrefix + "_y.bin");
 
     std::ifstream input(fileNamePrefix +"_other.bin", std::ios::binary | std::ios::in);
     int degree;
     input.read((char*)&degree, sizeof(degree));
     mFM.setDegree(degree);
+    input.read((char*)&mBatchSize, sizeof(mBatchSize));
+    mFM.setBatchSize(mBatchSize);
+    size_t colNum;
+    input.read((char*)&colNum, sizeof(colNum));
+    mFM.setColNum(colNum);
 
+std::cout << "dbgX4\n";
     mLabels.clear();
     size_t labelSetSize;
     input.read((char*)&labelSetSize, sizeof(labelSetSize));

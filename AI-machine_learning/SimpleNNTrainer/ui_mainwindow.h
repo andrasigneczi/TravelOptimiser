@@ -47,7 +47,7 @@ public:
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         pushButton = new QPushButton(centralWidget);
         pushButton->setObjectName(QStringLiteral("pushButton"));
-        pushButton->setGeometry(QRect(20, 0, 99, 27));
+        pushButton->setGeometry(QRect(20, 200, 191, 27));
         pushButton_2 = new QPushButton(centralWidget);
         pushButton_2->setObjectName(QStringLiteral("pushButton_2"));
         pushButton_2->setGeometry(QRect(20, 40, 99, 27));
@@ -69,7 +69,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 400, 26));
+        menuBar->setGeometry(QRect(0, 0, 400, 25));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -86,7 +86,7 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "COC-Legend", 0));
-        pushButton->setText(QApplication::translate("MainWindow", "Capture", 0));
+        pushButton->setText(QApplication::translate("MainWindow", "Save matches as label 0", 0));
         pushButton_2->setText(QApplication::translate("MainWindow", "Tile", 0));
         pushButton_3->setText(QApplication::translate("MainWindow", "Train", 0));
         pushButton_4->setText(QApplication::translate("MainWindow", "Scan", 0));

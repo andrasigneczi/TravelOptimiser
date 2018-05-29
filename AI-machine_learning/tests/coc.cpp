@@ -1003,7 +1003,9 @@ void logistic_regression_v2() {
 }
 
 void logistic_regression_v2_continue() {
-    const long long iteration = 2e+2;
+    std::cout << "logistic_regression_v2_continue" << std::endl;
+
+    const long long iteration = 2e+0;
     const double alpha = 1e-1;
     const char* prefix = "lrv2_th11_minibatch";
     const double lambda = 1e-3;
@@ -1023,6 +1025,8 @@ void logistic_regression_v2_continue() {
 }
 
 void logistic_regression_v2_onevsall() {
+    std::cout << "logistic_regression_v2_onevsall" << std::flush;
+
     const long long iteration = 8e+0;
     const double alpha = 1e-2;
     const int degree = 3;
@@ -1064,8 +1068,9 @@ void logistic_regression_v2_onevsall() {
 }
 
 void logistic_regression_v2_onevsall_continue() {
-    const long long iteration = 1e+0;
-    const double alpha = 1e-1;
+    std::cout << "logistic_regression_v2_onevsall_continue\n";
+    const long long iteration = 8e+2;
+    const double alpha = 1e-0;
     const char* prefix = "lrv2_minibatch_onevsall";
     const double lambda = 1e-3;
 
