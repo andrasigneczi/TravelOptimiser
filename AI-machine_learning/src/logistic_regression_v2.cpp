@@ -41,14 +41,14 @@ void FeatureMapper::doMapping(size_t batchSize) {
                 batchSize = mX.n_rows - r;
             ++index;
         }
-    } else {
+    }/* else {
         arma::mat X = mX;
         X.insert_cols(0,arma::ones(X.n_rows,1));
 
         std::string fileName = (std::string("mapped_feature_x_0_") + mTempId + ".bin");
         X.save(fileName.c_str());
         mFileNames.push_back(fileName);
-    }
+    }*/
 }
 
 void FeatureMapper::deleteMappedFiles() {
@@ -56,6 +56,12 @@ void FeatureMapper::deleteMappedFiles() {
 }
 
 arma::mat FeatureMapper::get(size_t index) {
+    if( mFileNames.size() == 0 && index == 0 ) {
+        arma::mat X = mX;
+        X.insert_cols(0,arma::ones(X.n_rows,1));
+        return X;
+    }
+
     if(index >= mFileNames.size())
         return arma::mat();
 
