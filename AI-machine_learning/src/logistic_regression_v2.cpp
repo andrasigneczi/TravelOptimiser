@@ -151,7 +151,7 @@ arma::mat LogisticRegressionV2::miniBatchGradientDescentOneVsAll( bool initTheta
 
     size_t i = 0;
     for(auto it = mLabels.begin(); it != mLabels.end(); ++it) {
-        std::cout << "Taining label " << *it << "\n";
+        std::cout << "Training label " << *it << "\n";
         // exchanging the values to zero, if it isn't equals to i, otherwise it will be 1
         mY = arma::conv_to<arma::mat>::from(arma::all( (YSave == *it), 1 ));
         mTheta = theta.row(i).t();
@@ -200,9 +200,7 @@ void LogisticRegressionV2::saveCurrentStatus(std::string fileNamePrefix) {
 
 void LogisticRegressionV2::loadCurrentStatus(std::string fileNamePrefix) {
     loadThetaAndFeatureScaling(fileNamePrefix);
-    std::cout << "dbgX1\n";
     loadFeatureMappedFileNames(fileNamePrefix);
-    std::cout << "dbgX2\n";
     mY.load(fileNamePrefix + "_y.bin");
 
     std::ifstream input(fileNamePrefix +"_other.bin", std::ios::binary | std::ios::in);
@@ -215,7 +213,6 @@ void LogisticRegressionV2::loadCurrentStatus(std::string fileNamePrefix) {
     input.read((char*)&colNum, sizeof(colNum));
     mFM.setColNum(colNum);
 
-std::cout << "dbgX4\n";
     mLabels.clear();
     size_t labelSetSize;
     input.read((char*)&labelSetSize, sizeof(labelSetSize));

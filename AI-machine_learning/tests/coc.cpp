@@ -1069,8 +1069,8 @@ void logistic_regression_v2_onevsall() {
 
 void logistic_regression_v2_onevsall_continue() {
     std::cout << "logistic_regression_v2_onevsall_continue\n";
-    const long long iteration = 8e+2;
-    const double alpha = 1e-0;
+    const long long iteration = 8e+1;
+    const double alpha = 1e-3;
     const char* prefix = "lrv2_minibatch_onevsall";
     const double lambda = 1e-3;
 

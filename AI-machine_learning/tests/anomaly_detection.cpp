@@ -69,16 +69,17 @@ arma::mat multivariateGaussian(arma::mat X, const arma::mat& mu, arma::mat Sigma
     return p;
 }
 
+#ifndef __x86_64__
 typedef arma::enable_if2<true, const arma::mtOp<unsigned int, arma::Mat<double>, arma::op_rel_eq> >::result my_op_typ;
 arma::mat operator&(const my_op_typ& x, const my_op_typ& y ) {
     arma::mat X = arma::conv_to<arma::mat>::from(x);
     arma::mat Y = arma::conv_to<arma::mat>::from(y);
-    
+
     //std::cout << size(X) << "\n";
     //std::cout << size(Y) << "\n";
-    
+
     arma::mat retval(X.n_rows,X.n_cols);
-    
+
     for( size_t i = 0; i < X.n_rows; ++i ) {
         for( size_t j = 0; j < X.n_cols; ++j ) {
             retval(i,j) = ((int)X(i,j)&(int)Y(i,j));
@@ -86,7 +87,25 @@ arma::mat operator&(const my_op_typ& x, const my_op_typ& y ) {
     }
     return retval;
 }
+#else
+typedef arma::enable_if2<true, const arma::mtOp<long long unsigned int, arma::Mat<double>, arma::op_rel_eq> >::result my_op_typ2;
+arma::mat operator&(const my_op_typ2& x, const my_op_typ2& y ) {
+    arma::mat X = arma::conv_to<arma::mat>::from(x);
+    arma::mat Y = arma::conv_to<arma::mat>::from(y);
 
+    //std::cout << size(X) << "\n";
+    //std::cout << size(Y) << "\n";
+
+    arma::mat retval(X.n_rows,X.n_cols);
+
+    for( size_t i = 0; i < X.n_rows; ++i ) {
+        for( size_t j = 0; j < X.n_cols; ++j ) {
+            retval(i,j) = ((int)X(i,j)&(int)Y(i,j));
+        }
+    }
+    return retval;
+}
+#endif
 void selectThreshold( const arma::mat& yval, const arma::mat& pval, double& bestEpsilon, double& bestF1 ) {
     // SELECTTHRESHOLD Find the best threshold (epsilon) to use for selecting
     // outliers
@@ -214,7 +233,7 @@ void test1() {
     printf("Best F1 on Cross Validation Set:  %f\n", F1);
     printf("   (you should see a value epsilon of about 1.38e-18)\n");
     printf("   (you should see a Best F1 value of 0.615385)\n");
-    printf("# Outliers found: %d\n\n", as_scalar(sum(p < epsilon)));
+    std::cout << "# Outliers found: " << as_scalar(sum(p < epsilon)) << "\n\n";
 
 }
 
