@@ -62,7 +62,7 @@ arma::mat multivariateGaussian(arma::mat X, const arma::mat& mu, arma::mat Sigma
     return p;
 }
 
-#ifndef __x86_64__
+#if ARMA_VERSION_MAJOR == 4
 typedef arma::enable_if2<true, const arma::mtOp<unsigned int, arma::Mat<double>, arma::op_rel_eq> >::result my_op_typ;
 #else
 typedef arma::enable_if2<true, const arma::mtOp<long long unsigned int, arma::Mat<double>, arma::op_rel_eq> >::result my_op_typ;
