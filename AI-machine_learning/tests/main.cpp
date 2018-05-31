@@ -43,9 +43,9 @@ int main (int argc, char* argv[]) {
 
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     //NeuralNetwork_ns::runTests();
-    COC_ns::runTests();
+    //COC_ns::runTests();
     //SVM_ns::runTests();
-    //AnomalyDetection_ns::runTests();
+    AnomalyDetection_ns::runTests();
     //std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     //std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() <<std::endl;
 
@@ -69,6 +69,16 @@ int main (int argc, char* argv[]) {
     std::cout << Util::mapFeature(ttt.cols(0,1), ttt.cols(2,3));
 
     arma::mat X,y,Xval,yval;
+    X.load("ex8data1_X.txt");
+    Xval.load("ex8data1_Xval.txt");
+    yval.load("ex8data1_yval.txt");
+
+
+    X.save("ex8data1_X.bin");
+    Xval.save("ex8data1_Xval.bin");
+    yval.save("ex8data1_yval.bin");
+
+    //arma::mat X,y,Xval,yval;
     X.load("ex8data2_X.txt");
     Xval.load("ex8data2_Xval.txt");
     yval.load("ex8data2_yval.txt");
