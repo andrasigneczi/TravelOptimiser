@@ -34,13 +34,17 @@ public:
     void trainLogisticRegression();
     void scanScreenshot();
     void scanScreenshot_lr();
+    void scanScreenshot_lr_onevsall();
     void scanScreenshot_svm();
     QRect getCanvasSize() { return mCanvasSize; }
     void capture();
-    void extractTrainingSet();
+    void extractTrainingSet(double yFilter=-1);
     void updateTrainingSetStat();
     void deleteTrainingSet();
     void saveTrainingSet();
+    double getSelectedLabel();
+    void correctDataset();
+    void savePredictionsAs0();
 
 signals:
 
@@ -62,6 +66,8 @@ private:
     bool mousePressed;
     int mousePressedX;
     int mousePressedY;
+    int selectionX;
+    int selectionY;
 
     arma::mat mTrainingset;
     arma::mat mTrainingsetNewCollection;
@@ -71,6 +77,7 @@ private:
     std::vector<prediction> mPredictions;
     QRect mCanvasSize;
     std::map<int,int> mTrainingSetStat;
+    bool mSelectionMode;
 };
 
 #endif // SCREENCOPY_H

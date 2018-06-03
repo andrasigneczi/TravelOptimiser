@@ -13,7 +13,8 @@ CFLAGS= -O3 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra
 LDLIBS=-lMachineLearning -lpthread -ldl -larmadillo -lQt5Gui -lQt5Core -lQt5Widgets -lQt5PrintSupport -lsvm
 OBJDIR=Debug
 
-SRCS1=main.cpp linear_regression.cpp logistic_regression.cpp neural_network.cpp png2arma.cpp coc.cpp support_vector_machine.cpp
+SRCS1=main.cpp linear_regression.cpp logistic_regression.cpp neural_network.cpp png2arma.cpp coc.cpp support_vector_machine.cpp \
+		anomaly_detection.cpp
 
 OBJS1=$(subst .cpp,.o,$(SRCS1))
 OBJS11=$(addprefix $(OBJDIR)/, $(OBJS1))

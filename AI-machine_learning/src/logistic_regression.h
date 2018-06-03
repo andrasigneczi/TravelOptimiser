@@ -14,6 +14,8 @@ public:
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override;
 
     arma::mat gradientDescentWithReguralization( const arma::mat& X, const arma::mat& y, const arma::mat& theta, double alpha, double lambda, long long iteration );
+    arma::mat gradientDescentWithReguralization( const arma::mat& theta, double alpha, double lambda, long long iteration );
+    arma::mat gradientDescentWithReguralization( double alpha, long long iteration );
     // predic a value using the gradient descent
     arma::mat predict( const arma::mat& X, const arma::mat& theta, double threshold = 0.5 );
     arma::mat predict( const arma::mat& X, double threshold = 0.5 );
@@ -26,17 +28,27 @@ public:
     arma::mat validationCurve(const arma::mat& Xval, const arma::mat& Yval, long long iteration);
     
     arma::mat train(int iteration, bool verbose);
+    arma::mat train(arma::mat initial_theta, int iteration, bool verbose);
     arma::mat trainOne(double label, int iteration, bool verbose);
     arma::mat trainOneVsAll(int iteration, bool verbose = true);
     arma::mat predictOneVsAll( const arma::mat& X, const arma::mat& theta, bool copyValue );
     arma::mat predictOneVsAll( const arma::mat& X, bool copyValue );
     void saveThetaAndFeatureScaling(std::string fileNamePrefix);
-    void loadThetaAndFeatureScaling(std::string fileNamePrefix);
+    std::vector<arma::mat> loadThetaAndFeatureScaling(std::string fileNamePrefix);
     arma::mat validationCurveOne(double label, const arma::mat& Xval, const arma::mat& Yval, long long iteration);
     arma::mat learningCurveOne(double label, const arma::mat& Xval, const arma::mat& Yval, double lambda, long long iteration, int stepSize);
     arma::mat mapFeature(const arma::mat& X);
     void setFeatureMappingDegree(int degree) { mFeatureMappingDegree = degree; }
     double searchThreshold( const arma::mat& X, const arma::mat& Y );
+    arma::mat stochasticGradientDescent( const arma::mat& X, const arma::mat& y, const arma::mat& theta, double alpha, long long iteration );
+    arma::mat miniBatchGradientDescent( const arma::mat& X, const arma::mat& y, const arma::mat& theta, double alpha, long long iteration );
+    arma::mat stochasticGradientDescent( const arma::mat& theta, double alpha, long long iteration );
+    arma::mat stochasticGradientDescent( double alpha, long long iteration );
+    arma::mat miniBatchGradientDescent( const arma::mat& theta, double alpha, long long iteration );
+    arma::mat miniBatchGradientDescent( double alpha, long long iteration );
+
+    arma::mat applyFeatureScalingValues(arma::mat X);
+
 private:
 
     long double Abs( long double x ) { return x > 0 ? x : -x; }

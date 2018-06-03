@@ -16,8 +16,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    myWindow.capture();
-    myWindow.show();
+    myWindow.savePredictionsAs0();
+    myWindow.hide();
 }
 
 void MainWindow::on_pushButton_2_clicked()
@@ -36,7 +36,8 @@ void MainWindow::on_pushButton_4_clicked()
 {
     myWindow.hide();
     myWindow.capture();
-    myWindow.scanScreenshot_lr();
+    //myWindow.scanScreenshot_lr();
+    myWindow.scanScreenshot_lr_onevsall();
     //myWindow.scanScreenshot_svm();
     myWindow.show();
 }
@@ -48,7 +49,7 @@ void MainWindow::on_pushButton_5_clicked()
 
 void MainWindow::on_pushButton_6_clicked()
 {
-    myWindow.extractTrainingSet();
+    myWindow.extractTrainingSet(myWindow.getSelectedLabel());
 }
 
 void MainWindow::on_pushButton_7_clicked()
