@@ -19,7 +19,9 @@
 #include <QtCore/QSettings>
 #include "logistic_regression.h"
 #include "logistic_regression_v2.h"
+#ifdef __LINUX__
 #include "support_vector_machine.h"
+#endif
 
 const int small_image_width = 24;
 const std::string training_sets_folder = "./training_sets/";
@@ -432,6 +434,7 @@ void ScreenCopy::scanScreenshot_lr_onevsall() {
     std::cout << "Found TH count: " << mPredictions.size() << "\n" << std::flush;
 }
 
+#ifdef __LINUX__
 void ScreenCopy::scanScreenshot_svm() {
     arma::mat X, y;
 
@@ -464,6 +467,7 @@ void ScreenCopy::scanScreenshot_svm() {
     std::cout << "bgcounter: " << bgcounter << "\n" << std::flush;
     std::cout << "Found TH count: " << mPredictions.size() << "\n" << std::flush;
 }
+#endif
 
 void ScreenCopy::saveSelectedRect() {
 

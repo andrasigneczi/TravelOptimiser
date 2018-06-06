@@ -1,4 +1,8 @@
 #include "anomaly_detection.h"
+#ifndef __LINUX__
+#define _USE_MATH_DEFINES
+#include <math.h>
+#endif
 
 AnomalyDetection::AnomalyDetection( const arma::mat& X, const arma::mat& Xval, const arma::mat& yval ) {
     estimateGaussian( X );
