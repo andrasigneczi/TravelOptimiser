@@ -11,6 +11,7 @@
 #include <logistic_regression_v2.h>
 #include <support_vector_machine.h>
 #include "Util.h"
+#include <anomaly_detection.h>
 
 namespace COC_ns {
     
@@ -34,6 +35,7 @@ void logistic_regression_v2();
 void logistic_regression_v2_continue();
 void logistic_regression_v2_onevsall();
 void logistic_regression_v2_onevsall_continue();
+void anomaly_detection();
 
 void runTests() {
     //test4(); // coc training test
@@ -54,7 +56,8 @@ void runTests() {
     //logistic_regression_v2();
     //logistic_regression_v2_continue();
     //logistic_regression_v2_onevsall();
-    logistic_regression_v2_onevsall_continue();
+    //logistic_regression_v2_onevsall_continue();
+    anomaly_detection();
 }
 
 
@@ -1086,6 +1089,10 @@ void logistic_regression_v2_onevsall_continue() {
 
     arma::mat p = lr.predictOneVsAll(Xval);
     std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
+}
+
+void anomaly_detection() {
+    
 }
 
 } // COC_ns
