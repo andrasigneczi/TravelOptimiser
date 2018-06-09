@@ -3,6 +3,7 @@
 #include "neural_network.h"
 #include "coc.h"
 #include "support_vector_machine.h"
+#include "kmean.h"
 #include <iostream>
 #include <chrono>
 #include "png2arma.h"
@@ -46,6 +47,7 @@ int main (int argc, char* argv[]) {
     COC_ns::runTests();
     //SVM_ns::runTests();
     //AnomalyDetection_ns::runTests();
+    KMean_ns::runTests();
     //std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     //std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() <<std::endl;
 

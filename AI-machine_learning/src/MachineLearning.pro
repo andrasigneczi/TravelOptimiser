@@ -15,6 +15,9 @@ CONFIG += shared
 SOURCES += linear_regression.cpp logistic_regression.cpp fmincg.cpp neural_network.cpp CostAndGradient.cpp Util.cpp qcustomplot.cpp logistic_regression_v2.cpp anomaly_detection.cpp
 HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h CostAndGradient.h Util.h  qcustomplot.h logistic_regression_v2.h  anomaly_detection.h
 
+SOURCES += kmean.cpp
+HEADERS  += kmean.h
+
 win32 {
 SOURCES +=
 

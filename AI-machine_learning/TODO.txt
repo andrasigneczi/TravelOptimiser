@@ -1,7 +1,6 @@
 TODO
 ----
 - ArrayFire with my data set http://arrayfire.org/docs/index.htm
-- Anomaly detection
 - stohastic and mini-batch gradient descent for neural network
 - fminunc implementation
 - online learning algorithm
@@ -15,3 +14,4 @@ DONE
 ----
 - export images from coc dataset into big images
 - stohastic and mini-batch gradient descent for logistic regression
+- Anomaly detection
