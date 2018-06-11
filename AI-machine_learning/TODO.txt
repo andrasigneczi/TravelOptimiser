@@ -6,7 +6,6 @@ TODO
 - online learning algorithm
 - CUDA
 - Map Reduce
-- K-Mean
 - PCA
 
 
@@ -15,3 +14,4 @@ DONE
 - export images from coc dataset into big images
 - stohastic and mini-batch gradient descent for logistic regression
 - Anomaly detection
+- K-Mean test

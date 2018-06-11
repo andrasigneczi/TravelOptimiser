@@ -93,7 +93,7 @@ arma::mat computeCentroids(arma::mat X, arma::mat idx, int K) {
     return centroids;
 }
 
-void runkMeans(arma::mat X, arma::mat initial_centroids, int max_iters, arma::mat& centroids, arma::mat& idx) {
+void runkMeans(const arma::mat& X, const arma::mat& initial_centroids, int max_iters, arma::mat& centroids, arma::mat& idx) {
     // RUNKMEANS runs the K-Means algorithm on data matrix X, where each row of X
     // is a single example
     //    [centroids, idx] = RUNKMEANS(X, initial_centroids, max_iters, ...
@@ -131,7 +131,7 @@ void runkMeans(arma::mat X, arma::mat initial_centroids, int max_iters, arma::ma
     }
 }
 
-arma::mat kMeansInitCentroids(arma::mat X, int K) {
+arma::mat kMeansInitCentroids(const arma::mat& X, int K) {
     // KMEANSINITCENTROIDS This function initializes K centroids that are to be 
     // used in K-Means on the dataset X
     //    centroids = KMEANSINITCENTROIDS(X, K) returns K initial centroids to be
