@@ -31,6 +31,8 @@ private slots:
 
     void on_pushButton_7_clicked();
 
+    void on_captureButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     ScreenCopy myWindow;

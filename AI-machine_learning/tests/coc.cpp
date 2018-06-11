@@ -1032,7 +1032,7 @@ void logistic_regression_v2_onevsall() {
 
     const long long iteration = 8e+0;
     const double alpha = 1e-2;
-    const int degree = 3;
+    const int degree = 4;
     const char* prefix = "lrv2_minibatch_onevsall";
     const size_t batch_size = 5000;
     const double lambda = 1e-3;
@@ -1072,10 +1072,10 @@ void logistic_regression_v2_onevsall() {
 
 void logistic_regression_v2_onevsall_continue() {
     std::cout << "logistic_regression_v2_onevsall_continue\n";
-    const long long iteration = 8e+1;
-    const double alpha = 1e-3;
+    const long long iteration = 8e+2;
+    const double alpha = .85;
     const char* prefix = "lrv2_minibatch_onevsall";
-    const double lambda = 1e-3;
+    const double lambda = 1e-55;
 
     LogisticRegressionV2 lr;
     lr.loadCurrentStatus(prefix);

@@ -45,6 +45,8 @@ public:
     double getSelectedLabel();
     void correctDataset();
     void savePredictionsAs0();
+    void prepareSmallTilesView();
+    void deleteSelectedRect();
 
 signals:
 
@@ -57,10 +59,15 @@ private:
     };
 
     void saveSelectedRect();
+    void saveSelectedRect_old();
     QString y2String(int y);
 
     QPixmap mScreenshot;
     QImage mGrayMiniCopy;
+
+    QImage mSmallTilesView;
+    std::vector<QRect> mSmallTiles;
+
     int mouseX;
     int mouseY;
     bool mousePressed;

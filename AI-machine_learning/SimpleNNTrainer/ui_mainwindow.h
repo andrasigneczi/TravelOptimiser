@@ -34,6 +34,7 @@ public:
     QPushButton *pushButton_5;
     QPushButton *pushButton_6;
     QPushButton *pushButton_7;
+    QPushButton *captureButton;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -47,25 +48,28 @@ public:
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         pushButton = new QPushButton(centralWidget);
         pushButton->setObjectName(QStringLiteral("pushButton"));
-        pushButton->setGeometry(QRect(20, 200, 191, 27));
+        pushButton->setGeometry(QRect(200, 210, 191, 27));
         pushButton_2 = new QPushButton(centralWidget);
         pushButton_2->setObjectName(QStringLiteral("pushButton_2"));
-        pushButton_2->setGeometry(QRect(20, 40, 99, 27));
+        pushButton_2->setGeometry(QRect(10, 40, 99, 27));
         pushButton_3 = new QPushButton(centralWidget);
         pushButton_3->setObjectName(QStringLiteral("pushButton_3"));
-        pushButton_3->setGeometry(QRect(20, 100, 99, 27));
+        pushButton_3->setGeometry(QRect(220, 150, 99, 27));
         pushButton_4 = new QPushButton(centralWidget);
         pushButton_4->setObjectName(QStringLiteral("pushButton_4"));
-        pushButton_4->setGeometry(QRect(20, 160, 99, 27));
+        pushButton_4->setGeometry(QRect(220, 180, 99, 27));
         pushButton_5 = new QPushButton(centralWidget);
         pushButton_5->setObjectName(QStringLiteral("pushButton_5"));
-        pushButton_5->setGeometry(QRect(160, 10, 151, 27));
+        pushButton_5->setGeometry(QRect(230, 10, 151, 27));
         pushButton_6 = new QPushButton(centralWidget);
         pushButton_6->setObjectName(QStringLiteral("pushButton_6"));
-        pushButton_6->setGeometry(QRect(180, 70, 141, 27));
+        pushButton_6->setGeometry(QRect(250, 50, 141, 27));
         pushButton_7 = new QPushButton(centralWidget);
         pushButton_7->setObjectName(QStringLiteral("pushButton_7"));
-        pushButton_7->setGeometry(QRect(180, 150, 131, 28));
+        pushButton_7->setGeometry(QRect(260, 90, 131, 28));
+        captureButton = new QPushButton(centralWidget);
+        captureButton->setObjectName(QStringLiteral("captureButton"));
+        captureButton->setGeometry(QRect(10, 0, 99, 27));
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -93,6 +97,7 @@ public:
         pushButton_5->setText(QApplication::translate("MainWindow", "Delete training set", 0));
         pushButton_6->setText(QApplication::translate("MainWindow", "Extract training set", 0));
         pushButton_7->setText(QApplication::translate("MainWindow", "Save Training Set", 0));
+        captureButton->setText(QApplication::translate("MainWindow", "Capture", 0));
     } // retranslateUi
 
 };

@@ -26,8 +26,9 @@
 const int small_image_width = 24;
 const std::string training_sets_folder = "./training_sets/";
 int copy_box_size = 80;
+const int small_tile_size = 22;
 double minimize_rate = (double)small_image_width/(double)copy_box_size;
-const std::string training_set_prefix = "TH_plus_BG";
+const std::string training_set_prefix = "TH_plus_BG_small_tiles";
 double training_set_y = 0.;
 double lambda = 0.1;
 int iteration = 1000;
@@ -64,20 +65,20 @@ void ScreenCopy::capture() {
                     .convertToFormat(QImage::Format_RGB32, Qt::MonoOnly);
     mGrayMiniCopy.save("minicopy.png");
     mScreenshot.save("screenshot.png");
+    prepareSmallTilesView();
     updateTrainingSetStat();
 }
 
 void ScreenCopy::paintEvent(QPaintEvent* pe) {
 
     QPainter p(this);
-    p.drawPixmap(0,0,mScreenshot);
+    //p.drawPixmap(0,0,mScreenshot);
+    p.drawImage(0,0,mSmallTilesView);
     //p.setCompositionMode(QPainter::CompositionMode_SourceOver);
     p.fillRect(0,0,1500,100, QBrush(QColor("#444444")));
     p.setFont(QFont("times",18));
     p.setPen(QPen(QColor("#ff0000")));
     p.drawText(QRect(0,0,500,30), Qt::AlignLeft, (std::to_string(mouseX) + " " + std::to_string(mouseY)).c_str());
-        //p.drawText(QRect(0,30,500,30), Qt::AlignLeft, (std::to_string(mousePressedX) + " " + std::to_string(mousePressedY)).c_str());
-//    p.drawText(QRect(0,30,500,30), Qt::AlignLeft, QString("detected th numbers:") + " " + std::to_string(mPredictions.size()).c_str());
 
     int textpos = 0;
     for( auto it = mTrainingSetStat.begin(); it != mTrainingSetStat.end(); ++it ){
@@ -110,8 +111,13 @@ void ScreenCopy::paintEvent(QPaintEvent* pe) {
     }
 
     if( !mSelectionMode ) {
-        p.setPen(QPen(QColor("#ff6600"),2,Qt::DotLine));
-        p.drawRect(mouseX, mouseY, copy_box_size, copy_box_size);
+        p.setPen(QPen(Qt::GlobalColor::white,2,Qt::DotLine));
+        //p.drawRect(mouseX, mouseY, copy_box_size, copy_box_size);
+        for( auto it = mSmallTiles.begin(); it != mSmallTiles.end(); ++it ) {
+            if( it->contains( mouseX, mouseY )) {
+                p.drawRect(it->x() - 1, it->y() - 1, it->width() + 2, it->height() + 2);
+            }
+        }
     } else {
         p.setPen(QPen(QColor("#ffff00"),2,Qt::DotLine));
         QRect r;
@@ -153,11 +159,7 @@ void ScreenCopy::mousePressEvent(QMouseEvent*me) {
         selectionX = mousePressedX;
         selectionY = mousePressedY;
     } else if( me->modifiers() == Qt::ControlModifier){
-        QPainter p1(&mScreenshot);
-        p1.fillRect(mousePressedX, mousePressedY, copy_box_size, copy_box_size,QBrush(QColor("#000000")));
-        QPainter p2(&mGrayMiniCopy);
-        p2.fillRect(mousePressedX*minimize_rate, mousePressedY*minimize_rate, small_image_width, small_image_width,QBrush(QColor("#000000")));
-        mGrayMiniCopy.save("mGrayMiniCopy.png");
+        deleteSelectedRect();
     } else {
         if( mSelectionMode ) {
             mSelectionMode = false;
@@ -469,7 +471,45 @@ void ScreenCopy::scanScreenshot_svm() {
 }
 #endif
 
+void ScreenCopy::deleteSelectedRect() {
+    for( auto it = mSmallTiles.begin(); it != mSmallTiles.end(); ++it ) {
+        if( it->contains( mousePressedX, mousePressedY )) {
+            QPainter p(&mSmallTilesView);
+            p.fillRect(it->x() - 1, it->y() - 1, it->width() + 2, it->height() + 2,QBrush(Qt::GlobalColor::black));
+            mSmallTiles.erase(it);
+            break;
+        }
+    }
+}
+
 void ScreenCopy::saveSelectedRect() {
+    for( auto it = mSmallTiles.begin(); it != mSmallTiles.end(); ++it ) {
+        if( it->contains( mousePressedX, mousePressedY )) {
+            //p.drawRect(it->x() - 1, it->y() - 1, it->width() + 2, it->height() + 2);
+            arma::mat img = arma::zeros( 1, small_tile_size * small_tile_size );
+            for( int i = 0; i < small_tile_size; ++i ) {
+                for( int j = 0; j < small_tile_size; ++j ) {
+                    QRgb rgb = mSmallTilesView.pixel( it->x() + j, it->y() + i );
+                    img(0, i * small_tile_size + j ) = rgb;
+                }
+            }
+            if( mTrainingsetNewCollection.n_cols == 0 )
+                mTrainingsetNewCollection = img;
+            else
+                mTrainingsetNewCollection.insert_rows(mTrainingsetNewCollection.n_rows, img);
+            mResultsetNewCollection.insert_rows(mResultsetNewCollection.n_rows, arma::mat{training_set_y}); // TODO: TH level
+
+            QPainter p(&mSmallTilesView);
+            p.fillRect(it->x() - 1, it->y() - 1, it->width() + 2, it->height() + 2,QBrush(Qt::GlobalColor::black));
+            mSmallTiles.erase(it);
+            break;
+        }
+    }
+    std::cout << "Training set size: " << mTrainingset.n_rows + mTrainingsetNewCollection.n_rows << " rows\n" << std::flush;
+    updateTrainingSetStat();
+}
+
+void ScreenCopy::saveSelectedRect_old() {
 
     int yp = mousePressedY *minimize_rate - scanStepSize;
     if( yp < 0 ) yp = 0;
@@ -502,25 +542,21 @@ void ScreenCopy::saveSelectedRect() {
 }
 
 void ScreenCopy::saveTiles() {
-    arma::mat img = arma::zeros( 1, small_image_width*small_image_width );
-    for( int yp = 0; yp  + small_image_width < mGrayMiniCopy.height(); yp += small_image_width) {
-        for( int xp = 0; xp  + small_image_width < mGrayMiniCopy.width(); xp += small_image_width) {
-
-            for( int i = 0; i < small_image_width; ++i ) {
-                for( int j = 0; j < small_image_width; ++j ) {
-                    QRgb rgb = mGrayMiniCopy.pixel( xp + j, yp + i );
-                    img(0, i * small_image_width + j ) = rgb;
-                }
+    for( auto it = mSmallTiles.begin(); it != mSmallTiles.end(); ++it ) {
+        arma::mat img = arma::zeros( 1, small_tile_size * small_tile_size );
+        for( int i = 0; i < small_tile_size; ++i ) {
+            for( int j = 0; j < small_tile_size; ++j ) {
+                QRgb rgb = mSmallTilesView.pixel( it->x() + j, it->y() + i );
+                img(0, i * small_tile_size + j ) = rgb;
             }
-            if( mTrainingsetNewCollection.n_cols == 0 )
-                mTrainingsetNewCollection = img;
-            else
-                mTrainingsetNewCollection.insert_rows(mTrainingsetNewCollection.n_rows, img);
-            mResultsetNewCollection.insert_rows(mResultsetNewCollection.n_rows, arma::mat{0}); // 0: background!!
         }
+        if( mTrainingsetNewCollection.n_cols == 0 )
+            mTrainingsetNewCollection = img;
+        else
+            mTrainingsetNewCollection.insert_rows(mTrainingsetNewCollection.n_rows, img);
+        mResultsetNewCollection.insert_rows(mResultsetNewCollection.n_rows, arma::mat{training_set_y});
     }
-    //mTrainingset.save(training_sets_folder + training_set_prefix + "_trainingset.bin");
-    //mResultset.save(training_sets_folder + training_set_prefix + "_trainingset_result.bin");
+    mSmallTiles.clear();
     std::cout << "Training set size: " << mTrainingset.n_rows + mTrainingsetNewCollection.n_rows << " rows\n" << std::flush;
     updateTrainingSetStat();
 }
@@ -608,12 +644,10 @@ void ScreenCopy::saveTrainingSet() {
 
 QString ScreenCopy::y2String(int y){
     switch(y){
-    case 0:return "BG";
-    case 1:return "TH11";
-    case 2:return "TH8";
-    case 3:return "TH9";
-    case 4:return "TH7";
-    case 5:return "TH10";
+    case 0:return "Background";
+    case 1:return "Building";
+    case 2:return "Troop";
+    case 3:return "Button";
     default:return "????";
     }
     return "";
@@ -665,4 +699,31 @@ void ScreenCopy::savePredictionsAs0() {
     }
     std::cout << "Training set size: " << mTrainingset.n_rows + mTrainingsetNewCollection.n_rows << " rows\n" << std::flush;
     updateTrainingSetStat();
+}
+
+void ScreenCopy::prepareSmallTilesView() {
+    const int space_size = 3;
+    const int tile_count_h = mScreenshot.width() / small_tile_size;
+    const int tile_count_v = mScreenshot.height() / small_tile_size;
+    const int img_width = (small_tile_size + space_size) * tile_count_h - space_size;
+    const int img_height = (small_tile_size + space_size) * tile_count_v - space_size;
+
+    mSmallTiles.clear();
+    mSmallTilesView = QImage(img_width, img_height, QImage::Format_RGB32);
+    mSmallTilesView.fill(Qt::GlobalColor::black);
+    QPainter p(&mSmallTilesView);
+
+    int pos_x = 0;
+    int pos_y = 0;
+    for( int i = 0; i < mScreenshot.width(); i += small_tile_size ) {
+        for( int j = 0; j < mScreenshot.height(); j += small_tile_size ) {
+            if( i == 0 ) pos_x = 0;
+            if( j == 0 ) pos_y = 0;
+            QImage tile = mScreenshot.copy( i, j, small_tile_size, small_tile_size ).toImage();
+            p.drawImage(pos_x, pos_y, tile);
+            mSmallTiles.push_back(QRect(pos_x,pos_y,small_tile_size,small_tile_size));
+            pos_y += small_tile_size + space_size;
+        }
+        pos_x += small_tile_size + space_size;
+    }
 }
