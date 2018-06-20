@@ -21,13 +21,25 @@ public:
         virtual double fromYYtoY( size_t index ) = 0;
     };
 
+    enum ActivationFunction {
+        SIGMOID,
+        RELU,
+        TANH,
+        LRELU
+    };
+    
     //using CostAndGradient::CostAndGradient;
-    NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda, YMappperIF& yMappper, bool featureScaling = false );
+    NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda, YMappperIF& yMappper, 
+                   bool featureScaling = false, ActivationFunction af = SIGMOID );
 
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override;
     // special return value std::numeric_limits<double>::max(); means not found
     arma::mat predict( const arma::mat& X, const std::vector<arma::mat>& thetas );
     arma::mat sigmoid( const arma::mat& X, const arma::mat& theta );
+    arma::mat tanh( const arma::mat& X, const arma::mat& theta );
+    arma::mat relu( const arma::mat& X, const arma::mat& theta );
+    arma::mat leaky_relu( const arma::mat& X, const arma::mat& theta );
+
     arma::mat sigmoidGradient( const arma::mat& z );
     arma::mat randInitializeWeights( int L_in, int L_out );
     void checkNNGradients( double lambda = 0 );
@@ -46,6 +58,8 @@ private:
     arma::mat validationCurve(arma::mat& Xval, arma::mat& yval, int iteration);
     const arma::mat& mLayerSizes; // input layer, hidden1, hidden2, ..., output
     YMappperIF& mYMappper;
+    typedef arma::mat (NeuralNetwork::*ActivationFunctionP)( const arma::mat& X, const arma::mat& theta );
+    ActivationFunctionP mAF;
 };
 
 template<typename T>
