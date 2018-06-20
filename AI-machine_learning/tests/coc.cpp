@@ -49,7 +49,7 @@ void runTests() {
     //logistic_regression();
     //learning_validation_curve();
     //logistic_regression_class();
-    //logistic_regression_one_vs_all();
+    logistic_regression_one_vs_all();
     //learning_validation_curve_OneVsAll();
     //support_vector_machine_one_vs_all();
     //logistic_regression_kinda_minibatch();
@@ -57,7 +57,7 @@ void runTests() {
     //logistic_regression_v2_continue();
     //logistic_regression_v2_onevsall();
     //logistic_regression_v2_onevsall_continue();
-    anomaly_detection();
+    //anomaly_detection();
 }
 
 
@@ -702,14 +702,16 @@ void logistic_regression_one_vs_all() {
     int scenario = 1;
     if(scenario==1){
         arma::mat X, y;
-        X.load("TH_plus_BG_trainingset.bin");
-        y.load("TH_plus_BG_trainingset_result.bin");
+        X.load("TH_plus_BG_small_tiles_trainingset.bin");
+        y.load("TH_plus_BG_small_tiles_trainingset_result.bin");
 
         std::cout << "Data set size: " << X.n_rows << "\n";
         std::cout << "Prepare training and validation set...\n";
         Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval);
         std::cout << "Training set size: " << Xtraining.n_rows << "\n";
         std::cout << "Validation set size: " << Xval.n_rows << "\n";
+        //Xval.save(std::string(prefix) + "_Xval.bin");
+        //Yval.save(std::string(prefix) + "_Yval.bin");
     } else if(scenario==2){
         Xtraining.load("trainParams_X.bin");
         Ytraining.load("trainParams_y.bin");
@@ -722,12 +724,12 @@ void logistic_regression_one_vs_all() {
 
     std::cout << size(Xtraining) << "\n" << size(Ytraining) << "\n";
 
-    double lambda = 1e-2;
+    double lambda = 1e-4;
     LogisticRegression lr(Xtraining, Ytraining, lambda, true, 3 );
 
     std::cout << "contructor finished...\n";
 
-    lr.trainOneVsAll(400,true);
+    lr.trainOneVsAll(500,true);
     //lr.trainOneVsAll(4,800,true);
     lr.saveThetaAndFeatureScaling("th_onevsall2");
 
@@ -748,8 +750,8 @@ void learning_validation_curve_OneVsAll() {
 
     int scenario = 1;
     if(scenario==1){
-        X.load("TH11_plus_BG_trainingset.bin");
-        y.load("TH11_plus_BG_trainingset_result.bin");
+        X.load("TH_plus_BG_small_tiles_trainingset.bin");
+        y.load("TH_plus_BG_small_tiles_trainingset_result.bin");
 
         std::cout << "Data set size: " << X.n_rows << "\n";
         std::cout << "Prepare training and validation set...\n";
@@ -777,7 +779,7 @@ void learning_validation_curve_OneVsAll() {
 
     std::cout << "Learning curve...\n";
     LogisticRegression lr(Xtraining, Ytraining,lambda, true,3);
-    arma::mat lcv = lr.learningCurveOne(test_y, Xval, Yval, lambda, iteration,500);
+    arma::mat lcv = lr.learningCurveOne(test_y, Xval, Yval, lambda, iteration,10);
     Util::plotMatrix(new QCustomPlot, lcv);
     std::cout << "\n" << lcv << "\n" << std::flush;
     std::cout << "Validation curve...\n";

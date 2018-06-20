@@ -66,7 +66,7 @@ public:
         pushButton_6->setGeometry(QRect(250, 50, 141, 27));
         pushButton_7 = new QPushButton(centralWidget);
         pushButton_7->setObjectName(QStringLiteral("pushButton_7"));
-        pushButton_7->setGeometry(QRect(260, 90, 131, 28));
+        pushButton_7->setGeometry(QRect(10, 80, 131, 28));
         captureButton = new QPushButton(centralWidget);
         captureButton->setObjectName(QStringLiteral("captureButton"));
         captureButton->setGeometry(QRect(10, 0, 99, 27));

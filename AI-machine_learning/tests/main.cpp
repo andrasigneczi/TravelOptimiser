@@ -16,8 +16,8 @@
 #include "anomaly_detection.h"
 
 int main (int argc, char* argv[]) {
-    QCoreApplication app(argc, argv);
-    //QApplication app(argc, argv);
+    //QCoreApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     QSettings settings("test.ini", QSettings::IniFormat);
     //settings.sync();
@@ -47,7 +47,7 @@ int main (int argc, char* argv[]) {
     COC_ns::runTests();
     //SVM_ns::runTests();
     //AnomalyDetection_ns::runTests();
-    KMean_ns::runTests();
+    //KMean_ns::runTests();
     //std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     //std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() <<std::endl;
 
@@ -90,5 +90,5 @@ int main (int argc, char* argv[]) {
     Xval.save("ex8data2_Xval.bin");
     yval.save("ex8data2_yval.bin");
 */
-  //app.exec();
+  app.exec();
 }
