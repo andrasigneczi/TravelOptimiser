@@ -18,10 +18,10 @@ void test_ex5_validationCurve();
 
 void runTests() {
     //test1(); // neural network prediction
-    test2(); // neural network complex training
-    //test3(); // neural network simple training
-    test_ex5_learningCurve();
-    test_ex5_validationCurve();
+    //test2(); // neural network complex training
+    test3(); // neural network simple training
+    //test_ex5_learningCurve();
+    //test_ex5_validationCurve();
 }
 
 
@@ -197,7 +197,7 @@ void test3() {
     
     thetaSizes << input_layer_size << hidden_layer_size1 << num_labels; // input, hidden, output
     TestYMappper yMapper;
-    NeuralNetwork nn(thetaSizes, X, y, lambda, yMapper);
+    NeuralNetwork nn(thetaSizes, X, y, lambda, yMapper, false, NeuralNetwork::SIGMOID);
 
     // Randomly initialize the weights to small values
     arma::mat initial_Theta1 = nn.randInitializeWeights(input_layer_size, hidden_layer_size1);

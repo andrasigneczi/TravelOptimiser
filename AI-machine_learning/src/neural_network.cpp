@@ -7,11 +7,21 @@
 #include <string>
 #include "Util.h"
 
-NeuralNetwork::NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda, YMappperIF& yMappper, bool featureScaling )
+NeuralNetwork::NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda, YMappperIF& yMappper, 
+                              bool featureScaling, NeuralNetwork::ActivationFunction af )
     : CostAndGradient(X, y, lambda)
     , mLayerSizes(layerSizes)
     , mYMappper(yMappper)
 {
+    switch( af ) {
+        case SIGMOID: mAF = &NeuralNetwork::sigmoid;    break;
+        case RELU:    mAF = &NeuralNetwork::relu;       break;
+        case TANH:    mAF = &NeuralNetwork::tanh;       break;
+        case LRELU:   mAF = &NeuralNetwork::leaky_relu; break;
+        default:
+        throw "Invalid activation function";
+    }
+    
     if(featureScaling) {
         mX = this->featureScaling(X, true);
     }
@@ -40,7 +50,7 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool c
             aVec.push_back( join_rows( arma::ones(m, 1), mX ));
         }
         // a2 = g(a1 * theta1')
-        arma::mat a = sigmoid(aVec[i],thetas[i].t());
+        arma::mat a = (this->*mAF)(aVec[i],thetas[i].t());
         if( i == thetas.size() - 1 ) {
             // we have finished
             aVec.push_back( a );
@@ -95,8 +105,12 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool c
         //     T2:10x26  d3:5000x10 a2:5000x26
         //arma::mat d2 = (d3*thetas[1])% aVec[aVec.size()-2]%(1- aVec[aVec.size()-2]);
         //arma::mat d2 = (d3*Theta2)%a2%(1-a2);
-        //std::cout << "l: " << l << "\n" << size(deltas[deltas.size()-1]) << size( thetas[l] ) << size( aVec[l] ) << "\n";
+        
+        // Partial derivative of g(z)' = g(z)*(1-g(z)), here a2*(1-a2)
+        // sigmoid:
         deltas.push_back( (deltas[deltas.size()-1]*thetas[l])% aVec[l]%(1- aVec[l]) );
+        // tanh: g(z)' = 1 - g(z)^2
+        //deltas.push_back( (deltas[deltas.size()-1]*thetas[l])%(1. - arma::square(aVec[l])) );
     
         // d2: 5000x26 a1: 5000x401 d3: 5000x10
         // d2=d2.cols(1,d2.n_cols-1);
@@ -148,7 +162,7 @@ arma::mat NeuralNetwork::predict( const arma::mat& X, const std::vector<arma::ma
 
     for( size_t i = 0; i < thetas.size(); ++i ) {
         s = std::move(join_rows( arma::ones(m, 1), s));
-        s=std::move(sigmoid(s,thetas[i].t()));
+        s=std::move((this->*mAF)(s,thetas[i].t()));
     }
     arma::mat M = arma::max(s,1);
     for( size_t i=0; i < m; ++i ) {
@@ -165,6 +179,24 @@ arma::mat NeuralNetwork::predict( const arma::mat& X, const std::vector<arma::ma
 arma::mat NeuralNetwork::sigmoid( const arma::mat& X, const arma::mat& theta ) {
     const arma::mat z = -X*theta;
     return 1.0/(1.0+arma::exp(z));
+}
+
+arma::mat NeuralNetwork::tanh( const arma::mat& X, const arma::mat& theta ) {
+    const arma::mat z = X*theta;
+    const arma::mat pz = arma::exp(z);
+    const arma::mat nz = arma::exp(-z);
+    return (pz - nz)/(pz + nz);
+}
+
+arma::mat NeuralNetwork::relu( const arma::mat& X, const arma::mat& theta ) {
+    arma::mat z = X*theta;
+    z.elem( arma::find(z < 0.0) ).zeros();
+    return z;
+}
+
+arma::mat NeuralNetwork::leaky_relu( const arma::mat& X, const arma::mat& theta ) {
+    const arma::mat z = X*theta;
+    return arma::max(0.01*z,z);
 }
 
 arma::mat NeuralNetwork::sigmoidGradient( const arma::mat& z ) {
