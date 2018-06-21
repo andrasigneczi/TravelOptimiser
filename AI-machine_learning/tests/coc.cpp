@@ -49,7 +49,7 @@ void runTests() {
     //logistic_regression();
     //learning_validation_curve();
     //logistic_regression_class();
-    logistic_regression_one_vs_all();
+    //logistic_regression_one_vs_all();
     //learning_validation_curve_OneVsAll();
     //support_vector_machine_one_vs_all();
     //logistic_regression_kinda_minibatch();

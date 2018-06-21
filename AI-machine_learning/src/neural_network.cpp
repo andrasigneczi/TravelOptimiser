@@ -106,12 +106,25 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool c
         //arma::mat d2 = (d3*thetas[1])% aVec[aVec.size()-2]%(1- aVec[aVec.size()-2]);
         //arma::mat d2 = (d3*Theta2)%a2%(1-a2);
         
-        // Partial derivative of g(z)' = g(z)*(1-g(z)), here a2*(1-a2)
-        // sigmoid:
-        deltas.push_back( (deltas[deltas.size()-1]*thetas[l])% aVec[l]%(1- aVec[l]) );
-        // tanh: g(z)' = 1 - g(z)^2
-        //deltas.push_back( (deltas[deltas.size()-1]*thetas[l])%(1. - arma::square(aVec[l])) );
-    
+        if( mAF == &NeuralNetwork::sigmoid ) {
+            // Partial derivative of g(z)' = g(z)*(1-g(z)), here a2*(1-a2)
+            deltas.push_back( (deltas[deltas.size()-1]*thetas[l])% aVec[l]%(1- aVec[l]) );
+        } else if( mAF == &NeuralNetwork::tanh ) {
+            // tanh: g(z)' = 1 - g(z)^2
+            deltas.push_back( (deltas[deltas.size()-1]*thetas[l])%(1. - arma::square(aVec[l])) );
+        } else if( mAF == &NeuralNetwork::relu ) {
+            // relu: g(z)' = 0: if z < 0; 1: if z >= 0
+            arma::mat temp = aVec[l];
+            temp.elem( arma::find(temp >= 0.0) ).ones();
+            deltas.push_back( (deltas[deltas.size()-1]*thetas[l])%temp );
+        } else if( mAF == &NeuralNetwork::leaky_relu ) {
+            // leaky relu: g(z)' = 0.01: if z < 0; 1: if z >= 0
+            arma::mat temp = aVec[l];
+            temp.elem( arma::find(temp >= 0.0) ).fill(1.);
+            temp.elem( arma::find(temp < 0.0) ).fill(0.01);
+            deltas.push_back( (deltas[deltas.size()-1]*thetas[l])%temp );
+        }
+
         // d2: 5000x26 a1: 5000x401 d3: 5000x10
         // d2=d2.cols(1,d2.n_cols-1);
         arma::mat& d = deltas[deltas.size()-1];
@@ -195,8 +208,15 @@ arma::mat NeuralNetwork::relu( const arma::mat& X, const arma::mat& theta ) {
 }
 
 arma::mat NeuralNetwork::leaky_relu( const arma::mat& X, const arma::mat& theta ) {
-    const arma::mat z = X*theta;
-    return arma::max(0.01*z,z);
+    arma::mat z = X*theta;
+    const arma::mat z2 = z * 0.01;
+    arma::uvec u = arma::find(z < z2);
+    for( size_t i = 0; i < u.size(); ++i ) {
+        if( z2[i] > z[i] ) {
+            z[i] = z2[i];
+        }
+    }
+    return z;
 }
 
 arma::mat NeuralNetwork::sigmoidGradient( const arma::mat& z ) {
