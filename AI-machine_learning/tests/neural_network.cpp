@@ -15,13 +15,15 @@ void test2();
 void test3();
 void test_ex5_learningCurve();
 void test_ex5_validationCurve();
+void minibatch();
 
 void runTests() {
     //test1(); // neural network prediction
     //test2(); // neural network complex training
-    test3(); // neural network simple training
+    //test3(); // neural network simple training
     //test_ex5_learningCurve();
     //test_ex5_validationCurve();
+    minibatch();
 }
 
 
@@ -197,7 +199,7 @@ void test3() {
     
     thetaSizes << input_layer_size << hidden_layer_size1 << num_labels; // input, hidden, output
     TestYMappper yMapper;
-    NeuralNetwork nn(thetaSizes, X, y, lambda, yMapper, false, NeuralNetwork::RELU);
+    NeuralNetwork nn(thetaSizes, X, y, lambda, yMapper, false, NeuralNetwork::SIGMOID);
 
     // Randomly initialize the weights to small values
     arma::mat initial_Theta1 = nn.randInitializeWeights(input_layer_size, hidden_layer_size1);
@@ -252,6 +254,39 @@ void test_ex5_validationCurve() {
     NeuralNetwork nn(thetaSizes, X, y, 1, yMapper);
     //std::cout << "dbg2.5\n" << std::flush;
     nn.plotValidationCurve(new QCustomPlot,10);
+}
+
+void minibatch() {
+    arma::mat X, y;
+    
+    X.load("ex3data1_X.bin");
+    y.load("ex3data1_y.bin");
+
+    arma::mat thetaSizes;
+    int input_layer_size  = 400;
+    int hidden_layer_size1 = 20;
+    int num_labels         = 10;
+    double lambda = 1;
+    int iteration = 100;
+    
+    thetaSizes << input_layer_size << hidden_layer_size1 << num_labels; // input, hidden, output
+    TestYMappper yMapper;
+    NeuralNetwork nn(thetaSizes, X, y, lambda, yMapper, false, NeuralNetwork::SIGMOID);
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+    std::vector<arma::mat> thetas = nn.miniBatchGradientDescent(true,iteration,20);
+    
+    std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
+
+    // Obtain Theta1 and Theta2 back from nn_params
+     
+    arma::mat pred = nn.predict(X,thetas);
+
+    std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100 << "\n";
+    std::cout << "Press enter to continue\n";
+    std::cin.get();
 }
 
 } // NeuralNetwork_ns

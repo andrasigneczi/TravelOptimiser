@@ -16,8 +16,8 @@
 #include "anomaly_detection.h"
 
 int main (int argc, char* argv[]) {
-    //QCoreApplication app(argc, argv);
-    QApplication app(argc, argv);
+    QCoreApplication app(argc, argv);
+    //QApplication app(argc, argv);
 
     QSettings settings("test.ini", QSettings::IniFormat);
     //settings.sync();

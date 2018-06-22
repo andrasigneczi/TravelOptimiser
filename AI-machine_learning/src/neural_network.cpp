@@ -29,15 +29,32 @@ NeuralNetwork::NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, c
 
 CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool costOnly ) {
     
+    std::vector<arma::mat> thetas = extractThetas(nn_params);
+    std::vector<arma::mat> newThetas = calc2(thetas, costOnly);
+
+    if( costOnly ) {
+        return mRetVal;
+    }
+
+    mRetVal.grad.clear();
+    for( size_t i = 0; i < newThetas.size(); ++i ) {
+        if( i == 0 ) {
+            mRetVal.grad = arma::vectorise(newThetas[i]);
+        } else {
+            mRetVal.grad = arma::join_cols( mRetVal.grad, arma::vectorise(newThetas[i]));
+        }
+    }
+    return mRetVal;
+}
+
+std::vector<arma::mat> NeuralNetwork::calc2( const std::vector<arma::mat>& thetas, bool costOnly ) {
+    
     // Reshape nn_params back into the parameters Theta1-ThetaN, the weight matrices
     // for our n layer neural network
 
-    int num_labels        = mLayerSizes(0,mLayerSizes.n_cols-1); // 10
+    int num_labels = mLayerSizes(0,mLayerSizes.n_cols-1); // 10
     double m = mX.n_rows;
 
-    //std::cout << "dbgX 1 " << nn_params.n_rows << "\n";
-    std::vector<arma::mat> thetas = extractThetas(nn_params);
-    //std::cout << "dbgX 2\n";
     // ------------------------------
     // Back propagation algorithm
     // ------------------------------
@@ -91,7 +108,7 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool c
     }
     
     if( costOnly ) {
-        return mRetVal;
+        return std::vector<arma::mat>();
     }
 
     //std::cout << "dbgX 5\n";
@@ -107,7 +124,7 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool c
         //arma::mat d2 = (d3*Theta2)%a2%(1-a2);
         
         if( mAF == &NeuralNetwork::sigmoid ) {
-            // Partial derivative of g(z)' = g(z)*(1-g(z)), here a2*(1-a2)
+            // Sigmoid: partial derivative of g(z)' = g(z)*(1-g(z)), here a2*(1-a2)
             deltas.push_back( (deltas[deltas.size()-1]*thetas[l])% aVec[l]%(1- aVec[l]) );
         } else if( mAF == &NeuralNetwork::tanh ) {
             // tanh: g(z)' = 1 - g(z)^2
@@ -144,20 +161,51 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool c
     
     //std::cout << "dbgX 7\n";
     // Theta reguralization
-    mRetVal.grad.clear();
     for( size_t i = 0; i < newThetas.size(); ++i ) {
         for( size_t j = 1; j < newThetas[i].n_cols; ++j ) {
             newThetas[i].col(j) = newThetas[i].col(j) + mLambda/m*thetas[i].col(j);
         }
-        if( i == 0 ) {
-            mRetVal.grad = arma::vectorise(newThetas[i]);
-        } else {
-            mRetVal.grad = arma::join_cols( mRetVal.grad, arma::vectorise(newThetas[i]));
-        }
     }
     //std::cout << "dbgX 8\n";
     
-    return mRetVal;
+    return newThetas;
+}
+
+std::vector<arma::mat> NeuralNetwork::miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize ) {
+    std::vector<arma::mat> thetas;
+    if( initTheta ) {
+        srand (time(NULL));
+        for( size_t i = 0; i <= mLayerSizes.n_cols-2; ++i ) {
+            thetas.push_back( randInitializeWeights(mLayerSizes(0,i), mLayerSizes(0,i+1)));
+        }
+    }
+
+    arma::mat XSave = std::move(mX);
+    arma::mat YSave = std::move(mY);
+    for( long long i = 0; i < iteration; ++i ) {
+
+        for( size_t index = 0; ;++index) {
+            size_t l = index * batchSize;
+            size_t l_end = l + batchSize - 1;
+
+            if( l >= XSave.n_rows )
+                break;
+
+            if( l_end >= XSave.n_rows )
+                l_end = XSave.n_rows - 1;
+            
+            mX = XSave.rows(l, l_end);
+            mY = YSave.rows(l, l_end);
+            thetas = std::move(calc2(thetas, false));
+        }
+
+        std::cout << "mini-batch iteration: " << i + 1 << "; cost: " << mRetVal.cost <<"                       \r" << std::flush;
+    }
+    
+    mX = std::move(XSave);
+    mY = std::move(YSave);
+    
+    return thetas;
 }
 
 // special return value std::numeric_limits<double>::max(); means not found

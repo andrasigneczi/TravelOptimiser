@@ -33,6 +33,7 @@ public:
                    bool featureScaling = false, ActivationFunction af = SIGMOID );
 
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override;
+    std::vector<arma::mat> calc2( const std::vector<arma::mat>& thetas, bool costOnly );
     // special return value std::numeric_limits<double>::max(); means not found
     arma::mat predict( const arma::mat& X, const std::vector<arma::mat>& thetas );
     arma::mat sigmoid( const arma::mat& X, const arma::mat& theta );
@@ -52,6 +53,16 @@ public:
     TrainParams searchTrainParams( int minLayerSize, int maxLayerSize, int stepSize );
     TrainParams searchTrainParams2( int minLayerSize, int maxLayerSize, int stepSize );
     void removeDuplication(arma::mat& dataset);
+    
+    
+    std::vector<arma::mat> miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize );
+
+    //arma::mat featureScaling( const arma::mat& X, bool saveFactors );
+    // feature mapping
+    // double accuracy(double threshold = 0.5);
+    //void saveCurrentStatus(std::string fileNamePrefix);
+    //void loadCurrentStatus(std::string fileNamePrefix);
+
 
 private:
     arma::mat learningCurve(arma::mat& Xval, arma::mat& yval);
