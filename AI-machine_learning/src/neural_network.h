@@ -55,7 +55,7 @@ public:
     void removeDuplication(arma::mat& dataset);
     
     
-    std::vector<arma::mat> miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize );
+    std::vector<arma::mat> miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize, double learning_rate );
 
     //arma::mat featureScaling( const arma::mat& X, bool saveFactors );
     // feature mapping
@@ -65,6 +65,7 @@ public:
 
 
 private:
+    void displayActivationFunction();
     arma::mat learningCurve(arma::mat& Xval, arma::mat& yval);
     arma::mat validationCurve(arma::mat& Xval, arma::mat& yval, int iteration);
     const arma::mat& mLayerSizes; // input layer, hidden1, hidden2, ..., output
@@ -74,7 +75,7 @@ private:
 };
 
 template<typename T>
-T mod(T a, int n)
+T mod(T a, double n)
 {
     return a - floor(a/n)*n;
 }

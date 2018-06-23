@@ -214,7 +214,7 @@ void test3() {
     fmincgRetVal frv = fmincg(nn, initial_nn_params, iteration);
 
     std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
-    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
+    std::cout << "\nTime difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
 
     // Obtain Theta1 and Theta2 back from nn_params
     std::vector<arma::mat> thetas = nn.extractThetas(frv.m_NNPparams);
@@ -264,24 +264,30 @@ void minibatch() {
 
     arma::mat thetaSizes;
     int input_layer_size  = 400;
-    int hidden_layer_size1 = 20;
+    int hidden_layer_size1 = 400;
+    int hidden_layer_size2 = 20;
     int num_labels         = 10;
-    double lambda = 1;
+    double lambda = 0;
     int iteration = 100;
+    //double alpha = 0.93;
+    double alpha = 0.93;
+    //int batch = X.n_rows;
+    int batch = 10;
     
-    thetaSizes << input_layer_size << hidden_layer_size1 << num_labels; // input, hidden, output
+    thetaSizes << input_layer_size << hidden_layer_size1 << hidden_layer_size2 << num_labels; // input, hidden, output
     TestYMappper yMapper;
-    NeuralNetwork nn(thetaSizes, X, y, lambda, yMapper, false, NeuralNetwork::SIGMOID);
+    NeuralNetwork nn(thetaSizes, X, y, lambda, yMapper, false, NeuralNetwork::TANH);
 
+    std::vector<arma::mat> thetas;
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
-    std::vector<arma::mat> thetas = nn.miniBatchGradientDescent(true,iteration,20);
-    
+    if( 0 ) {
+        thetas = nn.miniBatchGradientDescent(true,iteration,batch,alpha);
+    } else {
+        thetas = nn.extractThetas(nn.train(iteration,true));
+    }
     std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
-    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
+    std::cout << "\nTime difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
 
-    // Obtain Theta1 and Theta2 back from nn_params
-     
     arma::mat pred = nn.predict(X,thetas);
 
     std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100 << "\n";
