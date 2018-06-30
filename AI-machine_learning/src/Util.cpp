@@ -148,4 +148,11 @@ arma::mat mapFeature( const arma::mat& X1, const arma::mat& X2, int degree ){
     return out;
 }
 
+int getLabelCount( const arma::mat& y ) {
+    std::set<double> labels;
+    for(size_t i = 0; i < y.n_rows; ++i)
+        labels.insert(y(i,0));
+    return labels.size();
+}
+
 } // namespace Util

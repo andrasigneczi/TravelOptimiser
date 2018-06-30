@@ -268,20 +268,20 @@ void minibatch() {
     int hidden_layer_size2 = 20;
     int num_labels         = 10;
     double lambda = 0;
-    int iteration = 100;
+    int iteration = 400;
     //double alpha = 0.93;
     double alpha = 0.93;
     //int batch = X.n_rows;
-    int batch = 10;
+    int batch = X.n_rows;
     
     thetaSizes << input_layer_size << hidden_layer_size1 << hidden_layer_size2 << num_labels; // input, hidden, output
     TestYMappper yMapper;
-    NeuralNetwork nn(thetaSizes, X, y, lambda, yMapper, false, NeuralNetwork::TANH);
+    NeuralNetwork nn(thetaSizes, X, y, lambda, yMapper, false, NeuralNetwork::LRELU);
 
     std::vector<arma::mat> thetas;
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     if( 0 ) {
-        thetas = nn.miniBatchGradientDescent(true,iteration,batch,alpha);
+        thetas = nn.miniBatchGradientDescent(true,iteration,batch,alpha, true);
     } else {
         thetas = nn.extractThetas(nn.train(iteration,true));
     }

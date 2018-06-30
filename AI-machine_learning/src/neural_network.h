@@ -55,11 +55,11 @@ public:
     void removeDuplication(arma::mat& dataset);
     
     
-    std::vector<arma::mat> miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize, double learning_rate );
+    std::vector<arma::mat> miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize, double learning_rate, bool verbose );
+    double accuracy(const std::vector<arma::mat>& thetas);
 
     //arma::mat featureScaling( const arma::mat& X, bool saveFactors );
     // feature mapping
-    // double accuracy(double threshold = 0.5);
     //void saveCurrentStatus(std::string fileNamePrefix);
     //void loadCurrentStatus(std::string fileNamePrefix);
 
@@ -70,6 +70,7 @@ private:
     arma::mat validationCurve(arma::mat& Xval, arma::mat& yval, int iteration);
     const arma::mat& mLayerSizes; // input layer, hidden1, hidden2, ..., output
     YMappperIF& mYMappper;
+    const ActivationFunction mActivationFunction;
     typedef arma::mat (NeuralNetwork::*ActivationFunctionP)( const arma::mat& X, const arma::mat& theta );
     ActivationFunctionP mAF;
 };

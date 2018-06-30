@@ -12,6 +12,7 @@ NeuralNetwork::NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, c
     : CostAndGradient(X, y, lambda)
     , mLayerSizes(layerSizes)
     , mYMappper(yMappper)
+    , mActivationFunction(af)
 {
     switch( af ) {
         case SIGMOID: mAF = &NeuralNetwork::sigmoid;    break;
@@ -189,8 +190,17 @@ std::vector<arma::mat> NeuralNetwork::calc2( const std::vector<arma::mat>& theta
     return thetaGrads;
 }
 
-std::vector<arma::mat> NeuralNetwork::miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize, double learning_rate ) {
+std::vector<arma::mat> NeuralNetwork::miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize,
+                                                                double learning_rate, bool verbose ) {
     std::vector<arma::mat> thetas;
+    if( verbose ) {
+        std::cout << "Mini-batch Gradient Descent\n";
+        displayActivationFunction();
+        std::cout << "Iteration: " << iteration << "\n";
+        std::cout << "Batch size: " << batchSize << "\n";
+        std::cout << "Learning rate: " << learning_rate << "\n";
+        std::cout << "Training set size: " << mX.n_rows << "x" << mX.n_cols << "\n";
+    }
     if( initTheta ) {
         srand (time(NULL));
         for( size_t i = 0; i <= mLayerSizes.n_cols-2; ++i ) {
@@ -218,9 +228,9 @@ std::vector<arma::mat> NeuralNetwork::miniBatchGradientDescent( bool initTheta, 
             for( size_t t = 0; t < grads.size(); ++t ) {
                 thetas[t] -= learning_rate * grads[t];
             }
+            if( verbose )
+                std::cout << "mini-batch iteration: " << i << "." << index << "; cost: " << mRetVal.cost <<"                       \r" << std::flush;
         }
-
-        std::cout << "mini-batch iteration: " << i + 1 << "; cost: " << mRetVal.cost <<"                       \r" << std::flush;
     }
     
     mX = std::move(XSave);
@@ -262,6 +272,11 @@ arma::mat NeuralNetwork::predict( const arma::mat& X, const std::vector<arma::ma
     return p;
 }
 
+double NeuralNetwork::accuracy(const std::vector<arma::mat>& thetas) {
+    arma::mat p = predict(mX,thetas);
+    return arma::mean(arma::conv_to<arma::colvec>::from(p == mY))*100;
+}
+
 arma::mat NeuralNetwork::sigmoid( const arma::mat& X, const arma::mat& theta ) {
     const arma::mat z = -X*theta;
     return 1.0/(1.0+arma::exp(z));
@@ -298,8 +313,15 @@ arma::mat NeuralNetwork::sigmoidGradient( const arma::mat& z ) {
 }
 
 arma::mat NeuralNetwork::randInitializeWeights( int L_in, int L_out ) {
-    const double epsilon_init = 0.12;
-    return arma::randu(L_out, 1 + L_in) * 2 * epsilon_init - epsilon_init;
+    switch(mActivationFunction) {
+    case SIGMOID: {
+        const double epsilon_init = 0.12;
+        return arma::randu(L_out, 1 + L_in) * 2 * epsilon_init - epsilon_init;
+    } break;
+    case TANH:    return arma::randn(L_out, 1 + L_in) * sqrt(1./L_in); break;
+    case RELU:    return arma::randu(L_out, 1 + L_in) * sqrt(8./L_in); break;
+    case LRELU:   return arma::randn(L_out, 1 + L_in) * sqrt(2./L_in); break;
+    }
 }
 
 arma::mat NeuralNetwork::debugInitializeWeights( int fan_out, int fan_in ) {
@@ -551,13 +573,10 @@ NeuralNetwork::TrainParams NeuralNetwork::searchTrainParams2( int minLayerSize, 
 }
 
 void NeuralNetwork::displayActivationFunction() {
-    if( mAF == &NeuralNetwork::sigmoid ) {
-        std::cout << "Activation function: SIGMOID\n";
-    } else if( mAF == &NeuralNetwork::tanh ) {
-        std::cout << "Activation function: TANH\n";
-    } else if( mAF == &NeuralNetwork::relu ) {
-        std::cout << "Activation function: RELU\n";
-    } else if( mAF == &NeuralNetwork::leaky_relu ) {
-        std::cout << "Activation function: LEAKY RELU\n";
+    switch(mActivationFunction) {
+    case SIGMOID: std::cout << "Activation function: SIGMOID\n";    break;
+    case TANH:    std::cout << "Activation function: TANH\n";       break;
+    case RELU:    std::cout << "Activation function: RELU\n";       break;
+    case LRELU:   std::cout << "Activation function: LEAKY RELU\n"; break;
     }
 }
