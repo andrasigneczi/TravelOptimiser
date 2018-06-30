@@ -30,18 +30,18 @@ NeuralNetwork::NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, c
 CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool costOnly ) {
     
     std::vector<arma::mat> thetas = extractThetas(nn_params);
-    std::vector<arma::mat> newThetas = calc2(thetas, costOnly);
+    std::vector<arma::mat> thetaGrads = calc2(thetas, costOnly);
 
     if( costOnly ) {
         return mRetVal;
     }
 
     mRetVal.grad.clear();
-    for( size_t i = 0; i < newThetas.size(); ++i ) {
+    for( size_t i = 0; i < thetaGrads.size(); ++i ) {
         if( i == 0 ) {
-            mRetVal.grad = arma::vectorise(newThetas[i]);
+            mRetVal.grad = arma::vectorise(thetaGrads[i]);
         } else {
-            mRetVal.grad = arma::join_cols( mRetVal.grad, arma::vectorise(newThetas[i]));
+            mRetVal.grad = arma::join_cols( mRetVal.grad, arma::vectorise(thetaGrads[i]));
         }
     }
     return mRetVal;
@@ -56,7 +56,7 @@ std::vector<arma::mat> NeuralNetwork::calc2( const std::vector<arma::mat>& theta
     double m = mX.n_rows;
 
     // ------------------------------
-    // Back propagation algorithm
+    // Forward propagation algorithm
     // ------------------------------
     // 1. Compute the activation unit vector
     std::vector<arma::mat> aVec;
@@ -66,12 +66,14 @@ std::vector<arma::mat> NeuralNetwork::calc2( const std::vector<arma::mat>& theta
             // a1 = x; (add ones to the first column)
             aVec.push_back( join_rows( arma::ones(m, 1), mX ));
         }
-        // a2 = g(a1 * theta1')
-        arma::mat a = (this->*mAF)(aVec[i],thetas[i].t());
         if( i == thetas.size() - 1 ) {
+            // a2 = g(a1 * theta1')
+            arma::mat a = sigmoid(aVec[i],thetas[i].t());
             // we have finished
             aVec.push_back( a );
         } else {
+            // a2 = g(a1 * theta1')
+            arma::mat a = (this->*mAF)(aVec[i],thetas[i].t());
             // add ones to the first column, if there are more hidden layer
             aVec.push_back( join_rows( arma::ones(a.n_rows, 1), a ));
         }
@@ -94,30 +96,44 @@ std::vector<arma::mat> NeuralNetwork::calc2( const std::vector<arma::mat>& theta
         yy(i, mYMappper.fromYtoYY( mY(i,0))) = 1;
     }
     
-    //std::cout << "dbgX 4\n";
-    
+    //std::cout << "dbgX " << h << "\n";
+
     // cost calculation
     mRetVal.cost = 0;
     for( int k=0; k < num_labels; ++k ) {
         mRetVal.cost += as_scalar( 1./m*(-yy.col(k).t()*arma::log(h.col(k))-(1.-yy.col(k)).t()*arma::log(1.-h.col(k))));
     }
+    //mRetVal.cost = -1./m*arma::sum(arma::vectorise(yy.t()*arma::log(h) + (1-yy).t()*arma::log(1-h)));
+    // squarred error function
+    //mRetVal.cost = sum(vectorise(1./2./m*arma::sum(arma::square(yy-h))));
 
     // reguralization of the cost
-    for( size_t i = 0; i < thetas.size(); ++i ) {
-        mRetVal.cost += mLambda/2./m*sum(vectorise(arma::pow(thetas[i].cols(1,thetas[i].n_cols-1),2)));
+    if(mLambda != 0) {
+        for( size_t i = 0; i < thetas.size(); ++i ) {
+            mRetVal.cost += mLambda/2./m*sum(vectorise(arma::pow(thetas[i].cols(1,thetas[i].n_cols-1),2)));
+        }
     }
-    
+
     if( costOnly ) {
         return std::vector<arma::mat>();
     }
 
     //std::cout << "dbgX 5\n";
     
+    // ------------------------------
+    // Back propagation algorithm
+    // ------------------------------
+
     // compute deltas
     std::vector<arma::mat> deltas;
     // delta(L) = a(L) -y, where L=aVec.size()-1
     //arma::mat d3 =  aVec[aVec.size()-1] - yy;
     deltas.push_back( aVec[aVec.size()-1] - yy );
+
+    //arma::mat& AL = aVec[aVec.size()-1];
+    //arma::mat dAL = -(yy/AL - (1-yy)/(1-AL));
+    //deltas.push_back( dAL );
+
     for( size_t l = aVec.size()-2; l >= 1; --l ) {
         //     T2:10x26  d3:5000x10 a2:5000x26
         //arma::mat d2 = (d3*thetas[1])% aVec[aVec.size()-2]%(1- aVec[aVec.size()-2]);
@@ -152,26 +168,28 @@ std::vector<arma::mat> NeuralNetwork::calc2( const std::vector<arma::mat>& theta
     
 
     // New Theta calculation
-    std::vector<arma::mat> newThetas;
+    std::vector<arma::mat> thetaGrads;
     for( int i = (int)deltas.size() - 1; i >=0; --i ) {
-        newThetas.push_back( (deltas[i].t()*aVec[aVec.size() - i - 2] )/m );
+        thetaGrads.push_back( (deltas[i].t()*aVec[aVec.size() - i - 2] )/m );
     }
     //arma::mat Theta1_grad = d2.t()*a1/m; // 25x401
     //arma::mat Theta2_grad = d3.t()*a2/m; // 10x26
     
     //std::cout << "dbgX 7\n";
     // Theta reguralization
-    for( size_t i = 0; i < newThetas.size(); ++i ) {
-        for( size_t j = 1; j < newThetas[i].n_cols; ++j ) {
-            newThetas[i].col(j) = newThetas[i].col(j) + mLambda/m*thetas[i].col(j);
+    if(mLambda != 0) {
+        for( size_t i = 0; i < thetaGrads.size(); ++i ) {
+            for( size_t j = 1; j < thetaGrads[i].n_cols; ++j ) {
+                thetaGrads[i].col(j) += mLambda/m*thetas[i].col(j);
+            }
         }
     }
     //std::cout << "dbgX 8\n";
     
-    return newThetas;
+    return thetaGrads;
 }
 
-std::vector<arma::mat> NeuralNetwork::miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize ) {
+std::vector<arma::mat> NeuralNetwork::miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize, double learning_rate ) {
     std::vector<arma::mat> thetas;
     if( initTheta ) {
         srand (time(NULL));
@@ -182,8 +200,8 @@ std::vector<arma::mat> NeuralNetwork::miniBatchGradientDescent( bool initTheta, 
 
     arma::mat XSave = std::move(mX);
     arma::mat YSave = std::move(mY);
-    for( long long i = 0; i < iteration; ++i ) {
 
+    for( long long i = 0; i < iteration; ++i ) {
         for( size_t index = 0; ;++index) {
             size_t l = index * batchSize;
             size_t l_end = l + batchSize - 1;
@@ -193,10 +211,13 @@ std::vector<arma::mat> NeuralNetwork::miniBatchGradientDescent( bool initTheta, 
 
             if( l_end >= XSave.n_rows )
                 l_end = XSave.n_rows - 1;
-            
+
             mX = XSave.rows(l, l_end);
             mY = YSave.rows(l, l_end);
-            thetas = std::move(calc2(thetas, false));
+            std::vector<arma::mat> grads = calc2(thetas, false);
+            for( size_t t = 0; t < grads.size(); ++t ) {
+                thetas[t] -= learning_rate * grads[t];
+            }
         }
 
         std::cout << "mini-batch iteration: " << i + 1 << "; cost: " << mRetVal.cost <<"                       \r" << std::flush;
@@ -225,11 +246,15 @@ arma::mat NeuralNetwork::predict( const arma::mat& X, const std::vector<arma::ma
         s = std::move(join_rows( arma::ones(m, 1), s));
         s=std::move((this->*mAF)(s,thetas[i].t()));
     }
+
     arma::mat M = arma::max(s,1);
+
     for( size_t i=0; i < m; ++i ) {
         //p(i,0) = as_scalar(arma::find( s.row(i)==M(i,0) )) + 1; // +1 because y is 1 based.
         arma::uvec result = arma::find( s.row(i)==M(i,0) );
-        //if( result.n_cols == 0 || result.n_rows == 0 )
+        if( result.n_cols == 0 || result.n_rows == 0 ) {
+            std::cerr << "M: " << M << "; s: " << s.row(i) << "\n";
+        }
         //    p(i,0) = NOT_FOUND;
         //else
             p(i,0) = mYMappper.fromYYtoY( result(0,0));
@@ -326,7 +351,7 @@ void NeuralNetwork::checkNNGradients( double lambda /*= 0*/ ) {
     }
     // Reusing debugInitializeWeights to generate X
     arma::mat X  = debugInitializeWeights(m, input_layer_size - 1);
-    arma::mat y  = 1 + mod(arma::mat(1,m), num_labels).t();
+    arma::mat y  = 1 + mod(arma::mat{1,2,3,4,5}, num_labels).t();
 
     // Short hand for cost function
     //costFunc = @(p) nnCostFunction(p, input_layer_size, hidden_layer_size, ...
@@ -397,6 +422,10 @@ arma::mat NeuralNetwork::train(int iteration, bool verbose) {
             initial_nn_params = arma::vectorise( initial_Theta );
         else
             initial_nn_params = join_cols( initial_nn_params, arma::vectorise( initial_Theta ));
+    }
+
+    if( verbose ) {
+        displayActivationFunction();
     }
 
     fmincgRetVal frv = fmincg(*this, initial_nn_params, iteration, verbose);
@@ -519,4 +548,16 @@ NeuralNetwork::TrainParams NeuralNetwork::searchTrainParams2( int minLayerSize, 
         }
     }
     return retVal;
+}
+
+void NeuralNetwork::displayActivationFunction() {
+    if( mAF == &NeuralNetwork::sigmoid ) {
+        std::cout << "Activation function: SIGMOID\n";
+    } else if( mAF == &NeuralNetwork::tanh ) {
+        std::cout << "Activation function: TANH\n";
+    } else if( mAF == &NeuralNetwork::relu ) {
+        std::cout << "Activation function: RELU\n";
+    } else if( mAF == &NeuralNetwork::leaky_relu ) {
+        std::cout << "Activation function: LEAKY RELU\n";
+    }
 }
