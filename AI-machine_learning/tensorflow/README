@@ -1,0 +1,14 @@
+source ~/tensorflow/bin/activate
+
+deactivate
+
+
+----------------
+| INSTALLATION |
+----------------
+sudo apt-get install python3-pip python3-dev python-virtualenv
+virtualenv --system-site-packages -p python3 ~/tensorflow
+easy_install -U pip
+pip3 install --upgrade tensorflow
+python3 -mpip install -U matplotlib
+sudo apt-get install python3-tk
