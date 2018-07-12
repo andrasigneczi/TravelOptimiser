@@ -1,29 +1,13 @@
-TODO
-----
-- tensorlow
-- ArrayFire with my data set http://arrayfire.org/docs/index.htm
-- fminunc implementation
-- online learning algorithm
-- CUDA
-- Map Reduce
-- PCA
+#!/usr/bin/env python3
 
-
-DONE
-----
-- export images from coc dataset into big images
-- stohastic and mini-batch gradient descent for logistic regression
-- Anomaly detection
-- K-Mean test
-
-
-
-numpy installation:
--------------------
-sudo apt-get install python3-numpy
-sudo apt-get install python3-h5py
-sudo apt-get install python3-matplotlib
-sudo apt-get install python3-scipy
+import time
+import numpy as np
+import h5py
+import matplotlib.pyplot as plt
+import scipy
+from PIL import Image
+from scipy import ndimage
+#from dnn_app_utils_v3 import *
 
 
 # GRADED FUNCTION: initialize_parameters_he
@@ -577,11 +561,159 @@ def L_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 30
             costs.append(cost)
             
     # plot the cost
-    plt.plot(np.squeeze(costs))
-    plt.ylabel('cost')
-    plt.xlabel('iterations (per tens)')
-    plt.title("Learning rate =" + str(learning_rate))
-    plt.show()
+#    plt.plot(np.squeeze(costs))
+#    plt.ylabel('cost')
+#    plt.xlabel('iterations (per tens)')
+#    plt.title("Learning rate =" + str(learning_rate))
+#    plt.show()
     
     return parameters
+
+
+def load_data():
+    train_x_orig = np.random.randn(209,64,64,3)
+    train_y      = np.random.randn(209,1)
+    test_x_orig  = np.random.randn(1,64,64,3)
+    test_y       = np.random.randn(209,1)
+    classes      = {}
+    return train_x_orig, train_y, test_x_orig, test_y, classes
+
+
+def initialize_parameters_deep(layer_dims):
+    """
+    Arguments:
+    layer_dims -- python array (list) containing the dimensions of each layer in our network
     
+    Returns:
+    parameters -- python dictionary containing your parameters "W1", "b1", ..., "WL", "bL":
+                    Wl -- weight matrix of shape (layer_dims[l], layer_dims[l-1])
+                    bl -- bias vector of shape (layer_dims[l], 1)
+    """
+    
+    np.random.seed(3)
+    parameters = {}
+    L = len(layer_dims)            # number of layers in the network
+
+    for l in range(1, L):
+        ### START CODE HERE ### (≈ 2 lines of code)
+        parameters['W' + str(l)] = np.random.randn(layer_dims[l], layer_dims[l-1])*0.01
+        parameters['b' + str(l)] = np.zeros((layer_dims[l], 1))
+        ### END CODE HERE ###
+        
+        assert(parameters['W' + str(l)].shape == (layer_dims[l], layer_dims[l-1]))
+        assert(parameters['b' + str(l)].shape == (layer_dims[l], 1))
+
+        
+    return parameters
+
+
+
+def sigmoid(Z):
+    A = 1./(1+np.exp(-Z))
+    return A, Z
+
+
+# TODO
+def relu(Z):
+    #return (Z >= 0), Z
+    A = 1./(1+np.exp(-Z))
+    return A, Z
+
+# TODO
+def relu_backward(dA, activation_cache):
+    # dZ = dA * g'(Z) = dA * Z * ( 1 - Z)
+    dZ = dA * activation_cache * (1-activation_cache)
+    return dZ
+
+def sigmoid_backward(dA, activation_cache):
+    # dZ = dA * g'(Z) = dA * Z * ( 1 - Z)
+    dZ = dA * activation_cache * (1-activation_cache)
+    return dZ
+
+
+
+
+
+
+
+
+
+
+
+# %matplotlib inline
+# plt.rcParams['figure.figsize'] = (5.0, 4.0) # set default size of plots
+# plt.rcParams['image.interpolation'] = 'nearest'
+# plt.rcParams['image.cmap'] = 'gray'
+# 
+# %load_ext autoreload
+# %autoreload 2
+
+np.random.seed(1)
+
+train_x_orig, train_y, test_x_orig, test_y, classes = load_data()
+
+# Example of a picture
+# index = 10
+# plt.imshow(train_x_orig[index])
+# print ("y = " + str(train_y[0,index]) + ". It's a " + classes[train_y[0,index]].decode("utf-8") +  " picture.")
+
+# Explore your dataset 
+m_train = train_x_orig.shape[0]
+num_px = train_x_orig.shape[1]
+m_test = test_x_orig.shape[0]
+
+print ("Number of training examples: " + str(m_train))
+print ("Number of testing examples: " + str(m_test))
+print ("Each image is of size: (" + str(num_px) + ", " + str(num_px) + ", 3)")
+print ("train_x_orig shape: " + str(train_x_orig.shape))
+print ("train_y shape: " + str(train_y.shape))
+print ("test_x_orig shape: " + str(test_x_orig.shape))
+print ("test_y shape: " + str(test_y.shape))
+
+
+# Reshape the training and test examples 
+train_x_flatten = train_x_orig.reshape(train_x_orig.shape[0], -1).T   # The "-1" makes reshape flatten the remaining dimensions
+test_x_flatten = test_x_orig.reshape(test_x_orig.shape[0], -1).T
+
+# Standardize data to have feature values between 0 and 1.
+train_x = train_x_flatten/255.
+test_x = test_x_flatten/255.
+
+print ("train_x's shape: " + str(train_x.shape))
+print ("test_x's shape: " + str(test_x.shape))
+
+
+### CONSTANTS DEFINING THE MODEL ####
+n_x = 12288     # num_px * num_px * 3
+n_h = 7
+n_y = 1
+layers_dims = (n_x, n_h, n_y)
+
+parameters = L_layer_model(train_x, train_y, layers_dims, num_iterations = 150, print_cost = True)
+# pred_train = predict(train_x, train_y, parameters)
+# pred_test = predict(test_x, test_y, parameters)
+
+
+## START CODE HERE ##
+# my_image = "my_image.jpg" # change this to the name of your image file 
+# my_label_y = [1] # the true class of your image (1 -> cat, 0 -> non-cat)
+# ## END CODE HERE ##
+# 
+# fname = "images/" + my_image
+# image = np.array(ndimage.imread(fname, flatten=False))
+# my_image = scipy.misc.imresize(image, size=(num_px,num_px)).reshape((num_px*num_px*3,1))
+# my_image = my_image/255.
+# my_predicted_image = predict(my_image, my_label_y, parameters)
+# 
+# plt.imshow(image)
+# print ("y = " + str(np.squeeze(my_predicted_image)) + ", your L-layer model predicts a \"" + classes[int(np.squeeze(my_predicted_image)),].decode("utf-8") +  "\" picture.")
+
+
+# expected output
+# Number of training examples: 209
+# Number of testing examples: 50
+# Each image is of size: (64, 64, 3)
+# train_x_orig shape: (209, 64, 64, 3)
+# train_y shape: (1, 209)
+# test_x_orig shape: (50, 64, 64, 3)
+# test_y shape: (1, 50)

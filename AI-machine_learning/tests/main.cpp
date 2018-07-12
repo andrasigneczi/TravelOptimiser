@@ -44,7 +44,7 @@ int main (int argc, char* argv[]) {
 
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     //NeuralNetwork_ns::runTests();
-    COC_ns::runTests();
+    //COC_ns::runTests();
     //SVM_ns::runTests();
     //AnomalyDetection_ns::runTests();
     //KMean_ns::runTests();
@@ -69,8 +69,16 @@ int main (int argc, char* argv[]) {
     //std::cout << arma::any((ttt >= 30),1);
 
     std::cout << Util::mapFeature(ttt.cols(0,1), ttt.cols(2,3));
-
+*/
     arma::mat X,y,Xval,yval;
+    X.load("ex3data1_X.bin");
+    y.load("ex3data1_y.bin");
+    // first line: X.n_rows, X.n_cols, label1, label2, labeln
+    // next lines: x cols, y col
+    std::cout << size(X);
+    X.insert_cols(X.n_cols, y);
+    X.save("ex3data1.csv", arma::csv_ascii);
+/*
     X.load("ex8data1_X.txt");
     Xval.load("ex8data1_Xval.txt");
     yval.load("ex8data1_yval.txt");
@@ -90,5 +98,5 @@ int main (int argc, char* argv[]) {
     Xval.save("ex8data2_Xval.bin");
     yval.save("ex8data2_yval.bin");
 */
-  app.exec();
+  //app.exec();
 }
