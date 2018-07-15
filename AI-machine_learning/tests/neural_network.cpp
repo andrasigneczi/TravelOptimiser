@@ -1,6 +1,7 @@
 #include <armadillo>
 #include "neural_network.h"
 #include <neural_network.h>
+#include <neural_networkv2.h>
 #include <fmincg.h>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
@@ -16,6 +17,7 @@ void test3();
 void test_ex5_learningCurve();
 void test_ex5_validationCurve();
 void minibatch();
+void nnv2();
 
 void runTests() {
     //test1(); // neural network prediction
@@ -23,7 +25,8 @@ void runTests() {
     //test3(); // neural network simple training
     //test_ex5_learningCurve();
     //test_ex5_validationCurve();
-    minibatch();
+    //minibatch();
+    nnv2();
 }
 
 
@@ -293,6 +296,45 @@ void minibatch() {
     std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100 << "\n";
     std::cout << "Press enter to continue\n";
     std::cin.get();
+}
+
+void nnv2() {
+    arma::mat X, y;
+
+    X.load("ex3data1_X.bin");
+    y.load("ex3data1_y.bin");
+
+    arma::mat thetaSizes;
+    int input_layer_size  = 400;
+    int hidden_layer_size1 = 400;
+    int hidden_layer_size2 = 20;
+    int num_labels         = 10;
+    double lambda = 0;
+    int iteration = 200;
+    //double alpha = 0.93;
+    double alpha = 0.0093;
+
+    thetaSizes << input_layer_size << hidden_layer_size1 << hidden_layer_size2 << num_labels; // input, hidden, output
+    //TestYMappper yMapper;
+    arma::mat mappedY = arma::zeros(y.n_rows, num_labels);
+    for( int i = 0; i < y.n_rows; ++i ) {
+        mappedY(i, y(i,0)-1) = 1;
+    }
+    X = X.t();
+    y = mappedY.t();
+    NeuralNetworkV2 nn(thetaSizes, X, y, lambda, false, NeuralNetworkV2::SIGMOID);
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    nn.L_layer_model(alpha,iteration,true);
+    std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+    std::cout << "\nTime difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
+
+    arma::mat pred = nn.predict(X);
+
+    std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100 << "\n";
+    std::cout << "Press enter to continue\n";
+    std::cin.get();
+
 }
 
 } // NeuralNetwork_ns
