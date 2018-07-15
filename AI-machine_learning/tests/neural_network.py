@@ -5,6 +5,7 @@ import numpy as np
 import h5py
 import matplotlib.pyplot as plt
 import scipy
+import csv
 from PIL import Image
 from scipy import ndimage
 #from dnn_app_utils_v3 import *
@@ -220,7 +221,7 @@ def backward_propagation_with_dropout(X, Y, cache, keep_prob):
     
 # GRADED FUNCTION: predict
 
-def predict(parameters, X):
+def predict(X, Y, parameters):
     """
     Using the learned parameters, predicts a class for each example in X
     
@@ -234,10 +235,14 @@ def predict(parameters, X):
     
     # Computes probabilities using forward propagation, and classifies to 0/1 using 0.5 as the threshold.
     ### START CODE HERE ### (≈ 2 lines of code)
-    A2, cache = forward_propagation(X, parameters)
+    A2, cache = L_model_forward(X, parameters)
     predictions = (A2>0.5)
     ### END CODE HERE ###
     
+    accuracy = np.sum((np.multiply(Y,predictions.T) + np.multiply(1-Y,1-predictions.T))/float(Y.size)*100)
+    print ("Accuracy for {} hidden units: {} " + str(accuracy))    
+    print(predictions.shape)
+    print(Y.shape)
     return predictions    
 
 
@@ -338,7 +343,7 @@ def L_model_forward(X, parameters):
     caches.append(cache)
     ### END CODE HERE ###
     
-    assert(AL.shape == (1,X.shape[1]))
+    #assert(AL.shape == (1,X.shape[1]))
             
     return AL, caches
     
@@ -355,12 +360,16 @@ def compute_cost(AL, Y):
     Returns:
     cost -- cross-entropy cost
     """
-    
-    m = Y.shape[1]
+    #!!!!!!!!!!!!!!!!!!!
+    #m = Y.shape[1]
+    m = Y.shape[0]
+    #print(m)
 
     # Compute loss from aL and y.
     ### START CODE HERE ### (≈ 1 lines of code)
-    cost = -1/m*np.sum(np.multiply(Y,np.log(AL)) + (1-Y)*np.log(1-AL))
+    #np.dot(Y,np.log(AL))
+    #np.dot((1-Y),np.log(1-AL))
+    cost = -1/m*np.sum(np.dot(Y,np.log(AL)) + np.dot((1-Y),np.log(1-AL)))
     ### END CODE HERE ###
     
     cost = np.squeeze(cost)      # To make sure your cost's shape is what we expect (e.g. this turns [[17]] into 17).
@@ -528,7 +537,8 @@ def L_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 30
     
     # Parameters initialization. (≈ 1 line of code)
     ### START CODE HERE ###
-    parameters = initialize_parameters_deep(layers_dims)
+    #parameters = initialize_parameters_deep(layers_dims)
+    parameters = initialize_parameters_he(layers_dims)
     ### END CODE HERE ###
     
     # Loop (gradient descent)
@@ -571,11 +581,30 @@ def L_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 30
 
 
 def load_data():
-    train_x_orig = np.random.randn(209,64,64,3)
-    train_y      = np.random.randn(209,1)
+    with open("/home/ubuntu/workspace/AI-machine_learning/tests/ex3data1.csv", 'rt', encoding="utf8") as f:
+        reader = csv.reader(f)
+        i = 0;
+        for row in reader:
+            if i == 0 :
+                #print(row[0])
+                train_x_orig = np.zeros((int(row[0]),int(row[1])))
+                train_y = np.zeros((int(row[0]),len(row)-2))
+            else:
+                for j in range(len(row)-1):
+                    train_x_orig[i-1,j] = float(row[j])
+                #the y must be in binary format
+                train_y[i-1,int(float(row[len(row)-1])) - 1] = 1
+            i = i + 1
+
+    #train_x_orig = train_x_orig.T
+    #train_y = train_y.T
+    #print( train_x_orig.shape )
+    #print( train_y.shape )
+    #train_x_orig = np.random.randn(209,64,64,3)
+    #train_y      = np.random.randn(209,1)
     test_x_orig  = np.random.randn(1,64,64,3)
     test_y       = np.random.randn(209,1)
-    classes      = {}
+    classes      = ["1","2","3","4","5","6","7","8","9","10"]
     return train_x_orig, train_y, test_x_orig, test_y, classes
 
 
@@ -616,13 +645,16 @@ def sigmoid(Z):
 # TODO
 def relu(Z):
     #return (Z >= 0), Z
-    A = 1./(1+np.exp(-Z))
+    #A = Z * (Z > 0)
+    A = np.maximum(0,Z)
     return A, Z
 
 # TODO
 def relu_backward(dA, activation_cache):
     # dZ = dA * g'(Z) = dA * Z * ( 1 - Z)
-    dZ = dA * activation_cache * (1-activation_cache)
+    activation_cache[activation_cache<=0] = 0
+    activation_cache[activation_cache>0] = 1
+    dZ = dA * activation_cache
     return dZ
 
 def sigmoid_backward(dA, activation_cache):
@@ -653,9 +685,9 @@ np.random.seed(1)
 train_x_orig, train_y, test_x_orig, test_y, classes = load_data()
 
 # Example of a picture
-# index = 10
+#index = 10
 # plt.imshow(train_x_orig[index])
-# print ("y = " + str(train_y[0,index]) + ". It's a " + classes[train_y[0,index]].decode("utf-8") +  " picture.")
+#print ("y = " + str(train_y[index,0]) + ". It's a " + classes[int(train_y[index,0])] +  " picture.")
 
 # Explore your dataset 
 m_train = train_x_orig.shape[0]
@@ -664,11 +696,11 @@ m_test = test_x_orig.shape[0]
 
 print ("Number of training examples: " + str(m_train))
 print ("Number of testing examples: " + str(m_test))
-print ("Each image is of size: (" + str(num_px) + ", " + str(num_px) + ", 3)")
+#print ("Each image is of size: (" + str(num_px) + ", " + str(num_px) + ", 3)")
 print ("train_x_orig shape: " + str(train_x_orig.shape))
 print ("train_y shape: " + str(train_y.shape))
-print ("test_x_orig shape: " + str(test_x_orig.shape))
-print ("test_y shape: " + str(test_y.shape))
+#print ("test_x_orig shape: " + str(test_x_orig.shape))
+#print ("test_y shape: " + str(test_y.shape))
 
 
 # Reshape the training and test examples 
@@ -678,19 +710,21 @@ test_x_flatten = test_x_orig.reshape(test_x_orig.shape[0], -1).T
 # Standardize data to have feature values between 0 and 1.
 train_x = train_x_flatten/255.
 test_x = test_x_flatten/255.
+#train_x = train_x_flatten
+#test_x = test_x_flatten
 
 print ("train_x's shape: " + str(train_x.shape))
-print ("test_x's shape: " + str(test_x.shape))
+#print ("test_x's shape: " + str(test_x.shape))
 
 
 ### CONSTANTS DEFINING THE MODEL ####
-n_x = 12288     # num_px * num_px * 3
-n_h = 7
-n_y = 1
+n_x =  train_x_orig.shape[1]
+n_h = 20
+n_y = train_y.shape[1]
 layers_dims = (n_x, n_h, n_y)
 
 parameters = L_layer_model(train_x, train_y, layers_dims, num_iterations = 150, print_cost = True)
-# pred_train = predict(train_x, train_y, parameters)
+pred_train = predict(train_x, train_y, parameters)
 # pred_test = predict(test_x, test_y, parameters)
 
 
