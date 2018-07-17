@@ -101,6 +101,7 @@ model = tf.keras.Sequential([
   tf.keras.layers.Dense(20, activation="relu"),
   tf.keras.layers.Dense(10)
 ])
+#print( model.weights )
 
 #######################################
 # Define the loss and gradient function
@@ -118,8 +119,8 @@ def grad(model, inputs, targets):
 #####################
 # Create an optimizer
 #####################
-#optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
-optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
+#optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
 
 
 ###############
