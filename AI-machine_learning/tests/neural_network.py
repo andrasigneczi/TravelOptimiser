@@ -625,6 +625,89 @@ def L_layer_model(X, Y, layers_dims, initial_learning_rate = 0.0075, num_iterati
     
     return parameters
 
+def miniBatchGradientDescent(XO, YO, layers_dims, initial_learning_rate = 0.0075, num_iterations = 3000, print_cost=False, activation="relu",
+                  softmax=False, batchSize=1024):#lr was 0.009
+    """
+    Implements a L-layer neural network: [LINEAR->RELU]*(L-1)->LINEAR->SIGMOID.
+    
+    Arguments:
+    X -- data, numpy array of shape (number of examples, num_px * num_px * 3)
+    Y -- true "label" vector (containing 0 if cat, 1 if non-cat), of shape (1, number of examples)
+    layers_dims -- list containing the input size and each layer size, of length (number of layers + 1).
+    learning_rate -- learning rate of the gradient descent update rule
+    num_iterations -- number of iterations of the optimization loop
+    print_cost -- if True, it prints the cost every 100 steps
+    
+    Returns:
+    parameters -- parameters learnt by the model. They can then be used to predict.
+    """
+
+    np.random.seed(1)
+    costs = []                         # keep track of cost
+    c = 400.
+    c_learning_rate = c/initial_learning_rate
+    
+    # Parameters initialization. (≈ 1 line of code)
+    ### START CODE HERE ###
+    parameters = initialize_parameters_deep(layers_dims)
+    #parameters = initialize_parameters_he(layers_dims)
+    ### END CODE HERE ###
+    
+    # Loop (gradient descent)
+    for i in range(0, num_iterations):
+        
+        permutation = list(np.random.permutation(XO.shape[1]))
+        index = 0
+        while True:
+            l = index * batchSize
+            l_end = l + batchSize
+            
+            if l >= XO.shape[1]:
+                break
+
+            if l_end >= XO.shape[1]:
+                l_end = XO.shape[1];
+
+            #print( "l: %d;" % l + " l_end: %d" % l_end )
+            X = XO[:,permutation[l:l_end]]
+            Y = YO[:,permutation[l:l_end]]
+
+    
+            # Forward propagation: [LINEAR -> RELU]*(L-1) -> LINEAR -> SIGMOID.
+            ### START CODE HERE ### (≈ 1 line of code)
+            AL, caches =  L_model_forward(X, parameters, activation, softmax)
+            ### END CODE HERE ###
+            
+            # Compute cost.
+            ### START CODE HERE ### (≈ 1 line of code)
+            cost = compute_cost(AL, Y, softmax)
+            ### END CODE HERE ###
+        
+            # Backward propagation.
+            ### START CODE HERE ### (≈ 1 line of code)
+            grads = L_model_backward(AL, Y, caches, activation, softmax)
+            ### END CODE HERE ###
+     
+            # Update parameters.
+            ### START CODE HERE ### (≈ 1 line of code)
+            learning_rate = c/(c_learning_rate+i)
+            parameters = update_parameters(parameters, grads, learning_rate)
+            ### END CODE HERE ###
+                    
+            index += 1
+
+        # Print the cost every 100 training example
+        if print_cost and i % 10 == 0:
+            print ("Cost after iteration %i: %f" %(i, cost))
+            pred_train = predict(XO, parameters, activation)
+            temp = np.nanargmax(YO,axis=0)
+            accuracy=np.sum(pred_train==temp)/YO.shape[1]*100.
+            print('Accuracy: %f' % accuracy + '%')
+            print('Learning rate: %f' % learning_rate)
+        if print_cost and i % 100 == 0:
+            costs.append(cost)
+            
+    return parameters
 
 def load_data():
     with open("/home/ubuntu/workspace/AI-machine_learning/tests/ex3data1.csv", 'rt', encoding="utf8") as f:
@@ -811,7 +894,9 @@ activationf="tanh"
 #          5000 example and 400 features
 # train_y: every column is an example's label in 'binary' format
 #############################################################################
-parameters = L_layer_model(train_x, train_y, layers_dims, initial_learning_rate=1.3, num_iterations = 2000, print_cost = True, 
+#parameters = L_layer_model(train_x, train_y, layers_dims, initial_learning_rate=1.3, num_iterations = 2000, print_cost = True, 
+#                           activation = activationf, softmax=False)
+parameters = miniBatchGradientDescent(train_x, train_y, layers_dims, initial_learning_rate=0.3, num_iterations = 2000, print_cost = True, 
                            activation = activationf, softmax=False)
 
 pred_train = predict(train_x, parameters, activationf)
