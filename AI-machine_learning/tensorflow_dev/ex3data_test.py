@@ -5,6 +5,11 @@
 #######################################
 from __future__ import absolute_import, division, print_function
 
+try:
+    from setuptools import setup, find_packages
+except AttributeError:
+    from setuptools import setup, find_packages
+
 import os
 import matplotlib.pyplot as plt
 
@@ -16,6 +21,10 @@ tf.enable_eager_execution()
 print("TensorFlow version: {}".format(tf.VERSION))
 print("Eager execution: {}".format(tf.executing_eagerly()))
 
+config = tf.ConfigProto(device_count={"CPU": 4},
+inter_op_parallelism_threads = 1,
+intra_op_parallelism_threads = 4,
+log_device_placement=True)
 
 ######################
 # Download the dataset
@@ -116,45 +125,60 @@ def grad(model, inputs, targets):
     loss_value = loss(model, inputs, targets)
   return tape.gradient(loss_value, model.variables)
 
-#####################
-# Create an optimizer
-#####################
-#optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
-optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
+def minibatch():
+    #####################
+    # Create an optimizer
+    #####################
+    #optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
+    optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
 
 
-###############
-# Training loop
-###############
-## Note: Rerunning this cell uses the same model variables
+    ###############
+    # Training loop
+    ###############
+    ## Note: Rerunning this cell uses the same model variables
 
-# keep results for plotting
-train_loss_results = []
-train_accuracy_results = []
+    # keep results for plotting
+    train_loss_results = []
+    train_accuracy_results = []
 
-num_epochs = 201
+    num_epochs = 201
 
-for epoch in range(num_epochs):
-  epoch_loss_avg = tfe.metrics.Mean()
-  epoch_accuracy = tfe.metrics.Accuracy()
+#    g = tf.Graph()
+#    with g.as_default():
 
-  # Training loop - using batches of 32
-  for x, y in train_dataset:
-    # Optimize the model
-    grads = grad(model, x, y)
-    optimizer.apply_gradients(zip(grads, model.variables),
-                              global_step=tf.train.get_or_create_global_step())
+    init = tf.global_variables_initializer()
+    sess = tf.Session()
+    #sess.run(init)
 
-    # Track progress
-    epoch_loss_avg(loss(model, x, y))  # add current batch loss
-    # compare predicted label to actual label
-    epoch_accuracy(tf.argmax(model(x), axis=1, output_type=tf.int32), y)
+    for epoch in range(num_epochs):
+      epoch_loss_avg = tfe.metrics.Mean()
+      epoch_accuracy = tfe.metrics.Accuracy()
 
-  # end epoch
-  train_loss_results.append(epoch_loss_avg.result())
-  train_accuracy_results.append(epoch_accuracy.result())
-  
-  if epoch % 50 == 0:
-    print("Epoch {:03d}: Loss: {:.3f}, Accuracy: {:.3%}".format(epoch,
-                                                                epoch_loss_avg.result(),
-                                                                epoch_accuracy.result()))
+      # Training loop - using batches of 32
+      for x, y in train_dataset:
+        # Optimize the model
+        grads = grad(model, x, y)
+        train_step = optimizer.apply_gradients(zip(grads, model.variables),
+                                  global_step=tf.train.get_or_create_global_step())
+
+        #sess.run([train_step])
+        # Track progress
+        epoch_loss_avg(loss(model, x, y))  # add current batch loss
+        # compare predicted label to actual label
+        epoch_accuracy(tf.argmax(model(x), axis=1, output_type=tf.int32), y)
+
+      # end epoch
+      train_loss_results.append(epoch_loss_avg.result())
+      train_accuracy_results.append(epoch_accuracy.result())
+
+      if epoch % 50 == 0:
+        print("Epoch {:03d}: Loss: {:.3f}, Accuracy: {:.3%}".format(epoch,
+                                                                    epoch_loss_avg.result(),
+                                                                    epoch_accuracy.result()))
+minibatch()
+#w = tf.Variable([0],dtype=tf.float32)
+#init = tf.global_variables_initializer()
+#sess = tf.Session()
+#sess.run(init)
+#sess.run(minibatch)

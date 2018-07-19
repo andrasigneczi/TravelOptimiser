@@ -5,6 +5,12 @@
 #######################################
 from __future__ import absolute_import, division, print_function
 
+
+try:
+    from setuptools import setup, find_packages
+except AttributeError:
+    from setuptools import setup, find_packages
+
 import os
 import matplotlib.pyplot as plt
 
