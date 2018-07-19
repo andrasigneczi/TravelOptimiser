@@ -39,6 +39,173 @@ def initialize_parameters_he(layers_dims):
         
     return parameters
     
+def initialize_adam(parameters) :
+    """
+    Initializes v and s as two python dictionaries with:
+                - keys: "dW1", "db1", ..., "dWL", "dbL" 
+                - values: numpy arrays of zeros of the same shape as the corresponding gradients/parameters.
+    
+    Arguments:
+    parameters -- python dictionary containing your parameters.
+                    parameters["W" + str(l)] = Wl
+                    parameters["b" + str(l)] = bl
+    
+    Returns: 
+    v -- python dictionary that will contain the exponentially weighted average of the gradient.
+                    v["dW" + str(l)] = ...
+                    v["db" + str(l)] = ...
+    s -- python dictionary that will contain the exponentially weighted average of the squared gradient.
+                    s["dW" + str(l)] = ...
+                    s["db" + str(l)] = ...
+
+    """
+    
+    L = len(parameters) // 2 # number of layers in the neural networks
+    v = {}
+    s = {}
+    
+    # Initialize v, s. Input: "parameters". Outputs: "v, s".
+    for l in range(L):
+    ### START CODE HERE ### (approx. 4 lines)
+        v["dW" + str(l+1)] = np.zeros(parameters["W" + str(l+1)].shape)
+        v["db" + str(l+1)] = np.zeros(parameters["b" + str(l+1)].shape)
+        s["dW" + str(l+1)] = np.zeros(parameters["W" + str(l+1)].shape)
+        s["db" + str(l+1)] = np.zeros(parameters["b" + str(l+1)].shape)
+    ### END CODE HERE ###
+    
+    return v, s
+
+def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate = 0.01,
+                                beta1 = 0.9, beta2 = 0.999,  epsilon = 1e-8):
+    """
+    Update parameters using Adam
+    
+    Arguments:
+    parameters -- python dictionary containing your parameters:
+                    parameters['W' + str(l)] = Wl
+                    parameters['b' + str(l)] = bl
+    grads -- python dictionary containing your gradients for each parameters:
+                    grads['dW' + str(l)] = dWl
+                    grads['db' + str(l)] = dbl
+    v -- Adam variable, moving average of the first gradient, python dictionary
+    s -- Adam variable, moving average of the squared gradient, python dictionary
+    learning_rate -- the learning rate, scalar.
+    beta1 -- Exponential decay hyperparameter for the first moment estimates 
+    beta2 -- Exponential decay hyperparameter for the second moment estimates 
+    epsilon -- hyperparameter preventing division by zero in Adam updates
+
+    Returns:
+    parameters -- python dictionary containing your updated parameters 
+    v -- Adam variable, moving average of the first gradient, python dictionary
+    s -- Adam variable, moving average of the squared gradient, python dictionary
+    """
+    
+    L = len(parameters) // 2                 # number of layers in the neural networks
+    v_corrected = {}                         # Initializing first moment estimate, python dictionary
+    s_corrected = {}                         # Initializing second moment estimate, python dictionary
+    
+    # Perform Adam update on all parameters
+    for l in range(L):
+        # Moving average of the gradients. Inputs: "v, grads, beta1". Output: "v".
+        ### START CODE HERE ### (approx. 2 lines)
+        v["dW" + str(l+1)] = beta1 * v["dW" + str(l+1)] + (1-beta1) * grads['dW' + str(l+1)]
+        v["db" + str(l+1)] = beta1 * v["db" + str(l+1)] + (1-beta1) * grads['db' + str(l+1)]
+        ### END CODE HERE ###
+
+        # Compute bias-corrected first moment estimate. Inputs: "v, beta1, t". Output: "v_corrected".
+        ### START CODE HERE ### (approx. 2 lines)
+        v_corrected["dW" + str(l+1)] = v["dW" + str(l+1)]/(1-np.power(beta1,t))
+        v_corrected["db" + str(l+1)] = v["db" + str(l+1)]/(1-np.power(beta1,t))
+        ### END CODE HERE ###
+
+        # Moving average of the squared gradients. Inputs: "s, grads, beta2". Output: "s".
+        ### START CODE HERE ### (approx. 2 lines)
+        s["dW" + str(l+1)] = beta2 * s["dW" + str(l+1)] + (1-beta2) * np.power(grads['dW' + str(l+1)],2)
+        s["db" + str(l+1)] = beta2 * s["db" + str(l+1)] + (1-beta2) * np.power(grads['db' + str(l+1)],2)
+        ### END CODE HERE ###
+
+        # Compute bias-corrected second raw moment estimate. Inputs: "s, beta2, t". Output: "s_corrected".
+        ### START CODE HERE ### (approx. 2 lines)
+        s_corrected["dW" + str(l+1)] = s["dW" + str(l+1)]/(1-np.power(beta2,t))
+        s_corrected["db" + str(l+1)] = s["db" + str(l+1)]/(1-np.power(beta2,t))
+        ### END CODE HERE ###
+
+        # Update parameters. Inputs: "parameters, learning_rate, v_corrected, s_corrected, epsilon". Output: "parameters".
+        ### START CODE HERE ### (approx. 2 lines)
+        parameters["W" + str(l+1)] = parameters["W" + str(l+1)] - learning_rate * v_corrected["dW" + str(l+1)] / np.sqrt(s_corrected["dW" + str(l+1)] + epsilon)
+        parameters["b" + str(l+1)] = parameters["b" + str(l+1)] - learning_rate * v_corrected["db" + str(l+1)] / np.sqrt(s_corrected["db" + str(l+1)] + epsilon)
+        ### END CODE HERE ###
+
+    return parameters, v, s
+
+# for momentum
+def initialize_velocity(parameters):
+    """
+    Initializes the velocity as a python dictionary with:
+                - keys: "dW1", "db1", ..., "dWL", "dbL" 
+                - values: numpy arrays of zeros of the same shape as the corresponding gradients/parameters.
+    Arguments:
+    parameters -- python dictionary containing your parameters.
+                    parameters['W' + str(l)] = Wl
+                    parameters['b' + str(l)] = bl
+    
+    Returns:
+    v -- python dictionary containing the current velocity.
+                    v['dW' + str(l)] = velocity of dWl
+                    v['db' + str(l)] = velocity of dbl
+    """
+    
+    L = len(parameters) // 2 # number of layers in the neural networks
+    v = {}
+    
+    # Initialize velocity
+    for l in range(L):
+        ### START CODE HERE ### (approx. 2 lines)
+        v["dW" + str(l+1)] = np.zeros(parameters["W" + str(l+1)].shape)
+        v["db" + str(l+1)] = np.zeros(parameters["b" + str(l+1)].shape)
+        ### END CODE HERE ###
+        
+    return v
+
+# GRADED FUNCTION: update_parameters_with_momentum
+
+def update_parameters_with_momentum(parameters, grads, v, beta, learning_rate):
+    """
+    Update parameters using Momentum
+    
+    Arguments:
+    parameters -- python dictionary containing your parameters:
+                    parameters['W' + str(l)] = Wl
+                    parameters['b' + str(l)] = bl
+    grads -- python dictionary containing your gradients for each parameters:
+                    grads['dW' + str(l)] = dWl
+                    grads['db' + str(l)] = dbl
+    v -- python dictionary containing the current velocity:
+                    v['dW' + str(l)] = ...
+                    v['db' + str(l)] = ...
+    beta -- the momentum hyperparameter, scalar
+    learning_rate -- the learning rate, scalar
+    
+    Returns:
+    parameters -- python dictionary containing your updated parameters 
+    v -- python dictionary containing your updated velocities
+    """
+
+    L = len(parameters) // 2 # number of layers in the neural networks
+    
+    # Momentum update for each parameter
+    for l in range(L):
+        
+        ### START CODE HERE ### (approx. 4 lines)
+        # compute velocities
+        v["dW" + str(l+1)] = beta * v["dW" + str(l+1)] + (1-beta) * grads['dW' + str(l+1)]
+        v["db" + str(l+1)] = beta * v["db" + str(l+1)] + (1-beta) * grads['db' + str(l+1)]
+        # update parameters
+        parameters["W" + str(l+1)] = parameters["W" + str(l+1)] - learning_rate * v["dW" + str(l+1)]
+        parameters["b" + str(l+1)] = parameters["b" + str(l+1)] - learning_rate * v["db" + str(l+1)]
+        ### END CODE HERE ###
+        
+    return parameters, v
     
 # GRADED FUNCTION: compute_cost_with_regularization
 
@@ -247,6 +414,13 @@ def predict(X, parameters, activation):
     predictions = np.nanargmax(A2,axis=0)
     return predictions    
 
+def accuracy(X, Y, parameters, activation):
+    A2, cache = L_model_forward(X, parameters, activation, True)
+    # indices of maximum value from every column, shape: 1x5000
+    predictions = np.nanargmax(A2,axis=0)
+    temp = np.nanargmax(Y,axis=0)
+    accuracy=np.sum(predictions==temp)/Y.shape[1]*100.
+    return accuracy    
 
 
 # GRADED FUNCTION: linear_forward
@@ -527,7 +701,7 @@ def L_model_backward(AL, Y, caches, activation, softmax):
     
 # GRADED FUNCTION: update_parameters
 
-def update_parameters(parameters, grads, learning_rate):
+def update_parameters_with_gd(parameters, grads, learning_rate):
     """
     Update parameters using gradient descent
     
@@ -553,7 +727,7 @@ def update_parameters(parameters, grads, learning_rate):
     
 # GRADED FUNCTION: L_layer_model
 
-def L_layer_model(X, Y, layers_dims, initial_learning_rate = 0.0075, num_iterations = 3000, print_cost=False, activation="relu",
+def L_layer_model(X, Y, layers_dims, initial_learning_rate = 0.0075, num_epochs = 3000, print_cost=False, activation="relu",
                   softmax=False):#lr was 0.009
     """
     Implements a L-layer neural network: [LINEAR->RELU]*(L-1)->LINEAR->SIGMOID.
@@ -563,7 +737,7 @@ def L_layer_model(X, Y, layers_dims, initial_learning_rate = 0.0075, num_iterati
     Y -- true "label" vector (containing 0 if cat, 1 if non-cat), of shape (1, number of examples)
     layers_dims -- list containing the input size and each layer size, of length (number of layers + 1).
     learning_rate -- learning rate of the gradient descent update rule
-    num_iterations -- number of iterations of the optimization loop
+    num_epochs -- number of iterations of the optimization loop
     print_cost -- if True, it prints the cost every 100 steps
     
     Returns:
@@ -582,7 +756,7 @@ def L_layer_model(X, Y, layers_dims, initial_learning_rate = 0.0075, num_iterati
     ### END CODE HERE ###
     
     # Loop (gradient descent)
-    for i in range(0, num_iterations):
+    for i in range(0, num_epochs):
 
         # Forward propagation: [LINEAR -> RELU]*(L-1) -> LINEAR -> SIGMOID.
         ### START CODE HERE ### (≈ 1 line of code)
@@ -602,16 +776,14 @@ def L_layer_model(X, Y, layers_dims, initial_learning_rate = 0.0075, num_iterati
         # Update parameters.
         ### START CODE HERE ### (≈ 1 line of code)
         learning_rate = c/(c_learning_rate+i)
-        parameters = update_parameters(parameters, grads, learning_rate)
+        parameters = update_parameters_with_gd(parameters, grads, learning_rate)
         ### END CODE HERE ###
                 
         # Print the cost every 100 training example
         if print_cost and i % 10 == 0:
             print ("Cost after iteration %i: %f" %(i, cost))
-            pred_train = predict(X, parameters, activation)
-            temp = np.nanargmax(Y,axis=0)
-            accuracy=np.sum(pred_train==temp)/Y.shape[1]*100.
-            print('Accuracy: %f' % accuracy + '%')
+            accuracy_ = accuracy(X, Y, parameters, activation)
+            print('Accuracy: %f' % accuracy_ + '%')
             print('Learning rate: %f' % learning_rate)
         if print_cost and i % 100 == 0:
             costs.append(cost)
@@ -625,8 +797,8 @@ def L_layer_model(X, Y, layers_dims, initial_learning_rate = 0.0075, num_iterati
     
     return parameters
 
-def miniBatchGradientDescent(XO, YO, layers_dims, initial_learning_rate = 0.0075, num_iterations = 3000, print_cost=False, activation="relu",
-                  softmax=False, batchSize=1024):#lr was 0.009
+def miniBatchGradientDescent(XO, YO, layers_dims, optimizer, initial_learning_rate = 0.0075, num_epochs = 3000, print_cost=False, activation="relu",
+                  softmax=False, batchSize=1024, beta = 0.9, beta1 = 0.9, beta2 = 0.999,  epsilon = 1e-8, ):
     """
     Implements a L-layer neural network: [LINEAR->RELU]*(L-1)->LINEAR->SIGMOID.
     
@@ -635,7 +807,7 @@ def miniBatchGradientDescent(XO, YO, layers_dims, initial_learning_rate = 0.0075
     Y -- true "label" vector (containing 0 if cat, 1 if non-cat), of shape (1, number of examples)
     layers_dims -- list containing the input size and each layer size, of length (number of layers + 1).
     learning_rate -- learning rate of the gradient descent update rule
-    num_iterations -- number of iterations of the optimization loop
+    num_epochs -- number of iterations of the optimization loop
     print_cost -- if True, it prints the cost every 100 steps
     
     Returns:
@@ -644,6 +816,7 @@ def miniBatchGradientDescent(XO, YO, layers_dims, initial_learning_rate = 0.0075
 
     np.random.seed(1)
     costs = []                         # keep track of cost
+    t = 0                              # initializing the counter required for Adam update
     c = 400.
     c_learning_rate = c/initial_learning_rate
     
@@ -653,8 +826,16 @@ def miniBatchGradientDescent(XO, YO, layers_dims, initial_learning_rate = 0.0075
     #parameters = initialize_parameters_he(layers_dims)
     ### END CODE HERE ###
     
+    # Initialize the optimizer
+    if optimizer == "gd":
+        pass # no initialization required for gradient descent
+    elif optimizer == "momentum":
+        v = initialize_velocity(parameters)
+    elif optimizer == "adam":
+        v, s = initialize_adam(parameters)
+    
     # Loop (gradient descent)
-    for i in range(0, num_iterations):
+    for i in range(0, num_epochs):
         
         permutation = list(np.random.permutation(XO.shape[1]))
         index = 0
@@ -691,7 +872,17 @@ def miniBatchGradientDescent(XO, YO, layers_dims, initial_learning_rate = 0.0075
             # Update parameters.
             ### START CODE HERE ### (≈ 1 line of code)
             learning_rate = c/(c_learning_rate+i)
-            parameters = update_parameters(parameters, grads, learning_rate)
+            
+            # Update parameters
+            if optimizer == "gd":
+                parameters = update_parameters_with_gd(parameters, grads, learning_rate)
+            elif optimizer == "momentum":
+                parameters, v = update_parameters_with_momentum(parameters, grads, v, beta, learning_rate)
+            elif optimizer == "adam":
+                t = t + 1 # Adam counter
+                parameters, v, s = update_parameters_with_adam(parameters, grads, v, s,
+                                                               t, learning_rate, beta1, beta2,  epsilon)
+            
             ### END CODE HERE ###
                     
             index += 1
@@ -699,10 +890,8 @@ def miniBatchGradientDescent(XO, YO, layers_dims, initial_learning_rate = 0.0075
         # Print the cost every 100 training example
         if print_cost and i % 10 == 0:
             print ("Cost after iteration %i: %f" %(i, cost))
-            pred_train = predict(XO, parameters, activation)
-            temp = np.nanargmax(YO,axis=0)
-            accuracy=np.sum(pred_train==temp)/YO.shape[1]*100.
-            print('Accuracy: %f' % accuracy + '%')
+            accuracy_ = accuracy(XO, YO, parameters, activation)
+            print('Accuracy: %f' % accuracy_ + '%')
             print('Learning rate: %f' % learning_rate)
         if print_cost and i % 100 == 0:
             costs.append(cost)
@@ -884,7 +1073,7 @@ print ("train_y's shape: " + str(train_y.shape))
 n_x =  train_x.shape[0]
 n_h = 20
 n_y = train_y.shape[0]
-layers_dims = (n_x, n_h, n_y)
+layers_dims = (n_x, 20, n_h, n_y)
 print(layers_dims)
 activationf="tanh"
 
@@ -894,15 +1083,13 @@ activationf="tanh"
 #          5000 example and 400 features
 # train_y: every column is an example's label in 'binary' format
 #############################################################################
-#parameters = L_layer_model(train_x, train_y, layers_dims, initial_learning_rate=1.3, num_iterations = 2000, print_cost = True, 
+#parameters = L_layer_model(train_x, train_y, layers_dims, initial_learning_rate=1.3, num_epochs = 2000, print_cost = True, 
 #                           activation = activationf, softmax=False)
-parameters = miniBatchGradientDescent(train_x, train_y, layers_dims, initial_learning_rate=0.3, num_iterations = 2000, print_cost = True, 
+parameters = miniBatchGradientDescent(train_x, train_y, layers_dims, "momentum", initial_learning_rate=0.3, num_epochs = 700, print_cost = True, 
                            activation = activationf, softmax=False)
 
-pred_train = predict(train_x, parameters, activationf)
-temp = np.nanargmax(train_y,axis=0)
-accuracy=np.sum(pred_train==temp)/train_y.shape[1]*100.
-print ('Accuracy: %f' % accuracy + '%')
+accuracy_ = accuracy(train_x, train_y, parameters, activationf)
+print ('Accuracy: %f' % accuracy_ + '%')
 
 # pred_test = predict(test_x, test_y, parameters)
 
