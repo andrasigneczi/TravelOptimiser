@@ -221,7 +221,7 @@ def backward_propagation_with_dropout(X, Y, cache, keep_prob):
     
 # GRADED FUNCTION: predict
 
-def predict(X, parameters):
+def predict(X, parameters, activation):
     """
     Using the learned parameters, predicts a class for each example in X
     
@@ -235,7 +235,7 @@ def predict(X, parameters):
     
     # Computes probabilities using forward propagation, and classifies to 0/1 using 0.5 as the threshold.
     ### START CODE HERE ### (≈ 2 lines of code)
-    A2, cache = L_model_forward(X, parameters)
+    A2, cache = L_model_forward(X, parameters, activation, True)
     #predictions = (A2>0.5)
     ### END CODE HERE ###
     
@@ -313,6 +313,13 @@ def linear_activation_forward(A_prev, W, b, activation):
         A, activation_cache = tanh(Z)
         ### END CODE HERE ###
     
+    elif activation == "softmax":
+        # Inputs: "A_prev, W, b". Outputs: "A, activation_cache".
+        ### START CODE HERE ### (≈ 2 lines of code)
+        Z, linear_cache = linear_forward(A_prev, W, b)
+        A, activation_cache = softmax(Z)
+        ### END CODE HERE ###
+
     assert (A.shape == (W.shape[0], A_prev.shape[1]))
     cache = (linear_cache, activation_cache)
 
@@ -320,7 +327,7 @@ def linear_activation_forward(A_prev, W, b, activation):
     
 # GRADED FUNCTION: L_model_forward
 
-def L_model_forward(X, parameters):
+def L_model_forward(X, parameters, activation, softmax):
     """
     Implement forward propagation for the [LINEAR->RELU]*(L-1)->LINEAR->SIGMOID computation
     
@@ -342,13 +349,17 @@ def L_model_forward(X, parameters):
     for l in range(1, L):
         A_prev = A 
         ### START CODE HERE ### (≈ 2 lines of code)
-        A, cache = linear_activation_forward(A_prev, parameters["W"+ str(l)], parameters["b"+ str(l)], "tanh")
+        A, cache = linear_activation_forward(A_prev, parameters["W"+ str(l)], parameters["b"+ str(l)], activation)
         caches.append(cache)
         ### END CODE HERE ###
     
     # Implement LINEAR -> SIGMOID. Add "cache" to the "caches" list.
     ### START CODE HERE ### (≈ 2 lines of code)
-    AL, cache = linear_activation_forward(A, parameters["W"+ str(L)], parameters["b"+ str(L)], "sigmoid")
+    if softmax:
+        activation = "softmax"
+    else:
+        activation = "sigmoid"
+    AL, cache = linear_activation_forward(A, parameters["W"+ str(L)], parameters["b"+ str(L)], activation)
     caches.append(cache)
     ### END CODE HERE ###
     
@@ -358,7 +369,7 @@ def L_model_forward(X, parameters):
     
 # GRADED FUNCTION: compute_cost
 
-def compute_cost(AL, Y):
+def compute_cost(AL, Y, softmax):
     """
     Implement the cost function defined by equation (7).
 
@@ -376,8 +387,11 @@ def compute_cost(AL, Y):
 
     # Compute loss from aL and y.
     ### START CODE HERE ### (≈ 1 lines of code)
-    #cost = -1/m*np.sum(np.dot(Y.T,np.log(AL).T) + np.dot((1-Y).T,np.log(1-AL).T))
-    cost = -1/m*np.sum(np.multiply(Y,np.log(AL)) + np.multiply((1-Y),np.log(1-AL)))
+    if softmax:
+        #cost = -1/m*np.sum(np.multiply(Y,np.log(AL)))
+        cost = np.sum(-np.log(AL[Y.argmax(axis=0),range(m)]))/m
+    else:
+        cost = -1/m*np.sum(np.multiply(Y,np.log(AL)) + np.multiply((1-Y),np.log(1-AL)))
     ### END CODE HERE ###
     
     cost = np.squeeze(cost)      # To make sure your cost's shape is what we expect (e.g. this turns [[17]] into 17).
@@ -417,7 +431,7 @@ def linear_backward(dZ, cache):
 
 # GRADED FUNCTION: linear_activation_backward
 
-def linear_activation_backward(dA, cache, activation):
+def linear_activation_backward(dA, cache, activation, Y):
     """
     Implement the backward propagation for the LINEAR->ACTIVATION layer.
     
@@ -451,11 +465,17 @@ def linear_activation_backward(dA, cache, activation):
         dA_prev, dW, db = linear_backward(dZ, linear_cache)
         ### END CODE HERE ###
     
+    elif activation == "softmax":
+        ### START CODE HERE ### (≈ 2 lines of code)
+        dZ = softmax_backward(dA, activation_cache, Y) # activation_cache == AL
+        dA_prev, dW, db = linear_backward(dZ, linear_cache)
+        ### END CODE HERE ###
+    
     return dA_prev, dW, db
     
 # GRADED FUNCTION: L_model_backward
 
-def L_model_backward(AL, Y, caches):
+def L_model_backward(AL, Y, caches, activation, softmax):
     """
     Implement the backward propagation for the [LINEAR->RELU] * (L-1) -> LINEAR -> SIGMOID group
     
@@ -485,7 +505,10 @@ def L_model_backward(AL, Y, caches):
     # Lth layer (SIGMOID -> LINEAR) gradients. Inputs: "dAL, current_cache". Outputs: "grads["dAL-1"], grads["dWL"], grads["dbL"]
     ### START CODE HERE ### (approx. 2 lines)
     current_cache = caches[L-1]
-    grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL, current_cache, "sigmoid")
+    if softmax:
+        grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL, current_cache, "softmax",Y)
+    else:
+        grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL, current_cache, "sigmoid",Y)
     ### END CODE HERE ###
     
     # Loop from l=L-2 to l=0
@@ -494,7 +517,7 @@ def L_model_backward(AL, Y, caches):
         # Inputs: "grads["dA" + str(l + 1)], current_cache". Outputs: "grads["dA" + str(l)] , grads["dW" + str(l + 1)] , grads["db" + str(l + 1)] 
         ### START CODE HERE ### (approx. 5 lines)
         current_cache = caches[l]
-        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA" + str(l + 1)], current_cache,"tanh")
+        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA" + str(l + 1)], current_cache, activation,Y)
         grads["dA" + str(l)] = dA_prev_temp
         grads["dW" + str(l + 1)] = dW_temp
         grads["db" + str(l + 1)] = db_temp
@@ -530,7 +553,8 @@ def update_parameters(parameters, grads, learning_rate):
     
 # GRADED FUNCTION: L_layer_model
 
-def L_layer_model(X, Y, layers_dims, initial_learning_rate = 0.0075, num_iterations = 3000, print_cost=False):#lr was 0.009
+def L_layer_model(X, Y, layers_dims, initial_learning_rate = 0.0075, num_iterations = 3000, print_cost=False, activation="relu",
+                  softmax=False):#lr was 0.009
     """
     Implements a L-layer neural network: [LINEAR->RELU]*(L-1)->LINEAR->SIGMOID.
     
@@ -553,8 +577,8 @@ def L_layer_model(X, Y, layers_dims, initial_learning_rate = 0.0075, num_iterati
     
     # Parameters initialization. (≈ 1 line of code)
     ### START CODE HERE ###
-    #parameters = initialize_parameters_deep(layers_dims)
-    parameters = initialize_parameters_he(layers_dims)
+    parameters = initialize_parameters_deep(layers_dims)
+    #parameters = initialize_parameters_he(layers_dims)
     ### END CODE HERE ###
     
     # Loop (gradient descent)
@@ -562,17 +586,17 @@ def L_layer_model(X, Y, layers_dims, initial_learning_rate = 0.0075, num_iterati
 
         # Forward propagation: [LINEAR -> RELU]*(L-1) -> LINEAR -> SIGMOID.
         ### START CODE HERE ### (≈ 1 line of code)
-        AL, caches =  L_model_forward(X, parameters)
+        AL, caches =  L_model_forward(X, parameters, activation, softmax)
         ### END CODE HERE ###
         
         # Compute cost.
         ### START CODE HERE ### (≈ 1 line of code)
-        cost = compute_cost(AL, Y)
+        cost = compute_cost(AL, Y, softmax)
         ### END CODE HERE ###
     
         # Backward propagation.
         ### START CODE HERE ### (≈ 1 line of code)
-        grads = L_model_backward(AL, Y, caches)
+        grads = L_model_backward(AL, Y, caches, activation, softmax)
         ### END CODE HERE ###
  
         # Update parameters.
@@ -584,7 +608,7 @@ def L_layer_model(X, Y, layers_dims, initial_learning_rate = 0.0075, num_iterati
         # Print the cost every 100 training example
         if print_cost and i % 10 == 0:
             print ("Cost after iteration %i: %f" %(i, cost))
-            pred_train = predict(X, parameters)
+            pred_train = predict(X, parameters, activation)
             temp = np.nanargmax(Y,axis=0)
             accuracy=np.sum(pred_train==temp)/Y.shape[1]*100.
             print('Accuracy: %f' % accuracy + '%')
@@ -675,13 +699,22 @@ def relu(Z):
     A = np.maximum(0,Z)
     return A, A
 
+# or: 2./(1+np.exp(-2.*Z)-1
 def tanh(Z):
     pz = np.exp(Z)
     nz = np.exp(-Z)
     A = (pz - nz)/(pz + nz)
     return A, A
 
-# TODO
+def softmax(Z):
+    #t = np.exp(Z)
+    #A = t/np.sum(t, axis=1, keepdims=True)
+    
+    """Compute the softmax of vector x in a numerically stable way."""
+    exps = np.exp(Z - np.max(Z))
+    A = exps / np.sum(exps, axis=1, keepdims=True)    
+    return A,A
+    
 def relu_backward(dA, activation_cache):
     # dZ = dA * g'(Z) = dA * relu'(Z)
     #activation_cache[activation_cache<=0] = 0
@@ -700,8 +733,16 @@ def tanh_backward(dA, activation_cache):
     dZ = dA * (1-np.power(activation_cache,2))
     return dZ
 
-
-
+# params: AL, Y
+def softmax_backward(dA, activation_cache, Y):
+    #dZ = (activation_cache - Y)
+    #return dZ
+    #dZ = dA * activation_cache * (1-activation_cache)
+    #Yhat[range(Y.shape[1]), Y] -= 1
+    m = Y.shape[1]
+    activation_cache[Y.argmax(axis=0),range(m)] -= 1
+    activation_cache = activation_cache/m
+    return activation_cache
 
 
 
@@ -760,8 +801,9 @@ print ("train_y's shape: " + str(train_y.shape))
 n_x =  train_x.shape[0]
 n_h = 20
 n_y = train_y.shape[0]
-layers_dims = (n_x, 10, 20, n_y)
+layers_dims = (n_x, n_h, n_y)
 print(layers_dims)
+activationf="tanh"
 
 #############################################################################
 # A trainer requires the following struxture:
@@ -769,9 +811,10 @@ print(layers_dims)
 #          5000 example and 400 features
 # train_y: every column is an example's label in 'binary' format
 #############################################################################
-parameters = L_layer_model(train_x, train_y, layers_dims, initial_learning_rate=0.1, num_iterations = 20000, print_cost = True)
+parameters = L_layer_model(train_x, train_y, layers_dims, initial_learning_rate=1.3, num_iterations = 2000, print_cost = True, 
+                           activation = activationf, softmax=False)
 
-pred_train = predict(train_x, parameters)
+pred_train = predict(train_x, parameters, activationf)
 temp = np.nanargmax(train_y,axis=0)
 accuracy=np.sum(pred_train==temp)/train_y.shape[1]*100.
 print ('Accuracy: %f' % accuracy + '%')
