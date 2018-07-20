@@ -465,11 +465,13 @@ def linear_activation_forward(A_prev, W, b, activation):
     cache -- a python dictionary containing "linear_cache" and "activation_cache";
              stored for computing the backward pass efficiently
     """
-    
+    gamma = 0.001
+    beta = 0.001
     if activation == "sigmoid":
         # Inputs: "A_prev, W, b". Outputs: "A, activation_cache".
         ### START CODE HERE ### (≈ 2 lines of code)
         Z, linear_cache = linear_forward(A_prev, W, b)
+        #Z, norm_cache = batch_norm_forward(Z, gamma, beta)
         A, activation_cache = sigmoid(Z)
         ### END CODE HERE ###
     
@@ -477,6 +479,7 @@ def linear_activation_forward(A_prev, W, b, activation):
         # Inputs: "A_prev, W, b". Outputs: "A, activation_cache".
         ### START CODE HERE ### (≈ 2 lines of code)
         Z, linear_cache = linear_forward(A_prev, W, b)
+        #Z, norm_cache = batch_norm_forward(Z, gamma, beta)
         A, activation_cache = relu(Z)
         ### END CODE HERE ###
 
@@ -484,6 +487,7 @@ def linear_activation_forward(A_prev, W, b, activation):
         # Inputs: "A_prev, W, b". Outputs: "A, activation_cache".
         ### START CODE HERE ### (≈ 2 lines of code)
         Z, linear_cache = linear_forward(A_prev, W, b)
+        #Z, norm_cache = batch_norm_forward(Z, gamma, beta)
         A, activation_cache = tanh(Z)
         ### END CODE HERE ###
     
@@ -491,10 +495,12 @@ def linear_activation_forward(A_prev, W, b, activation):
         # Inputs: "A_prev, W, b". Outputs: "A, activation_cache".
         ### START CODE HERE ### (≈ 2 lines of code)
         Z, linear_cache = linear_forward(A_prev, W, b)
+        #Z, norm_cache = batch_norm_forward(Z, gamma, beta)
         A, activation_cache = softmax(Z)
         ### END CODE HERE ###
 
     assert (A.shape == (W.shape[0], A_prev.shape[1]))
+    #cache = (linear_cache, activation_cache, norm_cache)
     cache = (linear_cache, activation_cache)
 
     return A, cache
@@ -619,29 +625,34 @@ def linear_activation_backward(dA, cache, activation, Y):
     dW -- Gradient of the cost with respect to W (current layer l), same shape as W
     db -- Gradient of the cost with respect to b (current layer l), same shape as b
     """
+    #linear_cache, activation_cache, norm_cache = cache
     linear_cache, activation_cache = cache
     
     if activation == "relu":
         ### START CODE HERE ### (≈ 2 lines of code)
         dZ = relu_backward(dA, activation_cache)
+        #dZ, dgamma, dbeta = batch_norm_backward(dZ, norm_cache)
         dA_prev, dW, db = linear_backward(dZ, linear_cache)
         ### END CODE HERE ###
         
     elif activation == "sigmoid":
         ### START CODE HERE ### (≈ 2 lines of code)
         dZ = sigmoid_backward(dA, activation_cache)
+        #dZ, dgamma, dbeta = batch_norm_backward(dZ, norm_cache)
         dA_prev, dW, db = linear_backward(dZ, linear_cache)
         ### END CODE HERE ###
 
     elif activation == "tanh":
         ### START CODE HERE ### (≈ 2 lines of code)
         dZ = tanh_backward(dA, activation_cache)
+        #dZ, dgamma, dbeta = batch_norm_backward(dZ, norm_cache)
         dA_prev, dW, db = linear_backward(dZ, linear_cache)
         ### END CODE HERE ###
     
     elif activation == "softmax":
         ### START CODE HERE ### (≈ 2 lines of code)
         dZ = softmax_backward(dA, activation_cache, Y) # activation_cache == AL
+        #dZ, dgamma, dbeta = batch_norm_backward(dZ, norm_cache)
         dA_prev, dW, db = linear_backward(dZ, linear_cache)
         ### END CODE HERE ###
     
@@ -674,6 +685,7 @@ def L_model_backward(AL, Y, caches, activation, softmax):
     # Initializing the backpropagation
     ### START CODE HERE ### (1 line of code)
     dAL = - (np.divide(Y, AL) - np.divide(1 - Y, 1 - AL))
+    #dAL = AL - Y
     ### END CODE HERE ###
     
     # Lth layer (SIGMOID -> LINEAR) gradients. Inputs: "dAL, current_cache". Outputs: "grads["dAL-1"], grads["dWL"], grads["dbL"]
@@ -727,75 +739,6 @@ def update_parameters_with_gd(parameters, grads, learning_rate):
     
 # GRADED FUNCTION: L_layer_model
 
-def L_layer_model(X, Y, layers_dims, initial_learning_rate = 0.0075, num_epochs = 3000, print_cost=False, activation="relu",
-                  softmax=False):#lr was 0.009
-    """
-    Implements a L-layer neural network: [LINEAR->RELU]*(L-1)->LINEAR->SIGMOID.
-    
-    Arguments:
-    X -- data, numpy array of shape (number of examples, num_px * num_px * 3)
-    Y -- true "label" vector (containing 0 if cat, 1 if non-cat), of shape (1, number of examples)
-    layers_dims -- list containing the input size and each layer size, of length (number of layers + 1).
-    learning_rate -- learning rate of the gradient descent update rule
-    num_epochs -- number of iterations of the optimization loop
-    print_cost -- if True, it prints the cost every 100 steps
-    
-    Returns:
-    parameters -- parameters learnt by the model. They can then be used to predict.
-    """
-
-    np.random.seed(1)
-    costs = []                         # keep track of cost
-    c = 400.
-    c_learning_rate = c/initial_learning_rate
-    
-    # Parameters initialization. (≈ 1 line of code)
-    ### START CODE HERE ###
-    parameters = initialize_parameters_deep(layers_dims)
-    #parameters = initialize_parameters_he(layers_dims)
-    ### END CODE HERE ###
-    
-    # Loop (gradient descent)
-    for i in range(0, num_epochs):
-
-        # Forward propagation: [LINEAR -> RELU]*(L-1) -> LINEAR -> SIGMOID.
-        ### START CODE HERE ### (≈ 1 line of code)
-        AL, caches =  L_model_forward(X, parameters, activation, softmax)
-        ### END CODE HERE ###
-        
-        # Compute cost.
-        ### START CODE HERE ### (≈ 1 line of code)
-        cost = compute_cost(AL, Y, softmax)
-        ### END CODE HERE ###
-    
-        # Backward propagation.
-        ### START CODE HERE ### (≈ 1 line of code)
-        grads = L_model_backward(AL, Y, caches, activation, softmax)
-        ### END CODE HERE ###
- 
-        # Update parameters.
-        ### START CODE HERE ### (≈ 1 line of code)
-        learning_rate = c/(c_learning_rate+i)
-        parameters = update_parameters_with_gd(parameters, grads, learning_rate)
-        ### END CODE HERE ###
-                
-        # Print the cost every 100 training example
-        if print_cost and i % 10 == 0:
-            print ("Cost after iteration %i: %f" %(i, cost))
-            accuracy_ = accuracy(X, Y, parameters, activation)
-            print('Accuracy: %f' % accuracy_ + '%')
-            print('Learning rate: %f' % learning_rate)
-        if print_cost and i % 100 == 0:
-            costs.append(cost)
-            
-    # plot the cost
-#    plt.plot(np.squeeze(costs))
-#    plt.ylabel('cost')
-#    plt.xlabel('iterations (per tens)')
-#    plt.title("Learning rate =" + str(learning_rate))
-#    plt.show()
-    
-    return parameters
 
 def miniBatchGradientDescent(XO, YO, layers_dims, optimizer, initial_learning_rate = 0.0075, num_epochs = 3000, print_cost=False, activation="relu",
                   softmax=False, batchSize=1024, beta = 0.9, beta1 = 0.9, beta2 = 0.999,  epsilon = 1e-8, ):
@@ -872,7 +815,7 @@ def miniBatchGradientDescent(XO, YO, layers_dims, optimizer, initial_learning_ra
             # Update parameters.
             ### START CODE HERE ### (≈ 1 line of code)
             learning_rate = c/(c_learning_rate+i)
-            
+
             # Update parameters
             if optimizer == "gd":
                 parameters = update_parameters_with_gd(parameters, grads, learning_rate)
@@ -888,45 +831,15 @@ def miniBatchGradientDescent(XO, YO, layers_dims, optimizer, initial_learning_ra
             index += 1
 
         # Print the cost every 100 training example
-        if print_cost and i % 10 == 0:
+        if print_cost and i % 50 == 0:
             print ("Cost after iteration %i: %f" %(i, cost))
             accuracy_ = accuracy(XO, YO, parameters, activation)
-            print('Accuracy: %f' % accuracy_ + '%')
-            print('Learning rate: %f' % learning_rate)
+            print('\tAccuracy: %f' % accuracy_ + '%')
+            print('\tLearning rate: %f' % learning_rate)
         if print_cost and i % 100 == 0:
             costs.append(cost)
             
     return parameters
-
-def load_data():
-    with open("/home/ubuntu/workspace/AI-machine_learning/tests/ex3data1.csv", 'rt', encoding="utf8") as f:
-        reader = csv.reader(f)
-        i = 0;
-        for row in reader:
-            if i == 0 :
-                #print(row[0])
-                train_x_orig = np.zeros((int(row[0]),int(row[1])))
-                train_y = np.zeros((int(row[0]),len(row)-2))
-            else:
-                for j in range(len(row)-1):
-                    train_x_orig[i-1,j] = float(row[j])
-                #the y must be in binary format
-                if i == 1:
-                    print( "0. row:" + str(row[len(row)-1]) + "\n")
-                train_y[i-1,int(float(row[len(row)-1])) - 1] = 1
-            i = i + 1
-
-    #train_x_orig = train_x_orig.T
-    #train_y = train_y.T
-    #print( train_x_orig.shape )
-    #print( train_y.shape )
-    #train_x_orig = np.random.randn(209,64,64,3)
-    #train_y      = np.random.randn(209,1)
-    test_x_orig  = np.random.randn(1,64,64,3)
-    test_y       = np.random.randn(209,1)
-    classes      = ["1","2","3","4","5","6","7","8","9","10"]
-    return train_x_orig, train_y, test_x_orig, test_y, classes
-
 
 def initialize_parameters_deep(layer_dims):
     """
@@ -1016,10 +929,66 @@ def softmax_backward(dA, activation_cache, Y):
     activation_cache = activation_cache/m
     return activation_cache
 
+def batch_norm_forward( Z, gamma, beta ):
+    mu = np.mean(Z, axis=0)
+    var = np.var(Z, axis=0)
+    Znorm = (Z - mu)/np.square(var + 1e-8)
+    out = gamma * Znorm + beta
+    cache = (Z, Znorm, mu, var, gamma, beta)
+    return out, cache
+
+def batch_norm_backward(dZ, cache):
+    Z, Z_norm, mu, var, gamma, beta = cache
+
+    N, D = Z.shape
+
+    Z_mu = Z - mu
+    std_inv = 1. / np.sqrt(var + 1e-8)
+
+    dZ_norm = dZ * gamma
+    dvar = np.sum(dZ_norm * Z_mu, axis=0) * -.5 * std_inv**3
+    dmu = np.sum(dZ_norm * -std_inv, axis=0) + dvar * np.mean(-2. * Z_mu, axis=0)
+
+    dZ = (dZ_norm * std_inv) + (dvar * 2 * Z_mu / N) + (dmu / N)
+    dgamma = np.sum(dZ * Z_norm, axis=0)
+    dbeta = np.sum(dZ, axis=0)
+
+    return dZ, dgamma, dbeta
 
 
+def load_data():
+    with open("/home/ubuntu/workspace/AI-machine_learning/tests/ex3data1.csv", 'rt', encoding="utf8") as f:
+        reader = csv.reader(f)
+        i = 0;
+        for row in reader:
+            if i == 0 :
+                #print(row[0])
+                train_x_orig = np.zeros((int(row[0]),int(row[1])))
+                train_y = np.zeros((int(row[0]),len(row)-2))
+            else:
+                for j in range(len(row)-1):
+                    train_x_orig[i-1,j] = float(row[j])
+                #the y must be in binary format
+                #if i == 1:
+                #    print( "0. row:" + str(row[len(row)-1]) + "\n")
+                train_y[i-1,int(float(row[len(row)-1])) - 1] = 1
+            i = i + 1
 
-
+    # normalizing
+    #mu = np.mean(train_x_orig, axis=0)
+    #var = np.var(train_x_orig, axis=0)
+    #train_x_orig = (train_x_orig - mu) / np.sqrt(var + 1e-8)    
+    
+    #train_x_orig = train_x_orig.T
+    #train_y = train_y.T
+    #print( train_x_orig.shape )
+    #print( train_y.shape )
+    #train_x_orig = np.random.randn(209,64,64,3)
+    #train_y      = np.random.randn(209,1)
+    test_x_orig  = np.random.randn(1,64,64,3)
+    test_y       = np.random.randn(209,1)
+    classes      = ["1","2","3","4","5","6","7","8","9","10"]
+    return train_x_orig, train_y, test_x_orig, test_y, classes
 
 
 # %matplotlib inline
@@ -1073,9 +1042,9 @@ print ("train_y's shape: " + str(train_y.shape))
 n_x =  train_x.shape[0]
 n_h = 20
 n_y = train_y.shape[0]
-layers_dims = (n_x, 20, n_h, n_y)
+layers_dims = (n_x, 10, n_h, n_y)
 print(layers_dims)
-activationf="tanh"
+activationf="relu"
 
 #############################################################################
 # A trainer requires the following struxture:
@@ -1085,8 +1054,8 @@ activationf="tanh"
 #############################################################################
 #parameters = L_layer_model(train_x, train_y, layers_dims, initial_learning_rate=1.3, num_epochs = 2000, print_cost = True, 
 #                           activation = activationf, softmax=False)
-parameters = miniBatchGradientDescent(train_x, train_y, layers_dims, "momentum", initial_learning_rate=0.3, num_epochs = 700, print_cost = True, 
-                           activation = activationf, softmax=False)
+parameters = miniBatchGradientDescent(train_x, train_y, layers_dims, "gd", initial_learning_rate=0.01, num_epochs = 201, print_cost = True, 
+                           activation = activationf, softmax=False, batchSize=32)
 
 accuracy_ = accuracy(train_x, train_y, parameters, activationf)
 print ('Accuracy: %f' % accuracy_ + '%')
