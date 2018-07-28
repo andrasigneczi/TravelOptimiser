@@ -17,6 +17,44 @@ DONE
 - K-Mean test
 
 
+RELU-SIGMOID:
+-------------
+Iteration: 0; Accuracy: 10%; 4.09534
+Iteration: 100; Accuracy: 80.6%; 0.497498
+Iteration: 200; Accuracy: 88.06%; 0.34096
+Iteration: 300; Accuracy: 90.4%; 0.263189
+Iteration: 400; Accuracy: 92.66%; 0.176562
+error: Mat::operator(): index out of bounds
+
+TANH-SIGMOID:
+-------------
+Iteration: 0; Accuracy: 10%; 3.17002
+Iteration: 100; Accuracy: 88.34%; 0.382454
+Iteration: 200; Accuracy: 93.5%; 0.225564
+Iteration: 300; Accuracy: 95.52%; 0.161867
+Iteration: 400; Accuracy: 96.96%; 0.123479
+Iteration: 500; Accuracy: 98%; 0.0929841
+
+Time difference = 316195 ms 
+Training Set Accuracy: 98.78%
+
+TANH-SOFTMAX:
+-------------
+Iteration: 0; Accuracy: 11.4%; 8.52285
+Iteration: 100; Accuracy: 16.24%; 8.5545
+Iteration: 200; Accuracy: 14.7%; 8.55506
+Iteration: 300; Accuracy: 13.76%; 8.55198
+Iteration: 400; Accuracy: 13.28%; 8.54888
+Iteration: 500; Accuracy: 12.92%; 8.5462
+
+Time difference = 320209 ms 
+Training Set Accuracy: 12.78%
+
+
+
+
+
+
 
 numpy installation:
 -------------------

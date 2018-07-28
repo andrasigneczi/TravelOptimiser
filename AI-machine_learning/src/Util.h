@@ -22,4 +22,10 @@ namespace Util {
     
 } // namespace Util
 
+namespace arma {
+#if ARMA_VERSION_MAJOR == 6
+    arma::mat index_max(const arma::mat& A,int dim );
+#endif // ARMA_VERSION_MAJOR == 6
+} // namespace arma
+
 #endif // __UTIL_H__

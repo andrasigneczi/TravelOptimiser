@@ -322,6 +322,7 @@ arma::mat NeuralNetwork::randInitializeWeights( int L_in, int L_out ) {
     case RELU:    return arma::randu(L_out, 1 + L_in) * sqrt(8./L_in); break;
     case LRELU:   return arma::randn(L_out, 1 + L_in) * sqrt(2./L_in); break;
     }
+    return arma::mat();
 }
 
 arma::mat NeuralNetwork::debugInitializeWeights( int fan_out, int fan_in ) {
