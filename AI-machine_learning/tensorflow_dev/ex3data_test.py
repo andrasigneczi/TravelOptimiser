@@ -107,8 +107,8 @@ features, label = iter(train_dataset).next()
 #print("example label:", label[0])
 
 model = tf.keras.Sequential([
-  tf.keras.layers.Dense(10, activation="tanh", input_shape=(400,)),  # input shape required
-  tf.keras.layers.Dense(20, activation="tanh"),
+  tf.keras.layers.Dense(10, activation="relu", input_shape=(400,)),  # input shape required
+  tf.keras.layers.Dense(20, activation="relu"),
   tf.keras.layers.Dense(10)
 ])
 #print( model.weights )
@@ -130,8 +130,8 @@ def minibatch():
     #####################
     # Create an optimizer
     #####################
-optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
-#optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
+    optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
+    #optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
 
 
     ###############
