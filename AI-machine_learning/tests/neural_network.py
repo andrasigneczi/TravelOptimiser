@@ -104,6 +104,7 @@ def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate = 0.01
     v_corrected = {}                         # Initializing first moment estimate, python dictionary
     s_corrected = {}                         # Initializing second moment estimate, python dictionary
     
+    
     # Perform Adam update on all parameters
     for l in range(L):
         # Moving average of the gradients. Inputs: "v, grads, beta1". Output: "v".
@@ -134,6 +135,7 @@ def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate = 0.01
         ### START CODE HERE ### (approx. 2 lines)
         parameters["W" + str(l+1)] = parameters["W" + str(l+1)] - learning_rate * v_corrected["dW" + str(l+1)] / np.sqrt(s_corrected["dW" + str(l+1)] + epsilon)
         parameters["b" + str(l+1)] = parameters["b" + str(l+1)] - learning_rate * v_corrected["db" + str(l+1)] / np.sqrt(s_corrected["db" + str(l+1)] + epsilon)
+        print("PARAM: %f" % np.sum(grads['dW' + str(l+1)]))
         ### END CODE HERE ###
 
     return parameters, v, s
@@ -1066,7 +1068,7 @@ activationf="tanh"
 #############################################################################
 #parameters = L_layer_model(train_x, train_y, layers_dims, initial_learning_rate=1.3, num_epochs = 2000, print_cost = True, 
 #                           activation = activationf, softmax=False)
-parameters = miniBatchGradientDescent(train_x, train_y, layers_dims, "momentum", initial_learning_rate=0.001, num_epochs = 201, print_cost = True,
+parameters = miniBatchGradientDescent(train_x, train_y, layers_dims, "adam", initial_learning_rate=0.001, num_epochs = 201, print_cost = True,
                            activation = activationf, softmax=False, batchSize=32, batch_norm=False)
 
 #accuracy_ = accuracy(train_x, train_y, parameters, activationf, batch_norm)

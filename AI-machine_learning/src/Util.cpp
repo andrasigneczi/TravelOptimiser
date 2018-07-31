@@ -155,6 +155,51 @@ int getLabelCount( const arma::mat& y ) {
     return labels.size();
 }
 
+arma::mat broadcast_plus( arma::mat x, arma::mat y ) {
+    if( x.n_cols == y.n_cols && y.n_rows == 1 ) {
+        for( size_t i = 0; i < x.n_rows; ++i ){
+            x.row(i) += y.row(0);
+        }
+    } else if( x.n_rows == y.n_rows && y.n_cols == 1) {
+        for( size_t i = 0; i < x.n_cols; ++i ){
+            x.col(i) += y.col(0);
+        }
+    } else {
+        throw "Illegal size for broadcasting\n";
+    }
+    return x;
+}
+
+arma::mat broadcast_minus( arma::mat x, arma::mat y ) {
+    if( x.n_cols == y.n_cols && y.n_rows == 1 ) {
+        for( size_t i = 0; i < x.n_rows; ++i ){
+            x.row(i) -= y.row(0);
+        }
+    } else if( x.n_rows == y.n_rows && y.n_cols == 1) {
+        for( size_t i = 0; i < x.n_cols; ++i ){
+            x.col(i) -= y.col(0);
+        }
+    } else {
+        throw "Illegal size for broadcasting\n";
+    }
+    return x;
+}
+
+arma::mat broadcast_div( arma::mat x, arma::mat y ) {
+    if( x.n_cols == y.n_cols && y.n_rows == 1 ) {
+        for( size_t i = 0; i < x.n_rows; ++i ){
+            x.row(i) /= y.row(0);
+        }
+    } else if( x.n_rows == y.n_rows && y.n_cols == 1) {
+        for( size_t i = 0; i < x.n_cols; ++i ){
+            x.col(i) /= y.col(0);
+        }
+    } else {
+        throw "Illegal size for broadcasting\n";
+    }
+    return x;
+}
+
 } // namespace Util
 
 namespace arma {

@@ -22,7 +22,7 @@ void nnv2_test1();
 void runTests() {
     //test1(); // neural network prediction
     //test2(); // neural network complex training
-    test3(); // neural network simple training
+    //test3(); // neural network simple training
     //test_ex5_learningCurve();
     //test_ex5_validationCurve();
     //minibatch(); doesn't work
@@ -317,16 +317,16 @@ void nnv2_test1() {
     double lambda = 0;
     int iteration = 600;
     //double alpha = 0.3;
-    double alpha = 0.06;
+    double alpha = 0.001;
     //int batch = X.n_rows;
-    int batch = 64;
+    int batch = 32;
     
     thetaSizes << input_layer_size << hidden_layer_size2 << num_labels; // input, hidden, output
     NeuralNetworkV2 nn(thetaSizes, X, yy, lambda, false, NeuralNetworkV2::TANH, NeuralNetworkV2::SIGMOID);
     std::cerr << "dbg3\n";
     std::vector<arma::mat> thetas;
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    nn.miniBatchGradientDescent(true,iteration,batch,alpha);
+    nn.miniBatchGradientDescent(true,iteration,batch,alpha, "adam");
     //nn.L_layer_model(X,yy,alpha,iteration,true);
     std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     std::cout << "\nTime difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;

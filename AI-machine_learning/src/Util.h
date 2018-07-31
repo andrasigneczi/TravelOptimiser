@@ -19,6 +19,9 @@ namespace Util {
                                                        const double percentage = 0.7);
     Q_DECL_EXPORT arma::mat mapFeature( const arma::mat& X1, const arma::mat& X2, int degree );
     Q_DECL_EXPORT int getLabelCount( const arma::mat& y );
+    Q_DECL_EXPORT arma::mat broadcast_plus( arma::mat x, arma::mat y );
+    Q_DECL_EXPORT arma::mat broadcast_minus( arma::mat x, arma::mat y );
+    Q_DECL_EXPORT arma::mat broadcast_div( arma::mat x, arma::mat y );
     
 } // namespace Util
 
