@@ -1,5 +1,6 @@
 TODO
 ----
+- feature mapping
 - learning rate dacey
 - regularizations, dropout
 - batch_norm
@@ -11,6 +12,10 @@ TODO
 - CUDA
 - Map Reduce
 - PCA
+
+BUG
+---
+- it seems, the softmax doesn't work well
 
 
 DONE

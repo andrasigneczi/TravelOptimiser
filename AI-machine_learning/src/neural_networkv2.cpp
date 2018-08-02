@@ -2,14 +2,15 @@
 
 NeuralNetworkV2::NeuralNetworkV2( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda,
                               bool featureScaling, NeuralNetworkV2::ActivationFunction hiddenAF, 
-                              NeuralNetworkV2::ActivationFunction outputAF )
+                              NeuralNetworkV2::ActivationFunction outputAF, double keep_prob )
     : CostAndGradient(X, y, lambda)
     , mLayerSizes(layerSizes)
     , mHiddenLAF(hiddenAF)
     , mOuputLAF(outputAF)
+    , mKeepProb(keep_prob)
 {
     if(featureScaling) {
-        mX = this->featureScaling(X, true);
+        mX = this->featureScaling(X, true, 0);
     }
 }
 
@@ -148,24 +149,36 @@ void NeuralNetworkV2::initializeAdam() {
 }
 
 // X -- input data of size (n_x, m)
-arma::mat NeuralNetworkV2::predict(const arma::mat& X, double* cost) {
+arma::mat NeuralNetworkV2::predict(const arma::mat& X, double* cost, bool ignoreFeatureScaling) {
 
     //Using the learned parameters, predicts a class for each example in X
 
     ActivationFunction temp = mOuputLAF;
     mOuputLAF = ActivationFunction::SOFTMAX;
-    arma::mat A = L_model_forward(X);
+    
+    arma::mat X2;
+    if(!ignoreFeatureScaling && mFCData.n_cols > 0) {
+        X2 = applyFeatureScalingValues(X,0);
+    } else {
+        X2 = X;
+    }
+    
+    // no drop out during the prediction
+    const double keep_prob = mKeepProb;
+    mKeepProb = 1.;
+    arma::mat A = L_model_forward(X2);
     if(cost){
         std::cerr << __FUNCTION__ << ": dbg1\n";
-        *cost = compute_cost(A, mY, mOuputLAF);
+        *cost = compute_cost_with_regularization(A, mY, mOuputLAF);
     }
     arma::mat p = arma::index_max(A,0);
+    mKeepProb = keep_prob;
     mOuputLAF = temp;
     return p;   
 }
 
 double NeuralNetworkV2::accuracy(double* cost) {
-    arma::mat p = predict(mX, cost);
+    arma::mat p = predict(mX, cost, true);
     arma::mat temp = arma::index_max(mY,0);
     return (double)arma::accu(p==temp)/(double)mY.n_cols*100.;
 }
@@ -174,14 +187,16 @@ double NeuralNetworkV2::accuracy(double* cost) {
 arma::mat NeuralNetworkV2::L_model_forward(const arma::mat& X) {
     mCaches = std::stack<arma::mat>();
     arma::mat A = X;
-    
+
     std::cerr << __FUNCTION__ << ": dbg1\n";
     size_t L = mLayerSizes.n_cols - 1;
     // Implement [LINEAR -> RELU]*(L-1). Add "cache" to the "caches" list.
     for( size_t l = 1; l < L; ++l ) {
+        if(l > 1 && mKeepProb != 1.) A = Dropout_Forward(A);
         A = linear_activation_forward(A, mParameters["W"+ std::to_string(l)], mParameters["b"+ std::to_string(l)], mHiddenLAF);
     }
     std::cerr << __FUNCTION__ << ": dbg2\n";
+    if(mKeepProb != 1.) A = Dropout_Forward(A);
     // Implement LINEAR -> SIGMOID. Add "cache" to the "caches" list.
     A = linear_activation_forward(A, mParameters["W"+ std::to_string(L)], mParameters["b"+ std::to_string(L)], mOuputLAF);
 
@@ -189,6 +204,33 @@ arma::mat NeuralNetworkV2::L_model_forward(const arma::mat& X) {
     //assert(AL.shape == (1,X.shape[1]))
             
     return A;
+}
+
+arma::mat NeuralNetworkV2::Dropout_Forward(const arma::mat& A) {
+    // D1 = np.random.rand(A1.shape[0],A1.shape[1])      # Step 1: initialize matrix D1 = np.random.rand(..., ...)
+    // D1 = (D1 < keep_prob)                             # Step 2: convert entries of D1 to 0 or 1 (using keep_prob as the threshold)
+    // A1 = A1 * D1                                      # Step 3: shut down some neurons of A1
+    // A1 = A1 / keep_prob                               # Step 4: scale the value of neurons that haven't been shut down
+    std::cerr << __FUNCTION__ << " dbg1\n";
+    arma::mat D = arma::randu(size(A));
+    std::cerr << __FUNCTION__ << " dbg2\n";
+    arma::uvec cond1 = arma::find(D < mKeepProb);
+    std::cerr << __FUNCTION__ << " dbg3\n";
+    arma::uvec cond2 = arma::find(D >= mKeepProb);
+    std::cerr << __FUNCTION__ << " dbg4\n";
+    D.elem(cond1).fill(1.);
+    std::cerr << __FUNCTION__ << " dbg5\n";
+    D.elem(cond2).fill(0.);
+    std::cerr << __FUNCTION__ << " dbg6\n";
+    mDropOutCache.push(D);
+    return (A % D) / mKeepProb;
+}
+
+arma::mat NeuralNetworkV2::Dropout_Backward(const arma::mat& dA) {
+    // dA2 = dA2 * D2          # Step 1: Apply mask D2 to shut down the same neurons as during the forward propagation
+    // dA2 = dA2 / keep_prob   # Step 2: Scale the value of neurons that haven't been shut down
+    arma::mat D = mDropOutCache.top();mDropOutCache.pop();
+    return (dA % D)/mKeepProb;
 }
 
 // Implement the forward propagation for the LINEAR->ACTIVATION layer
@@ -260,18 +302,18 @@ arma::mat NeuralNetworkV2::linear_forward(const arma::mat& A, const arma::mat& W
 // Arguments:
 // A3 -- post-activation, output of forward propagation, of shape (output size, number of examples)
 // Y -- "true" labels vector, of shape (output size, number of examples)
-double NeuralNetworkV2::compute_cost_with_regularization(const arma::mat& A3, const arma::mat& Y, double lambd) {
-    size_t m = Y.n_cols;
-    const arma::mat& W1 = mParameters["W1"];
-    const arma::mat& W2 = mParameters["W2"];
-    const arma::mat& W3 = mParameters["W3"];
-    
-    double cross_entropy_cost = compute_cost(A3, Y); // This gives you the cross-entropy part of the cost
-    double L2_regularization_cost = 1./m*lambd/2.*(arma::accu(arma::square(W1))+arma::accu(arma::square(W2)) + arma::accu(arma::square(W3)));
-
-    double cost = cross_entropy_cost + L2_regularization_cost;
-    
-    return cost;
+double NeuralNetworkV2::compute_cost_with_regularization(const arma::mat& AL, const arma::mat& Y, ActivationFunction af) {
+    double m = (double)Y.n_cols;
+    double cross_entropy_cost = compute_cost(AL, Y, af); // This gives you the cross-entropy part of the cost
+    double L2_regularization_cost = 0;
+    if( mLambda != 0. ){
+        size_t L = mParameters.size()/2;
+        for(size_t l = 1; l <= L; ++l) {
+            L2_regularization_cost += arma::accu(arma::square(mParameters["W" + std::to_string(l)]));
+        }
+        L2_regularization_cost = 1./m*mLambda/2.*(L2_regularization_cost);
+    }
+    return cross_entropy_cost + L2_regularization_cost;
 }
 
 // Arguments:
@@ -341,7 +383,9 @@ void NeuralNetworkV2::L_model_backward(const arma::mat& AL, const arma::mat& Y) 
         // lth layer: (RELU -> LINEAR) gradients.
         // Inputs: "grads["dA" + str(l + 1)], current_cache". Outputs: "grads["dA" + str(l)] , grads["dW" + str(l + 1)] , grads["db" + str(l + 1)] 
         //current_cache = caches[l]
-        /*dA_prev_temp, dW_temp, db_temp = */linear_activation_backward(mGrads["dA" + std::to_string(l + 1)], mHiddenLAF, l, Y, AL);
+        arma::mat dA  = mGrads["dA" + std::to_string(l + 1)];
+        if(mKeepProb != 1.) dA = Dropout_Backward(dA);
+        /*dA_prev_temp, dW_temp, db_temp = */linear_activation_backward(dA, mHiddenLAF, l, Y, AL);
         //grads["dA" + str(l)] = dA_prev_temp
         //grads["dW" + str(l + 1)] = dW_temp
         //grads["db" + str(l + 1)] = db_temp
@@ -438,7 +482,7 @@ void NeuralNetworkV2::linear_backward(const arma::mat& dZ, const arma::mat& A_pr
     std::cerr << __FUNCTION__ << " dZ: " << size(dZ) << "\n";
     std::cerr << __FUNCTION__ << " A_prev: " << size(dZ) << "\n";
     std::cerr << __FUNCTION__ << " W: " << size(W) << "\n";
-    arma::mat dW = 1./m*dZ * A_prev.t();
+    arma::mat dW = 1./m*dZ * A_prev.t() + mLambda/m*W;
     arma::mat db = 1./m*arma::sum(dZ,1);
     arma::mat dA_prev = W.t() * dZ;
 
