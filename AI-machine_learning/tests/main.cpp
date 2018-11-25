@@ -3,6 +3,7 @@
 #include "neural_network.h"
 #include "coc.h"
 #include "support_vector_machine.h"
+#include "kmean.h"
 #include <iostream>
 #include <chrono>
 #include "png2arma.h"
@@ -42,10 +43,11 @@ int main (int argc, char* argv[]) {
     //Png2Arma_ns::runTests();
 
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    //NeuralNetwork_ns::runTests();
+    NeuralNetwork_ns::runTests();
     //COC_ns::runTests();
     //SVM_ns::runTests();
-    AnomalyDetection_ns::runTests();
+    //AnomalyDetection_ns::runTests();
+    //KMean_ns::runTests();
     //std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     //std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() <<std::endl;
 
@@ -69,6 +71,14 @@ int main (int argc, char* argv[]) {
     std::cout << Util::mapFeature(ttt.cols(0,1), ttt.cols(2,3));
 
     arma::mat X,y,Xval,yval;
+    X.load("ex3data1_X.bin");
+    y.load("ex3data1_y.bin");
+    // first line: X.n_rows, X.n_cols, label1, label2, labeln
+    // next lines: x cols, y col
+    std::cout << size(X);
+    X.insert_cols(X.n_cols, y);
+    X.save("ex3data1.csv", arma::csv_ascii);
+
     X.load("ex8data1_X.txt");
     Xval.load("ex8data1_Xval.txt");
     yval.load("ex8data1_yval.txt");

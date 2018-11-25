@@ -56,3 +56,10 @@ void MainWindow::on_pushButton_7_clicked()
 {
     myWindow.saveTrainingSet();
 }
+
+void MainWindow::on_captureButton_clicked()
+{
+    myWindow.hide();
+    myWindow.capture();
+    myWindow.show();
+}

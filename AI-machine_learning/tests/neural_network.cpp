@@ -1,6 +1,7 @@
 #include <armadillo>
 #include "neural_network.h"
 #include <neural_network.h>
+#include <neural_networkv2.h>
 #include <fmincg.h>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
@@ -15,13 +16,17 @@ void test2();
 void test3();
 void test_ex5_learningCurve();
 void test_ex5_validationCurve();
+void minibatch();
+void nnv2_test1();
 
 void runTests() {
     //test1(); // neural network prediction
-    test2(); // neural network complex training
-    //test3(); // neural network simple training
-    test_ex5_learningCurve();
-    test_ex5_validationCurve();
+    //test2(); // neural network complex training
+    test3(); // neural network simple training
+    //test_ex5_learningCurve();
+    //test_ex5_validationCurve();
+    //minibatch(); doesn't work
+    nnv2_test1();
 }
 
 
@@ -197,7 +202,7 @@ void test3() {
     
     thetaSizes << input_layer_size << hidden_layer_size1 << num_labels; // input, hidden, output
     TestYMappper yMapper;
-    NeuralNetwork nn(thetaSizes, X, y, lambda, yMapper);
+    NeuralNetwork nn(thetaSizes, X, y, lambda, yMapper, false, NeuralNetwork::SIGMOID);
 
     // Randomly initialize the weights to small values
     arma::mat initial_Theta1 = nn.randInitializeWeights(input_layer_size, hidden_layer_size1);
@@ -212,7 +217,7 @@ void test3() {
     fmincgRetVal frv = fmincg(nn, initial_nn_params, iteration);
 
     std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
-    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
+    std::cout << "\nTime difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
 
     // Obtain Theta1 and Theta2 back from nn_params
     std::vector<arma::mat> thetas = nn.extractThetas(frv.m_NNPparams);
@@ -252,6 +257,85 @@ void test_ex5_validationCurve() {
     NeuralNetwork nn(thetaSizes, X, y, 1, yMapper);
     //std::cout << "dbg2.5\n" << std::flush;
     nn.plotValidationCurve(new QCustomPlot,10);
+}
+
+void minibatch() {
+    arma::mat X, y;
+    
+    X.load("ex3data1_X.bin");
+    y.load("ex3data1_y.bin");
+
+    arma::mat thetaSizes;
+    int input_layer_size  = 400;
+    int hidden_layer_size1 = 400;
+    int hidden_layer_size2 = 20;
+    int num_labels         = 10;
+    double lambda = 0;
+    int iteration = 100;
+    //double alpha = 0.93;
+    double alpha = 0.93;
+    //int batch = X.n_rows;
+    int batch = 10;
+    
+    thetaSizes << input_layer_size << hidden_layer_size1 << hidden_layer_size2 << num_labels; // input, hidden, output
+    TestYMappper yMapper;
+    NeuralNetwork nn(thetaSizes, X, y, lambda, yMapper, false, NeuralNetwork::TANH);
+
+    std::vector<arma::mat> thetas;
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    if( 0 ) {
+        thetas = nn.miniBatchGradientDescent(true,iteration,batch,alpha,true);
+    } else {
+        thetas = nn.extractThetas(nn.train(iteration,true));
+    }
+    std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+    std::cout << "\nTime difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
+
+    arma::mat pred = nn.predict(X,thetas);
+
+    std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100 << "\n";
+    std::cout << "Press enter to continue\n";
+    std::cin.get();
+}
+
+void nnv2_test1() {
+    arma::mat X, y;
+    
+    X.load("ex3data1_X.bin");
+    y.load("ex3data1_y.bin");
+    X = X.t();
+    arma::mat yy = arma::zeros(10, X.n_cols);
+    std::cerr << "dbg1\n";
+    for(size_t i = 0; i < y.n_rows; ++i){
+        yy(y(i,0)-1,i) = 1;
+    }
+    std::cerr << "dbg2\n";
+    arma::mat thetaSizes;
+    int input_layer_size  = 400;
+    int hidden_layer_size2 = 20;
+    int num_labels         = 10;
+    double lambda = 0;
+    int iteration = 600;
+    //double alpha = 0.3;
+    double alpha = 0.06;
+    //int batch = X.n_rows;
+    int batch = 64;
+    
+    thetaSizes << input_layer_size << hidden_layer_size2 << num_labels; // input, hidden, output
+    NeuralNetworkV2 nn(thetaSizes, X, yy, lambda, false, NeuralNetworkV2::TANH, NeuralNetworkV2::SIGMOID);
+    std::cerr << "dbg3\n";
+    std::vector<arma::mat> thetas;
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    nn.miniBatchGradientDescent(true,iteration,batch,alpha);
+    //nn.L_layer_model(X,yy,alpha,iteration,true);
+    std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+    std::cout << "\nTime difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
+
+    //arma::mat pred = nn.predict(X);
+    //std::cout << "Training Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(pred == y))*100 << "\n";
+    std::cout << "Training Set Accuracy: " << nn.accuracy() << "%\n";
+    std::cout << "Press enter to continue\n";
+    std::cin.get();
 }
 
 } // NeuralNetwork_ns

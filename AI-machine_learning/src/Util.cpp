@@ -148,4 +148,39 @@ arma::mat mapFeature( const arma::mat& X1, const arma::mat& X2, int degree ){
     return out;
 }
 
+int getLabelCount( const arma::mat& y ) {
+    std::set<double> labels;
+    for(size_t i = 0; i < y.n_rows; ++i)
+        labels.insert(y(i,0));
+    return labels.size();
+}
+
 } // namespace Util
+
+namespace arma {
+#if ARMA_VERSION_MAJOR == 6
+    arma::mat index_max(const arma::mat& A,int dim ) {
+        // dim=0, return a row vector (of type urowvec or umat), with each column containing the index of the extremum value in the corresponding column of M
+        // dim=1, return a column vector (of type uvec or umat), with each row containing the index of the extremum value in the corresponding row of M
+        arma::mat p;
+        arma::mat M = arma::max(A,dim);
+        std::cerr << __FUNCTION__ << " M:" << size(M) << "\n";
+        if( dim == 0 ) {
+            p = arma::zeros(1, A.n_cols);
+        
+            for( size_t i=0; i < A.n_cols; ++i ) {
+                arma::uvec result = arma::find( A.col(i)==M(0,i) );
+                p(0,i) = result(0,0);
+            }
+        } else {
+            p = arma::zeros(A.n_rows,1);
+
+            for( size_t i=0; i < A.n_rows; ++i ) {
+                arma::uvec result = arma::find( A.row(i)==M(i,0) );
+                p(i,0) = result(0,0);
+            }
+        }
+        return p;
+    }
+#endif // ARMA_VERSION_MAJOR == 6
+} // namespace arma

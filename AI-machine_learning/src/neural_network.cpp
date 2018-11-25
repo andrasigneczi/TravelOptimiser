@@ -7,11 +7,22 @@
 #include <string>
 #include "Util.h"
 
-NeuralNetwork::NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda, YMappperIF& yMappper, bool featureScaling )
+NeuralNetwork::NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda, YMappperIF& yMappper, 
+                              bool featureScaling, NeuralNetwork::ActivationFunction af )
     : CostAndGradient(X, y, lambda)
     , mLayerSizes(layerSizes)
     , mYMappper(yMappper)
+    , mActivationFunction(af)
 {
+    switch( af ) {
+        case SIGMOID: mAF = &NeuralNetwork::sigmoid;    break;
+        case RELU:    mAF = &NeuralNetwork::relu;       break;
+        case TANH:    mAF = &NeuralNetwork::tanh;       break;
+        case LRELU:   mAF = &NeuralNetwork::leaky_relu; break;
+        default:
+        throw "Invalid activation function";
+    }
+    
     if(featureScaling) {
         mX = this->featureScaling(X, true);
     }
@@ -19,17 +30,34 @@ NeuralNetwork::NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, c
 
 CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool costOnly ) {
     
+    std::vector<arma::mat> thetas = extractThetas(nn_params);
+    std::vector<arma::mat> thetaGrads = calc2(thetas, costOnly);
+
+    if( costOnly ) {
+        return mRetVal;
+    }
+
+    mRetVal.grad.clear();
+    for( size_t i = 0; i < thetaGrads.size(); ++i ) {
+        if( i == 0 ) {
+            mRetVal.grad = arma::vectorise(thetaGrads[i]);
+        } else {
+            mRetVal.grad = arma::join_cols( mRetVal.grad, arma::vectorise(thetaGrads[i]));
+        }
+    }
+    return mRetVal;
+}
+
+std::vector<arma::mat> NeuralNetwork::calc2( const std::vector<arma::mat>& thetas, bool costOnly ) {
+    
     // Reshape nn_params back into the parameters Theta1-ThetaN, the weight matrices
     // for our n layer neural network
 
-    int num_labels        = mLayerSizes(0,mLayerSizes.n_cols-1); // 10
+    int num_labels = mLayerSizes(0,mLayerSizes.n_cols-1); // 10
     double m = mX.n_rows;
 
-    //std::cout << "dbgX 1 " << nn_params.n_rows << "\n";
-    std::vector<arma::mat> thetas = extractThetas(nn_params);
-    //std::cout << "dbgX 2\n";
     // ------------------------------
-    // Back propagation algorithm
+    // Forward propagation algorithm
     // ------------------------------
     // 1. Compute the activation unit vector
     std::vector<arma::mat> aVec;
@@ -39,12 +67,14 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool c
             // a1 = x; (add ones to the first column)
             aVec.push_back( join_rows( arma::ones(m, 1), mX ));
         }
-        // a2 = g(a1 * theta1')
-        arma::mat a = sigmoid(aVec[i],thetas[i].t());
         if( i == thetas.size() - 1 ) {
+            // a2 = g(a1 * theta1')
+            arma::mat a = sigmoid(aVec[i],thetas[i].t());
             // we have finished
             aVec.push_back( a );
         } else {
+            // a2 = g(a1 * theta1')
+            arma::mat a = (this->*mAF)(aVec[i],thetas[i].t());
             // add ones to the first column, if there are more hidden layer
             aVec.push_back( join_rows( arma::ones(a.n_rows, 1), a ));
         }
@@ -67,37 +97,68 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool c
         yy(i, mYMappper.fromYtoYY( mY(i,0))) = 1;
     }
     
-    //std::cout << "dbgX 4\n";
-    
+    //std::cout << "dbgX " << h << "\n";
+
     // cost calculation
     mRetVal.cost = 0;
     for( int k=0; k < num_labels; ++k ) {
         mRetVal.cost += as_scalar( 1./m*(-yy.col(k).t()*arma::log(h.col(k))-(1.-yy.col(k)).t()*arma::log(1.-h.col(k))));
     }
+    //mRetVal.cost = -1./m*arma::sum(arma::vectorise(yy.t()*arma::log(h) + (1-yy).t()*arma::log(1-h)));
+    // squarred error function
+    //mRetVal.cost = sum(vectorise(1./2./m*arma::sum(arma::square(yy-h))));
 
     // reguralization of the cost
-    for( size_t i = 0; i < thetas.size(); ++i ) {
-        mRetVal.cost += mLambda/2./m*sum(vectorise(arma::pow(thetas[i].cols(1,thetas[i].n_cols-1),2)));
+    if(mLambda != 0) {
+        for( size_t i = 0; i < thetas.size(); ++i ) {
+            mRetVal.cost += mLambda/2./m*sum(vectorise(arma::pow(thetas[i].cols(1,thetas[i].n_cols-1),2)));
+        }
     }
-    
+
     if( costOnly ) {
-        return mRetVal;
+        return std::vector<arma::mat>();
     }
 
     //std::cout << "dbgX 5\n";
     
+    // ------------------------------
+    // Back propagation algorithm
+    // ------------------------------
+
     // compute deltas
     std::vector<arma::mat> deltas;
     // delta(L) = a(L) -y, where L=aVec.size()-1
     //arma::mat d3 =  aVec[aVec.size()-1] - yy;
     deltas.push_back( aVec[aVec.size()-1] - yy );
+
+    //arma::mat& AL = aVec[aVec.size()-1];
+    //arma::mat dAL = -(yy/AL - (1-yy)/(1-AL));
+    //deltas.push_back( dAL );
+
     for( size_t l = aVec.size()-2; l >= 1; --l ) {
         //     T2:10x26  d3:5000x10 a2:5000x26
         //arma::mat d2 = (d3*thetas[1])% aVec[aVec.size()-2]%(1- aVec[aVec.size()-2]);
         //arma::mat d2 = (d3*Theta2)%a2%(1-a2);
-        //std::cout << "l: " << l << "\n" << size(deltas[deltas.size()-1]) << size( thetas[l] ) << size( aVec[l] ) << "\n";
-        deltas.push_back( (deltas[deltas.size()-1]*thetas[l])% aVec[l]%(1- aVec[l]) );
-    
+        
+        if( mAF == &NeuralNetwork::sigmoid ) {
+            // Sigmoid: partial derivative of g(z)' = g(z)*(1-g(z)), here a2*(1-a2)
+            deltas.push_back( (deltas[deltas.size()-1]*thetas[l])% aVec[l]%(1- aVec[l]) );
+        } else if( mAF == &NeuralNetwork::tanh ) {
+            // tanh: g(z)' = 1 - g(z)^2
+            deltas.push_back( (deltas[deltas.size()-1]*thetas[l])%(1. - arma::square(aVec[l])) );
+        } else if( mAF == &NeuralNetwork::relu ) {
+            // relu: g(z)' = 0: if z < 0; 1: if z >= 0
+            arma::mat temp = aVec[l];
+            temp.elem( arma::find(temp >= 0.0) ).ones();
+            deltas.push_back( (deltas[deltas.size()-1]*thetas[l])%temp );
+        } else if( mAF == &NeuralNetwork::leaky_relu ) {
+            // leaky relu: g(z)' = 0.01: if z < 0; 1: if z >= 0
+            arma::mat temp = aVec[l];
+            temp.elem( arma::find(temp >= 0.0) ).fill(1.);
+            temp.elem( arma::find(temp < 0.0) ).fill(0.01);
+            deltas.push_back( (deltas[deltas.size()-1]*thetas[l])%temp );
+        }
+
         // d2: 5000x26 a1: 5000x401 d3: 5000x10
         // d2=d2.cols(1,d2.n_cols-1);
         arma::mat& d = deltas[deltas.size()-1];
@@ -108,29 +169,74 @@ CostAndGradient::RetVal& NeuralNetwork::calc( const arma::mat& nn_params, bool c
     
 
     // New Theta calculation
-    std::vector<arma::mat> newThetas;
+    std::vector<arma::mat> thetaGrads;
     for( int i = (int)deltas.size() - 1; i >=0; --i ) {
-        newThetas.push_back( (deltas[i].t()*aVec[aVec.size() - i - 2] )/m );
+        thetaGrads.push_back( (deltas[i].t()*aVec[aVec.size() - i - 2] )/m );
     }
     //arma::mat Theta1_grad = d2.t()*a1/m; // 25x401
     //arma::mat Theta2_grad = d3.t()*a2/m; // 10x26
     
     //std::cout << "dbgX 7\n";
     // Theta reguralization
-    mRetVal.grad.clear();
-    for( size_t i = 0; i < newThetas.size(); ++i ) {
-        for( size_t j = 1; j < newThetas[i].n_cols; ++j ) {
-            newThetas[i].col(j) = newThetas[i].col(j) + mLambda/m*thetas[i].col(j);
-        }
-        if( i == 0 ) {
-            mRetVal.grad = arma::vectorise(newThetas[i]);
-        } else {
-            mRetVal.grad = arma::join_cols( mRetVal.grad, arma::vectorise(newThetas[i]));
+    if(mLambda != 0) {
+        for( size_t i = 0; i < thetaGrads.size(); ++i ) {
+            for( size_t j = 1; j < thetaGrads[i].n_cols; ++j ) {
+                thetaGrads[i].col(j) += mLambda/m*thetas[i].col(j);
+            }
         }
     }
     //std::cout << "dbgX 8\n";
     
-    return mRetVal;
+    return thetaGrads;
+}
+
+std::vector<arma::mat> NeuralNetwork::miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize,
+                                                                double learning_rate, bool verbose ) {
+    std::vector<arma::mat> thetas;
+    if( verbose ) {
+        std::cout << "Mini-batch Gradient Descent\n";
+        displayActivationFunction();
+        std::cout << "Iteration: " << iteration << "\n";
+        std::cout << "Batch size: " << batchSize << "\n";
+        std::cout << "Learning rate: " << learning_rate << "\n";
+        std::cout << "Training set size: " << mX.n_rows << "x" << mX.n_cols << "\n";
+    }
+    if( initTheta ) {
+        srand (time(NULL));
+        for( size_t i = 0; i <= mLayerSizes.n_cols-2; ++i ) {
+            thetas.push_back( randInitializeWeights(mLayerSizes(0,i), mLayerSizes(0,i+1)));
+        }
+    }
+
+    arma::mat XSave = std::move(mX);
+    arma::mat YSave = std::move(mY);
+
+    for( long long i = 0; i < iteration; ++i ) {
+        for( size_t index = 0; ;++index) {
+            size_t l = index * batchSize;
+            size_t l_end = l + batchSize - 1;
+
+            if( l >= XSave.n_rows )
+                break;
+
+            if( l_end >= XSave.n_rows )
+                l_end = XSave.n_rows - 1;
+
+            mX = XSave.rows(l, l_end);
+            mY = YSave.rows(l, l_end);
+            std::vector<arma::mat> grads = calc2(thetas, false);
+            for( size_t t = 0; t < grads.size(); ++t ) {
+                thetas[t] -= learning_rate * grads[t];
+            }
+            if( verbose )
+                std::cout << "mini-batch iteration: " << i << "." << index << "; cost: " << mRetVal.cost <<"                       \r" << std::flush;
+        }
+    }
+    
+    mX = std::move(XSave);
+    mY = std::move(YSave);
+    
+    return thetas;
 }
 
 // special return value std::numeric_limits<double>::max(); means not found
@@ -148,13 +254,17 @@ arma::mat NeuralNetwork::predict( const arma::mat& X, const std::vector<arma::ma
 
     for( size_t i = 0; i < thetas.size(); ++i ) {
         s = std::move(join_rows( arma::ones(m, 1), s));
-        s=std::move(sigmoid(s,thetas[i].t()));
+        s=std::move((this->*mAF)(s,thetas[i].t()));
     }
+
     arma::mat M = arma::max(s,1);
+
     for( size_t i=0; i < m; ++i ) {
         //p(i,0) = as_scalar(arma::find( s.row(i)==M(i,0) )) + 1; // +1 because y is 1 based.
         arma::uvec result = arma::find( s.row(i)==M(i,0) );
-        //if( result.n_cols == 0 || result.n_rows == 0 )
+        if( result.n_cols == 0 || result.n_rows == 0 ) {
+            std::cerr << "M: " << M << "; s: " << s.row(i) << "\n";
+        }
         //    p(i,0) = NOT_FOUND;
         //else
             p(i,0) = mYMappper.fromYYtoY( result(0,0));
@@ -162,9 +272,39 @@ arma::mat NeuralNetwork::predict( const arma::mat& X, const std::vector<arma::ma
     return p;
 }
 
+double NeuralNetwork::accuracy(const std::vector<arma::mat>& thetas) {
+    arma::mat p = predict(mX,thetas);
+    return arma::mean(arma::conv_to<arma::colvec>::from(p == mY))*100;
+}
+
 arma::mat NeuralNetwork::sigmoid( const arma::mat& X, const arma::mat& theta ) {
     const arma::mat z = -X*theta;
     return 1.0/(1.0+arma::exp(z));
+}
+
+arma::mat NeuralNetwork::tanh( const arma::mat& X, const arma::mat& theta ) {
+    const arma::mat z = X*theta;
+    const arma::mat pz = arma::exp(z);
+    const arma::mat nz = arma::exp(-z);
+    return (pz - nz)/(pz + nz);
+}
+
+arma::mat NeuralNetwork::relu( const arma::mat& X, const arma::mat& theta ) {
+    arma::mat z = X*theta;
+    z.elem( arma::find(z < 0.0) ).zeros();
+    return z;
+}
+
+arma::mat NeuralNetwork::leaky_relu( const arma::mat& X, const arma::mat& theta ) {
+    arma::mat z = X*theta;
+    const arma::mat z2 = z * 0.01;
+    arma::uvec u = arma::find(z < z2);
+    for( size_t i = 0; i < u.size(); ++i ) {
+        if( z2[i] > z[i] ) {
+            z[i] = z2[i];
+        }
+    }
+    return z;
 }
 
 arma::mat NeuralNetwork::sigmoidGradient( const arma::mat& z ) {
@@ -173,8 +313,16 @@ arma::mat NeuralNetwork::sigmoidGradient( const arma::mat& z ) {
 }
 
 arma::mat NeuralNetwork::randInitializeWeights( int L_in, int L_out ) {
-    const double epsilon_init = 0.12;
-    return arma::randu(L_out, 1 + L_in) * 2 * epsilon_init - epsilon_init;
+    switch(mActivationFunction) {
+    case SIGMOID: {
+        const double epsilon_init = 0.12;
+        return arma::randu(L_out, 1 + L_in) * 2 * epsilon_init - epsilon_init;
+    } break;
+    case TANH:    return arma::randn(L_out, 1 + L_in) * sqrt(1./L_in); break;
+    case RELU:    return arma::randu(L_out, 1 + L_in) * sqrt(8./L_in); break;
+    case LRELU:   return arma::randn(L_out, 1 + L_in) * sqrt(2./L_in); break;
+    }
+    return arma::mat();
 }
 
 arma::mat NeuralNetwork::debugInitializeWeights( int fan_out, int fan_in ) {
@@ -226,7 +374,7 @@ void NeuralNetwork::checkNNGradients( double lambda /*= 0*/ ) {
     }
     // Reusing debugInitializeWeights to generate X
     arma::mat X  = debugInitializeWeights(m, input_layer_size - 1);
-    arma::mat y  = 1 + mod(arma::mat(1,m), num_labels).t();
+    arma::mat y  = 1 + mod(arma::mat{1,2,3,4,5}, num_labels).t();
 
     // Short hand for cost function
     //costFunc = @(p) nnCostFunction(p, input_layer_size, hidden_layer_size, ...
@@ -297,6 +445,10 @@ arma::mat NeuralNetwork::train(int iteration, bool verbose) {
             initial_nn_params = arma::vectorise( initial_Theta );
         else
             initial_nn_params = join_cols( initial_nn_params, arma::vectorise( initial_Theta ));
+    }
+
+    if( verbose ) {
+        displayActivationFunction();
     }
 
     fmincgRetVal frv = fmincg(*this, initial_nn_params, iteration, verbose);
@@ -419,4 +571,13 @@ NeuralNetwork::TrainParams NeuralNetwork::searchTrainParams2( int minLayerSize, 
         }
     }
     return retVal;
+}
+
+void NeuralNetwork::displayActivationFunction() {
+    switch(mActivationFunction) {
+    case SIGMOID: std::cout << "Activation function: SIGMOID\n";    break;
+    case TANH:    std::cout << "Activation function: TANH\n";       break;
+    case RELU:    std::cout << "Activation function: RELU\n";       break;
+    case LRELU:   std::cout << "Activation function: LEAKY RELU\n"; break;
+    }
 }

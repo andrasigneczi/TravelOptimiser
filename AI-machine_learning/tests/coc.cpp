@@ -11,6 +11,7 @@
 #include <logistic_regression_v2.h>
 #include <support_vector_machine.h>
 #include "Util.h"
+#include <anomaly_detection.h>
 
 namespace COC_ns {
     
@@ -34,6 +35,7 @@ void logistic_regression_v2();
 void logistic_regression_v2_continue();
 void logistic_regression_v2_onevsall();
 void logistic_regression_v2_onevsall_continue();
+void deep_learning();
 
 void runTests() {
     //test4(); // coc training test
@@ -54,7 +56,9 @@ void runTests() {
     //logistic_regression_v2();
     //logistic_regression_v2_continue();
     //logistic_regression_v2_onevsall();
-    logistic_regression_v2_onevsall_continue();
+    //logistic_regression_v2_onevsall_continue();
+    deep_learning();
+
 }
 
 
@@ -699,14 +703,16 @@ void logistic_regression_one_vs_all() {
     int scenario = 1;
     if(scenario==1){
         arma::mat X, y;
-        X.load("TH_plus_BG_trainingset.bin");
-        y.load("TH_plus_BG_trainingset_result.bin");
+        X.load("TH_plus_BG_small_tiles_trainingset.bin");
+        y.load("TH_plus_BG_small_tiles_trainingset_result.bin");
 
         std::cout << "Data set size: " << X.n_rows << "\n";
         std::cout << "Prepare training and validation set...\n";
         Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval);
         std::cout << "Training set size: " << Xtraining.n_rows << "\n";
         std::cout << "Validation set size: " << Xval.n_rows << "\n";
+        //Xval.save(std::string(prefix) + "_Xval.bin");
+        //Yval.save(std::string(prefix) + "_Yval.bin");
     } else if(scenario==2){
         Xtraining.load("trainParams_X.bin");
         Ytraining.load("trainParams_y.bin");
@@ -719,12 +725,12 @@ void logistic_regression_one_vs_all() {
 
     std::cout << size(Xtraining) << "\n" << size(Ytraining) << "\n";
 
-    double lambda = 1e-2;
+    double lambda = 1e-4;
     LogisticRegression lr(Xtraining, Ytraining, lambda, true, 3 );
 
     std::cout << "contructor finished...\n";
 
-    lr.trainOneVsAll(400,true);
+    lr.trainOneVsAll(500,true);
     //lr.trainOneVsAll(4,800,true);
     lr.saveThetaAndFeatureScaling("th_onevsall2");
 
@@ -745,8 +751,8 @@ void learning_validation_curve_OneVsAll() {
 
     int scenario = 1;
     if(scenario==1){
-        X.load("TH11_plus_BG_trainingset.bin");
-        y.load("TH11_plus_BG_trainingset_result.bin");
+        X.load("TH_plus_BG_small_tiles_trainingset.bin");
+        y.load("TH_plus_BG_small_tiles_trainingset_result.bin");
 
         std::cout << "Data set size: " << X.n_rows << "\n";
         std::cout << "Prepare training and validation set...\n";
@@ -774,7 +780,7 @@ void learning_validation_curve_OneVsAll() {
 
     std::cout << "Learning curve...\n";
     LogisticRegression lr(Xtraining, Ytraining,lambda, true,3);
-    arma::mat lcv = lr.learningCurveOne(test_y, Xval, Yval, lambda, iteration,500);
+    arma::mat lcv = lr.learningCurveOne(test_y, Xval, Yval, lambda, iteration,10);
     Util::plotMatrix(new QCustomPlot, lcv);
     std::cout << "\n" << lcv << "\n" << std::flush;
     std::cout << "Validation curve...\n";
@@ -1029,7 +1035,7 @@ void logistic_regression_v2_onevsall() {
 
     const long long iteration = 8e+0;
     const double alpha = 1e-2;
-    const int degree = 3;
+    const int degree = 4;
     const char* prefix = "lrv2_minibatch_onevsall";
     const size_t batch_size = 5000;
     const double lambda = 1e-3;
@@ -1069,10 +1075,10 @@ void logistic_regression_v2_onevsall() {
 
 void logistic_regression_v2_onevsall_continue() {
     std::cout << "logistic_regression_v2_onevsall_continue\n";
-    const long long iteration = 8e+1;
-    const double alpha = 1e-3;
+    const long long iteration = 8e+2;
+    const double alpha = .85;
     const char* prefix = "lrv2_minibatch_onevsall";
-    const double lambda = 1e-3;
+    const double lambda = 1e-55;
 
     LogisticRegressionV2 lr;
     lr.loadCurrentStatus(prefix);
@@ -1086,6 +1092,72 @@ void logistic_regression_v2_onevsall_continue() {
 
     arma::mat p = lr.predictOneVsAll(Xval);
     std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(p == Yval)) * 100 << "\n";
+}
+
+void deep_learning() {
+    std::cout << "Deep Learning " << "\nLoading data...\n" << std::flush;
+
+    arma::mat Xtraining, Ytraining, Xval, Yval;
+    int scenario = 1;
+    if(scenario==1){
+        arma::mat X, y;
+        X.load("TH_plus_BG_trainingset.bin");
+        y.load("TH_plus_BG_trainingset_result.bin");
+
+        std::cout << "Data set size: " << X.n_rows << "\n";
+        std::cout << "Prepare training and validation set...\n";
+        //y = arma::conv_to<arma::mat>::from(arma::all( (y != 0), 1 ));
+        Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval);
+
+        //Ytraining = arma::conv_to<arma::mat>::from(arma::all( (Ytraining == test_th), 1 ));
+        //Yval = arma::conv_to<arma::mat>::from(arma::all( (Yval == test_th), 1 ));
+
+        std::cout << "Training set size: " << Xtraining.n_rows << "\n";
+        std::cout << "Validation set size: " << Xval.n_rows << "\n";
+
+        //Xval.save(std::string(prefix) + "_Xval.bin");
+        //Yval.save(std::string(prefix) + "_Yval.bin");
+    } else if(scenario==2){
+        Xtraining.load("trainParams_X.bin");
+        Ytraining.load("trainParams_y.bin");
+        Xval.load("trainParams_Xval.bin");
+        Yval.load("trainParams_Yval.bin");
+    }
+
+    std::cout << "\n";
+    arma::mat thetaSizes;
+    int input_layer_size  = Xtraining.n_cols;
+    int hidden_layer_size = 1000;
+    int num_labels         = Util::getLabelCount(Ytraining);
+    double lambda = 0;
+    int iteration = 2;
+    //double alpha = 0.93;
+    double alpha = 0.93;
+    //int batch = X.n_rows;
+    int batch = 10000;
+
+    thetaSizes << input_layer_size << hidden_layer_size << hidden_layer_size << hidden_layer_size
+               << hidden_layer_size << hidden_layer_size << num_labels; // input, hidden, output
+    COCYMappper yMapper;
+    NeuralNetwork nn(thetaSizes, Xtraining, Ytraining, lambda, yMapper, true, NeuralNetwork::RELU);
+
+    std::vector<arma::mat> thetas;
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    if( 1 ) {
+        thetas = nn.miniBatchGradientDescent(true,iteration,batch,alpha, true);
+    } else {
+        thetas = nn.extractThetas(nn.train(iteration,true));
+    }
+    std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+    std::cout << "\nTime difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
+
+    //arma::mat tp = nn.predict(Xtraining, thetas);
+    //std::cout << "\nTraining Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(tp == Ytraining)) * 100 << "\n";
+
+    arma::mat vp = nn.predict(Xval, thetas);
+    std::cout << "Validation Set Accuracy: " << arma::mean(arma::conv_to<arma::colvec>::from(vp == Yval)) * 100 << "\n";
+    std::cin.get();
+
 }
 
 } // COC_ns

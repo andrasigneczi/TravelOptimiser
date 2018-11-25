@@ -21,13 +21,26 @@ public:
         virtual double fromYYtoY( size_t index ) = 0;
     };
 
+    enum ActivationFunction {
+        SIGMOID,
+        RELU,
+        TANH,
+        LRELU
+    };
+    
     //using CostAndGradient::CostAndGradient;
-    NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda, YMappperIF& yMappper, bool featureScaling = false );
+    NeuralNetwork( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda, YMappperIF& yMappper, 
+                   bool featureScaling = false, ActivationFunction af = SIGMOID );
 
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override;
+    std::vector<arma::mat> calc2( const std::vector<arma::mat>& thetas, bool costOnly );
     // special return value std::numeric_limits<double>::max(); means not found
     arma::mat predict( const arma::mat& X, const std::vector<arma::mat>& thetas );
     arma::mat sigmoid( const arma::mat& X, const arma::mat& theta );
+    arma::mat tanh( const arma::mat& X, const arma::mat& theta );
+    arma::mat relu( const arma::mat& X, const arma::mat& theta );
+    arma::mat leaky_relu( const arma::mat& X, const arma::mat& theta );
+
     arma::mat sigmoidGradient( const arma::mat& z );
     arma::mat randInitializeWeights( int L_in, int L_out );
     void checkNNGradients( double lambda = 0 );
@@ -40,16 +53,30 @@ public:
     TrainParams searchTrainParams( int minLayerSize, int maxLayerSize, int stepSize );
     TrainParams searchTrainParams2( int minLayerSize, int maxLayerSize, int stepSize );
     void removeDuplication(arma::mat& dataset);
+    
+    
+    std::vector<arma::mat> miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize, double learning_rate, bool verbose );
+    double accuracy(const std::vector<arma::mat>& thetas);
+
+    //arma::mat featureScaling( const arma::mat& X, bool saveFactors );
+    // feature mapping
+    //void saveCurrentStatus(std::string fileNamePrefix);
+    //void loadCurrentStatus(std::string fileNamePrefix);
+
 
 private:
+    void displayActivationFunction();
     arma::mat learningCurve(arma::mat& Xval, arma::mat& yval);
     arma::mat validationCurve(arma::mat& Xval, arma::mat& yval, int iteration);
     const arma::mat& mLayerSizes; // input layer, hidden1, hidden2, ..., output
     YMappperIF& mYMappper;
+    const ActivationFunction mActivationFunction;
+    typedef arma::mat (NeuralNetwork::*ActivationFunctionP)( const arma::mat& X, const arma::mat& theta );
+    ActivationFunctionP mAF;
 };
 
 template<typename T>
-T mod(T a, int n)
+T mod(T a, double n)
 {
     return a - floor(a/n)*n;
 }

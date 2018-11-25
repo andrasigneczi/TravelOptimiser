@@ -6,7 +6,6 @@
 
 AnomalyDetection::AnomalyDetection( const arma::mat& X, const arma::mat& Xval, const arma::mat& yval ) {
     estimateGaussian( X );
-    arma::mat p = multivariateGaussian( X );
     arma::mat pval = multivariateGaussian( Xval );
     selectThreshold( yval, pval );
 }

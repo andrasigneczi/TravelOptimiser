@@ -18,7 +18,14 @@ namespace Util {
                                                        std::set<double> ignored_labels = std::set<double>(), size_t itemLimitPerLabel = 0,
                                                        const double percentage = 0.7);
     Q_DECL_EXPORT arma::mat mapFeature( const arma::mat& X1, const arma::mat& X2, int degree );
+    Q_DECL_EXPORT int getLabelCount( const arma::mat& y );
     
 } // namespace Util
+
+namespace arma {
+#if ARMA_VERSION_MAJOR == 6
+    arma::mat index_max(const arma::mat& A,int dim );
+#endif // ARMA_VERSION_MAJOR == 6
+} // namespace arma
 
 #endif // __UTIL_H__
