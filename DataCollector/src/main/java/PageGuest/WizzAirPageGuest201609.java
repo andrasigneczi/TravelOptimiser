@@ -366,7 +366,9 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 					+ aTravelDataInput.mAirportCode_LeavingFrom + "\",\"departureDate\":\"" + FormatDate(
 					aTravelDataInput.mReturnDay )
 					+ "\"}],\"adultCount\":" + aTravelDataInput.mAdultNumber + ",\"childCount\":"
-					+ aTravelDataInput.mChildNumber + ",\"infantCount\":" + aTravelDataInput.mInfantNumber + ",\"wdc\":true}";
+					+ aTravelDataInput.mChildNumber + ",\"infantCount\":" + aTravelDataInput.mInfantNumber
+					+ ",\"isFlightChange\": false, \"isSeniorOrStudent\": false"
+					+ ",\"wdc\":true}";
 		}
 		else
 		{
@@ -374,7 +376,9 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 					+ aTravelDataInput.mAirportCode_LeavingFrom + "\",\"arrivalStation\":\""
 					+ aTravelDataInput.mAirportCode_GoingTo + "\",\"departureDate\":\""
 					+ FormatDate( aTravelDataInput.mDepartureDay ) + "\"}],\"adultCount\":" + aTravelDataInput.mAdultNumber + ",\"childCount\":"
-					+ aTravelDataInput.mChildNumber + ",\"infantCount\":" + aTravelDataInput.mInfantNumber + ",\"wdc\":true}";
+					+ aTravelDataInput.mChildNumber + ",\"infantCount\":" + aTravelDataInput.mInfantNumber
+					+ ",\"isFlightChange\": false, \"isSeniorOrStudent\": false"
+					+ ",\"wdc\":true}";
 		}
 
 		String strResponse;
