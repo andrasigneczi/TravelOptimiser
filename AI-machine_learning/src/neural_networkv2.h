@@ -52,9 +52,12 @@ class NeuralNetworkV2 final : public CostAndGradient {
     arma::mat softmax( arma::mat Z );
     
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override { UNUSED(nn_params); UNUSED(costOnly); return mRetVal; };
-    std::vector<arma::mat> miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize, double learning_rate,
+    void miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate,
                                                      std::string optimizer = "gd", double beta = 0.9, double beta1 = 0.9, double beta2 = 0.999, 
                                                      double epsilon = 1e-8 );
+    bool saveState(std::string prefix);
+    bool loadState(std::string prefix);
+    void continueMinibatch(long long epoch);
 
 private:    
     const arma::mat& mLayerSizes; // input layer, hidden1, hidden2, ..., output
@@ -67,6 +70,17 @@ private:
     std::unordered_map<std::string,arma::mat> mVelocity;
     std::unordered_map<std::string,arma::mat> mAdamS;
     double mKeepProb;
+    
+    // minibatch parameters
+    int mAdamCounter;
+    size_t mBatchSize;
+    double mLearningRate;
+    std::string mOptimizer;
+    double mBeta;
+    double mBeta1;
+    double mBeta2; 
+    double mEpsilon;
+    
 };
 
 #endif // __NEURAL_NETWORKV2_H__

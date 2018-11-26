@@ -328,7 +328,7 @@ void nnv2_test1() {
     std::cerr << "dbg3\n";
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    nn.miniBatchGradientDescent(true,iteration,batch,alpha, "adam");
+    nn.miniBatchGradientDescent(iteration,batch,alpha, "adam");
     //nn.L_layer_model(X,yy,alpha,iteration,true);
     std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     std::cout << "\nTime difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
@@ -394,7 +394,7 @@ void nnv2_test2() {
     std::cerr << "dbg3\n";
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    nn.miniBatchGradientDescent(true,iteration,batch,alpha, optimization);
+    nn.miniBatchGradientDescent(iteration,batch,alpha, optimization);
     //nn.L_layer_model(X,yy,alpha,iteration,true);
     std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     std::cout << "\nTime difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;

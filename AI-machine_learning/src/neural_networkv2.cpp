@@ -670,10 +670,9 @@ void NeuralNetworkV2::L_layer_model(const arma::mat& X, const arma::mat& Y, doub
     //plt.show()
 }
 
-std::vector<arma::mat> NeuralNetworkV2::miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize, double learning_rate,
-                                                                  std::string optimizer, double beta, double beta1, double beta2, 
-                                                                  double epsilon ) {
-    UNUSED(initTheta);
+void NeuralNetworkV2::miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate,
+                                                std::string optimizer, double beta, double beta1, double beta2, 
+                                                double epsilon ) {
     int adam_counter = 0;
     initializeParametersHe();
     
@@ -688,7 +687,7 @@ std::vector<arma::mat> NeuralNetworkV2::miniBatchGradientDescent( bool initTheta
     arma::mat dataset = arma::mat(1,mY.n_cols);
     for(size_t t = 0; t < mY.n_cols;++t) dataset(0,t) = t;
 
-    for( long long i = 0; i < iteration; ++i ) {
+    for( long long i = 0; i < epoch; ++i ) {
         shuffle(dataset,1);
         for( size_t index = 0; ;++index) {
             size_t l = index * batchSize;
@@ -739,6 +738,41 @@ std::vector<arma::mat> NeuralNetworkV2::miniBatchGradientDescent( bool initTheta
             std::cout << "Iteration: " << i << "; Accuracy: " << acc << "%; " << cost << "\n";
         }
     }
-    
-    return std::vector<arma::mat>();
+}
+
+bool NeuralNetworkV2::saveState(std::string prefix) {
+    mX.save((prefix + "_x.bin").c_str());
+    mY.save((prefix + "_y.bin").c_str());
+    mLayerSizes.save((prefix + "_layersizes.bin").c_str());
+    mFCData.save((prefix + "_fcdata.bin").c_str());
+
+    std::ofstream output(prefix +"_other.bin", std::ios::binary | std::ios::trunc | std::ios::out);
+    output.write((const char*)&mHiddenLAF,    sizeof(mHiddenLAF));
+    output.write((const char*)&mOuputLAF,     sizeof(mOuputLAF));
+    output.write((const char*)&mKeepProb,     sizeof(mKeepProb));
+    output.write((const char*)&mLambda,       sizeof(mLambda));
+    output.write((const char*)&mAdamCounter,  sizeof(mAdamCounter));
+    output.write((const char*)&mBatchSize,    sizeof(mBatchSize));
+    output.write((const char*)&mLearningRate, sizeof(mLearningRate));
+    output.write((const char*)&mBeta,         sizeof(mBeta));
+    output.write((const char*)&mBeta1,        sizeof(mBeta1));
+    output.write((const char*)&mBeta2,        sizeof(mBeta2));
+    output.write((const char*)&mEpsilon,      sizeof(mEpsilon));
+    size_t temp = mOptimizer.size();
+    output.write((const char*)&temp,      sizeof(temp));
+    output.write((const char*)mOptimizer.c_str(),      temp);
+    /*
+    mParameters;
+    mGrads;
+    mVelocity;
+    mAdamS;
+    */
+    return true;
+}
+
+bool NeuralNetworkV2::loadState(std::string prefix) {
+    return true;
+}
+
+void NeuralNetworkV2::continueMinibatch(long long epoch) {
 }

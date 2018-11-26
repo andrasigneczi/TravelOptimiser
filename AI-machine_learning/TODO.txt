@@ -2,7 +2,6 @@ TODO
 ----
 - feature mapping
 - learning rate dacey
-- regularizations, dropout
 - batch_norm
 
 - tensorlow
