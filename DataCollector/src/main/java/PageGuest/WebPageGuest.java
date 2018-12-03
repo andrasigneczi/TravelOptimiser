@@ -4,10 +4,16 @@ import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.dom.By;
 import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
 import com.teamdev.jxbrowser.chromium.dom.DOMElement;
+import com.teamdev.jxbrowser.chromium.BrowserKeyEvent;
+import com.teamdev.jxbrowser.chromium.BrowserKeyEvent.KeyCode;
+import static com.teamdev.jxbrowser.chromium.BrowserKeyEvent.KeyCode.*;
+import static com.teamdev.jxbrowser.chromium.BrowserKeyEvent.KeyEventType.*;
 
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by andras.igneczi on 15/03/2016.
@@ -258,5 +264,65 @@ public abstract class WebPageGuest extends PageGuest
                 return element;
         }
         return null;
+    }
+
+    // JxBrowser robot
+    final static Map<Character, KeyCode> keyCodeHashMap = new HashMap<Character, BrowserKeyEvent.KeyCode>();
+    static {
+        keyCodeHashMap.put( 'A', BrowserKeyEvent.KeyCode.VK_A);
+        keyCodeHashMap.put( 'B', BrowserKeyEvent.KeyCode.VK_B);
+        keyCodeHashMap.put( 'C', BrowserKeyEvent.KeyCode.VK_C);
+        keyCodeHashMap.put( 'D', BrowserKeyEvent.KeyCode.VK_D);
+        keyCodeHashMap.put( 'E', BrowserKeyEvent.KeyCode.VK_E);
+        keyCodeHashMap.put( 'F', BrowserKeyEvent.KeyCode.VK_F);
+        keyCodeHashMap.put( 'G', BrowserKeyEvent.KeyCode.VK_G);
+        keyCodeHashMap.put( 'H', BrowserKeyEvent.KeyCode.VK_H);
+        keyCodeHashMap.put( 'I', BrowserKeyEvent.KeyCode.VK_I);
+        keyCodeHashMap.put( 'J', BrowserKeyEvent.KeyCode.VK_J);
+        keyCodeHashMap.put( 'K', BrowserKeyEvent.KeyCode.VK_K);
+        keyCodeHashMap.put( 'L', BrowserKeyEvent.KeyCode.VK_L);
+        keyCodeHashMap.put( 'M', BrowserKeyEvent.KeyCode.VK_M);
+        keyCodeHashMap.put( 'N', BrowserKeyEvent.KeyCode.VK_N);
+        keyCodeHashMap.put( 'O', BrowserKeyEvent.KeyCode.VK_O);
+        keyCodeHashMap.put( 'P', BrowserKeyEvent.KeyCode.VK_P);
+        keyCodeHashMap.put( 'Q', BrowserKeyEvent.KeyCode.VK_Q);
+        keyCodeHashMap.put( 'R', BrowserKeyEvent.KeyCode.VK_R);
+        keyCodeHashMap.put( 'S', BrowserKeyEvent.KeyCode.VK_S);
+        keyCodeHashMap.put( 'T', BrowserKeyEvent.KeyCode.VK_T);
+        keyCodeHashMap.put( 'U', BrowserKeyEvent.KeyCode.VK_U);
+        keyCodeHashMap.put( 'V', BrowserKeyEvent.KeyCode.VK_V);
+        keyCodeHashMap.put( 'W', BrowserKeyEvent.KeyCode.VK_W);
+        keyCodeHashMap.put( 'X', BrowserKeyEvent.KeyCode.VK_X);
+        keyCodeHashMap.put( 'Y', BrowserKeyEvent.KeyCode.VK_Y);
+        keyCodeHashMap.put( 'Z', BrowserKeyEvent.KeyCode.VK_Z);
+        keyCodeHashMap.put( '\n', BrowserKeyEvent.KeyCode.VK_RETURN);
+        keyCodeHashMap.put( '\t', BrowserKeyEvent.KeyCode.VK_TAB);
+        keyCodeHashMap.put( '0', BrowserKeyEvent.KeyCode.VK_0);
+        keyCodeHashMap.put( '1', BrowserKeyEvent.KeyCode.VK_1);
+        keyCodeHashMap.put( '2', BrowserKeyEvent.KeyCode.VK_2);
+        keyCodeHashMap.put( '3', BrowserKeyEvent.KeyCode.VK_3);
+        keyCodeHashMap.put( '4', BrowserKeyEvent.KeyCode.VK_4);
+        keyCodeHashMap.put( '5', BrowserKeyEvent.KeyCode.VK_5);
+        keyCodeHashMap.put( '6', BrowserKeyEvent.KeyCode.VK_6);
+        keyCodeHashMap.put( '7', BrowserKeyEvent.KeyCode.VK_7);
+        keyCodeHashMap.put( '8', BrowserKeyEvent.KeyCode.VK_8);
+        keyCodeHashMap.put( '9', BrowserKeyEvent.KeyCode.VK_9);
+    }
+
+    public static void typeText(Browser browser, String aText)
+    {
+        for (int i = 0; i < aText.length(); i++)
+        {
+            Sleep( 200 );
+            char lC = aText.charAt(i);
+            if ((lC >= 'A' && lC <= 'Z') || lC == '\t' || lC == '\n' || (lC >= '0' && lC <= '9'))
+            {
+                browser.forwardKeyEvent(new BrowserKeyEvent(TYPED, keyCodeHashMap.getOrDefault( lC, BrowserKeyEvent.KeyCode.VK_A ), lC ));
+                Sleep(200);
+            } else if (lC >= 'a' && lC <= 'z') {
+                browser.forwardKeyEvent(new BrowserKeyEvent(TYPED, keyCodeHashMap.getOrDefault( 'A' + lC - 'a', BrowserKeyEvent.KeyCode.VK_A ), lC ));
+                Sleep(200);
+            }
+        }
     }
 }
