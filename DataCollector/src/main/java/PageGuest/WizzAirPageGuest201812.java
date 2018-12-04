@@ -52,7 +52,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 	private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuest201812.class);
 
 	private long mTimeoutStart;
-	private static String mApiSearchUrl = "https://be.wizzair.com/9.0.1/Api/search/search";
+	private static String mApiSearchUrl = "https://be.wizzair.com/9.0.0/Api/search/search";
 	private static String mHeader = "origin: https://wizzair.com\naccept-encoding: gzip, deflate, br\naccept-language: en-US,en;q=0.9,hu;q=0.8\nuser-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36\ncontent-type: application/json;charset=UTF-8\naccept: application/json, text/plain, */*\nreferer: https://wizzair.com/\nauthority: be.wizzair.com";
 	private Browser mBrowser = null;
 	private BrowserView mBrowserView = null;
@@ -110,9 +110,10 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 				if( i == 2 )
 					throw e;
 			}
+			Sleep( 1000 );
 		}
 		// Wait until Chromium renders web page content
-		Sleep( 2000 );
+		Sleep( 4000 );
 
 		DOMDocument lDocument = mBrowser.getDocument();
 		String lContent = lDocument.getDocumentElement().getInnerHTML();
@@ -171,12 +172,22 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 				if( event.isMainFrame())
 				{
 					//System.out.println( "Main frame has finished loading, status: " + mGuest.mStatus.getStatus());
-					if( mEventCounter == 0 )
+					boolean search = false;
+					synchronized (mMutex)
 					{
-						Sleep( 2000 );
-						// I don't need the first submit's result!
-						//mGuest.mainFrameLoaded( event.getBrowser().getHTML() );
-						mGuest.DoSearchFromConfig();
+						if( mEventCounter == 0 )
+							search = true;
+					}
+					if(search)
+					{
+							Sleep( 2000 );
+							// I don't need the first submit's result!
+							//mGuest.mainFrameLoaded( event.getBrowser().getHTML() );
+							mGuest.DoSearchFromConfig();
+					}
+					synchronized (mMutex)
+					{
+						++mEventCounter;
 					}
 				}
 			}
@@ -206,10 +217,6 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 	}
 
 	public void mainFrameLoaded(String html) {
-		if(mEventCounter >= 0) {
-			ParseTheResponse( html );
-		}
-		++mEventCounter;
 	}
 
 	public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate)
@@ -550,6 +557,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 					+ ",\"wdc\":true}";
 		}
 
+		System.out.println( mApiSearchUrl + "\n" + lParameters );
 		for( int i = 0; i < 3; i++ )
 		{
 			try
@@ -563,6 +571,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 				if( i == 2 )
 					throw e;
 			}
+			Sleep( 1000 );
 		}
 
 		mTravelDataResult = new TravelData_RESULT();
@@ -570,7 +579,21 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 		mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
 		mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
 		mTravelDataResult.mTravelDataInput = aTravelDataInput;
-		ParseTheResponse(mBrowser.getHTML());
+
+		DOMDocument lDocument = mBrowser.getDocument();
+		String lContent = lDocument.getDocumentElement().getInnerHTML();
+
+		Pattern reg = Pattern.compile( "\\{.*\\}" );
+		Matcher m = reg.matcher( lContent );
+		String lJson = "";
+		if( m.find() )
+		{
+			lJson = m.group(0).toString().trim();
+		}
+
+		mLogger.trace( lJson );
+		//DOMElement pre = mBrowser.getDocument().findElement( By.tagName( "pre" ));
+		ParseTheResponse(lJson);
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
@@ -643,6 +666,9 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 				int lSearQueueSize;
 				synchronized (mMutex)
 				{
+					if(mEventCounter == 0)
+						continue;
+
 					lSearQueueSize = mSearchQueue.isEmpty();
 				}
 
