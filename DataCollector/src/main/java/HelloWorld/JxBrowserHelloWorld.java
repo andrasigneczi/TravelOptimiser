@@ -168,7 +168,7 @@ public class JxBrowserHelloWorld {
                         destionation.click();
                         typeText( event.getBrowser(), "CHARLE" );
                         value0.click();
-                        Sleep(2000);
+                        Sleep(400000);
                         //value0.click();
                         //Sleep(2000);
 
@@ -192,7 +192,7 @@ public class JxBrowserHelloWorld {
                             meb.setEventType( BrowserMouseEvent.MouseEventType.MOUSE_RELEASED );
                             event.getBrowser().forwardMouseEvent( meb.build() );
                             //valueO.click();
-                            //typeText("BUD\n");
+                            //jxTypeText("BUD\n");
                             Sleep( 2000 );
                             //link.click();
 
@@ -201,7 +201,7 @@ public class JxBrowserHelloWorld {
                     {
                         Sleep( 2000 );
                         browser.loadURL( new LoadURLParams(
-                                "https://be.wizzair.com/9.0.1/Api/search/search",
+                                "https://be.wizzair.com/9.1.0/Api/search/search",
                                 "{\"isFlightChange\":false,\"isSeniorOrStudent\":false,\"flightList\":[{\"departureStation\":\"BUD\",\"arrivalStation\":\"CRL\",\"departureDate\":\"2019-01-11\"}],\"adultCount\":1,\"childCount\":0,\"infantCount\":0,\"wdc\":true}",
                                 "origin: https://wizzair.com\naccept-encoding: gzip, deflate, br\naccept-language: en-US,en;q=0.9,hu;q=0.8\nuser-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36\ncontent-type: application/json;charset=UTF-8\naccept: application/json, text/plain, */*\nreferer: https://wizzair.com/\nauthority: be.wizzair.com"
                         ) );
@@ -211,7 +211,7 @@ public class JxBrowserHelloWorld {
                         System.out.println("\n2. -------------------------");
                         System.out.println(event.getBrowser().getHTML());
                         browser.loadURL( new LoadURLParams(
-                                "https://be.wizzair.com/9.0.1/Api/search/search",
+                                "https://be.wizzair.com/9.1.0/Api/search/search",
                                 "{\"isFlightChange\":false,\"isSeniorOrStudent\":false,\"flightList\":[{\"departureStation\":\"CRL\",\"arrivalStation\":\"BUD\",\"departureDate\":\"2019-01-18\"}],\"adultCount\":1,\"childCount\":0,\"infantCount\":0,\"wdc\":true}",
                                 "origin: https://wizzair.com\naccept-encoding: gzip, deflate, br\naccept-language: en-US,en;q=0.9,hu;q=0.8\nuser-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36\ncontent-type: application/json;charset=UTF-8\naccept: application/json, text/plain, */*\nreferer: https://wizzair.com/\nauthority: be.wizzair.com"
                         ) );

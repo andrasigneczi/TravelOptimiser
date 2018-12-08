@@ -1,6 +1,7 @@
 package PageGuest;
 
 import com.teamdev.jxbrowser.chromium.Browser;
+import com.teamdev.jxbrowser.chromium.BrowserMouseEvent;
 import com.teamdev.jxbrowser.chromium.dom.By;
 import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
 import com.teamdev.jxbrowser.chromium.dom.DOMElement;
@@ -309,7 +310,7 @@ public abstract class WebPageGuest extends PageGuest
         keyCodeHashMap.put( '9', BrowserKeyEvent.KeyCode.VK_9);
     }
 
-    public static void typeText(Browser browser, String aText)
+    public static void jxTypeText( Browser browser, String aText)
     {
         for (int i = 0; i < aText.length(); i++)
         {
@@ -324,5 +325,22 @@ public abstract class WebPageGuest extends PageGuest
                 Sleep(200);
             }
         }
+    }
+
+    public static void jxClick(Browser browser, DOMElement element) {
+        Rectangle rect = element.getBoundingClientRect();
+        BrowserMouseEvent.BrowserMouseEventBuilder meb = new BrowserMouseEvent.BrowserMouseEventBuilder();
+        meb.setButtonType( BrowserMouseEvent.MouseButtonType.PRIMARY );
+        meb.setClickCount( 1 );
+        meb.setEventType( BrowserMouseEvent.MouseEventType.MOUSE_PRESSED );
+        meb.setGlobalX( 0);
+        meb.setGlobalY( 0);
+        meb.setX( (int)rect.getX() );
+        meb.setY( (int)rect.getY() );
+        meb.setWhen( 1 );
+        browser.forwardMouseEvent( meb.build() );
+        meb.setEventType( BrowserMouseEvent.MouseEventType.MOUSE_RELEASED );
+        browser.forwardMouseEvent( meb.build() );
+        //Sleep( 2000 );
     }
 }

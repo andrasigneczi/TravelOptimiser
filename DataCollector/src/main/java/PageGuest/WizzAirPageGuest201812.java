@@ -12,9 +12,7 @@ import QueueHandlers.JMSStack;
 import QueueHandlers.LocalStack;
 import QueueHandlers.ResultQueue;
 import Configuration.Configuration;
-import Util.HttpRequest;
 import Util.StringHelper;
-import Util.WizzairHelper;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,7 +41,6 @@ import java.util.regex.Pattern;
 import static com.teamdev.jxbrowser.chromium.LoggerProvider.getBrowserLogger;
 import static com.teamdev.jxbrowser.chromium.LoggerProvider.getChromiumProcessLogger;
 import static com.teamdev.jxbrowser.chromium.LoggerProvider.getIPCLogger;
-import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 import com.traveloptimizer.browserengine.TeamDevJxBrowser;
 
 
@@ -55,6 +52,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 	private static String mApiSearchUrl = "https://be.wizzair.com/9.0.0/Api/search/search";
 	private static String mHeader = "origin: https://wizzair.com\naccept-encoding: gzip, deflate, br\naccept-language: en-US,en;q=0.9,hu;q=0.8\nuser-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36\ncontent-type: application/json;charset=UTF-8\naccept: application/json, text/plain, */*\nreferer: https://wizzair.com/\nauthority: be.wizzair.com";
 	private Browser mBrowser = null;
+	private Browser mBrowser2 = null;
 	private BrowserView mBrowserView = null;
 	private JTabbedPane mTabbedPane = null;
 	private Integer mLoadReadyTimeout = -1;
@@ -90,7 +88,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 		mBrowser = TeamDevJxBrowser.getInstance().getJxBrowser("wizzair.com");
 		mBrowserView = new BrowserView( mBrowser );
 		mTabbedPane.addTab( "Browser", mBrowserView );
-		for( int i = 0; i < 3; i++ )
+		for( int i = 0; i < 13; i++ )
 		{
 			try
 			{
@@ -130,7 +128,51 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 		mApiSearchUrl = "https://be.wizzair.com/" + lApiVersion + "/Api/search/search";
 
 		mBrowser.addLoadListener(new BrowserLoadAdapter( this ));
+		mBrowser.setPopupHandler(new BrowserPopupHandler(this));
+
 		FillTheFormWithDummy();
+	}
+
+	public class BrowserPopupHandler implements PopupHandler {
+		private WizzAirPageGuest201812 mGuest;
+		public BrowserPopupHandler( WizzAirPageGuest201812 guest )
+		{
+			mGuest = guest;
+		}
+		public PopupContainer handlePopup(PopupParams params) {
+			return new PopupContainer() {
+				public void insertBrowser(final Browser browser, final Rectangle initialBounds) {
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							mBrowser2 = browser;
+							//mBrowser2.addLoadListener(new BrowserLoadAdapter( mGuest ));
+							BrowserView popupView = new BrowserView(browser);
+							popupView.setPreferredSize(new Rectangle(800,800).getSize());
+
+							final JFrame popupFrame = new JFrame("Popup");
+							popupFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+							popupFrame.add(popupView, BorderLayout.CENTER);
+							popupFrame.pack();
+							popupFrame.setLocation(new Rectangle( 800, 0, 0, 0 ).getLocation());
+							popupFrame.setVisible(true);
+							popupFrame.addWindowListener(new WindowAdapter() {
+								@Override
+								public void windowClosing(WindowEvent e) {
+									browser.dispose();
+								}
+							});
+
+							browser.addDisposeListener(new DisposeListener<Browser>() {
+								public void onDisposed(DisposeEvent<Browser> event) {
+									popupFrame.setVisible(false);
+								}
+							});
+						}
+					});
+				}
+			};
+		}
 	}
 
 	public WizzAirPageGuest201812()
@@ -171,11 +213,11 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 			{
 				if( event.isMainFrame())
 				{
-					//System.out.println( "Main frame has finished loading, status: " + mGuest.mStatus.getStatus());
+					System.out.println( "Main frame has finished loading, status: " + mEventCounter);
 					boolean search = false;
 					synchronized (mMutex)
 					{
-						if( mEventCounter == 0 )
+						if( mEventCounter == 1 )
 							search = true;
 					}
 					if(search)
@@ -214,9 +256,6 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 			//System.out.println("Main frame document is loaded.");
 		}
 
-	}
-
-	public void mainFrameLoaded(String html) {
 	}
 
 	public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate)
@@ -530,10 +569,10 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 	{
 		mLogger.trace( "begin, thread name: " + getThreadName());
 
-		// {"isFlightChange":false,"isSeniorOrStudent":false,"flightList":[{"departureStation":"TIA","arrivalStation":"BUD","departureDate":"2019-01-08"}],"adultCount":1,"childCount":0,"infantCount":0,"wdc":true}
 		String lParameters = "";
 		if( aTravelDataInput.mReturnTicket )
 		{
+			// {"isFlightChange":false,"isSeniorOrStudent":false,"flightList":[{"departureStation":"VIE","arrivalStation":"NCE","departureDate":"2018-12-17"},{"departureStation":"NCE","arrivalStation":"VIE","departureDate":"2019-01-14"}],"adultCount":1,"childCount":0,"infantCount":0,"wdc":true}
 			lParameters = "{\"flightList\":[{\"departureStation\":\""
 					+ aTravelDataInput.mAirportCode_LeavingFrom + "\",\"arrivalStation\":\""
 					+ aTravelDataInput.mAirportCode_GoingTo + "\",\"departureDate\":\""
@@ -548,6 +587,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 		}
 		else
 		{
+			// {"isFlightChange":false,"isSeniorOrStudent":false,"flightList":[{"departureStation":"TIA","arrivalStation":"BUD","departureDate":"2019-01-08"}],"adultCount":1,"childCount":0,"infantCount":0,"wdc":true}
 			lParameters = "{\"flightList\":[{\"departureStation\":\""
 					+ aTravelDataInput.mAirportCode_LeavingFrom + "\",\"arrivalStation\":\""
 					+ aTravelDataInput.mAirportCode_GoingTo + "\",\"departureDate\":\""
@@ -591,7 +631,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 			lJson = m.group(0).toString().trim();
 		}
 
-		mLogger.trace( lJson );
+		mLogger.trace( lContent );
 		//DOMElement pre = mBrowser.getDocument().findElement( By.tagName( "pre" ));
 		ParseTheResponse(lJson);
 		mLogger.trace( "end, thread name: " + getThreadName());
@@ -603,46 +643,35 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
         Sleep(4000);
         DOMNode origin = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"search-departure-station\"]" ) );
         origin.click();
-        typeText( mBrowser, "Budap" );
+        jxTypeText( mBrowser, "Budap" );
 
         DOMElement value0 = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"flight-search\"]/div/div/div[3]/form/div[1]/fieldset/div[3]/div/div[3]/div[1]/label" ) );
         value0.click();
         Sleep(2000);
-        //*[@id="flight-search"]/div/div/div[3]/form/div[1]/fieldset/div[3]/div/div[3]/div[1]/label
         // destionation text field
         DOMNode destionation = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"search-arrival-station\"]" ) );
         destionation.click();
-        typeText( mBrowser, "CHARLE" );
+        jxTypeText( mBrowser, "CHARLE" );
         value0.click();
         Sleep(2000);
-        //value0.click();
-        //Sleep(2000);
 
         // click the submit
-        DOMNode link = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"flight-search\"]/div/div/div[3]/form/div[4]/button" ) );
+        DOMElement link = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"flight-search\"]/div/div/div[3]/form/div[4]/button" ) );
 
         if( link != null )
         {
-            Rectangle rect = ((DOMElement)link).getBoundingClientRect();
-            BrowserMouseEvent.BrowserMouseEventBuilder meb = new BrowserMouseEvent.BrowserMouseEventBuilder();
-            meb.setButtonType( BrowserMouseEvent.MouseButtonType.PRIMARY );
-            meb.setClickCount( 1 );
-            meb.setEventType( BrowserMouseEvent.MouseEventType.MOUSE_PRESSED );
-            meb.setGlobalX( 0);
-            meb.setGlobalY( 0);
-            meb.setX( (int)rect.getX() );
-            meb.setY( (int)rect.getY() );
-            meb.setWhen( 1 );
-            mBrowser.forwardMouseEvent( meb.build() );
-            //Sleep( 200 );
-            meb.setEventType( BrowserMouseEvent.MouseEventType.MOUSE_RELEASED );
-            mBrowser.forwardMouseEvent( meb.build() );
-            //valueO.click();
-            //typeText("BUD\n");
-            Sleep( 2000 );
-            //link.click();
-
+	        jxClick( mBrowser, link );
         }
+		mLogger.trace( "end, thread name: " + getThreadName());
+	}
+
+	private void clickLeftArrow() {
+		mLogger.trace( "begin, thread name: " + getThreadName());
+		DOMElement leftArrow = mBrowser2.getDocument().findElement( By.xpath( "//*[@id=\"fare-selector-outbound\"]/div[1]/div[3]/button[2]" ));
+		if( leftArrow  != null )
+		{
+			jxClick( mBrowser2, leftArrow );
+		}
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
@@ -666,7 +695,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 				int lSearQueueSize;
 				synchronized (mMutex)
 				{
-					if(mEventCounter == 0)
+					if(mEventCounter < 2)
 						continue;
 
 					lSearQueueSize = mSearchQueue.isEmpty();
@@ -687,6 +716,8 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 				try
 				{
 					FillTheForm( lTravelDataInput );
+					//mEventCounter = 10;
+					clickLeftArrow();
 				}
 				catch( URISyntaxException e )
 				{
