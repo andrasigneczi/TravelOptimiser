@@ -111,7 +111,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 			Sleep( 1000 );
 		}
 		// Wait until Chromium renders web page content
-		Sleep( 4000 );
+		Sleep( 8000 );
 
 		DOMDocument lDocument = mBrowser.getDocument();
 		String lContent = lDocument.getDocumentElement().getInnerHTML();
@@ -644,16 +644,18 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
         DOMNode origin = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"search-departure-station\"]" ) );
         origin.click();
         jxTypeText( mBrowser, "Budap" );
+		Sleep(4000);
 
         DOMElement value0 = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"flight-search\"]/div/div/div[3]/form/div[1]/fieldset/div[3]/div/div[3]/div[1]/label" ) );
         value0.click();
-        Sleep(2000);
+        Sleep(4000);
         // destionation text field
         DOMNode destionation = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"search-arrival-station\"]" ) );
         destionation.click();
         jxTypeText( mBrowser, "CHARLE" );
+		Sleep(4000);
         value0.click();
-        Sleep(2000);
+        Sleep(4000);
 
         // click the submit
         DOMElement link = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"flight-search\"]/div/div/div[3]/form/div[4]/button" ) );
