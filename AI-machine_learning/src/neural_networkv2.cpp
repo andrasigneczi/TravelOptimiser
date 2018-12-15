@@ -126,13 +126,13 @@ arma::mat NeuralNetworkV2::predict(const arma::mat& X, double* cost) {
         std::cerr << __FUNCTION__ << ": dbg1\n";
         *cost = compute_cost(A, mY, mOuputLAF);
     }
-    arma::mat p = arma::index_max(A,0);
+    arma::mat p = arma::conv_to<arma::mat>::from(arma::index_max(A,0));
     return p;   
 }
 
 double NeuralNetworkV2::accuracy(double* cost) {
     arma::mat p = predict(mX, cost);
-    arma::mat temp = arma::index_max(mY,0);
+    arma::mat temp = arma::conv_to<arma::mat>::from(arma::index_max(mY,0));
     return (double)arma::accu(p==temp)/(double)mY.n_cols*100.;
 }
 
@@ -255,7 +255,7 @@ double NeuralNetworkV2::compute_cost(const arma::mat& AL, const arma::mat& Y, Ac
     double cost = 0;
     
     if(af == SOFTMAX) {
-        arma::mat maxY = arma::index_max(Y,0);
+        arma::mat maxY = arma::conv_to<arma::mat>::from(arma::index_max(Y,0));
         std::cerr << __FUNCTION__ << " maxY: " << size(maxY) << "\n";
         arma::mat ALt = arma::zeros(1,AL.n_cols);
         for( size_t i=0; i < Y.n_cols; ++i ) {
@@ -362,7 +362,7 @@ void NeuralNetworkV2::linear_activation_backward(const arma::mat& dA, NeuralNetw
         size_t m = Y.n_cols;
         //gZ[Y.argmax(axis=0),range(m)] -= 1
         std::cerr << __FUNCTION__ << " softmax dbg1\n";
-        arma::mat maxS = arma::index_max(Y,0);
+        arma::mat maxS = arma::conv_to<arma::mat>::from(arma::index_max(Y,0));
         arma::mat dZ = gZ;
         std::cerr << __FUNCTION__ << " softmax dbg2\n";
         std::cerr << "maxS:" << size(maxS) << "\n";
