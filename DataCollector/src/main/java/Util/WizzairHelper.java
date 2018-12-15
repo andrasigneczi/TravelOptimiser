@@ -77,7 +77,7 @@ public class WizzairHelper
 			return mApiVersionNumber;
 
 		HttpRequest request = new HttpRequest();
-		String response = request.sendGet( "http://www.wizzair.com", 0 );
+		String response = request.sendGet( "https://wizzair.com", 0 );
 		Pattern reg = Pattern.compile( "https\\://be\\.wizzair\\.com/(\\d{1,2}\\.\\d{1,2}\\.\\d{1,2})/Api" );
 		Matcher m = reg.matcher( response );
 		if( m.find() )

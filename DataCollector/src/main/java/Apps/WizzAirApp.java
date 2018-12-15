@@ -17,11 +17,10 @@ public class WizzAirApp
 		mLogger.trace( "WizzAirApp start" );
 		try
 		{
-			PageGuest.WizzAirPageGuest201609.InitApirURL();
+			//PageGuest.WizzAirPageGuest201609.InitApirURL();
 			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
-			final PageGuest.WizzAirPageGuest201609 lGuestW = (PageGuest.WizzAirPageGuest201609)PageGuestFactory.Create( "WizzAir" );
-			lGuestW.InitJMS();
-			lGuestW.DoSearchFromConfig();
+			final PageGuest.WizzAirPageGuest201812 lGuestW = (PageGuest.WizzAirPageGuest201812)PageGuestFactory.Create( "WizzAir" );
+			lGuestW.Init();
 			lGuestW.WaitForFinish();
 			//lGuestW.stop();
 		}

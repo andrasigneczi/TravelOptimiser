@@ -1,60 +1,16 @@
 #include "neural_networkv2.h"
 
-arma::mat broadcast_plus( arma::mat x, arma::mat y ) {
-    if( x.n_cols == y.n_cols && y.n_rows == 1 ) {
-        for( size_t i = 0; i < x.n_rows; ++i ){
-            x.row(i) += y.row(0);
-        }
-    } else if( x.n_rows == y.n_rows && y.n_cols == 1) {
-        for( size_t i = 0; i < x.n_cols; ++i ){
-            x.col(i) += y.col(0);
-        }
-    } else {
-        throw "Illegal size for broadcasting\n";
-    }
-    return x;
-}
-
-arma::mat broadcast_minus( arma::mat x, arma::mat y ) {
-    if( x.n_cols == y.n_cols && y.n_rows == 1 ) {
-        for( size_t i = 0; i < x.n_rows; ++i ){
-            x.row(i) -= y.row(0);
-        }
-    } else if( x.n_rows == y.n_rows && y.n_cols == 1) {
-        for( size_t i = 0; i < x.n_cols; ++i ){
-            x.col(i) -= y.col(0);
-        }
-    } else {
-        throw "Illegal size for broadcasting\n";
-    }
-    return x;
-}
-
-arma::mat broadcast_div( arma::mat x, arma::mat y ) {
-    if( x.n_cols == y.n_cols && y.n_rows == 1 ) {
-        for( size_t i = 0; i < x.n_rows; ++i ){
-            x.row(i) /= y.row(0);
-        }
-    } else if( x.n_rows == y.n_rows && y.n_cols == 1) {
-        for( size_t i = 0; i < x.n_cols; ++i ){
-            x.col(i) /= y.col(0);
-        }
-    } else {
-        throw "Illegal size for broadcasting\n";
-    }
-    return x;
-}
-
 NeuralNetworkV2::NeuralNetworkV2( const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda,
                               bool featureScaling, NeuralNetworkV2::ActivationFunction hiddenAF, 
-                              NeuralNetworkV2::ActivationFunction outputAF )
+                              NeuralNetworkV2::ActivationFunction outputAF, double keep_prob )
     : CostAndGradient(X, y, lambda)
     , mLayerSizes(layerSizes)
     , mHiddenLAF(hiddenAF)
     , mOuputLAF(outputAF)
+    , mKeepProb(keep_prob)
 {
     if(featureScaling) {
-        mX = this->featureScaling(X, true);
+        mX = this->featureScaling(X, true, 0);
     }
 }
 
@@ -75,13 +31,14 @@ arma::mat NeuralNetworkV2::relu( arma::mat Z ) {
 }
 
 arma::mat NeuralNetworkV2::leaky_relu( arma::mat Z ) {
-    const arma::mat Z2 = Z * 0.01;
-    arma::uvec u = arma::find(Z < Z2);
-    for( size_t i = 0; i < u.size(); ++i ) {
-        if( Z2[i] > Z[i] ) {
-            Z[i] = Z2[i];
-        }
-    }
+    //const arma::mat Z2 = Z * 0.01;
+    //arma::uvec u = arma::find(Z < Z2);
+    //for( size_t i = 0; i < u.size(); ++i ) {
+    //    if( Z2[u[i]] > Z[u[i]] ) {
+    //        Z[u[i]] = Z2[u[i]];
+    //    }
+    //}
+    Z.elem( arma::find(Z <= 0.0) ) *= 0.01;
     return Z;
 }
 
@@ -89,11 +46,15 @@ arma::mat NeuralNetworkV2::softmax( arma::mat Z ) {
     // exps = np.exp(Z - np.max(Z))
     // A = exps / np.sum(exps, axis=1, keepdims=True)    
     std::cerr << __FUNCTION__ << ": dbg1\n";
-    arma::mat exps = arma::exp(broadcast_minus(Z,arma::max(Z)));
+    arma::mat exps = arma::exp(Util::broadcast_minus(Z,arma::max(Z)));
     //arma::mat exps = arma::exp(Z-Z.max()));
     std::cerr << __FUNCTION__ << ": dbg2\n";
-    exps = broadcast_div(exps,arma::sum(exps, 1));
+    exps = Util::broadcast_div(exps,arma::sum(exps, 1));
     std::cerr << __FUNCTION__ << ": dbg3\n";
+
+    //arma::mat exps = arma::exp(Z);
+    //exps = Util::broadcast_div(exps,arma::sum(exps, 1));
+    
     return exps;
 }
 
@@ -115,23 +76,109 @@ void NeuralNetworkV2::initializeParametersHe() {
     }
 }
 
+void NeuralNetworkV2::initializeParametersDeep() {
+    srand (time(NULL));
+    size_t L = mLayerSizes.n_cols - 1;
+
+    for( size_t i = 1; i <=L; ++i ) {
+        mParameters["W" + std::to_string(i)] = arma::randu(mLayerSizes(0,i), mLayerSizes(0,i-1)) * 0.01;
+        mParameters["b" + std::to_string(i)] = arma::zeros(mLayerSizes(0,i),1);
+        std::cerr << __FUNCTION__ << ": W:" << size(mParameters["W" + std::to_string(i)]) << "\n";
+        std::cerr << __FUNCTION__ << ": b:" << size(mParameters["b" + std::to_string(i)]) << "\n";
+    }
+}
+
+// for momentum
+void NeuralNetworkV2::initializeVelocity() {
+
+    // Initializes the velocity as a python dictionary with:
+    //             - keys: "dW1", "db1", ..., "dWL", "dbL" 
+    //             - values: numpy arrays of zeros of the same shape as the corresponding gradients/parameters.
+    // Arguments:
+    // parameters -- python dictionary containing your parameters.
+    //                 parameters['W' + str(l)] = Wl
+    //                 parameters['b' + str(l)] = bl
+    // 
+    // Returns:
+    // v -- python dictionary containing the current velocity.
+    //                 v['dW' + str(l)] = velocity of dWl
+    //                 v['db' + str(l)] = velocity of dbl
+
+    
+    size_t L = mLayerSizes.n_cols - 1;
+    mVelocity.empty();
+    
+    // Initialize velocity
+    for( size_t l = 0; l <L; ++l ) {
+        std::string lp1 = std::to_string(l+1);
+        mVelocity["dW" + lp1] = arma::zeros(size(mParameters["W" + lp1]));
+        mVelocity["db" + lp1] = arma::zeros(size(mParameters["b" + lp1]));
+    }
+}
+
+void NeuralNetworkV2::initializeAdam() {
+    // Initializes v and s as two python dictionaries with:
+    //             - keys: "dW1", "db1", ..., "dWL", "dbL" 
+    //             - values: numpy arrays of zeros of the same shape as the corresponding gradients/parameters.
+    // 
+    // Arguments:
+    // parameters -- python dictionary containing your parameters.
+    //                 parameters["W" + str(l)] = Wl
+    //                 parameters["b" + str(l)] = bl
+    // 
+    // Returns: 
+    // v -- python dictionary that will contain the exponentially weighted average of the gradient.
+    //                 v["dW" + str(l)] = ...
+    //                 v["db" + str(l)] = ...
+    // s -- python dictionary that will contain the exponentially weighted average of the squared gradient.
+    //                 s["dW" + str(l)] = ...
+    //                 s["db" + str(l)] = ...
+
+
+    size_t L = mLayerSizes.n_cols - 1;
+    mVelocity.empty();
+    mAdamS.empty();
+    
+    for( size_t l = 0; l <L; ++l ) {
+        std::string lp1 = std::to_string(l+1);
+        mVelocity["dW" + lp1] = arma::zeros(size(mParameters["W" + lp1]));
+        mVelocity["db" + lp1] = arma::zeros(size(mParameters["b" + lp1]));
+        mAdamS["dW" + lp1]    = arma::zeros(size(mParameters["W" + lp1]));
+        mAdamS["db" + lp1]    = arma::zeros(size(mParameters["b" + lp1]));
+    }
+}
+
 // X -- input data of size (n_x, m)
-arma::mat NeuralNetworkV2::predict(const arma::mat& X, double* cost) {
+arma::mat NeuralNetworkV2::predict(const arma::mat& X, double* cost, bool ignoreFeatureScaling) {
 
     //Using the learned parameters, predicts a class for each example in X
 
-    // Computes probabilities using forward propagation, and classifies to 0/1 using 0.5 as the threshold.
-    arma::mat A = L_model_forward(X);
+    ActivationFunction temp = mOuputLAF;
+    mOuputLAF = ActivationFunction::SOFTMAX;
+    
+    arma::mat X2;
+    if(!ignoreFeatureScaling && mFCData.n_cols > 0) {
+        X2 = applyFeatureScalingValues(X,0);
+    } else {
+        X2 = X;
+    }
+    
+    // no drop out during the prediction
+    const double keep_prob = mKeepProb;
+    mKeepProb = 1.;
+    arma::mat A = L_model_forward(X2);
     if(cost){
         std::cerr << __FUNCTION__ << ": dbg1\n";
-        *cost = compute_cost(A, mY, mOuputLAF);
+        *cost = compute_cost_with_regularization(A, mY, mOuputLAF);
     }
     arma::mat p = arma::conv_to<arma::mat>::from(arma::index_max(A,0));
+    mKeepProb = keep_prob;
+    mOuputLAF = temp;
     return p;   
 }
 
 double NeuralNetworkV2::accuracy(double* cost) {
-    arma::mat p = predict(mX, cost);
+    arma::mat p = predict(mX, cost, true);
     arma::mat temp = arma::conv_to<arma::mat>::from(arma::index_max(mY,0));
     return (double)arma::accu(p==temp)/(double)mY.n_cols*100.;
 }
@@ -140,14 +187,16 @@ double NeuralNetworkV2::accuracy(double* cost) {
 arma::mat NeuralNetworkV2::L_model_forward(const arma::mat& X) {
     mCaches = std::stack<arma::mat>();
     arma::mat A = X;
-    
+
     std::cerr << __FUNCTION__ << ": dbg1\n";
     size_t L = mLayerSizes.n_cols - 1;
     // Implement [LINEAR -> RELU]*(L-1). Add "cache" to the "caches" list.
     for( size_t l = 1; l < L; ++l ) {
+        if(l > 1 && mKeepProb != 1.) A = Dropout_Forward(A);
         A = linear_activation_forward(A, mParameters["W"+ std::to_string(l)], mParameters["b"+ std::to_string(l)], mHiddenLAF);
     }
     std::cerr << __FUNCTION__ << ": dbg2\n";
+    if(mKeepProb != 1.) A = Dropout_Forward(A);
     // Implement LINEAR -> SIGMOID. Add "cache" to the "caches" list.
     A = linear_activation_forward(A, mParameters["W"+ std::to_string(L)], mParameters["b"+ std::to_string(L)], mOuputLAF);
 
@@ -155,6 +204,33 @@ arma::mat NeuralNetworkV2::L_model_forward(const arma::mat& X) {
     //assert(AL.shape == (1,X.shape[1]))
             
     return A;
+}
+
+arma::mat NeuralNetworkV2::Dropout_Forward(const arma::mat& A) {
+    // D1 = np.random.rand(A1.shape[0],A1.shape[1])      # Step 1: initialize matrix D1 = np.random.rand(..., ...)
+    // D1 = (D1 < keep_prob)                             # Step 2: convert entries of D1 to 0 or 1 (using keep_prob as the threshold)
+    // A1 = A1 * D1                                      # Step 3: shut down some neurons of A1
+    // A1 = A1 / keep_prob                               # Step 4: scale the value of neurons that haven't been shut down
+    std::cerr << __FUNCTION__ << " dbg1\n";
+    arma::mat D = arma::randu(size(A));
+    std::cerr << __FUNCTION__ << " dbg2\n";
+    arma::uvec cond1 = arma::find(D < mKeepProb);
+    std::cerr << __FUNCTION__ << " dbg3\n";
+    arma::uvec cond2 = arma::find(D >= mKeepProb);
+    std::cerr << __FUNCTION__ << " dbg4\n";
+    D.elem(cond1).fill(1.);
+    std::cerr << __FUNCTION__ << " dbg5\n";
+    D.elem(cond2).fill(0.);
+    std::cerr << __FUNCTION__ << " dbg6\n";
+    mDropOutCache.push(D);
+    return (A % D) / mKeepProb;
+}
+
+arma::mat NeuralNetworkV2::Dropout_Backward(const arma::mat& dA) {
+    // dA2 = dA2 * D2          # Step 1: Apply mask D2 to shut down the same neurons as during the forward propagation
+    // dA2 = dA2 / keep_prob   # Step 2: Scale the value of neurons that haven't been shut down
+    arma::mat D = mDropOutCache.top();mDropOutCache.pop();
+    return (dA % D)/mKeepProb;
 }
 
 // Implement the forward propagation for the LINEAR->ACTIVATION layer
@@ -176,28 +252,23 @@ arma::mat NeuralNetworkV2::linear_activation_forward(const arma::mat& A_prev, co
     
     std::cerr << __FUNCTION__ << ": dbg1\n";
     
+    Z = linear_forward(A_prev, W, b);
     if( activation == SIGMOID ) {
-        std::cerr << __FUNCTION__ << ": dbg2\n";
-        Z = linear_forward(A_prev, W, b);
         std::cerr << __FUNCTION__ << ": dbg3\n";
         A = sigmoid(Z);
     } else if( activation == RELU ) {
-        std::cerr << __FUNCTION__ << ": dbg4\n";
-        Z = linear_forward(A_prev, W, b);
         std::cerr << __FUNCTION__ << ": dbg5\n";
         A = relu(Z);
     } else if( activation == TANH ) {
-        std::cerr << __FUNCTION__ << ": dbg4\n";
-        Z = linear_forward(A_prev, W, b);
         std::cerr << __FUNCTION__ << ": dbg5\n";
         A = tanh(Z);
     } else if( activation == SOFTMAX ) {
-        std::cerr << __FUNCTION__ << ": dbg4\n";
-        Z = linear_forward(A_prev, W, b);
         std::cerr << __FUNCTION__ << ": dbg5\n";
         A = softmax(Z);
+    } else if( activation == LRELU ) {
+        std::cerr << __FUNCTION__ << ": dbg5\n";
+        A = leaky_relu(Z);
     }
-
     std::cerr << __FUNCTION__ << ": dbg6\n";
     mCaches.push(A);
     //assert (A.shape == (W.shape[0], A_prev.shape[1]))
@@ -220,7 +291,7 @@ arma::mat NeuralNetworkV2::linear_forward(const arma::mat& A, const arma::mat& W
     std::cerr << __FUNCTION__ << ": dbg1\n";
     std::cerr << "W: " << size(W) << "\nA: " << size(A) << "\nb: " << size(b) << "\n";
     //arma::mat Z = W * A + b; // broadcast
-    arma::mat Z = broadcast_plus(W*A, b);
+    arma::mat Z = Util::broadcast_plus(W*A, b);
     std::cerr << __FUNCTION__ << ": dbg2\n";
     //assert(Z.shape == (W.shape[0], A.shape[1]))
     //cache = (A, W, b)
@@ -231,18 +302,18 @@ arma::mat NeuralNetworkV2::linear_forward(const arma::mat& A, const arma::mat& W
 // Arguments:
 // A3 -- post-activation, output of forward propagation, of shape (output size, number of examples)
 // Y -- "true" labels vector, of shape (output size, number of examples)
-double NeuralNetworkV2::compute_cost_with_regularization(const arma::mat& A3, const arma::mat& Y, double lambd) {
-    size_t m = Y.n_cols;
-    const arma::mat& W1 = mParameters["W1"];
-    const arma::mat& W2 = mParameters["W2"];
-    const arma::mat& W3 = mParameters["W3"];
-    
-    double cross_entropy_cost = compute_cost(A3, Y); // This gives you the cross-entropy part of the cost
-    double L2_regularization_cost = 1./m*lambd/2.*(arma::accu(arma::square(W1))+arma::accu(arma::square(W2)) + arma::accu(arma::square(W3)));
-
-    double cost = cross_entropy_cost + L2_regularization_cost;
-    
-    return cost;
+double NeuralNetworkV2::compute_cost_with_regularization(const arma::mat& AL, const arma::mat& Y, ActivationFunction af) {
+    double m = (double)Y.n_cols;
+    double cross_entropy_cost = compute_cost(AL, Y, af); // This gives you the cross-entropy part of the cost
+    double L2_regularization_cost = 0;
+    if( mLambda != 0. ){
+        size_t L = mParameters.size()/2;
+        for(size_t l = 1; l <= L; ++l) {
+            L2_regularization_cost += arma::accu(arma::square(mParameters["W" + std::to_string(l)]));
+        }
+        L2_regularization_cost = 1./m*mLambda/2.*(L2_regularization_cost);
+    }
+    return cross_entropy_cost + L2_regularization_cost;
 }
 
 // Arguments:
@@ -258,12 +329,15 @@ double NeuralNetworkV2::compute_cost(const arma::mat& AL, const arma::mat& Y, Ac
         arma::mat maxY = arma::conv_to<arma::mat>::from(arma::index_max(Y,0));
         std::cerr << __FUNCTION__ << " maxY: " << size(maxY) << "\n";
         arma::mat ALt = arma::zeros(1,AL.n_cols);
-        for( size_t i=0; i < Y.n_cols; ++i ) {
+        for( size_t i=0; i < m; ++i ) {
             ALt(0, i) = AL(maxY(0,i), i);
         }
         //cost = np.sum(-np.log(AL[Y.argmax(axis=0),range(m)]))/m;
         std::cerr << __FUNCTION__ << " " << arma::accu(-arma::log(ALt)) << "\n";
-        cost = arma::accu(-arma::log(ALt))/(double)Y.n_cols;
+        cost = arma::accu(-arma::log(ALt))/(double)m;
+        
+        //- nd.sum(y * nd.log(yhat+1e-6)
+        //cost = -arma::accu(Y % arma::log(AL+1e-6))/m;
     } else {
         // Compute loss from aL and y.
         cost = -1./m*arma::accu(Y % arma::log(AL) + (1.-Y)%arma::log(1.-AL));
@@ -301,14 +375,16 @@ void NeuralNetworkV2::L_model_backward(const arma::mat& AL, const arma::mat& Y) 
     // Lth layer (SIGMOID -> LINEAR) gradients. Inputs: "dAL, current_cache". Outputs: "grads["dAL-1"], grads["dWL"], grads["dbL"]
     //current_cache = caches[L-1]
     // A_prev, W, b, Z
-    /*grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = */linear_activation_backward(dAL, mOuputLAF, L - 1, Y);
+    /*grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = */linear_activation_backward(dAL, mOuputLAF, L - 1, Y, AL);
 
     // Loop from l=L-2 to l=0
     for( int l = (int)L - 2; l >= 0; --l ) {
         // lth layer: (RELU -> LINEAR) gradients.
         // Inputs: "grads["dA" + str(l + 1)], current_cache". Outputs: "grads["dA" + str(l)] , grads["dW" + str(l + 1)] , grads["db" + str(l + 1)] 
         //current_cache = caches[l]
-        /*dA_prev_temp, dW_temp, db_temp = */linear_activation_backward(mGrads["dA" + std::to_string(l + 1)], mHiddenLAF, l, Y);
+        arma::mat dA  = mGrads["dA" + std::to_string(l + 1)];
+        if(mKeepProb != 1.) dA = Dropout_Backward(dA);
+        /*dA_prev_temp, dW_temp, db_temp = */linear_activation_backward(dA, mHiddenLAF, l, Y, AL);
         //grads["dA" + str(l)] = dA_prev_temp
         //grads["dW" + str(l + 1)] = dW_temp
         //grads["db" + str(l + 1)] = db_temp
@@ -328,7 +404,7 @@ void NeuralNetworkV2::L_model_backward(const arma::mat& AL, const arma::mat& Y) 
 // dW -- Gradient of the cost with respect to W (current layer l), same shape as W
 // db -- Gradient of the cost with respect to b (current layer l), same shape as b
 void NeuralNetworkV2::linear_activation_backward(const arma::mat& dA, NeuralNetworkV2::ActivationFunction activation, size_t l,
-                                                 const arma::mat& Y) {
+                                                 const arma::mat& Y, const arma::mat& AL) {
     //linear_cache, activation_cache = cache
     arma::mat A_prev, W, b, gZ, dZ;
     gZ = mCaches.top();mCaches.pop();
@@ -359,6 +435,7 @@ void NeuralNetworkV2::linear_activation_backward(const arma::mat& dA, NeuralNetw
         std::cerr << "tanh dZ:" << size(dZ) << "\n";
         /*dA_prev, dW, db = */linear_backward(dZ, A_prev, W, b, l);
     } else if( activation == SOFTMAX ) {
+
         size_t m = Y.n_cols;
         //gZ[Y.argmax(axis=0),range(m)] -= 1
         std::cerr << __FUNCTION__ << " softmax dbg1\n";
@@ -370,9 +447,18 @@ void NeuralNetworkV2::linear_activation_backward(const arma::mat& dA, NeuralNetw
             //gZ[maxS(0,i), i] -= 1;
             dZ(maxS(0,i),i) -= 1;
         }
-        std::cerr << __FUNCTION__ << " sofgtmax dbg3\n";
+        std::cerr << __FUNCTION__ << " softmax dbg3\n";
         dZ = dZ/(double)m;
+
+        // coursera: dZ = Yhat - y
+        //dZ = AL - Y;
+        
         std::cerr << "softmax dZ:" << size(dZ) << "\n";
+        linear_backward(dZ, A_prev, W, b, l);
+    } else if( activation == LRELU ) {
+        gZ.elem( arma::find(gZ > 0.0) ).fill(1.);
+        gZ.elem( arma::find(gZ < 0.0) ).fill(0.01);
+        dZ = dA % gZ;
         linear_backward(dZ, A_prev, W, b, l);
     }
     
@@ -395,7 +481,7 @@ void NeuralNetworkV2::linear_backward(const arma::mat& dZ, const arma::mat& A_pr
     std::cerr << __FUNCTION__ << " dZ: " << size(dZ) << "\n";
     std::cerr << __FUNCTION__ << " A_prev: " << size(dZ) << "\n";
     std::cerr << __FUNCTION__ << " W: " << size(W) << "\n";
-    arma::mat dW = 1./m*dZ * A_prev.t();
+    arma::mat dW = 1./m*dZ * A_prev.t() + mLambda/m*W;
     arma::mat db = 1./m*arma::sum(dZ,1);
     arma::mat dA_prev = W.t() * dZ;
 
@@ -428,12 +514,107 @@ void NeuralNetworkV2::update_parameters(double learning_rate) {
     // Update rule for each parameter. Use a for loop.
     //for l in range(L):
     for( size_t l = 0; l < L; ++l ) {
-        std::cerr << __FUNCTION__ << ":" << " W" + std::to_string(l+1) << ":" << size(mParameters["W" + std::to_string(l+1)])<< "\n";
-        std::cerr << __FUNCTION__ << ":" << " b" + std::to_string(l+1) << ":" << size(mParameters["b" + std::to_string(l+1)])<< "\n";
-        std::cerr << __FUNCTION__ << ":" << " dW" + std::to_string(l+1) << ":" << size(mGrads["dW" + std::to_string(l+1)])<< "\n";
-        std::cerr << __FUNCTION__ << ":" << " db" + std::to_string(l+1) << ":" << size(mGrads["db" + std::to_string(l+1)])<< "\n";
-        mParameters["W" + std::to_string(l+1)] = mParameters["W" + std::to_string(l+1)] - learning_rate * mGrads["dW" + std::to_string(l+1)];
-        mParameters["b" + std::to_string(l+1)] = mParameters["b" + std::to_string(l+1)] - learning_rate * mGrads["db" + std::to_string(l+1)];
+        std::string lp1 = std::to_string(l+1);
+        std::cerr << __FUNCTION__ << ":" << " W" + lp1 << ":" << size(mParameters["W" + lp1])<< "\n";
+        std::cerr << __FUNCTION__ << ":" << " b" + lp1 << ":" << size(mParameters["b" + lp1])<< "\n";
+        std::cerr << __FUNCTION__ << ":" << " dW" + lp1 << ":" << size(mGrads["dW" + lp1])<< "\n";
+        std::cerr << __FUNCTION__ << ":" << " db" + lp1 << ":" << size(mGrads["db" + lp1])<< "\n";
+        mParameters["W" + lp1] = mParameters["W" + lp1] - learning_rate * mGrads["dW" + lp1];
+        mParameters["b" + lp1] = mParameters["b" + lp1] - learning_rate * mGrads["db" + lp1];
+    }
+}
+
+void NeuralNetworkV2::update_parameters_with_momentum(double beta, double learning_rate){
+    // Arguments:
+    // parameters -- python dictionary containing your parameters:
+    //                 parameters['W' + str(l)] = Wl
+    //                 parameters['b' + str(l)] = bl
+    // grads -- python dictionary containing your gradients for each parameters:
+    //                 grads['dW' + str(l)] = dWl
+    //                 grads['db' + str(l)] = dbl
+    // v -- python dictionary containing the current velocity:
+    //                 v['dW' + str(l)] = ...
+    //                 v['db' + str(l)] = ...
+    // beta -- the momentum hyperparameter, scalar
+    // learning_rate -- the learning rate, scalar
+    // 
+    // Returns:
+    // parameters -- python dictionary containing your updated parameters 
+    // v -- python dictionary containing your updated velocities
+
+    size_t L = mParameters.size()/2;
+    
+    // Momentum update for each parameter
+    for( size_t l = 0; l < L; ++l ) {
+        std::string lp1 = std::to_string(l+1);
+        // compute velocities
+        mVelocity["dW" +  lp1] = beta * mVelocity["dW" +  lp1] + (1.-beta) * mGrads["dW" +  lp1];
+        mVelocity["db" +  lp1] = beta * mVelocity["db" +  lp1] + (1.-beta) * mGrads["db" +  lp1];
+        // update parameters
+        mParameters["W" +  lp1] = mParameters["W" +  lp1] - learning_rate * mVelocity["dW" +  lp1];
+        mParameters["b" +  lp1] = mParameters["b" +  lp1] - learning_rate * mVelocity["db" +  lp1];
+    }
+}
+
+void NeuralNetworkV2::update_parameters_with_adam(double t, double learning_rate,
+                                double beta1, double beta2,  double epsilon) {
+    //Update parameters using Adam
+    //
+    //Arguments:
+    //parameters -- python dictionary containing your parameters:
+    //                parameters['W' + str(l)] = Wl
+    //                parameters['b' + str(l)] = bl
+    //grads -- python dictionary containing your gradients for each parameters:
+    //                grads['dW' + str(l)] = dWl
+    //                grads['db' + str(l)] = dbl
+    //v -- Adam variable, moving average of the first gradient, python dictionary
+    //s -- Adam variable, moving average of the squared gradient, python dictionary
+    //learning_rate -- the learning rate, scalar.
+    //beta1 -- Exponential decay hyperparameter for the first moment estimates 
+    //beta2 -- Exponential decay hyperparameter for the second moment estimates 
+    //epsilon -- hyperparameter preventing division by zero in Adam updates
+
+    //Returns:
+    //parameters -- python dictionary containing your updated parameters 
+    //v -- Adam variable, moving average of the first gradient, python dictionary
+    //s -- Adam variable, moving average of the squared gradient, python dictionary
+
+    std::cerr << __FUNCTION__ << " dbg1\n";
+    
+    size_t L = mParameters.size()/2;
+    arma::mat v_corrected_dW;
+    arma::mat v_corrected_db;
+    arma::mat s_corrected_dW;
+    arma::mat s_corrected_db;
+    
+    // Perform Adam update on all parameters
+    for( size_t l = 0; l < L; ++l ) {
+        std::string lp1 = std::to_string(l+1);
+        std::cerr << __FUNCTION__ << " dbg2\n";
+        // Moving average of the gradients. Inputs: "v, grads, beta1". Output: "v".
+        mVelocity["dW" + lp1] = beta1 * mVelocity["dW" + lp1] + (1.-beta1) * mGrads["dW" + lp1];
+        std::cerr << __FUNCTION__ << " dbg3\n";
+        mVelocity["db" + lp1] = beta1 * mVelocity["db" + lp1] + (1.-beta1) * mGrads["db" + lp1];
+        std::cerr << __FUNCTION__ << " dbg4\n";
+        
+        // Compute bias-corrected first moment estimate. Inputs: "v, beta1, t". Output: "v_corrected".
+        v_corrected_dW = mVelocity["dW" + lp1]/(1.-pow(beta1,t));
+        v_corrected_db = mVelocity["db" + lp1]/(1.-pow(beta1,t));
+        std::cerr << __FUNCTION__ << " dbg5\n";
+        // Moving average of the squared gradients. Inputs: "s, grads, beta2". Output: "s".
+        mAdamS["dW" + lp1] = beta2 * mAdamS["dW" + lp1] + (1.-beta2) * arma::pow(mGrads["dW" + lp1],2.);
+        mAdamS["db" + lp1] = beta2 * mAdamS["db" + lp1] + (1.-beta2) * arma::pow(mGrads["db" + lp1],2.);
+        std::cerr << __FUNCTION__ << " dbg6\n";
+        
+        // Compute bias-corrected second raw moment estimate. Inputs: "s, beta2, t". Output: "s_corrected".
+        s_corrected_dW = mAdamS["dW" + lp1]/(1.-pow(beta2,t));
+        s_corrected_db = mAdamS["db" + lp1]/(1.-pow(beta2,t));
+        std::cerr << __FUNCTION__ << " dbg7\n";
+        
+        // Update parameters. Inputs: "parameters, learning_rate, v_corrected, s_corrected, epsilon". Output: "parameters".
+        mParameters["W" + lp1] = mParameters["W" + lp1] - learning_rate * v_corrected_dW / arma::sqrt(s_corrected_dW + epsilon);
+        mParameters["b" + lp1] = mParameters["b" + lp1] - learning_rate * v_corrected_db / arma::sqrt(s_corrected_db + epsilon);
+        std::cerr << __FUNCTION__ << " dbg8\n";
     }
 }
 
@@ -488,20 +669,24 @@ void NeuralNetworkV2::L_layer_model(const arma::mat& X, const arma::mat& Y, doub
     //plt.show()
 }
 
-arma::mat NeuralNetworkV2::randInitializeWeights( int L_in, int L_out ) {
-    const double epsilon_init = 0.12;
-    return arma::randu(L_out, 1 + L_in) * 2 * epsilon_init - epsilon_init;
-}
-
-std::vector<arma::mat> NeuralNetworkV2::miniBatchGradientDescent( bool initTheta, long long iteration, size_t batchSize, double learning_rate ) {
-    UNUSED(initTheta);
+void NeuralNetworkV2::miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate,
+                                                std::string optimizer, double beta, double beta1, double beta2, 
+                                                double epsilon ) {
+    int adam_counter = 0;
     initializeParametersHe();
-    //arma::mat XSave = std::move(mX);
-    //arma::mat YSave = std::move(mY);
+    
+    // Initialize the optimizer
+    if( optimizer == "gd" )
+        ; // no initialization required for gradient descent
+    else if( optimizer == "momentum" )
+        initializeVelocity();
+    else if( optimizer == "adam" )
+        initializeAdam();
+    
     arma::mat dataset = arma::mat(1,mY.n_cols);
     for(size_t t = 0; t < mY.n_cols;++t) dataset(0,t) = t;
 
-    for( long long i = 0; i < iteration; ++i ) {
+    for( long long i = 0; i < epoch; ++i ) {
         shuffle(dataset,1);
         for( size_t index = 0; ;++index) {
             size_t l = index * batchSize;
@@ -533,7 +718,15 @@ std::vector<arma::mat> NeuralNetworkV2::miniBatchGradientDescent( bool initTheta
             L_model_backward(AL, Y);
             std::cerr << __FUNCTION__ << " dbg4\n";
             // Update parameters.
-            update_parameters(learning_rate);
+            if( optimizer == "gd")
+                update_parameters(learning_rate);
+            else if( optimizer == "momentum")
+                update_parameters_with_momentum(beta,learning_rate);
+            else if( optimizer == "adam" ) {
+                ++adam_counter;
+                update_parameters_with_adam(adam_counter, learning_rate, beta1, beta2,  epsilon);
+            }
+            
             std::cerr << __FUNCTION__ << " dbg5\n";
         }
     
@@ -544,6 +737,41 @@ std::vector<arma::mat> NeuralNetworkV2::miniBatchGradientDescent( bool initTheta
             std::cout << "Iteration: " << i << "; Accuracy: " << acc << "%; " << cost << "\n";
         }
     }
-    
-    return std::vector<arma::mat>();
+}
+
+bool NeuralNetworkV2::saveState(std::string prefix) {
+    mX.save((prefix + "_x.bin").c_str());
+    mY.save((prefix + "_y.bin").c_str());
+    mLayerSizes.save((prefix + "_layersizes.bin").c_str());
+    mFCData.save((prefix + "_fcdata.bin").c_str());
+
+    std::ofstream output(prefix +"_other.bin", std::ios::binary | std::ios::trunc | std::ios::out);
+    output.write((const char*)&mHiddenLAF,    sizeof(mHiddenLAF));
+    output.write((const char*)&mOuputLAF,     sizeof(mOuputLAF));
+    output.write((const char*)&mKeepProb,     sizeof(mKeepProb));
+    output.write((const char*)&mLambda,       sizeof(mLambda));
+    output.write((const char*)&mAdamCounter,  sizeof(mAdamCounter));
+    output.write((const char*)&mBatchSize,    sizeof(mBatchSize));
+    output.write((const char*)&mLearningRate, sizeof(mLearningRate));
+    output.write((const char*)&mBeta,         sizeof(mBeta));
+    output.write((const char*)&mBeta1,        sizeof(mBeta1));
+    output.write((const char*)&mBeta2,        sizeof(mBeta2));
+    output.write((const char*)&mEpsilon,      sizeof(mEpsilon));
+    size_t temp = mOptimizer.size();
+    output.write((const char*)&temp,      sizeof(temp));
+    output.write((const char*)mOptimizer.c_str(),      temp);
+    /*
+    mParameters;
+    mGrads;
+    mVelocity;
+    mAdamS;
+    */
+    return true;
+}
+
+bool NeuralNetworkV2::loadState(std::string prefix) {
+    return true;
+}
+
+void NeuralNetworkV2::continueMinibatch(long long epoch) {
 }

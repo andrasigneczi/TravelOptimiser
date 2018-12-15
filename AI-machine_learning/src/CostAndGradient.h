@@ -17,7 +17,8 @@ public:
     virtual RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) = 0;
     void setLambda( double lambda ) { mLambda = lambda; }
 
-    virtual arma::mat featureScaling( const arma::mat X, bool saveFactors );
+    virtual arma::mat featureScaling( const arma::mat X, bool saveFactors, int axis = 1 );
+    virtual arma::mat applyFeatureScalingValues(arma::mat X, int axis = 1);
 
 protected:
     arma::mat mX;

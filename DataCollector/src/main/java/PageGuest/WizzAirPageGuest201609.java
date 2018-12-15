@@ -352,9 +352,7 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 	{
 		mLogger.trace( "begin, thread name: " + getThreadName());
 
-		// curl "https://be.wizzair.com/3.0.4/Api/search/search" -H "origin: https://wizzair.com" -H "accept-encoding: gzip, deflate, br" -H "accept-language: hu,en-US;q=0.8,en;q=0.6,de-DE;q=0.4,de;q=0.2,fr;q=0.2" -H "user-agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36" -H "content-type: application/json" -H "accept: application/json, text/plain, */*" -H "referer: https://wizzair.com/" -H "authority: be.wizzair.com" -H "cookie: ASP.NET_SessionId=spvzv4uxq44q5y10exk2e2a5; _ga=GA1.2.1798072642.1456818314; _gat=1" --data-binary "{""flightList"":[{""departureStation"":""CRL"",""arrivalStation"":""BUD"",""departureDate"":""2016-10-07""},{""departureStation"":""BUD"",""arrivalStation"":""CRL"",""departureDate"":""2016-10-10""}],""adultCount"":1,""childCount"":0,""infantCount"":0,""wdc"":true}" --compressed
-
-		// "{\"flightList\":[{\"departureStation\":\"CRL\",\"arrivalStation\":\"BUD\",\"departureDate\":\"2016-10-07\"},{\"departureStation\":\"BUD\",\"arrivalStation\":\"CRL\",\"departureDate\":\"2016-10-10\"}],\"adultCount\":1,\"childCount\":0,\"infantCount\":0,\"wdc\":true}"
+		// {"isFlightChange":false,"isSeniorOrStudent":false,"flightList":[{"departureStation":"TIA","arrivalStation":"BUD","departureDate":"2019-01-08"}],"adultCount":1,"childCount":0,"infantCount":0,"wdc":true}
 		String lParameters = "";
 		if( aTravelDataInput.mReturnTicket )
 		{
@@ -366,7 +364,9 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 					+ aTravelDataInput.mAirportCode_LeavingFrom + "\",\"departureDate\":\"" + FormatDate(
 					aTravelDataInput.mReturnDay )
 					+ "\"}],\"adultCount\":" + aTravelDataInput.mAdultNumber + ",\"childCount\":"
-					+ aTravelDataInput.mChildNumber + ",\"infantCount\":" + aTravelDataInput.mInfantNumber + ",\"wdc\":true}";
+					+ aTravelDataInput.mChildNumber + ",\"infantCount\":" + aTravelDataInput.mInfantNumber
+					+ ",\"isFlightChange\": false, \"isSeniorOrStudent\": false"
+					+ ",\"wdc\":true}";
 		}
 		else
 		{
@@ -374,7 +374,9 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 					+ aTravelDataInput.mAirportCode_LeavingFrom + "\",\"arrivalStation\":\""
 					+ aTravelDataInput.mAirportCode_GoingTo + "\",\"departureDate\":\""
 					+ FormatDate( aTravelDataInput.mDepartureDay ) + "\"}],\"adultCount\":" + aTravelDataInput.mAdultNumber + ",\"childCount\":"
-					+ aTravelDataInput.mChildNumber + ",\"infantCount\":" + aTravelDataInput.mInfantNumber + ",\"wdc\":true}";
+					+ aTravelDataInput.mChildNumber + ",\"infantCount\":" + aTravelDataInput.mInfantNumber
+					+ ",\"isFlightChange\": false, \"isSeniorOrStudent\": false"
+					+ ",\"wdc\":true}";
 		}
 
 		String strResponse;
@@ -458,10 +460,10 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 }
 
 
-// curl "https://be.wizzair.com/3.0.5/Api/search/search" -H "pragma: no-cache" -H "origin: https://wizzair.com"
-// -H "accept-encoding: gzip, deflate, br" -H "accept-language: hu-HU,hu;q=0.8,en-US;q=0.6,en;q=0.4"
-// -H "user-agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36"
-// -H "content-type: application/json" -H "accept: application/json, text/plain, */*" -H "cache-control: no-cache"
-// -H "authority: be.wizzair.com" -H "cookie: __gfp_64b=v1ZwjWFMy.S2s_BKE9rLUPwt2tj_xQ.Xhm_sOInyotT.37; ASP.NET_SessionId=0ejkw1kvwhesad5c1jekl05f; _ga=GA1.2.831145438.1445423299; _gat=1"
-// -H "referer: https://wizzair.com/hu-HU/main-page"
-// --data-binary "{""flightList"":[{""departureStation"":""GYD"",""arrivalStation"":""BUD"",""departureDate"":""2016-09-24""}],""adultCount"":1,""childCount"":0,""infantCount"":0,""wdc"":true}" --compressed
+// curl 'https://be.wizzair.com/9.0.1/Api/search/search' -H 'origin: https://wizzair.com' -H 'accept-encoding: gzip, deflate, br' 
+// -H 'accept-language: en-US,en;q=0.9,hu;q=0.8' 
+// -H 'user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36' 
+// -H 'content-type: application/json;charset=UTF-8' -H 'accept: application/json, text/plain, */*' -H 'referer: https://wizzair.com/' 
+// -H 'authority: be.wizzair.com'  
+// --data-binary '{"isFlightChange":false,"isSeniorOrStudent":false,"flightList":[{"departureStation":"TIA","arrivalStation":"BUD","departureDate":"2019-01-08"}],"adultCount":1,"childCount":0,"infantCount":0,"wdc":true}' 
+// --compressed
