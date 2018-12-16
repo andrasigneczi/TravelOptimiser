@@ -141,7 +141,7 @@ public class SQLiteAgent extends ArchiverAgent
 		{
 			lJoinedString = stream
 					.map(String::valueOf)
-					.filter(path -> path.matches("^.*\\\\database_\\d{4}-\\d{2}-\\d{2}T\\d{6}\\.\\d{1,3}\\.db$"))
+					.filter(path -> path.matches("^.*\\/database_\\d{4}-\\d{2}-\\d{2}T\\d{6}\\.\\d{1,3}\\.db$"))
 					.sorted()
 					.collect( Collectors.joining(lItemSeparator));
 			lFileList = lJoinedString.split( lItemSeparator );
@@ -318,7 +318,7 @@ public class SQLiteAgent extends ArchiverAgent
 	{
 		Configuration lConfiguration = Configuration.getInstance();
 		String lArchivedDatabaseFolder = lConfiguration.getValue( "/configuration/global/ArchivedDatabaseFolder", "" );
-		String lNewDatabaseFullFileName = lArchivedDatabaseFolder + "\\" + mDatabaseFileName + "_"
+		String lNewDatabaseFullFileName = lArchivedDatabaseFolder + "/" + mDatabaseFileName + "_"
 				+ LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME).replace( ":", "" )
 				+ mDatabaseFileExtension;
 		try

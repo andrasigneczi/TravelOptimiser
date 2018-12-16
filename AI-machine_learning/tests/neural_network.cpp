@@ -375,7 +375,7 @@ void nnv2_test2() {
     //int batch = X.n_rows;
     int batch = 32;
     double keep_prob = .6;
-    const char* optimization = "gd";
+    const char* optimization = "adam";
     thetaSizes << input_layer_size << hidden_layer_size2 << num_labels; // input, hidden, output
     
     std::cout << "Training set size: " << size(X) << "\n";
