@@ -19,9 +19,17 @@ class NeuralNetworkV2 final : public CostAndGradient {
         SOFTMAX
     };
     
-    NeuralNetworkV2(const arma::mat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda,
+    enum Optimizer {
+        GD,
+        MOMENTUM,
+        ADAM
+    };
+
+    NeuralNetworkV2(const arma::umat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda,
                     bool featureScaling = false, ActivationFunction hiddenAF = SIGMOID, 
                     ActivationFunction outputAF = SIGMOID, double keep_prob = 1. );
+
+    NeuralNetworkV2(std::string prefix);
 
     void initializeParametersHe();
     void initializeParametersDeep();
@@ -53,14 +61,20 @@ class NeuralNetworkV2 final : public CostAndGradient {
     
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override { UNUSED(nn_params); UNUSED(costOnly); return mRetVal; };
     void miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate,
-                                                     std::string optimizer = "gd", double beta = 0.9, double beta1 = 0.9, double beta2 = 0.999, 
+                                                     Optimizer optimizer = GD, double beta = 0.9, double beta1 = 0.9, double beta2 = 0.999,
                                                      double epsilon = 1e-8 );
     bool saveState(std::string prefix);
+    bool saveMat(std::ofstream& output, const arma::mat& m);
+    bool saveMat(std::ofstream& output, const arma::umat& m);
+    bool saveStringUMap(std::ofstream& output, std::unordered_map<std::string,arma::mat>& m);
+    arma::mat loadMat(std::ifstream& input);
+    arma::umat loadUMat(std::ifstream& input);
+    bool loadStringUMap(std::ifstream& output, std::unordered_map<std::string,arma::mat>& m);
     bool loadState(std::string prefix);
     void continueMinibatch(long long epoch);
 
 private:    
-    const arma::mat& mLayerSizes; // input layer, hidden1, hidden2, ..., output
+    arma::umat mLayerSizes; // input layer, hidden1, hidden2, ..., output
     ActivationFunction mHiddenLAF;
     ActivationFunction mOuputLAF;
     std::unordered_map<std::string,arma::mat> mParameters;
@@ -75,12 +89,12 @@ private:
     int mAdamCounter;
     size_t mBatchSize;
     double mLearningRate;
-    std::string mOptimizer;
+    Optimizer mOptimizer;
     double mBeta;
     double mBeta1;
     double mBeta2; 
     double mEpsilon;
-    
+    bool mInitializedFromFile;
 };
 
 #endif // __NEURAL_NETWORKV2_H__

@@ -76,7 +76,7 @@ void removeDuplication(arma::mat& dataset) {
 void prepareTrainingAndValidationSet(const arma::mat& X, const arma::mat& y, arma::mat& Xtraining, arma::mat& Ytraining, arma::mat& Xval, arma::mat& Yval,
                                                        std::set<double> ignored_labels, size_t itemLimitPerLabel, const double percentage) {
     arma::mat dataset = join_rows( X, y );
-    shuffle(dataset);
+    dataset = shuffle(dataset);
     Util::removeDuplication(dataset);
 
     // 70% of every single label will be taken into the training set,
