@@ -1,12 +1,13 @@
 TODO
 ----
-- batch_norm
+- Optimization külön osztályba
+- Activation functions külön ösztályba
+- 
 - feature mapping
 - learning rate dacey
 
 - tensorlow
 - ArrayFire with my data set http://arrayfire.org/docs/index.htm
-- fminunc implementation
 - online learning algorithm
 - CUDA
 - Map Reduce
@@ -14,6 +15,7 @@ TODO
 
 BUG
 ---
+- batch norm doesn't work well with ADAM?
 - it seems, the softmax doesn't work well
 
 
@@ -23,6 +25,11 @@ DONE
 - stohastic and mini-batch gradient descent for logistic regression
 - Anomaly detection
 - K-Mean test
+
+
+Removing CERR messages from neural network
+------------------------------------------
+cat ../src/neural_networkv2.cpp | sed "s/^\s*CERR\s*<<.*$//" >nv2.cpp; mv nv2.cpp ../src/neural_networkv2.cpp
 
 
 RELU-SIGMOID:

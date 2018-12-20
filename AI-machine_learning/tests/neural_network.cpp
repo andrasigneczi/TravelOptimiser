@@ -352,10 +352,10 @@ void nnv2_test2() {
     y.load("TH_plus_BG_trainingset_result.bin");
 
     // I use only the first 3000 item for this test
-    const uint sampleCount = 7000;
+    const uint sampleCount = 8000;
     if(X.n_rows > sampleCount) {
-        X = X.rows(0, sampleCount);
-        y = y.rows(0, sampleCount);
+        X = X.rows(0, sampleCount - 1);
+        y = y.rows(0, sampleCount - 1);
     }
 
     std::cout << "Data set size: " << X.n_rows << "\n";
@@ -410,15 +410,15 @@ void nnv2_test2() {
     
     arma::umat thetaSizes;
     int input_layer_size  = X.n_rows;
-    int hidden_layer_size2 = 100;
-    double lambda = 0; //0.5;
-    int iteration = 20;
+    int hidden_layer_size2 = 50;
+    double lambda = 0.00001; //0.5; // reguralization
+    int iteration = 80;
     //double alpha = 0.3;
-    double alpha = 0.001;
+    double alpha = 0.001; // learning rate
     //int batch = X.n_rows;
     int batch = 32;
-    double keep_prob = .6; // drop out
-    NeuralNetworkV2::Optimizer optimization = NeuralNetworkV2::GD;
+    double keep_prob = 1.; // drop out
+    NeuralNetworkV2::Optimizer optimization = NeuralNetworkV2::MOMENTUM;
     bool batchNorm = true;
     bool featureScaling = true;
     thetaSizes << input_layer_size << hidden_layer_size2 << num_labels; // input, hidden, output
@@ -431,6 +431,7 @@ void nnv2_test2() {
     std::cout << "Keep prob: " << keep_prob << "\n";
     std::cout << "Batch size: " << batch << "\n";
     std::cout << "BatchNorm: " << batchNorm << "\n";
+    std::cout << "Feature scaling: " << featureScaling << "\n";
     std::cout << "Layer sizes: " << thetaSizes << "\n";
     std::cout << std::endl;
     

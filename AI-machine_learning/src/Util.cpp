@@ -160,12 +160,24 @@ arma::mat broadcast_plus( arma::mat x, arma::mat y ) {
         for( size_t i = 0; i < x.n_rows; ++i ){
             x.row(i) += y.row(0);
         }
+        return x;
     } else if( x.n_rows == y.n_rows && y.n_cols == 1) {
         for( size_t i = 0; i < x.n_cols; ++i ){
             x.col(i) += y.col(0);
         }
+        return x;
+    } else if( x.n_cols == y.n_cols && x.n_rows == 1 ) {
+        for( size_t i = 0; i < y.n_rows; ++i ){
+            y.row(i) += x.row(0);
+        }
+        return y;
+    } else if( x.n_rows == y.n_rows && x.n_cols == 1) {
+        for( size_t i = 0; i < y.n_cols; ++i ){
+            y.col(i) += x.col(0);
+        }
+        return y;
     } else {
-        throw "Illegal size for broadcasting\n";
+        throw "Illegal size for broadcasting plus\n";
     }
     return x;
 }
@@ -180,7 +192,7 @@ arma::mat broadcast_minus( arma::mat x, arma::mat y ) {
             x.col(i) -= y.col(0);
         }
     } else {
-        throw "Illegal size for broadcasting\n";
+        throw "Illegal size for broadcasting minus\n";
     }
     return x;
 }
@@ -195,7 +207,7 @@ arma::mat broadcast_div( arma::mat x, arma::mat y ) {
             x.col(i) /= y.col(0);
         }
     } else {
-        throw "Illegal size for broadcasting\n";
+        throw "Illegal size for broadcasting div\n";
     }
     return x;
 }
@@ -205,14 +217,127 @@ arma::mat broadcast_mul( arma::mat x, arma::mat y ) {
         for( size_t i = 0; i < x.n_rows; ++i ){
             x.row(i) %= y.row(0);
         }
+        return x;
     } else if( x.n_rows == y.n_rows && y.n_cols == 1) {
         for( size_t i = 0; i < x.n_cols; ++i ){
             x.col(i) %= y.col(0);
         }
+        return x;
+    } else if( x.n_cols == y.n_cols && x.n_rows == 1 ) {
+        for( size_t i = 0; i < y.n_rows; ++i ){
+            y.row(i) %= x.row(0);
+        }
+        return y;
+    } else if( x.n_rows == y.n_rows && x.n_cols == 1) {
+        for( size_t i = 0; i < y.n_cols; ++i ){
+            y.col(i) %= x.col(0);
+        }
+        return y;
     } else {
-        throw "Illegal size for broadcasting\n";
+        throw "Illegal size for broadcasting mul\n";
     }
     return x;
+}
+
+bool saveMat(std::ofstream& output, const arma::mat& m) {
+    output.write((const char*)&m.n_rows,      sizeof(m.n_rows));
+    output.write((const char*)&m.n_cols,      sizeof(m.n_cols));
+    for(size_t i = 0; i < m.n_rows; ++i) {
+        for(size_t j = 0; j < m.n_cols; ++j) {
+            output.write((const char*)&m(i,j),      sizeof(m(i,j)));
+        }
+    }
+    return true;
+}
+
+bool saveMat(std::ofstream& output, const arma::umat& m) {
+    output.write((const char*)&m.n_rows,      sizeof(m.n_rows));
+    output.write((const char*)&m.n_cols,      sizeof(m.n_cols));
+    for(size_t i = 0; i < m.n_rows; ++i) {
+        for(size_t j = 0; j < m.n_cols; ++j) {
+            output.write((const char*)&m(i,j),      sizeof(m(i,j)));
+        }
+    }
+    return true;
+}
+arma::mat loadMat(std::ifstream& input) {
+    size_t rows, cols;
+    input.read((char*)&rows,    sizeof(rows));
+    input.read((char*)&cols,    sizeof(cols));
+
+    arma::mat ret(rows, cols);
+    for(size_t i = 0; i < ret.n_rows; ++i) {
+        for(size_t j = 0; j < ret.n_cols; ++j) {
+            input.read((char*)&ret(i,j),    sizeof(ret(i,j)));
+        }
+    }
+    return ret;
+}
+
+arma::umat loadUMat(std::ifstream& input) {
+    size_t rows, cols;
+    input.read((char*)&rows,    sizeof(rows));
+    input.read((char*)&cols,    sizeof(cols));
+
+    arma::umat ret(rows, cols);
+    for(size_t i = 0; i < ret.n_rows; ++i) {
+        for(size_t j = 0; j < ret.n_cols; ++j) {
+            input.read((char*)&ret(i,j),    sizeof(ret(i,j)));
+        }
+    }
+    return ret;
+}
+
+bool saveStringUMap(std::ofstream& output, const UStringMatMap& m) {
+    size_t s = m.size();
+    output.write((const char*)&s, sizeof(s));
+    for(auto& it : m) {
+        size_t length = it.first.length();
+        output.write((const char*)&length, sizeof(length));
+        output.write((const char*)it.first.c_str(), length);
+        saveMat(output, it.second);
+    }
+    return true;
+}
+
+bool saveVectorStringUMap(std::ofstream& output, const std::vector<UStringMatMap>& v) {
+    size_t s = v.size();
+    output.write((const char*)&s, sizeof(s));
+    for(auto& obj : v) {
+        saveStringUMap(output, obj);
+    }
+    return true;
+}
+
+bool loadStringUMap(std::ifstream& input, UStringMatMap& m) {
+    size_t s;
+    input.read((char*)&s,    sizeof(s));
+
+    m.clear();
+    for(size_t i = 0; i < s; ++i) {
+        size_t length;
+        char* str;
+        input.read((char*)&length,    sizeof(length));
+        str = new char[length + 1];
+        input.read(str, length);
+        str[length] = 0;
+        m.emplace(str, loadMat(input));
+        delete [] str;
+    }
+    return true;
+}
+
+bool loadVectorStringUMap(std::ifstream& input, std::vector<UStringMatMap>& v) {
+    size_t s;
+    input.read((char*)&s,    sizeof(s));
+
+    v.clear();
+    for(size_t i = 0; i < s; ++i) {
+        UStringMatMap obj;
+        loadStringUMap(input, obj);
+        v.push_back(obj);
+    }
+    return true;
 }
 
 } // namespace Util

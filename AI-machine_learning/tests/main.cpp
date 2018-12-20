@@ -43,7 +43,11 @@ int main (int argc, char* argv[]) {
     //Png2Arma_ns::runTests();
 
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    NeuralNetwork_ns::runTests();
+    try {
+        NeuralNetwork_ns::runTests();
+    } catch(const char* str) {
+        std::cerr << str;
+    }
     //COC_ns::runTests();
     //SVM_ns::runTests();
     //AnomalyDetection_ns::runTests();
