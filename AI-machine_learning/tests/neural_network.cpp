@@ -418,7 +418,9 @@ void nnv2_test2() {
     //int batch = X.n_rows;
     int batch = 32;
     double keep_prob = .6; // drop out
-    NeuralNetworkV2::Optimizer optimization = NeuralNetworkV2::ADAM;
+    NeuralNetworkV2::Optimizer optimization = NeuralNetworkV2::GD;
+    bool batchNorm = true;
+    bool featureScaling = true;
     thetaSizes << input_layer_size << hidden_layer_size2 << num_labels; // input, hidden, output
     
     std::cout << "Training result set size: " << size(yy) << "\n";
@@ -428,10 +430,11 @@ void nnv2_test2() {
     std::cout << "Iteration: " << iteration << "\n";
     std::cout << "Keep prob: " << keep_prob << "\n";
     std::cout << "Batch size: " << batch << "\n";
+    std::cout << "BatchNorm: " << batchNorm << "\n";
     std::cout << "Layer sizes: " << thetaSizes << "\n";
     std::cout << std::endl;
     
-    NeuralNetworkV2 nn(thetaSizes, X, yy, lambda, true, NeuralNetworkV2::TANH, NeuralNetworkV2::SIGMOID, keep_prob);
+    NeuralNetworkV2 nn(thetaSizes, X, yy, lambda, featureScaling, NeuralNetworkV2::TANH, NeuralNetworkV2::SIGMOID, keep_prob, batchNorm);
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     nn.miniBatchGradientDescent(iteration, batch, alpha, optimization);

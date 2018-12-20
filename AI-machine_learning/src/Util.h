@@ -22,6 +22,7 @@ namespace Util {
     Q_DECL_EXPORT arma::mat broadcast_plus( arma::mat x, arma::mat y );
     Q_DECL_EXPORT arma::mat broadcast_minus( arma::mat x, arma::mat y );
     Q_DECL_EXPORT arma::mat broadcast_div( arma::mat x, arma::mat y );
+    Q_DECL_EXPORT arma::mat broadcast_mul( arma::mat x, arma::mat y );
     
 } // namespace Util
 

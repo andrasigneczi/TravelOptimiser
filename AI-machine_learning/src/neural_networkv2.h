@@ -27,7 +27,7 @@ class NeuralNetworkV2 final : public CostAndGradient {
 
     NeuralNetworkV2(const arma::umat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda,
                     bool featureScaling = false, ActivationFunction hiddenAF = SIGMOID, 
-                    ActivationFunction outputAF = SIGMOID, double keep_prob = 1. );
+                    ActivationFunction outputAF = SIGMOID, double keep_prob = 1., bool batchNorm = false );
 
     NeuralNetworkV2(std::string prefix);
 
@@ -35,10 +35,12 @@ class NeuralNetworkV2 final : public CostAndGradient {
     void initializeParametersDeep();
     void initializeVelocity();
     void initializeAdam();
+    void initializeBatchNorm(size_t index, size_t size);
+
     arma::mat predict(const arma::mat& X, double* cost = 0, bool ignoreFeatureScaling = false);
     double accuracy(double* cost = 0);
     arma::mat L_model_forward(const arma::mat& X);
-    arma::mat linear_activation_forward(const arma::mat& A_prev, const arma::mat& W, const arma::mat& b, ActivationFunction a);
+    arma::mat linear_activation_forward(const arma::mat& A_prev, const arma::mat& W, const arma::mat& b, ActivationFunction a, int l);
     arma::mat linear_forward(const arma::mat& A, const arma::mat& W, const arma::mat& b);
     arma::mat Dropout_Forward(const arma::mat& A);
     double compute_cost_with_regularization(const arma::mat& A3, const arma::mat& Y, ActivationFunction af);
@@ -58,7 +60,10 @@ class NeuralNetworkV2 final : public CostAndGradient {
     arma::mat relu( arma::mat Z );
     arma::mat leaky_relu( arma::mat Z );
     arma::mat softmax( arma::mat Z );
-    
+
+    arma::mat batchNorm_forward(const arma::mat& Z, const arma::mat& gamma, const arma::mat& beta);
+    arma::mat batchNorm_backward(const arma::mat& dZ, int l);
+
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override { UNUSED(nn_params); UNUSED(costOnly); return mRetVal; };
     void miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate,
                                                      Optimizer optimizer = GD, double beta = 0.9, double beta1 = 0.9, double beta2 = 0.999,
@@ -83,6 +88,12 @@ private:
     std::stack<arma::mat> mDropOutCache;
     std::unordered_map<std::string,arma::mat> mVelocity;
     std::unordered_map<std::string,arma::mat> mAdamS;
+
+    typedef std::unordered_map<std::string,arma::mat> BatchNormItem;
+    std::vector<BatchNormItem> mBatchNorm;
+    BatchNormItem* mLastBNI;
+    std::stack<arma::mat> mBNCaches;
+
     double mKeepProb;
     
     // minibatch parameters
@@ -95,6 +106,9 @@ private:
     double mBeta2; 
     double mEpsilon;
     bool mInitializedFromFile;
+    bool mBatchNormEnabled;
+    arma::mat running_mean;
+    arma::mat running_var;
 };
 
 #endif // __NEURAL_NETWORKV2_H__

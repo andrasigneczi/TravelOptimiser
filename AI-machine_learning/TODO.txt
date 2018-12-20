@@ -1,8 +1,8 @@
 TODO
 ----
+- batch_norm
 - feature mapping
 - learning rate dacey
-- batch_norm
 
 - tensorlow
 - ArrayFire with my data set http://arrayfire.org/docs/index.htm
