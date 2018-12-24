@@ -419,7 +419,7 @@ void nnv2_test2() {
     int batch = 32;
     double keep_prob = 1.; // drop out
     Optimizer::Type optimization = Optimizer::Type::MOMENTUM;
-    bool batchNorm = true;
+    bool batchNorm = false;
     bool featureScaling = true;
     thetaSizes << input_layer_size << hidden_layer_size2 << num_labels; // input, hidden, output
     

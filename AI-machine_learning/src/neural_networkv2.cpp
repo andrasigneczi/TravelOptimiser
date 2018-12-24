@@ -14,7 +14,6 @@ public:
 
 //static MyCerr CERR;
 #define CERR std::cerr
-static const double eps = 1e-8;
 
 NeuralNetworkV2::NeuralNetworkV2( const arma::umat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda,
                               bool featureScaling, NeuralNetworkV2::ActivationFunction hiddenAF, 
@@ -23,7 +22,6 @@ NeuralNetworkV2::NeuralNetworkV2( const arma::umat& layerSizes, const arma::mat&
     , mLayerSizes(layerSizes)
     , mHiddenLAF(hiddenAF)
     , mOuputLAF(outputAF)
-    , mLastBNI(nullptr)
     , mKeepProb(keep_prob)
     , mOptimizer(optimizerType)
     , mInitializedFromFile(false)
@@ -36,7 +34,6 @@ NeuralNetworkV2::NeuralNetworkV2( const arma::umat& layerSizes, const arma::mat&
 
 NeuralNetworkV2::NeuralNetworkV2(std::string prefix)
     : CostAndGradient(arma::mat(), arma::mat(), 0)
-    , mLastBNI(nullptr)
     , mOptimizer(Optimizer::Type::GD)
     , mInitializedFromFile(true)
     , mBatchNormEnabled(false)
@@ -72,24 +69,6 @@ void NeuralNetworkV2::initializeParametersDeep() {
         CERR  << __FUNCTION__ << ": W:" << size(mParameters["W" + std::to_string(i)]) << "\n";
         CERR  << __FUNCTION__ << ": b:" << size(mParameters["b" + std::to_string(i)]) << "\n";
     }
-}
-
-void NeuralNetworkV2::initializeBatchNorm(size_t index) {
-    for(size_t i = mBatchNorm.size(); i <= index; ++i) {
-        mBatchNorm.push_back(BatchNormItem());
-        BatchNormItem& bi = mBatchNorm[i];
-        size_t L = mLayerSizes.n_cols - 1;
-        for( size_t l = 0; l <= L - 1; ++l ) {
-            std::string lp1 = std::to_string(l);
-            std::string lp2 = std::to_string(l + 1);
-            CERR << __FUNCTION__ << " batch_norm_size: " << mParameters["W" + lp2].n_rows << "\n";
-            bi["gamma" + lp1] = arma::ones(mParameters["W" + lp2].n_rows, 1);
-            bi["beta" + lp1] = arma::zeros(mParameters["W" + lp2].n_rows, 1);
-            bi["running_mean" + lp1] = arma::mat();
-            bi["running_var" + lp1] = arma::mat();
-        }
-    }
-    mLastBNI = &mBatchNorm[index];
 }
 
 // X -- input data of size (n_x, m)
@@ -130,7 +109,6 @@ double NeuralNetworkV2::accuracy(double* cost) {
 // Implement forward propagation for the [LINEAR->RELU]*(L-1)->LINEAR->SIGMOID computation
 arma::mat NeuralNetworkV2::L_model_forward(const arma::mat& X) {
     mCaches = std::stack<arma::mat>();
-    mBNCaches = std::stack<arma::mat>();
 
     arma::mat A = X;
 
@@ -150,154 +128,6 @@ arma::mat NeuralNetworkV2::L_model_forward(const arma::mat& X) {
     //assert(AL.shape == (1,X.shape[1]))
             
     return A;
-}
-
-arma::mat NeuralNetworkV2::batchNorm_forward(const arma::mat& Z, const arma::mat& gamma, const arma::mat& beta, arma::mat& running_mean, arma::mat& running_var) {
-/*
-def batchnorm_forward(X, gamma, beta):
-    mu = np.mean(X, axis=0)
-    var = np.var(X, axis=0)
-
-    X_norm = (X - mu) / np.sqrt(var + 1e-8)
-    out = gamma * X_norm + beta
-
-    cache = (X, X_norm, mu, var, gamma, beta)
-
-    return out, cache, mu, var
-*/
-/*
-    def batchnorm_forward(x, gamma, beta, eps):
-      mu = np.mean(x)
-      var = np.var(x)
-      xhat = (x - mu) / np.sqrt(var + eps)
-      y = gamma * xhat + beta
-      return y
-*/
-    if(mLastBNI) {
-
-        arma::mat mu = arma::mean(Z, 1);
-        arma::mat var = arma::var(Z, 0, 1);
-        arma::mat Z_norm = Util::div(Util::minus(Z, mu), sqrt(var + eps));
-        arma::mat out = Util::plus(Util::mul(Z_norm, gamma), beta);
-
-        CERR << __FUNCTION__ << ": var: " << size(var) << "\n";
-        CERR << __FUNCTION__ << ": Z_norm: " << size(Z_norm) << "\n";
-        CERR << __FUNCTION__ << ": gamma: " << size(gamma) << "\n";
-        CERR << __FUNCTION__ << ": beta: " << size(beta) << "\n";
-
-
-        mBNCaches.push(mu);
-        mBNCaches.push(Z);
-        mBNCaches.push(Z_norm);
-        mBNCaches.push(var);
-        mBNCaches.push(gamma);
-
-        if(running_mean.n_rows == 0) {
-            running_mean = arma::zeros(mu.n_rows, 1);
-            running_var = arma::zeros(var.n_rows, 1);
-        }
-        CERR << __FUNCTION__ << " running_mean: " << size(running_mean) << "\n";
-        running_mean = running_mean * 0.9 + mu * 0.1;
-        CERR << __FUNCTION__ << " running_var: " << size(running_var) << "\n";
-        running_var = running_var * 0.9 + var * 0.1;
-        CERR << __FUNCTION__ << " Done\n";
-        return out;
-    } else {
-        //return Z;
-        CERR << __FUNCTION__ << " running_mean: " << size(running_mean) << "\n";
-        CERR << __FUNCTION__ << " running_var: " << size(running_var) << "\n";
-        CERR << __FUNCTION__ << " Z: " << size(Z) << "\n";
-        arma::mat Z_norm = Util::div(Util::minus(Z, running_mean), sqrt(running_var + eps));
-        CERR << __FUNCTION__ << " Z_norm: " << size(Z_norm) << "\n";
-        arma::mat out = Util::plus(Util::mul(Z_norm, gamma), beta);
-        CERR << __FUNCTION__ << " Done2\n";
-        return out;
-    }
-    return arma::mat();
-}
-
-arma::mat NeuralNetworkV2::batchNorm_backward(arma::mat dZ, size_t l) {
-/*
-    def batchnorm_backward(dout, cache):
-        X, X_norm, mu, var, gamma, beta = cache
-
-        N, D = X.shape
-
-        X_mu = X - mu
-        std_inv = 1. / np.sqrt(var + 1e-8)
-
-        dX_norm = dout * gamma
-        dvar = np.sum(dX_norm * X_mu, axis=0) * -.5 * std_inv**3
-        dmu = np.sum(dX_norm * -std_inv, axis=0) + dvar * np.mean(-2. * X_mu, axis=0)
-
-        dX = (dX_norm * std_inv) + (dvar * 2 * X_mu / N) + (dmu / N)
-        dgamma = np.sum(dout * X_norm, axis=0)
-        dbeta = np.sum(dout, axis=0)
-
-        return dX, dgamma, dbeta
-*/
-
-/*
-Faster version:
-https://costapt.github.io/2016/07/09/batch-norm-alt/
-
-def batchnorm_backward_alt(dout, cache):
-  gamma, xhat, istd = cache
-  N, _ = dout.shape
-
-  dbeta = np.sum(dout, axis=0)
-  dgamma = np.sum(xhat * dout, axis=0)
-  dx = (gamma*istd/N) * (N*dout - xhat*dgamma - dbeta)
-
-  return dx, dgamma, dbeta
-*/
-    arma::mat gamma  = mBNCaches.top();mBNCaches.pop();
-    arma::mat var    = mBNCaches.top();mBNCaches.pop();
-    arma::mat Z_norm = mBNCaches.top();mBNCaches.pop();
-    arma::mat Z      = mBNCaches.top();mBNCaches.pop();
-    arma::mat mu     = mBNCaches.top();mBNCaches.pop();
-
-    //double D = (double)Z.n_rows;
-    double D = (double)Z_norm.n_cols;
-
-    CERR << __FUNCTION__ << ": 0 l: " << l << "\n";
-    CERR << __FUNCTION__ << ": 1 Z: " << size(Z) << "\n";
-    CERR << __FUNCTION__ << ": 2 mu: " << size(mu) << "\n";
-    arma::mat Z_mu = Util::minus(Z, mu);
-    CERR << __FUNCTION__ << ": 3 Z_mu: " << size(Z_mu) << "\n";
-    arma::mat std_inv = 1. / sqrt(var + eps);
-    CERR << __FUNCTION__ << ": 4 std_inv: " << size(std_inv) << "\n";
-    CERR << __FUNCTION__ << ": 5 gamma: " << size(gamma) << "\n";
-    CERR << __FUNCTION__ << ": 6 dZ: " << size(dZ) << "\n";
-    arma::mat dZ_norm = Util::mul(dZ, gamma);
-    CERR << __FUNCTION__ << ": 7 dZ_norm: " << size(dZ_norm) << "\n";
-    arma::mat dvar = Util::mul(arma::sum(dZ_norm % Z_mu, 1) * -.5, arma::pow(std_inv, 3));
-    CERR << __FUNCTION__ << ": 8 dvar: " << size(dvar) << "\n";
-    arma::mat dmu = Util::plus(Util::mul(dvar, arma::mean(Z_mu * -2., 1)),
-                                         arma::sum(Util::mul(dZ_norm, -std_inv), 1));
-    CERR << __FUNCTION__ << ": 9 dmu: " << size(dmu) << "\n";
-    dZ = Util::plus(Util::mul(dZ_norm, std_inv) + (Util::mul(Z_mu, dvar * 2.) / D), (dmu / D));
-
-    arma::mat dgamma = arma::sum(dZ % Z_norm, 1);
-    arma::mat dbeta = arma::sum(dZ, 1);
-
-    std::string lstr = std::to_string(l);
-/*
-    using namespace Util;
-    //dx = (gamma*istd/N) * (N*dout - xhat*dgamma - dbeta)
-    CERR << __FUNCTION__ << ": 1 gamma: " << size(gamma) << "\n";
-    CERR << __FUNCTION__ << ": 2 var: " << size(var) << "\n";
-    CERR << __FUNCTION__ << ": 3 dZ: " << size(dZ) << "\n";
-    CERR << __FUNCTION__ << ": 4 Z_norm: " << size(Z_norm) << "\n";
-    CERR << __FUNCTION__ << ": 5 dgamma: " << size(dgamma) << "\n";
-    CERR << __FUNCTION__ << ": 6 dbeta: " << size(dbeta) << "\n";
-    dZ = mul(gamma % arma::sqrt(var + eps) / D, minus(dZ * D - mul(Z_norm, dgamma), dbeta));
-*/
-    (*mLastBNI)["dgamma" + lstr] = dgamma;
-    (*mLastBNI)["dbeta" + lstr] = dbeta;
-
-    return dZ; //, dgamma, dbeta
-
 }
 
 arma::mat NeuralNetworkV2::Dropout_Forward(const arma::mat& A) {
@@ -344,45 +174,7 @@ arma::mat NeuralNetworkV2::linear_activation_forward(const arma::mat& A_prev, co
 
     Z = linear_forward(A_prev, W, b);
 
-    if(mBatchNormEnabled) {
-        CERR << __FUNCTION__ << ": Z.size(): " << size(Z) << "\n";
-        std::string idx = std::to_string(l - 1);
-        CERR << __FUNCTION__ << ": l: " << idx << "\n";
-        if(!mLastBNI) {
-            CERR << __FUNCTION__ << ": mLastBNI empty!!!\n";
-            //arma::mat gamma = arma::ones(Z.n_rows, 1);
-            //arma::mat beta = arma::zeros(Z.n_rows, 1);
-
-            // arma::mat& gamma = mBatchNorm[l - 1]["gamma" + idx];
-            // arma::mat& beta = mBatchNorm[l - 1]["beta" + idx];
-            // arma::mat& running_mean = mBatchNorm[l - 1]["running_mean" + idx];
-            // arma::mat& running_var  = mBatchNorm[l - 1]["running_var" + idx];
-
-            arma::mat gamma = avgBatchParam("gamma" + idx);
-            arma::mat beta = avgBatchParam("beta" + idx);
-            arma::mat running_mean = avgBatchParam("running_mean" + idx);
-            arma::mat running_var  = avgBatchParam("running_var" + idx);
-            CERR << __FUNCTION__ << ": gamma.size(): " << size(gamma) << "\n";
-            CERR << __FUNCTION__ << ": gamma: " << gamma << "\n";
-            CERR << __FUNCTION__ << ": beta: " << beta << "\n";
-            CERR << __FUNCTION__ << ": running_mean: " << running_mean << "\n";
-            CERR << __FUNCTION__ << ": running_var: " << running_var << "\n";
-
-            Z = batchNorm_forward(Z, gamma, beta, running_mean, running_var);
-        } else {
-            //double gamma = 1.;
-            //double beta = 0.001;
-            arma::mat& gamma = (*mLastBNI)["gamma" + idx];
-            arma::mat& beta = (*mLastBNI)["beta" + idx];
-            arma::mat& running_mean = (*mLastBNI)["running_mean" + idx];
-            arma::mat& running_var  = (*mLastBNI)["running_var" + idx];
-
-            CERR << __FUNCTION__ << ": gamma.size(): " << size(gamma) << "\n";
-            //arma::mat gamma = arma::ones(1, Z.n_cols);
-            //arma::mat beta = arma::ones(1, Z.n_cols);
-            Z = batchNorm_forward(Z, gamma, beta, running_mean, running_var);
-        }
-    }
+    if(mBatchNormEnabled) { Z = mBatchNorm.batchNorm_forward(Z, l); }
 
     mCaches.push(A_prev);
     mCaches.push(W);
@@ -602,9 +394,7 @@ void NeuralNetworkV2::linear_activation_backward(const arma::mat& dA, NeuralNetw
 void NeuralNetworkV2::linear_backward(arma::mat dZ, const arma::mat& A_prev, const arma::mat& W, const arma::mat& b, size_t l) {
     size_t m = A_prev.n_cols;
 
-    if(mLastBNI && mBatchNormEnabled) {
-        dZ = batchNorm_backward(dZ, l);
-    }
+    if(mBatchNormEnabled) { dZ = mBatchNorm.batchNorm_backward(dZ, l); }
 
     CERR  << __FUNCTION__ << " dZ: " << size(dZ) << "\n";
     CERR  << __FUNCTION__ << " A_prev: " << size(A_prev) << "\n";
@@ -624,15 +414,6 @@ void NeuralNetworkV2::linear_backward(arma::mat dZ, const arma::mat& A_prev, con
     //assert (db.shape == b.shape)
     
     //return dA_prev, dW, db;
-}
-
-void NeuralNetworkV2::update_batchnorm_parameters(double learning_rate) {
-    for(size_t i = 0; i < mBatchNorm.size(); ++i) {
-        for( size_t l = 0; l < mLayerSizes.n_cols - 1; ++l ) {
-            mBatchNorm[i]["gamma" + std::to_string(l)] -= learning_rate * mBatchNorm[i]["dgamma" + std::to_string(l)];
-            mBatchNorm[i]["beta" + std::to_string(l)] -= learning_rate * mBatchNorm[i]["dbeta" + std::to_string(l)];
-        }
-    }
 }
 
 void NeuralNetworkV2::miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate,
@@ -672,9 +453,8 @@ void NeuralNetworkV2::miniBatchGradientDescent( long long epoch, size_t batchSiz
                 Y.col(t-l) = mY.col(dataset(0,t));
             }
 
-            if(mBatchNormEnabled) {
-                initializeBatchNorm(index);
-            }
+            if(mBatchNormEnabled) { mBatchNorm.initializeEpoch(index, mLayerSizes.n_cols - 1, mParameters); }
+
             CERR  << __FUNCTION__ << " X.size(): " << size(X) << "\n";
             CERR  << __FUNCTION__ << " Y.size(): " << size(Y) << "\n";
             CERR  << __FUNCTION__ << " dbg1\n";
@@ -690,13 +470,11 @@ void NeuralNetworkV2::miniBatchGradientDescent( long long epoch, size_t batchSiz
             // Update parameters.
             mOptimizer.updateParameters(mParameters, mGrads, learning_rate, beta, beta1, beta2,  epsilon);
 
-            if(mBatchNormEnabled) {
-                update_batchnorm_parameters(learning_rate);
-            }
+            if(mBatchNormEnabled) { mBatchNorm.updateParameters(mLayerSizes.n_cols - 1, learning_rate); }
             
             CERR  << __FUNCTION__ << " dbg5\n";
         }
-        mLastBNI = nullptr;
+        mBatchNorm.setTrainOff();
 
         // Print the cost every 100 training example
         if( i % 10 == 0 ){
@@ -718,7 +496,8 @@ bool NeuralNetworkV2::saveState(std::string prefix) {
     Util::saveMat(output, mFCData);
     Util::saveStringUMap(output, mParameters);
     Util::saveStringUMap(output, mGrads);
-    Util::saveVectorStringUMap(output, mBatchNorm);
+    mOptimizer.saveState(output);
+    mBatchNorm.saveState(output);
 
     output.write((const char*)&mHiddenLAF,    sizeof(mHiddenLAF));
     output.write((const char*)&mOuputLAF,     sizeof(mOuputLAF));
@@ -728,7 +507,6 @@ bool NeuralNetworkV2::saveState(std::string prefix) {
     output.write((const char*)&mLearningRate, sizeof(mLearningRate));
     output.write((const char*)&mBatchNormEnabled, sizeof(mBatchNormEnabled));
 
-    mOptimizer.saveState(output);
     return true;
 }
 
@@ -740,7 +518,8 @@ bool NeuralNetworkV2::loadState(std::string prefix) {
     mFCData = Util::loadMat(input);
     Util::loadStringUMap(input, mParameters);
     Util::loadStringUMap(input, mGrads);
-    Util::loadVectorStringUMap(input, mBatchNorm);
+    mOptimizer.loadState(input);
+    mBatchNorm.loadState(input);
 
     input.read((char*)&mHiddenLAF,    sizeof(mHiddenLAF));
     input.read((char*)&mOuputLAF,     sizeof(mOuputLAF));
@@ -749,7 +528,6 @@ bool NeuralNetworkV2::loadState(std::string prefix) {
     input.read((char*)&mBatchSize,    sizeof(mBatchSize));
     input.read((char*)&mLearningRate, sizeof(mLearningRate));
     input.read((char*)&mBatchNormEnabled, sizeof(mBatchNormEnabled));
-    mOptimizer.loadState(input);
     return true;
 }
 
@@ -761,17 +539,4 @@ void NeuralNetworkV2::continueMinibatch(long long epoch) {
         miniBatchGradientDescent(epoch, mBatchSize, mLearningRate, mOptimizer.beta(), mOptimizer.beta1(),
                                  mOptimizer.beta2(), mOptimizer.epsilon());
     }
-}
-
-arma::mat NeuralNetworkV2::avgBatchParam(std::string key) {
-    if(mBatchNorm.size() == 0) {
-        return arma::mat();
-    }
-
-    arma::mat retV = mBatchNorm[0][key];
-    for(size_t i = 1; i < mBatchNorm.size(); ++i) {
-        retV += mBatchNorm[i][key];
-    }
-    CERR  << __FUNCTION__ << ": key: " << key << "\n";
-    return retV / (double)mBatchNorm.size();
 }

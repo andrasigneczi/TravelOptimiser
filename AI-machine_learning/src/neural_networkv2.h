@@ -8,6 +8,7 @@
 #include "CostAndGradient.h"
 #include "Util.h"
 #include "neural_network/optimizer.h"
+#include "neural_network/batch_norm.h"
 
 class NeuralNetworkV2 final : public CostAndGradient {
     public:
@@ -28,7 +29,6 @@ class NeuralNetworkV2 final : public CostAndGradient {
 
     void initializeParametersHe();
     void initializeParametersDeep();
-    void initializeBatchNorm(size_t index);
 
     arma::mat predict(const arma::mat& X, double* cost = 0, bool ignoreFeatureScaling = false);
     double accuracy(double* cost = 0);
@@ -43,11 +43,6 @@ class NeuralNetworkV2 final : public CostAndGradient {
     void linear_backward(arma::mat dZ, const arma::mat& A_prev, const arma::mat& W, const arma::mat& b, size_t l);
     arma::mat Dropout_Backward(const arma::mat& A);
     
-    arma::mat batchNorm_forward(const arma::mat& Z, const arma::mat& gamma, const arma::mat& beta, arma::mat& running_mean, arma::mat& running_var);
-    arma::mat batchNorm_backward(arma::mat dZ, size_t l);
-    arma::mat avgBatchParam(std::string key);
-    void update_batchnorm_parameters(double learning_rate);
-
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override { UNUSED(nn_params); UNUSED(costOnly); return mRetVal; };
     void miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate,
                                                      double beta = 0.9, double beta1 = 0.9, double beta2 = 0.999,
@@ -65,11 +60,6 @@ private:
     std::stack<arma::mat> mCaches;
     std::stack<arma::mat> mDropOutCache;
 
-    typedef Util::UStringMatMap BatchNormItem;
-    std::vector<BatchNormItem> mBatchNorm;
-    BatchNormItem* mLastBNI;
-    std::stack<arma::mat> mBNCaches;
-
     double mKeepProb;
     
     // minibatch parameters
@@ -78,6 +68,7 @@ private:
     Optimizer mOptimizer;
     bool mInitializedFromFile;
     bool mBatchNormEnabled;
+    BatchNorm mBatchNorm;
 };
 
 #endif // __NEURAL_NETWORKV2_H__
