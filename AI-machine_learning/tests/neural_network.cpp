@@ -331,7 +331,7 @@ void nnv2_test1() {
     std::cerr << "dbg3\n";
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    nn.miniBatchGradientDescent(iteration,batch,alpha, NeuralNetworkV2::ADAM);
+    nn.miniBatchGradientDescent(iteration,batch,alpha);
     //nn.L_layer_model(X,yy,alpha,iteration,true);
     std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     std::cout << "\nTime difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;
@@ -352,7 +352,7 @@ void nnv2_test2() {
     y.load("TH_plus_BG_trainingset_result.bin");
 
     // I use only the first 3000 item for this test
-    const uint sampleCount = 8000;
+    const uint sampleCount = 80000;
     if(X.n_rows > sampleCount) {
         X = X.rows(0, sampleCount - 1);
         y = y.rows(0, sampleCount - 1);
@@ -418,8 +418,8 @@ void nnv2_test2() {
     //int batch = X.n_rows;
     int batch = 32;
     double keep_prob = 1.; // drop out
-    NeuralNetworkV2::Optimizer optimization = NeuralNetworkV2::MOMENTUM;
-    bool batchNorm = true;
+    Optimizer::Type optimization = Optimizer::Type::GD;
+    bool batchNorm = false;
     bool featureScaling = true;
     thetaSizes << input_layer_size << hidden_layer_size2 << num_labels; // input, hidden, output
     
@@ -435,10 +435,10 @@ void nnv2_test2() {
     std::cout << "Layer sizes: " << thetaSizes << "\n";
     std::cout << std::endl;
     
-    NeuralNetworkV2 nn(thetaSizes, X, yy, lambda, featureScaling, NeuralNetworkV2::TANH, NeuralNetworkV2::SIGMOID, keep_prob, batchNorm);
+    NeuralNetworkV2 nn(thetaSizes, X, yy, lambda, featureScaling, NeuralNetworkV2::TANH, NeuralNetworkV2::SIGMOID, keep_prob, batchNorm, optimization);
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    nn.miniBatchGradientDescent(iteration, batch, alpha, optimization);
+    nn.miniBatchGradientDescent(iteration, batch, alpha);
     //nn.L_layer_model(X,yy,alpha,iteration,true);
     std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     std::cout << "\nTime difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms " << std::endl;

@@ -14,14 +14,14 @@ static const double eps = 1e-8;
 
 NeuralNetworkV2::NeuralNetworkV2( const arma::umat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda,
                               bool featureScaling, NeuralNetworkV2::ActivationFunction hiddenAF, 
-                              NeuralNetworkV2::ActivationFunction outputAF, double keep_prob, bool batchNorm )
+                              NeuralNetworkV2::ActivationFunction outputAF, double keep_prob, bool batchNorm, Optimizer::Type optimizerType )
     : CostAndGradient(X, y, lambda)
     , mLayerSizes(layerSizes)
     , mHiddenLAF(hiddenAF)
     , mOuputLAF(outputAF)
     , mLastBNI(nullptr)
     , mKeepProb(keep_prob)
-    , mAdamCounter(0)
+    , mOptimizer(optimizerType)
     , mInitializedFromFile(false)
     , mBatchNormEnabled(batchNorm)
 {
@@ -33,6 +33,7 @@ NeuralNetworkV2::NeuralNetworkV2( const arma::umat& layerSizes, const arma::mat&
 NeuralNetworkV2::NeuralNetworkV2(std::string prefix)
     : CostAndGradient(arma::mat(), arma::mat(), 0)
     , mLastBNI(nullptr)
+    , mOptimizer(Optimizer::Type::GD)
     , mInitializedFromFile(true)
     , mBatchNormEnabled(false)
 {
@@ -71,14 +72,14 @@ arma::mat NeuralNetworkV2::softmax( arma::mat Z ) {
     // exps = np.exp(Z - np.max(Z))
     // A = exps / np.sum(exps, axis=1, keepdims=True)    
     CERR  << __FUNCTION__ << ": dbg1\n";
-    arma::mat exps = arma::exp(Util::broadcast_minus(Z,arma::max(Z)));
+    arma::mat exps = arma::exp(Util::minus(Z,arma::max(Z)));
     //arma::mat exps = arma::exp(Z-Z.max()));
     CERR  << __FUNCTION__ << ": dbg2\n";
-    exps = Util::broadcast_div(exps,arma::sum(exps, 1));
+    exps = Util::div(exps,arma::sum(exps, 1));
     CERR  << __FUNCTION__ << ": dbg3\n";
 
     //arma::mat exps = arma::exp(Z);
-    //exps = Util::broadcast_div(exps,arma::sum(exps, 1));
+    //exps = Util::div(exps,arma::sum(exps, 1));
     
     return exps;
 }
@@ -110,66 +111,6 @@ void NeuralNetworkV2::initializeParametersDeep() {
         mParameters["b" + std::to_string(i)] = arma::zeros(mLayerSizes(0,i),1);
         CERR  << __FUNCTION__ << ": W:" << size(mParameters["W" + std::to_string(i)]) << "\n";
         CERR  << __FUNCTION__ << ": b:" << size(mParameters["b" + std::to_string(i)]) << "\n";
-    }
-}
-
-// for momentum
-void NeuralNetworkV2::initializeVelocity() {
-
-    // Initializes the velocity as a python dictionary with:
-    //             - keys: "dW1", "db1", ..., "dWL", "dbL" 
-    //             - values: numpy arrays of zeros of the same shape as the corresponding gradients/parameters.
-    // Arguments:
-    // parameters -- python dictionary containing your parameters.
-    //                 parameters['W' + str(l)] = Wl
-    //                 parameters['b' + str(l)] = bl
-    // 
-    // Returns:
-    // v -- python dictionary containing the current velocity.
-    //                 v['dW' + str(l)] = velocity of dWl
-    //                 v['db' + str(l)] = velocity of dbl
-
-    
-    size_t L = mLayerSizes.n_cols - 1;
-    mVelocity.empty();
-    
-    // Initialize velocity
-    for( size_t l = 0; l <L; ++l ) {
-        std::string lp1 = std::to_string(l+1);
-        mVelocity["dW" + lp1] = arma::zeros(size(mParameters["W" + lp1]));
-        mVelocity["db" + lp1] = arma::zeros(size(mParameters["b" + lp1]));
-    }
-}
-
-void NeuralNetworkV2::initializeAdam() {
-    // Initializes v and s as two python dictionaries with:
-    //             - keys: "dW1", "db1", ..., "dWL", "dbL" 
-    //             - values: numpy arrays of zeros of the same shape as the corresponding gradients/parameters.
-    // 
-    // Arguments:
-    // parameters -- python dictionary containing your parameters.
-    //                 parameters["W" + str(l)] = Wl
-    //                 parameters["b" + str(l)] = bl
-    // 
-    // Returns: 
-    // v -- python dictionary that will contain the exponentially weighted average of the gradient.
-    //                 v["dW" + str(l)] = ...
-    //                 v["db" + str(l)] = ...
-    // s -- python dictionary that will contain the exponentially weighted average of the squared gradient.
-    //                 s["dW" + str(l)] = ...
-    //                 s["db" + str(l)] = ...
-
-
-    size_t L = mLayerSizes.n_cols - 1;
-    mVelocity.empty();
-    mAdamS.empty();
-    
-    for( size_t l = 0; l <L; ++l ) {
-        std::string lp1 = std::to_string(l+1);
-        mVelocity["dW" + lp1] = arma::zeros(size(mParameters["W" + lp1]));
-        mVelocity["db" + lp1] = arma::zeros(size(mParameters["b" + lp1]));
-        mAdamS["dW" + lp1]    = arma::zeros(size(mParameters["W" + lp1]));
-        mAdamS["db" + lp1]    = arma::zeros(size(mParameters["b" + lp1]));
     }
 }
 
@@ -264,13 +205,20 @@ def batchnorm_forward(X, gamma, beta):
 
     return out, cache, mu, var
 */
-
+/*
+    def batchnorm_forward(x, gamma, beta, eps):
+      mu = np.mean(x)
+      var = np.var(x)
+      xhat = (x - mu) / np.sqrt(var + eps)
+      y = gamma * xhat + beta
+      return y
+*/
     if(mLastBNI) {
 
         arma::mat mu = arma::mean(Z, 1);
         arma::mat var = arma::var(Z, 0, 1);
-        arma::mat Z_norm = Util::broadcast_div(Util::broadcast_minus(Z, mu), sqrt(var + eps));
-        arma::mat out = Util::broadcast_plus(Util::broadcast_mul(Z_norm, gamma), beta);
+        arma::mat Z_norm = Util::div(Util::minus(Z, mu), sqrt(var + eps));
+        arma::mat out = Util::plus(Util::mul(Z_norm, gamma), beta);
 
         CERR << __FUNCTION__ << ": var: " << size(var) << "\n";
         CERR << __FUNCTION__ << ": Z_norm: " << size(Z_norm) << "\n";
@@ -299,9 +247,9 @@ def batchnorm_forward(X, gamma, beta):
         CERR << __FUNCTION__ << " running_mean: " << size(running_mean) << "\n";
         CERR << __FUNCTION__ << " running_var: " << size(running_var) << "\n";
         CERR << __FUNCTION__ << " Z: " << size(Z) << "\n";
-        arma::mat Z_norm = Util::broadcast_div(Util::broadcast_minus(Z, running_mean), sqrt(running_var + eps));
+        arma::mat Z_norm = Util::div(Util::minus(Z, running_mean), sqrt(running_var + eps));
         CERR << __FUNCTION__ << " Z_norm: " << size(Z_norm) << "\n";
-        arma::mat out = Util::broadcast_plus(Util::broadcast_mul(Z_norm, gamma), beta);
+        arma::mat out = Util::plus(Util::mul(Z_norm, gamma), beta);
         CERR << __FUNCTION__ << " Done2\n";
         return out;
     }
@@ -355,32 +303,36 @@ def batchnorm_backward_alt(dout, cache):
     CERR << __FUNCTION__ << ": 0 l: " << l << "\n";
     CERR << __FUNCTION__ << ": 1 Z: " << size(Z) << "\n";
     CERR << __FUNCTION__ << ": 2 mu: " << size(mu) << "\n";
-    arma::mat Z_mu = Util::broadcast_minus(Z, mu);
+    arma::mat Z_mu = Util::minus(Z, mu);
     CERR << __FUNCTION__ << ": 3 Z_mu: " << size(Z_mu) << "\n";
     arma::mat std_inv = 1. / sqrt(var + eps);
     CERR << __FUNCTION__ << ": 4 std_inv: " << size(std_inv) << "\n";
     CERR << __FUNCTION__ << ": 5 gamma: " << size(gamma) << "\n";
     CERR << __FUNCTION__ << ": 6 dZ: " << size(dZ) << "\n";
-    arma::mat dZ_norm = Util::broadcast_mul(dZ, gamma);
+    arma::mat dZ_norm = Util::mul(dZ, gamma);
     CERR << __FUNCTION__ << ": 7 dZ_norm: " << size(dZ_norm) << "\n";
-    arma::mat dvar = Util::broadcast_mul(arma::sum(dZ_norm % Z_mu, 1) * -.5, arma::pow(std_inv, 3));
+    arma::mat dvar = Util::mul(arma::sum(dZ_norm % Z_mu, 1) * -.5, arma::pow(std_inv, 3));
     CERR << __FUNCTION__ << ": 8 dvar: " << size(dvar) << "\n";
-    arma::mat dmu = Util::broadcast_plus(Util::broadcast_mul(dvar, arma::mean(Z_mu * -2., 1)),
-                                         arma::sum(Util::broadcast_mul(dZ_norm, -std_inv), 1));
+    arma::mat dmu = Util::plus(Util::mul(dvar, arma::mean(Z_mu * -2., 1)),
+                                         arma::sum(Util::mul(dZ_norm, -std_inv), 1));
     CERR << __FUNCTION__ << ": 9 dmu: " << size(dmu) << "\n";
-    dZ = Util::broadcast_plus(Util::broadcast_mul(dZ_norm, std_inv) + (Util::broadcast_mul(Z_mu, dvar * 2.) / D), (dmu / D));
+    dZ = Util::plus(Util::mul(dZ_norm, std_inv) + (Util::mul(Z_mu, dvar * 2.) / D), (dmu / D));
 
-    CERR << __FUNCTION__ << ": 10 dZ: " << size(dZ) << "\n";
     arma::mat dgamma = arma::sum(dZ % Z_norm, 1);
     arma::mat dbeta = arma::sum(dZ, 1);
 
     std::string lstr = std::to_string(l);
-    CERR  << __FUNCTION__ << ": prev gamma" + lstr << " size: " << size((*mLastBNI)["gamma" + lstr]) << "\n";
-    CERR  << __FUNCTION__ << ": new gamma" + lstr << " size: " << size(dgamma) << "\n";
-
-    // CERR << __FUNCTION__ << ": gamma: " << dgamma << "\n";
-    // CERR << __FUNCTION__ << ": beta: " << dbeta << "\n";
-
+/*
+    using namespace Util;
+    //dx = (gamma*istd/N) * (N*dout - xhat*dgamma - dbeta)
+    CERR << __FUNCTION__ << ": 1 gamma: " << size(gamma) << "\n";
+    CERR << __FUNCTION__ << ": 2 var: " << size(var) << "\n";
+    CERR << __FUNCTION__ << ": 3 dZ: " << size(dZ) << "\n";
+    CERR << __FUNCTION__ << ": 4 Z_norm: " << size(Z_norm) << "\n";
+    CERR << __FUNCTION__ << ": 5 dgamma: " << size(dgamma) << "\n";
+    CERR << __FUNCTION__ << ": 6 dbeta: " << size(dbeta) << "\n";
+    dZ = mul(gamma % arma::sqrt(var + eps) / D, minus(dZ * D - mul(Z_norm, dgamma), dbeta));
+*/
     (*mLastBNI)["dgamma" + lstr] = dgamma;
     (*mLastBNI)["dbeta" + lstr] = dbeta;
 
@@ -520,7 +472,7 @@ arma::mat NeuralNetworkV2::linear_forward(const arma::mat& A, const arma::mat& W
     if(mBatchNormEnabled) {
         Z = W*A;
     } else {
-        Z = Util::broadcast_plus(W*A, b);
+        Z = Util::plus(W*A, b);
     }
     CERR  << __FUNCTION__ << ": dbg2\n";
     //assert(Z.shape == (W.shape[0], A.shape[1]))
@@ -734,126 +686,6 @@ void NeuralNetworkV2::linear_backward(arma::mat dZ, const arma::mat& A_prev, con
     //return dA_prev, dW, db;
 }
 
-// Update parameters using gradient descent
-// 
-// Arguments:
-// parameters -- python dictionary containing your parameters 
-// grads -- python dictionary containing your gradients, output of L_model_backward
-// 
-// Returns:
-// parameters -- python dictionary containing your updated parameters 
-//               parameters["W" + str(l)] = ... 
-//               parameters["b" + str(l)] = ...
-void NeuralNetworkV2::update_parameters(double learning_rate) {
-    size_t L = mParameters.size()/2; // 2 # number of layers in the neural network
-
-    // Update rule for each parameter. Use a for loop.
-    //for l in range(L):
-    for( size_t l = 0; l < L; ++l ) {
-        std::string lp1 = std::to_string(l+1);
-        CERR  << __FUNCTION__ << ":" << " W" + lp1 << ":" << size(mParameters["W" + lp1])<< "\n";
-        CERR  << __FUNCTION__ << ":" << " b" + lp1 << ":" << size(mParameters["b" + lp1])<< "\n";
-        CERR  << __FUNCTION__ << ":" << " dW" + lp1 << ":" << size(mGrads["dW" + lp1])<< "\n";
-        CERR  << __FUNCTION__ << ":" << " db" + lp1 << ":" << size(mGrads["db" + lp1])<< "\n";
-        mParameters["W" + lp1] = mParameters["W" + lp1] - learning_rate * mGrads["dW" + lp1];
-        mParameters["b" + lp1] = mParameters["b" + lp1] - learning_rate * mGrads["db" + lp1];
-    }
-}
-
-void NeuralNetworkV2::update_parameters_with_momentum(double beta, double learning_rate){
-    // Arguments:
-    // parameters -- python dictionary containing your parameters:
-    //                 parameters['W' + str(l)] = Wl
-    //                 parameters['b' + str(l)] = bl
-    // grads -- python dictionary containing your gradients for each parameters:
-    //                 grads['dW' + str(l)] = dWl
-    //                 grads['db' + str(l)] = dbl
-    // v -- python dictionary containing the current velocity:
-    //                 v['dW' + str(l)] = ...
-    //                 v['db' + str(l)] = ...
-    // beta -- the momentum hyperparameter, scalar
-    // learning_rate -- the learning rate, scalar
-    // 
-    // Returns:
-    // parameters -- python dictionary containing your updated parameters 
-    // v -- python dictionary containing your updated velocities
-
-    size_t L = mParameters.size()/2;
-    
-    // Momentum update for each parameter
-    for( size_t l = 0; l < L; ++l ) {
-        std::string lp1 = std::to_string(l+1);
-        // compute velocities
-        mVelocity["dW" +  lp1] = beta * mVelocity["dW" +  lp1] + (1.-beta) * mGrads["dW" +  lp1];
-        mVelocity["db" +  lp1] = beta * mVelocity["db" +  lp1] + (1.-beta) * mGrads["db" +  lp1];
-        // update parameters
-        mParameters["W" +  lp1] = mParameters["W" +  lp1] - learning_rate * mVelocity["dW" +  lp1];
-        mParameters["b" +  lp1] = mParameters["b" +  lp1] - learning_rate * mVelocity["db" +  lp1];
-    }
-}
-
-void NeuralNetworkV2::update_parameters_with_adam(double t, double learning_rate,
-                                double beta1, double beta2,  double epsilon) {
-    //Update parameters using Adam
-    //
-    //Arguments:
-    //parameters -- python dictionary containing your parameters:
-    //                parameters['W' + str(l)] = Wl
-    //                parameters['b' + str(l)] = bl
-    //grads -- python dictionary containing your gradients for each parameters:
-    //                grads['dW' + str(l)] = dWl
-    //                grads['db' + str(l)] = dbl
-    //v -- Adam variable, moving average of the first gradient, python dictionary
-    //s -- Adam variable, moving average of the squared gradient, python dictionary
-    //learning_rate -- the learning rate, scalar.
-    //beta1 -- Exponential decay hyperparameter for the first moment estimates 
-    //beta2 -- Exponential decay hyperparameter for the second moment estimates 
-    //epsilon -- hyperparameter preventing division by zero in Adam updates
-
-    //Returns:
-    //parameters -- python dictionary containing your updated parameters 
-    //v -- Adam variable, moving average of the first gradient, python dictionary
-    //s -- Adam variable, moving average of the squared gradient, python dictionary
-
-    CERR  << __FUNCTION__ << " dbg1\n";
-    
-    size_t L = mParameters.size()/2;
-    arma::mat v_corrected_dW;
-    arma::mat v_corrected_db;
-    arma::mat s_corrected_dW;
-    arma::mat s_corrected_db;
-    
-    // Perform Adam update on all parameters
-    for( size_t l = 0; l < L; ++l ) {
-        std::string lp1 = std::to_string(l+1);
-        CERR  << __FUNCTION__ << " dbg2\n";
-        // Moving average of the gradients. Inputs: "v, grads, beta1". Output: "v".
-        mVelocity["dW" + lp1] = beta1 * mVelocity["dW" + lp1] + (1.-beta1) * mGrads["dW" + lp1];
-        CERR  << __FUNCTION__ << " dbg3\n";
-        mVelocity["db" + lp1] = beta1 * mVelocity["db" + lp1] + (1.-beta1) * mGrads["db" + lp1];
-        CERR  << __FUNCTION__ << " dbg4\n";
-        
-        // Compute bias-corrected first moment estimate. Inputs: "v, beta1, t". Output: "v_corrected".
-        v_corrected_dW = mVelocity["dW" + lp1]/(1.-pow(beta1,t));
-        v_corrected_db = mVelocity["db" + lp1]/(1.-pow(beta1,t));
-        CERR  << __FUNCTION__ << " dbg5\n";
-        // Moving average of the squared gradients. Inputs: "s, grads, beta2". Output: "s".
-        mAdamS["dW" + lp1] = beta2 * mAdamS["dW" + lp1] + (1.-beta2) * arma::pow(mGrads["dW" + lp1],2.);
-        mAdamS["db" + lp1] = beta2 * mAdamS["db" + lp1] + (1.-beta2) * arma::pow(mGrads["db" + lp1],2.);
-        CERR  << __FUNCTION__ << " dbg6\n";
-        
-        // Compute bias-corrected second raw moment estimate. Inputs: "s, beta2, t". Output: "s_corrected".
-        s_corrected_dW = mAdamS["dW" + lp1]/(1.-pow(beta2,t));
-        s_corrected_db = mAdamS["db" + lp1]/(1.-pow(beta2,t));
-        CERR  << __FUNCTION__ << " dbg7\n";
-        
-        // Update parameters. Inputs: "parameters, learning_rate, v_corrected, s_corrected, epsilon". Output: "parameters".
-        mParameters["W" + lp1] = mParameters["W" + lp1] - learning_rate * v_corrected_dW / arma::sqrt(s_corrected_dW + epsilon);
-        mParameters["b" + lp1] = mParameters["b" + lp1] - learning_rate * v_corrected_db / arma::sqrt(s_corrected_db + epsilon);
-        CERR  << __FUNCTION__ << " dbg8\n";
-    }
-}
-
 void NeuralNetworkV2::update_batchnorm_parameters(double learning_rate) {
     for(size_t i = 0; i < mBatchNorm.size(); ++i) {
         for( size_t l = 0; l < mLayerSizes.n_cols - 1; ++l ) {
@@ -864,27 +696,15 @@ void NeuralNetworkV2::update_batchnorm_parameters(double learning_rate) {
 }
 
 void NeuralNetworkV2::miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate,
-                                                NeuralNetworkV2::Optimizer optimizer, double beta, double beta1, double beta2,
+                                                double beta, double beta1, double beta2,
                                                 double epsilon ) {
     if(!mInitializedFromFile) {
-        mOptimizer = optimizer;
-        mBeta = beta;
-        mBeta1 = beta1;
-        mBeta2 = beta2;
-        mEpsilon = epsilon;
         mBatchSize = batchSize;
         mLearningRate = learning_rate;
-        mAdamCounter = 0;
 
         initializeParametersHe();
 
-        // Initialize the optimizer
-        if( optimizer == GD )
-            ; // no initialization required for gradient descent
-        else if( optimizer == MOMENTUM )
-            initializeVelocity();
-        else if( optimizer == ADAM )
-            initializeAdam();
+        mOptimizer.initialize(mLayerSizes.n_cols - 1, mParameters);
     }
 
     arma::mat dataset = arma::mat(1,mY.n_cols);
@@ -928,14 +748,7 @@ void NeuralNetworkV2::miniBatchGradientDescent( long long epoch, size_t batchSiz
             L_model_backward(AL, Y);
             CERR  << __FUNCTION__ << " dbg4\n";
             // Update parameters.
-            if( optimizer == GD)
-                update_parameters(learning_rate);
-            else if( optimizer == MOMENTUM)
-                update_parameters_with_momentum(beta,learning_rate);
-            else if( optimizer == ADAM ) {
-                ++mAdamCounter;
-                update_parameters_with_adam(mAdamCounter, learning_rate, beta1, beta2,  epsilon);
-            }
+            mOptimizer.updateParameters(mParameters, mGrads, learning_rate, beta, beta1, beta2,  epsilon);
 
             if(mBatchNormEnabled) {
                 update_batchnorm_parameters(learning_rate);
@@ -965,24 +778,17 @@ bool NeuralNetworkV2::saveState(std::string prefix) {
     Util::saveMat(output, mFCData);
     Util::saveStringUMap(output, mParameters);
     Util::saveStringUMap(output, mGrads);
-    Util::saveStringUMap(output, mVelocity);
-    Util::saveStringUMap(output, mAdamS);
     Util::saveVectorStringUMap(output, mBatchNorm);
 
     output.write((const char*)&mHiddenLAF,    sizeof(mHiddenLAF));
     output.write((const char*)&mOuputLAF,     sizeof(mOuputLAF));
     output.write((const char*)&mKeepProb,     sizeof(mKeepProb));
     output.write((const char*)&mLambda,       sizeof(mLambda));
-    output.write((const char*)&mAdamCounter,  sizeof(mAdamCounter));
     output.write((const char*)&mBatchSize,    sizeof(mBatchSize));
     output.write((const char*)&mLearningRate, sizeof(mLearningRate));
-    output.write((const char*)&mBeta,         sizeof(mBeta));
-    output.write((const char*)&mBeta1,        sizeof(mBeta1));
-    output.write((const char*)&mBeta2,        sizeof(mBeta2));
-    output.write((const char*)&mEpsilon,      sizeof(mEpsilon));
-    output.write((const char*)&mOptimizer,    sizeof(mOptimizer));
     output.write((const char*)&mBatchNormEnabled, sizeof(mBatchNormEnabled));
 
+    mOptimizer.saveState(output);
     return true;
 }
 
@@ -994,23 +800,16 @@ bool NeuralNetworkV2::loadState(std::string prefix) {
     mFCData = Util::loadMat(input);
     Util::loadStringUMap(input, mParameters);
     Util::loadStringUMap(input, mGrads);
-    Util::loadStringUMap(input, mVelocity);
-    Util::loadStringUMap(input, mAdamS);
     Util::loadVectorStringUMap(input, mBatchNorm);
 
     input.read((char*)&mHiddenLAF,    sizeof(mHiddenLAF));
     input.read((char*)&mOuputLAF,     sizeof(mOuputLAF));
     input.read((char*)&mKeepProb,     sizeof(mKeepProb));
     input.read((char*)&mLambda,       sizeof(mLambda));
-    input.read((char*)&mAdamCounter,  sizeof(mAdamCounter));
     input.read((char*)&mBatchSize,    sizeof(mBatchSize));
     input.read((char*)&mLearningRate, sizeof(mLearningRate));
-    input.read((char*)&mBeta,         sizeof(mBeta));
-    input.read((char*)&mBeta1,        sizeof(mBeta1));
-    input.read((char*)&mBeta2,        sizeof(mBeta2));
-    input.read((char*)&mEpsilon,      sizeof(mEpsilon));
-    input.read((char*)&mOptimizer,    sizeof(mOptimizer));
     input.read((char*)&mBatchNormEnabled, sizeof(mBatchNormEnabled));
+    mOptimizer.loadState(input);
     return true;
 }
 
@@ -1019,7 +818,8 @@ void NeuralNetworkV2::continueMinibatch(long long epoch) {
     double acc = accuracy(&cost);
     std::cout << "Before the first iteration: Accuracy: " << acc << "%; " << cost << "\n";
     if(acc != 100. && !std::isnan(cost)) {
-        miniBatchGradientDescent(epoch, mBatchSize, mLearningRate,mOptimizer, mBeta, mBeta1, mBeta2, mEpsilon);
+        miniBatchGradientDescent(epoch, mBatchSize, mLearningRate, mOptimizer.beta(), mOptimizer.beta1(),
+                                 mOptimizer.beta2(), mOptimizer.epsilon());
     }
 }
 

@@ -12,8 +12,10 @@ TARGET = MachineLearning
 TEMPLATE = lib
 CONFIG += shared
 
-SOURCES += linear_regression.cpp logistic_regression.cpp fmincg.cpp neural_network.cpp CostAndGradient.cpp Util.cpp qcustomplot.cpp logistic_regression_v2.cpp anomaly_detection.cpp
-HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h CostAndGradient.h Util.h  qcustomplot.h logistic_regression_v2.h  anomaly_detection.h
+SOURCES += linear_regression.cpp logistic_regression.cpp fmincg.cpp neural_network.cpp CostAndGradient.cpp Util.cpp qcustomplot.cpp logistic_regression_v2.cpp anomaly_detection.cpp \
+    neural_network/optimizer.cpp
+HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h CostAndGradient.h Util.h  qcustomplot.h logistic_regression_v2.h  anomaly_detection.h \
+    neural_network/optimizer.h
 
 SOURCES += kmean.cpp neural_networkv2.cpp
 HEADERS  += kmean.h neural_networkv2.h

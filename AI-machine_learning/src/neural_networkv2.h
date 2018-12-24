@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include "CostAndGradient.h"
 #include "Util.h"
+#include "neural_network/optimizer.h"
 
 class NeuralNetworkV2 final : public CostAndGradient {
     public:
@@ -19,23 +20,14 @@ class NeuralNetworkV2 final : public CostAndGradient {
         SOFTMAX
     };
     
-    enum Optimizer {
-        GD,
-        MOMENTUM,
-        ADAM
-    };
-
-
     NeuralNetworkV2(const arma::umat& layerSizes, const arma::mat& X, const arma::mat& y, double lambda,
                     bool featureScaling = false, ActivationFunction hiddenAF = SIGMOID, 
-                    ActivationFunction outputAF = SIGMOID, double keep_prob = 1., bool batchNorm = false );
+                    ActivationFunction outputAF = SIGMOID, double keep_prob = 1., bool batchNorm = false, Optimizer::Type optimizerType = Optimizer::Type::GD );
 
     NeuralNetworkV2(std::string prefix);
 
     void initializeParametersHe();
     void initializeParametersDeep();
-    void initializeVelocity();
-    void initializeAdam();
     void initializeBatchNorm(size_t index);
 
     arma::mat predict(const arma::mat& X, double* cost = 0, bool ignoreFeatureScaling = false);
@@ -50,10 +42,6 @@ class NeuralNetworkV2 final : public CostAndGradient {
     void linear_activation_backward(const arma::mat& dA, NeuralNetworkV2::ActivationFunction activation, size_t l, const arma::mat& Y);
     void linear_backward(arma::mat dZ, const arma::mat& A_prev, const arma::mat& W, const arma::mat& b, size_t l);
     arma::mat Dropout_Backward(const arma::mat& A);
-    void update_parameters(double learning_rate);
-    void update_parameters_with_momentum(double beta, double learning_rate);
-    void update_parameters_with_adam(double t, double learning_rate = 0.01,
-                                double beta1 = 0.9, double beta2 = 0.999,  double epsilon = 1e-8);
     
     arma::mat sigmoid( const arma::mat& Z );
     arma::mat tanh( const arma::mat& Z );
@@ -68,7 +56,7 @@ class NeuralNetworkV2 final : public CostAndGradient {
 
     RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override { UNUSED(nn_params); UNUSED(costOnly); return mRetVal; };
     void miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate,
-                                                     Optimizer optimizer = GD, double beta = 0.9, double beta1 = 0.9, double beta2 = 0.999,
+                                                     double beta = 0.9, double beta1 = 0.9, double beta2 = 0.999,
                                                      double epsilon = 1e-8 );
     bool saveState(std::string prefix);
     bool loadState(std::string prefix);
@@ -82,8 +70,6 @@ private:
     Util::UStringMatMap mGrads;
     std::stack<arma::mat> mCaches;
     std::stack<arma::mat> mDropOutCache;
-    Util::UStringMatMap mVelocity;
-    Util::UStringMatMap mAdamS;
 
     typedef Util::UStringMatMap BatchNormItem;
     std::vector<BatchNormItem> mBatchNorm;
@@ -93,14 +79,9 @@ private:
     double mKeepProb;
     
     // minibatch parameters
-    int mAdamCounter;
     size_t mBatchSize;
     double mLearningRate;
     Optimizer mOptimizer;
-    double mBeta;
-    double mBeta1;
-    double mBeta2; 
-    double mEpsilon;
     bool mInitializedFromFile;
     bool mBatchNormEnabled;
 };

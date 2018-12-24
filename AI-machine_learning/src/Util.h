@@ -21,10 +21,12 @@ namespace Util {
                                                        const double percentage = 0.7);
     Q_DECL_EXPORT arma::mat mapFeature( const arma::mat& X1, const arma::mat& X2, int degree );
     Q_DECL_EXPORT int getLabelCount( const arma::mat& y );
-    Q_DECL_EXPORT arma::mat broadcast_plus( arma::mat x, arma::mat y );
-    Q_DECL_EXPORT arma::mat broadcast_minus( arma::mat x, arma::mat y );
-    Q_DECL_EXPORT arma::mat broadcast_div( arma::mat x, arma::mat y );
-    Q_DECL_EXPORT arma::mat broadcast_mul( arma::mat x, arma::mat y );
+
+// broadcast functions
+    Q_DECL_EXPORT arma::mat plus( arma::mat x, arma::mat y );
+    Q_DECL_EXPORT arma::mat minus( arma::mat x, arma::mat y );
+    Q_DECL_EXPORT arma::mat div( arma::mat x, arma::mat y );
+    Q_DECL_EXPORT arma::mat mul( arma::mat x, arma::mat y );
     
     Q_DECL_EXPORT bool saveMat(std::ofstream& output, const arma::mat& m);
     Q_DECL_EXPORT bool saveMat(std::ofstream& output, const arma::umat& m);

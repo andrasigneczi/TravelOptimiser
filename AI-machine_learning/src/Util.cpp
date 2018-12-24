@@ -155,7 +155,7 @@ int getLabelCount( const arma::mat& y ) {
     return labels.size();
 }
 
-arma::mat broadcast_plus( arma::mat x, arma::mat y ) {
+arma::mat plus( arma::mat x, arma::mat y ) {
     if( x.n_cols == y.n_cols && y.n_rows == 1 ) {
         for( size_t i = 0; i < x.n_rows; ++i ){
             x.row(i) += y.row(0);
@@ -182,7 +182,7 @@ arma::mat broadcast_plus( arma::mat x, arma::mat y ) {
     return x;
 }
 
-arma::mat broadcast_minus( arma::mat x, arma::mat y ) {
+arma::mat minus( arma::mat x, arma::mat y ) {
     if( x.n_cols == y.n_cols && y.n_rows == 1 ) {
         for( size_t i = 0; i < x.n_rows; ++i ){
             x.row(i) -= y.row(0);
@@ -197,7 +197,7 @@ arma::mat broadcast_minus( arma::mat x, arma::mat y ) {
     return x;
 }
 
-arma::mat broadcast_div( arma::mat x, arma::mat y ) {
+arma::mat div( arma::mat x, arma::mat y ) {
     if( x.n_cols == y.n_cols && y.n_rows == 1 ) {
         for( size_t i = 0; i < x.n_rows; ++i ){
             x.row(i) /= y.row(0);
@@ -212,7 +212,7 @@ arma::mat broadcast_div( arma::mat x, arma::mat y ) {
     return x;
 }
 
-arma::mat broadcast_mul( arma::mat x, arma::mat y ) {
+arma::mat mul( arma::mat x, arma::mat y ) {
     if( x.n_cols == y.n_cols && y.n_rows == 1 ) {
         for( size_t i = 0; i < x.n_rows; ++i ){
             x.row(i) %= y.row(0);
