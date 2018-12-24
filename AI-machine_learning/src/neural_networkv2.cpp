@@ -1,4 +1,8 @@
 #include "neural_networkv2.h"
+#include "neural_network/activation.h"
+
+using namespace Activation;
+
 class MyCerr {
 public:
     template<class T>
@@ -38,50 +42,6 @@ NeuralNetworkV2::NeuralNetworkV2(std::string prefix)
     , mBatchNormEnabled(false)
 {
     loadState(prefix);
-}
-
-arma::mat NeuralNetworkV2::sigmoid( const arma::mat& Z ) {
-    return 1.0/(1.0+arma::exp(-Z));
-}
-
-arma::mat NeuralNetworkV2::tanh( const arma::mat& Z ) {
-    const arma::mat pz = arma::exp(Z);
-    const arma::mat nz = arma::exp(-Z);
-    return (pz - nz)/(pz + nz);
-}
-
-arma::mat NeuralNetworkV2::relu( arma::mat Z ) {
-    // A = np.maximum(0,Z)
-    Z.elem( arma::find(Z < 0.0) ).zeros();
-    return Z;
-}
-
-arma::mat NeuralNetworkV2::leaky_relu( arma::mat Z ) {
-    //const arma::mat Z2 = Z * 0.01;
-    //arma::uvec u = arma::find(Z < Z2);
-    //for( size_t i = 0; i < u.size(); ++i ) {
-    //    if( Z2[u[i]] > Z[u[i]] ) {
-    //        Z[u[i]] = Z2[u[i]];
-    //    }
-    //}
-    Z.elem( arma::find(Z <= 0.0) ) *= 0.01;
-    return Z;
-}
-
-arma::mat NeuralNetworkV2::softmax( arma::mat Z ) {
-    // exps = np.exp(Z - np.max(Z))
-    // A = exps / np.sum(exps, axis=1, keepdims=True)    
-    CERR  << __FUNCTION__ << ": dbg1\n";
-    arma::mat exps = arma::exp(Util::minus(Z,arma::max(Z)));
-    //arma::mat exps = arma::exp(Z-Z.max()));
-    CERR  << __FUNCTION__ << ": dbg2\n";
-    exps = Util::div(exps,arma::sum(exps, 1));
-    CERR  << __FUNCTION__ << ": dbg3\n";
-
-    //arma::mat exps = arma::exp(Z);
-    //exps = Util::div(exps,arma::sum(exps, 1));
-    
-    return exps;
 }
 
 void NeuralNetworkV2::initializeParametersHe() {
@@ -384,8 +344,7 @@ arma::mat NeuralNetworkV2::linear_activation_forward(const arma::mat& A_prev, co
 
     Z = linear_forward(A_prev, W, b);
 
-    if(mBatchNormEnabled
-            ) {
+    if(mBatchNormEnabled) {
         CERR << __FUNCTION__ << ": Z.size(): " << size(Z) << "\n";
         std::string idx = std::to_string(l - 1);
         CERR << __FUNCTION__ << ": l: " << idx << "\n";
@@ -602,46 +561,28 @@ void NeuralNetworkV2::linear_activation_backward(const arma::mat& dA, NeuralNetw
 
     if( activation == RELU ) {
         //dZ = np.multiply(dA, np.int64(activation_cache > 0))
-        gZ.elem( arma::find(gZ > 0.0) ).ones();
-        gZ.elem( arma::find(gZ <= 0.0) ).zeros();
-        dZ = dA % gZ;
+        dZ = dA % relu_backward(gZ);
         CERR  << "relu dZ:" << size(dZ) << "\n";
         /*dA_prev, dW, db = */linear_backward(dZ, A_prev, W, b, l);
     } else if( activation == SIGMOID ) {
         //dZ = sigmoid_backward(dA, activation_cache) // dZ=dA*g'(Z)
-        dZ = dA % gZ % (1. - gZ);
+        dZ = dA % sigmoid_backward(gZ);
         CERR  << "sigmoid dZ:" << size(dZ) << "\n";
         /*dA_prev, dW, db = */linear_backward(dZ, A_prev, W, b, l);
     } else if( activation == TANH ) {
         //dZ = dA % (1. - arma::square(gZ));
-        dZ = dA % (1. - arma::pow(gZ,2));
+        dZ = dA % tanh_backward(gZ);
         CERR  << "tanh dZ:" << size(dZ) << "\n";
         /*dA_prev, dW, db = */linear_backward(dZ, A_prev, W, b, l);
     } else if( activation == SOFTMAX ) {
 
-        size_t m = Y.n_cols;
-        //gZ[Y.argmax(axis=0),range(m)] -= 1
-        CERR  << __FUNCTION__ << " softmax dbg1\n";
-        arma::mat maxS = arma::conv_to<arma::mat>::from(arma::index_max(Y,0));
-        arma::mat dZ = gZ;
-        CERR  << __FUNCTION__ << " softmax dbg2\n";
-        CERR  << "maxS:" << size(maxS) << "\n";
-        for(size_t i = 0; i < m; ++i){
-            //gZ[maxS(0,i), i] -= 1;
-            dZ(maxS(0,i),i) -= 1;
-        }
-        CERR  << __FUNCTION__ << " softmax dbg3\n";
-        dZ = dZ/(double)m;
-
         // coursera: dZ = Yhat - y
         //dZ = AL - Y;
-        
+        arma::mat dZ = softmax_backward(Y, gZ);
         CERR  << "softmax dZ:" << size(dZ) << "\n";
         linear_backward(dZ, A_prev, W, b, l);
     } else if( activation == LRELU ) {
-        gZ.elem( arma::find(gZ > 0.0) ).fill(1.);
-        gZ.elem( arma::find(gZ < 0.0) ).fill(0.01);
-        dZ = dA % gZ;
+        dZ = dA % leaky_relu_backward(gZ);
         linear_backward(dZ, A_prev, W, b, l);
     }
     
@@ -661,8 +602,7 @@ void NeuralNetworkV2::linear_activation_backward(const arma::mat& dA, NeuralNetw
 void NeuralNetworkV2::linear_backward(arma::mat dZ, const arma::mat& A_prev, const arma::mat& W, const arma::mat& b, size_t l) {
     size_t m = A_prev.n_cols;
 
-    if(mLastBNI && mBatchNormEnabled
-            ) {
+    if(mLastBNI && mBatchNormEnabled) {
         dZ = batchNorm_backward(dZ, l);
     }
 

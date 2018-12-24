@@ -43,12 +43,6 @@ class NeuralNetworkV2 final : public CostAndGradient {
     void linear_backward(arma::mat dZ, const arma::mat& A_prev, const arma::mat& W, const arma::mat& b, size_t l);
     arma::mat Dropout_Backward(const arma::mat& A);
     
-    arma::mat sigmoid( const arma::mat& Z );
-    arma::mat tanh( const arma::mat& Z );
-    arma::mat relu( arma::mat Z );
-    arma::mat leaky_relu( arma::mat Z );
-    arma::mat softmax( arma::mat Z );
-
     arma::mat batchNorm_forward(const arma::mat& Z, const arma::mat& gamma, const arma::mat& beta, arma::mat& running_mean, arma::mat& running_var);
     arma::mat batchNorm_backward(arma::mat dZ, size_t l);
     arma::mat avgBatchParam(std::string key);

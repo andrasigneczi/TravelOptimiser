@@ -352,7 +352,7 @@ void nnv2_test2() {
     y.load("TH_plus_BG_trainingset_result.bin");
 
     // I use only the first 3000 item for this test
-    const uint sampleCount = 80000;
+    const uint sampleCount = 8000;
     if(X.n_rows > sampleCount) {
         X = X.rows(0, sampleCount - 1);
         y = y.rows(0, sampleCount - 1);
@@ -410,7 +410,7 @@ void nnv2_test2() {
     
     arma::umat thetaSizes;
     int input_layer_size  = X.n_rows;
-    int hidden_layer_size2 = 50;
+    int hidden_layer_size2 = 80;
     double lambda = 0.00001; //0.5; // reguralization
     int iteration = 80;
     //double alpha = 0.3;
@@ -418,8 +418,8 @@ void nnv2_test2() {
     //int batch = X.n_rows;
     int batch = 32;
     double keep_prob = 1.; // drop out
-    Optimizer::Type optimization = Optimizer::Type::GD;
-    bool batchNorm = false;
+    Optimizer::Type optimization = Optimizer::Type::MOMENTUM;
+    bool batchNorm = true;
     bool featureScaling = true;
     thetaSizes << input_layer_size << hidden_layer_size2 << num_labels; // input, hidden, output
     
@@ -435,7 +435,7 @@ void nnv2_test2() {
     std::cout << "Layer sizes: " << thetaSizes << "\n";
     std::cout << std::endl;
     
-    NeuralNetworkV2 nn(thetaSizes, X, yy, lambda, featureScaling, NeuralNetworkV2::TANH, NeuralNetworkV2::SIGMOID, keep_prob, batchNorm, optimization);
+    NeuralNetworkV2 nn(thetaSizes, X, yy, lambda, featureScaling, NeuralNetworkV2::RELU, NeuralNetworkV2::SIGMOID, keep_prob, batchNorm, optimization);
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     nn.miniBatchGradientDescent(iteration, batch, alpha);
