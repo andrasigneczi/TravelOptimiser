@@ -15,11 +15,16 @@ CONFIG += shared
 SOURCES += linear_regression.cpp logistic_regression.cpp fmincg.cpp neural_network.cpp CostAndGradient.cpp Util.cpp qcustomplot.cpp logistic_regression_v2.cpp anomaly_detection.cpp \
     neural_network/optimizer.cpp \
     neural_network/activation.cpp \
-    neural_network/batch_norm.cpp
+    neural_network/batch_norm.cpp \
+    convnet.cpp \
+    convnet/conv_layer.cpp
 HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h CostAndGradient.h Util.h  qcustomplot.h logistic_regression_v2.h  anomaly_detection.h \
     neural_network/optimizer.h \
     neural_network/activation.h \
-    neural_network/batch_norm.h
+    neural_network/batch_norm.h \
+    convnet.h \
+    convnet/conv_layer.h \
+    convnet/forward_backward_if.h
 
 SOURCES += kmean.cpp neural_networkv2.cpp
 HEADERS  += kmean.h neural_networkv2.h
