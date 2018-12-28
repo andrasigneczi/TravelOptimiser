@@ -368,4 +368,26 @@ namespace arma {
         return p;
     }
 #endif // ARMA_VERSION_MAJOR == 6
+
+    std::vector<arma::cube> randn(int a, int b, int c, int d) {
+        return std::vector<arma::cube>(a, arma::randn(b, c, d));
+    }
+
+    std::vector<arma::cube> randu(int a, int b, int c, int d) {
+        return std::vector<arma::cube>(a, arma::randu(b, c, d));
+    }
+
 } // namespace arma
+
+std::string size(const std::vector<arma::cube>& c) {
+    return std::to_string(c.size()) + "x" + std::to_string(c[0].n_rows)
+            + "x" + std::to_string(c[0].n_cols) + "x" +
+            std::to_string(c[0].n_slices);
+}
+
+std::ostream& operator<<(std::ostream& o, std::vector<arma::cube>& c4) {
+    for(arma::cube& c : c4) {
+        o << c << "\n";
+    }
+    return o;
+}

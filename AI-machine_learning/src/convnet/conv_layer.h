@@ -21,8 +21,9 @@
 
 class ConvLayer : public ForwardBackwardIF
 {
+    friend class ConvLayerTest;
 public:
-    ConvLayer(int pad, int stride);
+    ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int stride);
     ConvLayer(std::string prefix);
 
     std::vector<arma::cube> forward(std::vector<arma::cube> A_prev) override;
@@ -33,7 +34,8 @@ public:
 
 private:
     std::vector<arma::cube> zeroPad(const std::vector<arma::cube>& A_prev);
-    double conv_single_step(arma::cube a_slice_prev, arma::cube W, arma::cube b);
+    double convSingleStep(arma::cube a_slice_prev, arma::cube W, arma::cube b);
+    arma::cube copyBySlice(const std::vector<arma::cube>& W, size_t s);
 
     int mPad;
     int mStride;

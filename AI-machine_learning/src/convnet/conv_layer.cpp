@@ -1,6 +1,7 @@
 #include "conv_layer.h"
+#include "Util.h"
 
-ConvLayer::ConvLayer(int pad, int stride)
+ConvLayer::ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int stride)
     : mPad(pad)
     , mStride(stride)
 {
@@ -18,8 +19,13 @@ ConvLayer::ConvLayer(int pad, int stride)
     // self.kernel = np.random.uniform(-f, f + epsilon, kernel_size)
     // self.bias = np.random.uniform(-f, f + epsilon, kernel_size[0])
 
-    // arma::randu(kernel_size)
-
+    // -0.5x = -f
+    // x = 2f
+    // (a - 0.5) * 2f
+    for(int i = 0; i < f_H; ++i) {
+        mW.push_back(arma::randu(f_W, n_C_prev, n_C));
+    }
+    mB.push_back(arma::randu(1, 1, n_C));
 }
 
 ConvLayer::ConvLayer(std::string prefix)
@@ -36,11 +42,20 @@ std::vector<arma::cube> ConvLayer::zeroPad(const std::vector<arma::cube>& A_prev
     return retV;
 }
 
-double ConvLayer::conv_single_step(arma::cube a_slice_prev, arma::cube W, arma::cube b) {
+double ConvLayer::convSingleStep(arma::cube a_slice_prev, arma::cube W, arma::cube b) {
     arma::cube s = a_slice_prev % W;
     double Z = arma::accu(s);
     Z += arma::accu(b);
     return Z;
+}
+
+arma::cube ConvLayer::copyBySlice(const std::vector<arma::cube>& W, size_t s) {
+    // W[:,:,:,s]
+    arma::cube retV(W.size(), W[0].n_rows, W[0].n_cols);
+    for(size_t i = 0; i < W.size(); ++i) {
+        retV(arma::span(i),arma::span::all, arma::span::all) = W[i].slice(s);
+    }
+    return retV;
 }
 
 /*
@@ -67,8 +82,10 @@ std::vector<arma::cube> ConvLayer::forward(std::vector<arma::cube> A_prev) {
     // Initialize the output volume Z with zeros.
     std::vector<arma::cube> Z(m, arma::zeros(n_H, n_W, n_C));
 
+    std::cerr << __FUNCTION__ << ": dbg1\n";
     // Create A_prev_pad by padding A_prev
     std::vector<arma::cube> A_prev_pad = zeroPad(A_prev);
+    std::cerr << __FUNCTION__ << ": dbg2\n";
     for(size_t i = 0; i < m; ++i) {
         arma::cube& a_prev_pad_i = A_prev_pad[i];
         for(size_t h = 0; h < n_H; ++h) {
@@ -79,12 +96,29 @@ std::vector<arma::cube> ConvLayer::forward(std::vector<arma::cube> A_prev) {
                     size_t horiz_start = w * mStride;
                     size_t horiz_end = horiz_start + f_W;
 
-                    arma::cube A_slice_prev = a_prev_pad_i.subcube(vert_start, horiz_start, 0, vert_end, horiz_end, a_prev_pad_i.n_slices - 1);
-                    // Z[i](h, w, c) = conv_single_step(A_slice_prev, mW[:,:,:,c], mB[:,:,:,c]);
+                    // a_slice_prev = a_prev_pad[vert_start:vert_end,horiz_start:horiz_end,:]
+                    std::cerr << __FUNCTION__ << ": dbg3\n";
+                    //arma::cube A_slice_prev = a_prev_pad_i.subcube(vert_start, horiz_start, 0, vert_end, horiz_end, a_prev_pad_i.n_slices - 1);
+                    arma::cube A_slice_prev = a_prev_pad_i.subcube(arma::span(vert_start, vert_end - 1),
+                                                                   arma::span(horiz_start, horiz_end - 1),
+                                                                   arma::span::all);
+                    // Z[i, h, w, c] = conv_single_step(a_slice_prev,W[:,:,:,c],b[:,:,:,c])
+                    std::cerr << __FUNCTION__ << ": dbg4\n";
+                    std::cerr << __FUNCTION__ << ": A_prev: " << size(A_prev) << "\n";
+                    std::cerr << __FUNCTION__ << ": A_prev_pad: " << size(A_prev_pad) << "\n";
+                    std::cerr << __FUNCTION__ << ": a_prev_pad_i: " << size(a_prev_pad_i) << "\n";
+                    std::cerr << __FUNCTION__ << ": A_slice_prev: " << size(A_slice_prev) << "\n";
+                    std::cerr << __FUNCTION__ << ": mW: " << size(mW) << "\n";
+                    std::cerr << __FUNCTION__ << ": mB: " << size(mB) << "\n";
+                    std::cerr << __FUNCTION__ << ": copyBySlice(mW, c): " << size(copyBySlice(mW, c)) << "\n";
+                    std::cerr << __FUNCTION__ << ": copyBySlice(mB, c): " << size(copyBySlice(mB, c)) << "\n";
+                    Z[i](h, w, c) = convSingleStep(A_slice_prev, copyBySlice(mW, c), copyBySlice(mB, c));
+                    std::cerr << __FUNCTION__ << ": dbg5\n";
                 }
             }
         }
     }
+    return Z;
 }
 
 std::vector<arma::cube> ConvLayer::backward(std::vector<arma::cube> dZ) {

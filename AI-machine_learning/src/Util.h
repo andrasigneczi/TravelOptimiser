@@ -43,6 +43,14 @@ namespace arma {
 #if ARMA_VERSION_MAJOR == 6
     arma::mat index_max(const arma::mat& A,int dim );
 #endif // ARMA_VERSION_MAJOR == 6
+
+    // my declaration
+    Q_DECL_EXPORT std::vector<arma::cube> randn(int, int, int, int);
+    Q_DECL_EXPORT std::vector<arma::cube> randu(int, int, int, int);
+    Q_DECL_EXPORT arma::cube mean(std::vector<arma::cube>& X);
 } // namespace arma
+
+Q_DECL_EXPORT std::string size(const std::vector<arma::cube>& c);
+Q_DECL_EXPORT std::ostream& operator<<(std::ostream& o, std::vector<arma::cube>& c);
 
 #endif // __UTIL_H__
