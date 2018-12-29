@@ -1,5 +1,4 @@
 #include "conv_layer.h"
-#include "Util.h"
 
 ConvLayer::ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int stride)
     : mPad(pad)
@@ -30,11 +29,11 @@ ConvLayer::ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int strid
 
 ConvLayer::ConvLayer(std::string prefix)
 {
-
+    UNUSED(prefix);
 }
 
-std::vector<arma::cube> ConvLayer::zeroPad(const std::vector<arma::cube>& A_prev) {
-    std::vector<arma::cube> retV(A_prev.size(), arma::zeros(A_prev[0].n_rows + 2 * mPad, A_prev[0].n_cols + 2 * mPad, A_prev[0].n_slices));
+arma::mat4D ConvLayer::zeroPad(const arma::mat4D& A_prev) {
+    arma::mat4D retV(A_prev.size(), arma::zeros(A_prev[0].n_rows + 2 * mPad, A_prev[0].n_cols + 2 * mPad, A_prev[0].n_slices));
     for(size_t i = 0; i < A_prev.size(); ++i) {
         arma::cube& c = retV[i];
         c.subcube(mPad, mPad, 0, c.n_rows - mPad - 1, c.n_cols - mPad - 1, c.n_slices - 1) = A_prev[i];
@@ -49,7 +48,7 @@ double ConvLayer::convSingleStep(arma::cube a_slice_prev, arma::cube W, arma::cu
     return Z;
 }
 
-arma::cube ConvLayer::copyBySlice(const std::vector<arma::cube>& W, size_t s) {
+arma::cube ConvLayer::copyBySlice(const arma::mat4D& W, size_t s) {
     // W[:,:,:,s]
     arma::cube retV(W.size(), W[0].n_rows, W[0].n_cols);
     for(size_t i = 0; i < W.size(); ++i) {
@@ -58,17 +57,33 @@ arma::cube ConvLayer::copyBySlice(const std::vector<arma::cube>& W, size_t s) {
     return retV;
 }
 
+void ConvLayer::addSlice(arma::mat4D& W, size_t s, arma::cube val) {
+    std::cerr << __FUNCTION__ << ": dbg1\n";
+    std::cerr << __FUNCTION__ << ": val: "<< size(val) << "\n";
+    std::cerr << __FUNCTION__ << ": W: "<< size(W) << "\n";
+    for(size_t i = 0; i < W.size(); ++i) {
+        W[i](arma::span::all,arma::span::all, arma::span(s)) += val(i);
+    }
+}
+
+void ConvLayer::addSlice(arma::mat4D& W, size_t s, double val) {
+    std::cerr << __FUNCTION__ << ": dbg1\n";
+    for(size_t i = 0; i < W.size(); ++i) {
+        W[i](arma::span::all,arma::span::all, arma::span(s)) += val;
+    }
+}
+
 /*
  * Parameters:
  *    A_prev -- output activations of the previous layer, array of shape (m, n_H_prev, n_W_prev, n_C_prev)
  * Return:
  *    Z -- conv output, array of shape (m, n_H, n_W, n_C)
  */
-std::vector<arma::cube> ConvLayer::forward(std::vector<arma::cube> A_prev) {
+arma::mat4D ConvLayer::forward(arma::mat4D A_prev) {
     size_t m = A_prev.size();
     size_t n_H_prev = A_prev[0].n_rows;
     size_t n_W_prev = A_prev[0].n_cols;
-    size_t n_C_prev = A_prev[0].n_slices;
+    //size_t n_C_prev = A_prev[0].n_slices;
 
     size_t f_H = mW.size();
     size_t f_W = mW[0].n_rows;
@@ -80,16 +95,16 @@ std::vector<arma::cube> ConvLayer::forward(std::vector<arma::cube> A_prev) {
     int n_W = (int)(n_W_prev - f_W + 2 * mPad)/mStride + 1;
 
     // Initialize the output volume Z with zeros.
-    std::vector<arma::cube> Z(m, arma::zeros(n_H, n_W, n_C));
+    arma::mat4D Z(m, arma::zeros(n_H, n_W, n_C));
 
     std::cerr << __FUNCTION__ << ": dbg1\n";
     // Create A_prev_pad by padding A_prev
-    std::vector<arma::cube> A_prev_pad = zeroPad(A_prev);
+    arma::mat4D A_prev_pad = zeroPad(A_prev);
     std::cerr << __FUNCTION__ << ": dbg2\n";
     for(size_t i = 0; i < m; ++i) {
         arma::cube& a_prev_pad_i = A_prev_pad[i];
-        for(size_t h = 0; h < n_H; ++h) {
-            for(size_t w = 0; w < n_W; ++w) {
+        for(int h = 0; h < n_H; ++h) {
+            for(int w = 0; w < n_W; ++w) {
                 for(size_t c = 0; c < n_C; ++c) {
                     size_t vert_start = h * mStride;
                     size_t vert_end = vert_start + f_H;
@@ -118,17 +133,86 @@ std::vector<arma::cube> ConvLayer::forward(std::vector<arma::cube> A_prev) {
             }
         }
     }
+    mCache = A_prev;
     return Z;
 }
 
-std::vector<arma::cube> ConvLayer::backward(std::vector<arma::cube> dZ) {
+std::vector<arma::mat4D> ConvLayer::backward(arma::mat4D dZ) {
+    std::cerr << __FUNCTION__ << ": dbg0\n";
 
+    arma::mat4D& A_prev = mCache;
+    size_t m = A_prev.size();
+    std::cerr << __FUNCTION__ << ": A_prev.size(): " << A_prev.size() << "\n";
+    size_t n_H_prev = A_prev[0].n_rows;
+    size_t n_W_prev = A_prev[0].n_cols;
+    size_t n_C_prev = A_prev[0].n_slices;
+
+    std::cerr << __FUNCTION__ << ": dbg01\n";
+
+    size_t f_H = mW.size();
+    size_t f_W = mW[0].n_rows;
+    //size_t n_C_prev = mW[0].n_cols;
+    size_t n_C = mW[0].n_slices;
+
+    std::cerr << __FUNCTION__ << ": dbg02\n";
+
+    //size_t m = dZ.size();
+    size_t n_H = dZ[0].n_rows;
+    size_t n_W = dZ[0].n_cols;
+    //size_t n_C = dZ[0].n_slices;
+
+    std::cerr << __FUNCTION__ << ": dbg1\n";
+    arma::mat4D dA_prev = arma::zeros(m, n_H_prev, n_W_prev, n_C_prev);
+    arma::mat4D dW = arma::zeros(f_H, f_W, n_C_prev, n_C);
+    arma::mat4D db = arma::zeros(1,1,1,n_C);
+
+    arma::mat4D A_prev_pad = zeroPad(A_prev);
+    arma::mat4D dA_prev_pad = arma::zeros(A_prev_pad.size(), A_prev_pad[0].n_rows, A_prev_pad[0].n_cols, A_prev_pad[0].n_slices);
+
+    std::cerr << __FUNCTION__ << ": dbg2\n";
+    for(size_t i = 0; i < m; ++i) {
+        arma::cube& a_prev_pad_i = A_prev_pad[i];
+        arma::cube& da_prev_pad = dA_prev_pad[i];
+        for(size_t h = 0; h < n_H; ++h) {
+            for(size_t w = 0; w < n_W; ++w) {
+                for(size_t c = 0; c < n_C; ++c) {
+                    size_t vert_start = h * mStride;
+                    size_t vert_end = vert_start + f_H;
+                    size_t horiz_start = w * mStride;
+                    size_t horiz_end = horiz_start + f_W;
+
+                    std::cerr << __FUNCTION__ << ": dbg3\n";
+                    arma::cube A_slice_prev = a_prev_pad_i.subcube(arma::span(vert_start, vert_end - 1),
+                                                                   arma::span(horiz_start, horiz_end - 1),
+                                                                   arma::span::all);
+                    std::cerr << __FUNCTION__ << ": dbg4\n";
+                    da_prev_pad.subcube(arma::span(vert_start, vert_end - 1),
+                                        arma::span(horiz_start, horiz_end - 1),
+                                        arma::span::all) += copyBySlice(mW, c) * dZ[i](h, w, c);
+                    std::cerr << __FUNCTION__ << ": dbg5\n";
+                    //dW[:,:,:,c] += A_slice_prev * dZ[i](h, w, c);
+                    //db[:,:,:,c] += dZ[i](h, w, c);
+                    addSlice(dW, c, A_slice_prev * dZ[i](h, w, c));
+                    std::cerr << __FUNCTION__ << ": dbg6\n";
+                    addSlice(db, c, dZ[i](h, w, c));
+                    std::cerr << __FUNCTION__ << ": dbg7\n";
+                }
+
+            }
+        }
+        dA_prev[i] = da_prev_pad.subcube(arma::span(mPad,da_prev_pad.n_rows - mPad - 1),
+                                         arma::span(mPad,da_prev_pad.n_cols - mPad - 1),
+                                         arma::span::all);
+        std::cerr << __FUNCTION__ << ": dbg8\n";
+    }
+    return std::vector<arma::mat4D>{dA_prev, dW, db};
+    // return dA_prev, dW, db
 }
 
 void ConvLayer::saveState(std::ofstream& output) {
-
+    UNUSED(output);
 }
 
 void ConvLayer::loadState(std::ifstream& input) {
-
+    UNUSED(input);
 }

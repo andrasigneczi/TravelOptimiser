@@ -9,5 +9,8 @@ if [[ $1 == "clean" ]]; then
     make clean;
     make -j3;
 else
-    cd ../../src;make -j3;cd ../tests/convnet;make -j3;
+    cd ../../src;
+    make -j3;
+    cd ../tests/convnet;
+    make -j3;
 fi;

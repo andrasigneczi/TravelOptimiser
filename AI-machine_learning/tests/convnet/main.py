@@ -29,6 +29,19 @@ def softmaxTest():
     backresult = softmax.backward(result)
     print("\nSoftmax backward result:\n{}".format(backresult))
 
+def anyTest1():
+    dW = np.zeros((2,2,3,8))
+    val = np.ones((2,2,3))
+    dW[:,:,:,1] += val
+    print("\nany test result:\n{}".format(dW))
+
+def anyTest2():
+    x = np.array([[1, 2, 3], [4,5,6]])
+    print("mask:{}\n".format(x == np.max(x)))
+
+
+
 #sigmoidTest()
 #reluTest()
-softmaxTest()
+#softmaxTest()
+anyTest2()

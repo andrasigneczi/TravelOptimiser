@@ -4,12 +4,13 @@
 #include <iostream>
 #include <vector>
 #include <armadillo>
+#include "Util.h"
 
 class ForwardBackwardIF {
 public:
 
-    virtual std::vector<arma::cube> forward(std::vector<arma::cube> X) = 0;
-    virtual std::vector<arma::cube> backward(std::vector<arma::cube> dX) = 0;
+    virtual arma::mat4D forward(arma::mat4D X) = 0;
+    virtual std::vector<arma::mat4D> backward(arma::mat4D dX) = 0;
 
     virtual void saveState(std::ofstream& output) = 0;
     virtual void loadState(std::ifstream& input) = 0;

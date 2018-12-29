@@ -369,25 +369,47 @@ namespace arma {
     }
 #endif // ARMA_VERSION_MAJOR == 6
 
-    std::vector<arma::cube> randn(int a, int b, int c, int d) {
-        return std::vector<arma::cube>(a, arma::randn(b, c, d));
+    mat4D randn(int a, int b, int c, int d) {
+        return mat4D(a, arma::randn(b, c, d));
     }
 
-    std::vector<arma::cube> randu(int a, int b, int c, int d) {
-        return std::vector<arma::cube>(a, arma::randu(b, c, d));
+    mat4D randu(int a, int b, int c, int d) {
+        return mat4D(a, arma::randu(b, c, d));
+    }
+
+    mat4D zeros(int a, int b, int c, int d) {
+        return mat4D(a, arma::zeros(b, c, d));
     }
 
 } // namespace arma
 
-std::string size(const std::vector<arma::cube>& c) {
+std::string size(const arma::mat4D& c) {
     return std::to_string(c.size()) + "x" + std::to_string(c[0].n_rows)
             + "x" + std::to_string(c[0].n_cols) + "x" +
             std::to_string(c[0].n_slices);
 }
 
-std::ostream& operator<<(std::ostream& o, std::vector<arma::cube>& c4) {
-    for(arma::cube& c : c4) {
-        o << c << "\n";
+std::ostream& operator<<(std::ostream& o, arma::mat4D& c4) {
+    for(size_t i = 0; i < c4.size(); ++i) {
+        o << "[";
+        for(size_t j = 0; j < c4[i].n_rows; ++j) {
+            if(j != 0) o << " ";
+            o << "[";
+            for(size_t k = 0; k < c4[i].n_cols; ++k) {
+                if(k != 0) o << "  ";
+                o << "[";
+                for(size_t l = 0; l < c4[i].n_slices; ++l) {
+                    o << c4[i](j,k,l) << ", ";
+                }
+                o << "]";
+                if(k != c4[i].n_cols - 1) o << "\n";
+            }
+            o << "]";
+            if(j != c4[i].n_rows - 1) o << "\n\n";
+        }
+        o << "]";
+        if(i != c4.size() - 1) o << "\n\n\n";
     }
+
     return o;
 }

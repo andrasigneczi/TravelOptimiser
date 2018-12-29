@@ -44,13 +44,15 @@ namespace arma {
     arma::mat index_max(const arma::mat& A,int dim );
 #endif // ARMA_VERSION_MAJOR == 6
 
+    using mat4D = std::vector<arma::cube>;
     // my declaration
-    Q_DECL_EXPORT std::vector<arma::cube> randn(int, int, int, int);
-    Q_DECL_EXPORT std::vector<arma::cube> randu(int, int, int, int);
-    Q_DECL_EXPORT arma::cube mean(std::vector<arma::cube>& X);
+    Q_DECL_EXPORT mat4D randn(int, int, int, int);
+    Q_DECL_EXPORT mat4D randu(int, int, int, int);
+    Q_DECL_EXPORT arma::cube mean(mat4D& X);
+    Q_DECL_EXPORT mat4D zeros(int, int, int, int);
 } // namespace arma
 
-Q_DECL_EXPORT std::string size(const std::vector<arma::cube>& c);
-Q_DECL_EXPORT std::ostream& operator<<(std::ostream& o, std::vector<arma::cube>& c);
+Q_DECL_EXPORT std::string size(const arma::mat4D& c);
+Q_DECL_EXPORT std::ostream& operator<<(std::ostream& o, arma::mat4D& c);
 
 #endif // __UTIL_H__

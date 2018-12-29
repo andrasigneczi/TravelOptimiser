@@ -1,7 +1,10 @@
 #include "convnet.h"
 #include <iostream>
+#include "Util.h"
 
 int main (int argc, char* argv[]) {
+    UNUSED(argc);
+    UNUSED(argv);
     //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     try {
         convLayerTest();

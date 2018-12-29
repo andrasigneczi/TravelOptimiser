@@ -16,18 +16,21 @@ public:
     PoolLayer(int f_H, int f_W, int stride, Mode mode);
     PoolLayer(std::string prefix);
 
-    std::vector<arma::cube> forward(std::vector<arma::cube> A_prev) override;
-    std::vector<arma::cube> backward(std::vector<arma::cube> dZ) override;
+    arma::mat4D forward(arma::mat4D A_prev) override;
+    std::vector<arma::mat4D> backward(arma::mat4D dZ) override;
 
     void saveState(std::ofstream& output) override;
     void loadState(std::ifstream& input) override;
 
 private:
+    arma::mat createMaskFromWindow(arma::mat x);
+    arma::mat distributeValue(double dZ, int n_H, int n_W);
+
     int  mFH;
     int  mFW;
     int  mStride;
     Mode mMode;
-    std::vector<arma::cube> mCache; //A_prev;
+    arma::mat4D mCache; //A_prev;
 };
 
 #endif // __POOLLAYER_H__

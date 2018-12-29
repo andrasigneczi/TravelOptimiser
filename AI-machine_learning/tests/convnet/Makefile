@@ -9,7 +9,7 @@ CPPFLAGS= -O3 -std=c++11 -Wall -Wextra -pedantic -D__LINUX__  -pthread -fPIC -DA
 LDFLAGS=-fPIC -O3 -L../../src -march=native -L/usr/lib/x86_64-linux-gnu -L../../libsvm-3.22
 CFLAGS= -O3 -s -DNDEBUG -std=c++11 -pedantic -D__LINUX__ -pthread -Wall -Wextra
 
-LDLIBS=-lpthread -ldl -larmadillo -lMachineLearning -lQt5Gui -lQt5Core -lQt5Widgets -lQt5PrintSupport -lsvm
+LDLIBS=-lMachineLearning -lpthread -ldl -larmadillo -lQt5Gui -lQt5Core -lQt5Widgets -lQt5PrintSupport -lsvm
 OBJDIR=Debug
 
 SRCS1=main.cpp activation.cpp convnet.cpp
