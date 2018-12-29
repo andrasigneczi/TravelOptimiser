@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [[ $1 == "clean" ]]; then
+    cd ../../src;
+    /usr/lib/x86_64-linux-gnu/qt5/bin/qmake MachineLearning.pro
+    make clean;
+    make -j3;
+    cd ../tests/convnet;
+    make clean;
+    make -j3;
+else
+    cd ../../src;make -j3;cd ../tests/convnet;make -j3;
+fi;

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../../src:../../libsvm-3.22
+#valgrind --verbose ./test 2>ll.txt
+./test
