@@ -381,6 +381,154 @@ namespace arma {
         return mat4D(a, arma::zeros(b, c, d));
     }
 
+    mat4D operator-(const mat4D& x) {
+        mat4D retv = x;
+        for(size_t i = 0; i < retv.size(); ++i) {
+            retv[i] *= -1;
+        }
+        return retv;
+    }
+
+    mat4D exp(const mat4D& x) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < retv.size(); ++i) {
+            retv[i] = exp(x[i]);
+        }
+        return retv;
+    }
+
+    mat4D operator+(double a, const mat4D& x) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < retv.size(); ++i) {
+            retv[i] = x[i] + a;
+        }
+        return retv;
+    }
+
+    mat4D operator/(double a, const mat4D& x) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < retv.size(); ++i) {
+            retv[i] = a/x[i];
+        }
+        return retv;
+    }
+
+    mat4D operator-(double a, const mat4D& x) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < retv.size(); ++i) {
+            retv[i] = a - x[i];
+        }
+        return retv;
+    }
+
+    mat4D operator-(const mat4D& x, const mat4D& y) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < retv.size(); ++i) {
+            retv[i] = x[i] - y[i];
+        }
+        return retv;
+    }
+
+    mat4D operator+(const mat4D& x, const mat4D& y) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < retv.size(); ++i) {
+            retv[i] = x[i] + y[i];
+        }
+        return retv;
+    }
+
+    mat4D operator/(const mat4D& x, const mat4D& y) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < retv.size(); ++i) {
+            retv[i] = x[i] / y[i];
+        }
+        return retv;
+    }
+
+    mat4D operator%(const mat4D& x, const mat4D& y) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < retv.size(); ++i) {
+            retv[i] = (x[i] % y[i]);
+        }
+        return retv;
+    }
+
+    mat4D operator<(const mat4D& x, double y) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < x.size(); ++i) {
+            retv[i] = arma::conv_to<arma::cube>::from(x[i] < y);
+        }
+        return retv;
+    }
+
+    mat4D operator>(const mat4D& x, double y) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < x.size(); ++i) {
+            retv[i] = arma::conv_to<arma::cube>::from(x[i] > y);
+        }
+        return retv;
+    }
+
+    mat4D operator<=(const mat4D& x, double y) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < x.size(); ++i) {
+            retv[i] = arma::conv_to<arma::cube>::from(x[i] <= y);
+        }
+        return retv;
+    }
+
+    mat4D operator>=(const mat4D& x, double y) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < x.size(); ++i) {
+            retv[i] = arma::conv_to<arma::cube>::from(x[i] >= y);
+        }
+        return retv;
+    }
+
+    mat4D pow(const mat4D& x, int y) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < x.size(); ++i) {
+            retv[i] = pow(x[i], y);
+        }
+        return retv;
+    }
+
+    uveclist find(const mat4D& x) {
+        uveclist retv = uveclist(x.size());
+        for(size_t i = 0; i < x.size(); ++i) {
+            retv[i] = arma::find(x[i]);
+        }
+        return retv;
+    }
+
+    Elem::Elem(mat4D& x, uveclist l) : mX(x), mList(l){
+
+    }
+
+    void Elem::zeros() {
+        for(size_t i = 0; i < mList.size(); ++i) {
+           mX[i].elem(mList[i]).zeros();
+        }
+    }
+
+    void Elem::ones() {
+        for(size_t i = 0; i < mList.size(); ++i) {
+            mX[i].elem(mList[i]).ones();
+        }
+    }
+
+    void Elem::fill(double x) {
+        for(size_t i = 0; i < mList.size(); ++i) {
+            mX[i].elem(mList[i]).fill(x);
+        }
+    }
+
+    void Elem::operator*=(double x) {
+        for(size_t i = 0; i < mX.size(); ++i) {
+            mX[i] *= x;
+        }
+    }
+
 } // namespace arma
 
 std::string size(const arma::mat4D& c) {
@@ -390,6 +538,7 @@ std::string size(const arma::mat4D& c) {
 }
 
 std::ostream& operator<<(std::ostream& o, arma::mat4D& c4) {
+    o << "[";
     for(size_t i = 0; i < c4.size(); ++i) {
         o << "[";
         for(size_t j = 0; j < c4[i].n_rows; ++j) {
@@ -399,6 +548,7 @@ std::ostream& operator<<(std::ostream& o, arma::mat4D& c4) {
                 if(k != 0) o << "  ";
                 o << "[";
                 for(size_t l = 0; l < c4[i].n_slices; ++l) {
+                    o.precision(8);
                     o << c4[i](j,k,l) << ", ";
                 }
                 o << "]";
@@ -410,6 +560,13 @@ std::ostream& operator<<(std::ostream& o, arma::mat4D& c4) {
         o << "]";
         if(i != c4.size() - 1) o << "\n\n\n";
     }
+    o << "]";
+    return o;
+}
 
+std::ostream& operator<<(std::ostream& o, arma::uveclist& c) {
+    for(size_t i = 0; i < c.size(); ++i) {
+        o << c[i] << "\n";
+    }
     return o;
 }

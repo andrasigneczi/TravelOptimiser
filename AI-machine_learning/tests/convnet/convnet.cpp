@@ -6,6 +6,7 @@
 #include "activation.h"
 #include "convnet/conv_layer.h"
 #include "convnet/pool_layer.h"
+#include "convnet/activation_layer.h"
 
 using namespace Activation;
 using namespace Util;
@@ -73,6 +74,20 @@ void softmaxTest() {
     std::cout << std::endl;
 }
 
+void findTest() {
+    arma::mat X;
+    X << -1. << -2. << 3. << arma::endr <<
+    4. << -5. << -6. << arma::endr <<
+    7. << -8. << 9. << arma::endr <<
+    -10. << 11. << 12. << arma::endr;
+    std::cout << X << "\n";
+    std::cout << arma::find(X == -5) << "\n";
+
+    arma::cube Y = arma::randu(2,2,2);
+    std::cout << Y << "\n";
+    std::cout << arma::find(Y < 0.5) << "\n";
+}
+
 class ConvLayerTest {
 public:
     static void zero_pad_test() {
@@ -109,17 +124,6 @@ public:
         std::cout << Z[3](arma::span(2),arma::span(1), arma::span::all) << "\n";
     }
 
-    static void pool_forward_test() {
-        arma::arma_rng::set_seed_random();
-        PoolLayer cL1(3, 3, 2, PoolLayer::AVG);
-        PoolLayer cL2(3, 3, 2, PoolLayer::MAX);
-        arma::mat4D A_prev = arma::randn(2, 4, 4, 3);
-        arma::mat4D A1 = cL1.forward(A_prev);
-        arma::mat4D A2 = cL2.forward(A_prev);
-        std::cout << "A1: " << A1 << "\n";
-        std::cout << "A2: " << A2 << "\n";
-    }
-
     static void conv_backward_test() {
         arma::arma_rng::set_seed_random();
         ConvLayer cL(0, 0, 0, 0, 2, 2);
@@ -137,20 +141,19 @@ public:
         cL.addSlice(dW, 1, val);
         std::cout << dW << "\n";
     }
+};
 
-    static void createMaskFromWindow_test() {
-        PoolLayer cL(3, 3, 2, PoolLayer::MAX);
-        arma::mat X(2, 3);
-        X << 1 << 2 << 3 << arma::endr << 4 << 5 << 6;
-        std::cout << X << "\n";
-        X = cL.createMaskFromWindow(X);
-        std::cout << X << "\n";
-    }
+class PoolLayerTest {
 
-    static void distributeValue_test() {
-        PoolLayer cL(3, 3, 2, PoolLayer::MAX);
-        arma::mat X = cL.distributeValue(2, 2, 2);
-        std::cout << X << "\n";
+    static void pool_forward_test() {
+        arma::arma_rng::set_seed_random();
+        PoolLayer cL1(3, 3, 2, PoolLayer::AVG);
+        PoolLayer cL2(3, 3, 2, PoolLayer::MAX);
+        arma::mat4D A_prev = arma::randn(2, 4, 4, 3);
+        arma::mat4D A1 = cL1.forward(A_prev);
+        arma::mat4D A2 = cL2.forward(A_prev);
+        std::cout << "A1: " << A1 << "\n";
+        std::cout << "A2: " << A2 << "\n";
     }
 
     static void pool_backward_test() {
@@ -168,6 +171,71 @@ public:
         std::cout << "A1: " << dA1_prev << "\n";
         std::cout << "A2: " << dA2_prev << "\n";
     }
+
+    static void createMaskFromWindow_test() {
+        PoolLayer cL(3, 3, 2, PoolLayer::MAX);
+        arma::mat X(2, 3);
+        X << 1 << 2 << 3 << arma::endr << 4 << 5 << 6;
+        std::cout << X << "\n";
+        X = cL.createMaskFromWindow(X);
+        std::cout << X << "\n";
+    }
+
+    static void distributeValue_test() {
+        PoolLayer cL(3, 3, 2, PoolLayer::MAX);
+        arma::mat X = cL.distributeValue(2, 2, 2);
+        std::cout << X << "\n";
+    }
+};
+
+class ActivationLayerTest {
+public:
+    static arma::mat4D initTestVal() {
+        arma::mat4D X(5, arma::cube(4,3,2));
+        double x = -2.5;
+        for(size_t i = 0; i < X.size(); ++i){
+            for(size_t j = 0; j < X[i].n_rows; ++j){
+                for(size_t k = 0; k < X[i].n_cols; ++k){
+                    for(size_t l = 0; l < X[i].n_slices; ++l){
+                        X[i](j, k, l) = x;
+                        x += 0.07;
+                    }
+                }
+            }
+        }
+        return X;
+    }
+
+    static void activation_test(ForwardBackwardIF& act, std::string label) {
+        arma::mat4D X = initTestVal();
+        arma::mat4D result = act.forward(X);
+        std::cout << label << " forward result:\n";
+        std::cout << result;
+        std::cout << std::endl;
+        std::cout << "\n" << label << " backward result:\n";
+        arma::mat4D result2 = (result % act.backward(result)[0]);
+        std::cout << result2 << std::endl;
+    }
+
+    static void sigmoid_test() {
+        Sigmoid s;
+        activation_test(s, "Sigmoid");
+    }
+
+    static void relu_test() {
+        Relu s;
+        activation_test(s, "Relu");
+    }
+
+    static void tanh_test() {
+        Tanh s;
+        activation_test(s, "Tanh");
+    }
+
+    static void lrelu_test() {
+        LeakyRelu s;
+        activation_test(s, "Leaky Relu");
+    }
 };
 
 void convLayerTest() {
@@ -179,6 +247,11 @@ void convLayerTest() {
     //ConvLayerTest::adSlice_test();
     //ConvLayerTest::createMaskFromWindow_test();
     //ConvLayerTest::distributeValue_test();
-    ConvLayerTest::pool_backward_test();
+    //ConvLayerTest::pool_backward_test();
+    //findTest();
+    //ActivationLayerTest::sigmoid_test();
+    //ActivationLayerTest::relu_test();
+    //ActivationLayerTest::tanh_test();
+    ActivationLayerTest::lrelu_test();
 }
 

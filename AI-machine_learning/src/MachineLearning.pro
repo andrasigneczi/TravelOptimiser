@@ -18,7 +18,8 @@ SOURCES += linear_regression.cpp logistic_regression.cpp fmincg.cpp neural_netwo
     neural_network/batch_norm.cpp \
     convnet.cpp \
     convnet/conv_layer.cpp \
-    convnet/pool_layer.cpp
+    convnet/pool_layer.cpp \
+    convnet/activation_layer.cpp
 HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h CostAndGradient.h Util.h  qcustomplot.h logistic_regression_v2.h  anomaly_detection.h \
     neural_network/optimizer.h \
     neural_network/activation.h \
@@ -26,7 +27,8 @@ HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h 
     convnet.h \
     convnet/conv_layer.h \
     convnet/forward_backward_if.h \
-    convnet/pool_layer.h
+    convnet/pool_layer.h \
+    convnet/activation_layer.h
 
 SOURCES += kmean.cpp neural_networkv2.cpp
 HEADERS  += kmean.h neural_networkv2.h

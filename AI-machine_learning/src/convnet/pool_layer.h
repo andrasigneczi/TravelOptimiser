@@ -5,7 +5,7 @@
 
 class PoolLayer : public ForwardBackwardIF
 {
-    friend class ConvLayerTest;
+    friend class PoolLayerTest;
 public:
 
     enum Mode {
