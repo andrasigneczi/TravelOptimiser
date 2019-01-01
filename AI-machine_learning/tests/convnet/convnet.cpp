@@ -213,8 +213,8 @@ public:
         std::cout << result;
         std::cout << std::endl;
         std::cout << "\n" << label << " backward result:\n";
-        arma::mat4D result2 = (result % act.backward(result)[0]);
-        std::cout << result2 << std::endl;
+        arma::mat4D result2 = act.backward(result)[0]; // dZ = dA % activation_backward()
+        std::cout << result2 << std::endl << std::endl;
     }
 
     static void sigmoid_test() {
@@ -236,6 +236,20 @@ public:
         LeakyRelu s;
         activation_test(s, "Leaky Relu");
     }
+
+    static void softmax_test() {
+        Softmax s;
+        arma::mat X;
+        X << -0.1 << -0.7 << 0.1 << 0.7 << arma::endr <<
+             -0.51 << -0.49 << 0.51 << 0.49;
+        arma::mat result = s.forward(X);
+        std::cout << "Softmax forward result:\n";
+        std::cout << result;
+        std::cout << std::endl;
+        std::cout << "\nSoftmax backward result:\n";
+        arma::mat result2 = (result % s.backward(result));
+        std::cout << result2 << std::endl << std::endl;
+    }
 };
 
 void convLayerTest() {
@@ -249,9 +263,10 @@ void convLayerTest() {
     //ConvLayerTest::distributeValue_test();
     //ConvLayerTest::pool_backward_test();
     //findTest();
-    //ActivationLayerTest::sigmoid_test();
-    //ActivationLayerTest::relu_test();
-    //ActivationLayerTest::tanh_test();
+    ActivationLayerTest::sigmoid_test();
+    ActivationLayerTest::relu_test();
+    ActivationLayerTest::tanh_test();
     ActivationLayerTest::lrelu_test();
+    ActivationLayerTest::softmax_test();
 }
 
