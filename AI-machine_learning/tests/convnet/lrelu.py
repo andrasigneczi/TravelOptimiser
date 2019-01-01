@@ -1,13 +1,12 @@
 import numpy as np
 
 class LRELU_LAYER:
-    """docstring forRELU_LAYER."""
     def __init__(self):
         pass
 
     def forward(self, X, a=1e-3):
         """
-        Computes the forward pass of Relu Layer.
+        Computes the forward pass of Leaky Relu Layer.
         Input:
             X: Input data of any shape
         """
@@ -17,7 +16,7 @@ class LRELU_LAYER:
 
     def backward(self, delta):
         """
-        Computes the backward pass of Relu Layer.
+        Computes the backward pass of Leaky Relu Layer.
         Input:
             delta: Shape of delta values should be same as of X in cache
         """

@@ -15,6 +15,8 @@ public:
     virtual arma::mat forward(arma::mat X) { UNUSED(X); return arma::mat(); }
     virtual arma::mat backward(arma::mat dX) { UNUSED(dX); return arma::mat(); }
 
+    virtual void updateParameters(double learningRate) { UNUSED(learningRate); };
+
     virtual void saveState(std::ofstream& output) = 0;
     virtual void loadState(std::ifstream& input) = 0;
 

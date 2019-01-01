@@ -7,6 +7,7 @@
 #include "convnet/conv_layer.h"
 #include "convnet/pool_layer.h"
 #include "convnet/activation_layer.h"
+#include "convnet/fully_connected_layer.h"
 
 using namespace Activation;
 using namespace Util;
@@ -247,8 +248,32 @@ public:
         std::cout << result;
         std::cout << std::endl;
         std::cout << "\nSoftmax backward result:\n";
-        arma::mat result2 = (result % s.backward(result));
+        arma::mat result2 = s.backward(result);
         std::cout << result2 << std::endl << std::endl;
+    }
+};
+
+class FullyConnectedLayerTest {
+public:
+    static void fully_connected_test() {
+        FullyConnectedLayer s(11, 20);
+        arma::mat X;
+
+        X << -10.5 << -5.1 << -3.1 << -0.5 << -0.1 << 0 << 0.1 << 0.5 << 3.1 << 5.1 << 10.6 << -10.5 << -5.1 << -3.1 << -0.5 << -0.1 << 0 << 0.1 << 0.5 << 3.1 << arma::endr <<
+        -10.5 << -5.1 << -3.1 << -0.5 << -0.1 << 0 << 0.1 << -10.5 << -5.1 << -3.1 << -0.5 << -0.1 << 0.5 << 3.1 << 5.1 << 10.6 << 0 << 0.1 << 0.5 << 3.1;
+
+        s.mW = arma::mat(11,20);
+        s.mB = arma::mat(11,1);
+        s.mW.fill(0.13);
+        s.mB.fill(0.1);
+
+        arma::mat result = s.forward(X.t());
+        std::cout << "FC forward result:\n";
+        std::cout << result.t();
+        std::cout << std::endl;
+        std::cout << "\nFC backward result:\n";
+        arma::mat result2 = s.backward(result);
+        std::cout << result2.t() << std::endl << std::endl;
     }
 };
 
@@ -268,5 +293,6 @@ void convLayerTest() {
     ActivationLayerTest::tanh_test();
     ActivationLayerTest::lrelu_test();
     ActivationLayerTest::softmax_test();
+    FullyConnectedLayerTest::fully_connected_test();
 }
 

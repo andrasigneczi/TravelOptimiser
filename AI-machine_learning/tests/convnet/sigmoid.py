@@ -1,7 +1,6 @@
 import numpy as np
 
 class SIGMOID_LAYER:
-    """docstring forRELU_LAYER."""
     def __init__(self):
         pass
 

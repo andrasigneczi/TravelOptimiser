@@ -5,6 +5,7 @@ from lrelu import *
 from sigmoid import *
 from softmax import *
 from tanh import *
+from fc import *
 import numpy as np
 
 def initTestValue():
@@ -58,6 +59,19 @@ def softmaxTest():
     backresult = softmax.backward(result)
     print("\nSoftmax backward result:\n{}\n".format(backresult))
 
+def fullyConnectedTest():
+    # input: 20
+    # output 11
+    fc = FC_LAYER(11, (20, 11))
+    X = np.array([[-10.5, -5.1, -3.1, -0.5, -0.1, 0, 0.1, 0.5, 3.1, 5.1, 10.6, -10.5, -5.1, -3.1, -0.5, -0.1, 0, 0.1, 0.5, 3.1],
+                    [-10.5, -5.1, -3.1, -0.5, -0.1, 0, 0.1, -10.5, -5.1, -3.1, -0.5, -0.1, 0.5, 3.1, 5.1, 10.6, 0, 0.1, 0.5, 3.1]], dtype=float)
+    fc.kernel.fill(0.13)
+    fc.bias.fill(0.1)
+    result = fc.forward(X)
+    print("FC forward result:\n{}".format(result))
+    backresult = fc.backward(result)
+    print("\nFC backward result:\n{}\n".format(backresult))
+
 def anyTest1():
     dW = np.zeros((2,2,3,8))
     val = np.ones((2,2,3))
@@ -75,4 +89,5 @@ reluTest()
 tanhTest()
 lreluTest()
 softmaxTest()
+fullyConnectedTest()
 #anyTest2()
