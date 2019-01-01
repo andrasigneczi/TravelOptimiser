@@ -12,5 +12,6 @@ else
     cd ../../src;
     make -j3;
     cd ../tests/convnet;
+    rm -f test
     make -j3;
 fi;

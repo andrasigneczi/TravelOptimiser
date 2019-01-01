@@ -10,9 +10,9 @@ FullyConnectedLayer::FullyConnectedLayer(int size_H, int size_W, double lambda) 
 
 arma::mat FullyConnectedLayer::forward(arma::mat A_prev) {
     mCache = A_prev;
-    std::cerr << __FUNCTION__ << ": A_prev:" << size(A_prev) << "\n";
-    std::cerr << __FUNCTION__ << ": mW:" << size(mW) << "\n";
-    std::cerr << __FUNCTION__ << ": mB:" << size(mB) << "\n";
+    // std::cerr << __FUNCTION__ << ": A_prev:" << size(A_prev) << "\n";
+    // std::cerr << __FUNCTION__ << ": mW:" << size(mW) << "\n";
+    // std::cerr << __FUNCTION__ << ": mB:" << size(mB) << "\n";
     return Util::plus(mW * A_prev, mB);
 }
 

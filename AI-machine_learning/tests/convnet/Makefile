@@ -20,7 +20,7 @@ OBJS11=$(addprefix $(OBJDIR)/, $(OBJS1))
 OBJS=$(OBJS11) $(OBJS12)
 TARGET=test
 
-all: DelBin $(TARGET)
+all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CXX) $(LDFLAGS) -o $(TARGET) $(OBJS) $(LDLIBS)
@@ -34,7 +34,4 @@ $(OBJDIR)/%.o: %.c
     
 clean:
 	$(RM) $(OBJS)
-	$(RM) $(TARGET)
-
-DelBin:
 	$(RM) $(TARGET)
