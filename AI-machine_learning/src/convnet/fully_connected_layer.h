@@ -12,11 +12,12 @@ public:
     FullyConnectedLayer(int size_H, int size_W, double lambda = 1e+6);
 
     arma::mat4D forward(arma::mat4D A_prev) override { UNUSED(A_prev); return arma::mat4D(); };
-    std::vector<arma::mat4D> backward(arma::mat4D dZ) override { UNUSED(dZ); return {arma::mat4D()}; };
+    arma::mat4D backward(arma::mat4D dZ) override { UNUSED(dZ); return {arma::mat4D()}; };
 
     arma::mat forward(arma::mat X) override;
     arma::mat backward(arma::mat dX) override;
-
+    
+    bool is4D() { return false; }
     void updateParameters(double learningRate) override;
 
     void saveState(std::ofstream& output) override;

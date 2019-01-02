@@ -52,7 +52,7 @@ arma::mat4D PoolLayer::forward(arma::mat4D A_prev) {
     return A;
 }
 
-std::vector<arma::mat4D> PoolLayer::backward(arma::mat4D dA) {
+arma::mat4D PoolLayer::backward(arma::mat4D dA) {
     arma::mat4D& A_prev = mCache;
     size_t m = A_prev.size();
     //size_t n_H_prev = A_prev[0].n_rows;
@@ -92,7 +92,7 @@ std::vector<arma::mat4D> PoolLayer::backward(arma::mat4D dA) {
             }
         }
     }
-    return {dA_prev};
+    return dA_prev;
 }
 
 void PoolLayer::saveState(std::ofstream& output) {

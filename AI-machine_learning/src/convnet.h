@@ -37,14 +37,13 @@ class ConvNet
 {
 public:
     ConvNet();
-    ConvNet(std::prefix);
+    ConvNet(std::string prefix);
     ConvNet& operator<<(ForwardBackwardIF* obj) { mLayers.push_back(obj); return *this; }
 
+/*
     void miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate,
                                                     double beta, double beta1, double beta2,
                                                     double epsilon );
-    arma::mat4D forward(arma::mat4D X);
-    void backward(arma::mat4D AL, arma::mat Y);
 
     bool saveState(std::string prefix);
     bool loadState(std::string prefix);
@@ -55,8 +54,12 @@ public:
 
     double compute_cost_with_regularization(const arma::mat& A3, const arma::mat& Y, ActivationFunction af);
     double compute_cost(const arma::mat& AL, const arma::mat& Y, ActivationFunction af = SIGMOID);
-
+    */
+    
 private:
+    arma::mat forward(arma::mat4D X);
+    void backward(arma::mat AL, arma::mat Y);
+
     std::vector<ForwardBackwardIF*> mLayers;
 };
 

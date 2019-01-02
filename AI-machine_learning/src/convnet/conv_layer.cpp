@@ -137,7 +137,7 @@ arma::mat4D ConvLayer::forward(arma::mat4D A_prev) {
     return Z;
 }
 
-std::vector<arma::mat4D> ConvLayer::backward(arma::mat4D dZ) {
+arma::mat4D ConvLayer::backward(arma::mat4D dZ) {
     std::cerr << __FUNCTION__ << ": dbg0\n";
 
     arma::mat4D& A_prev = mCache;
@@ -162,9 +162,9 @@ std::vector<arma::mat4D> ConvLayer::backward(arma::mat4D dZ) {
     //size_t n_C = dZ[0].n_slices;
 
     std::cerr << __FUNCTION__ << ": dbg1\n";
-    arma::mat4D dA_prev = arma::zeros(m, n_H_prev, n_W_prev, n_C_prev);
-    arma::mat4D dW = arma::zeros(f_H, f_W, n_C_prev, n_C);
-    arma::mat4D db = arma::zeros(1,1,1,n_C);
+    mdA_prev = arma::zeros(m, n_H_prev, n_W_prev, n_C_prev);
+    mdW = arma::zeros(f_H, f_W, n_C_prev, n_C);
+    mdb = arma::zeros(1,1,1,n_C);
 
     arma::mat4D A_prev_pad = zeroPad(A_prev);
     arma::mat4D dA_prev_pad = arma::zeros(A_prev_pad.size(), A_prev_pad[0].n_rows, A_prev_pad[0].n_cols, A_prev_pad[0].n_slices);
@@ -192,20 +192,20 @@ std::vector<arma::mat4D> ConvLayer::backward(arma::mat4D dZ) {
                     std::cerr << __FUNCTION__ << ": dbg5\n";
                     //dW[:,:,:,c] += A_slice_prev * dZ[i](h, w, c);
                     //db[:,:,:,c] += dZ[i](h, w, c);
-                    addSlice(dW, c, A_slice_prev * dZ[i](h, w, c));
+                    addSlice(mdW, c, A_slice_prev * dZ[i](h, w, c));
                     std::cerr << __FUNCTION__ << ": dbg6\n";
-                    addSlice(db, c, dZ[i](h, w, c));
+                    addSlice(mdb, c, dZ[i](h, w, c));
                     std::cerr << __FUNCTION__ << ": dbg7\n";
                 }
 
             }
         }
-        dA_prev[i] = da_prev_pad.subcube(arma::span(mPad,da_prev_pad.n_rows - mPad - 1),
+        mdA_prev[i] = da_prev_pad.subcube(arma::span(mPad,da_prev_pad.n_rows - mPad - 1),
                                          arma::span(mPad,da_prev_pad.n_cols - mPad - 1),
                                          arma::span::all);
         std::cerr << __FUNCTION__ << ": dbg8\n";
     }
-    return std::vector<arma::mat4D>{dA_prev, dW, db};
+    return mdA_prev;
     // return dA_prev, dW, db
 }
 

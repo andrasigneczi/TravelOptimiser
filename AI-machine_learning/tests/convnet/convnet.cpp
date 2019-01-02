@@ -132,7 +132,7 @@ public:
         cL.mW = arma::randn(2, 2, 3, 8);
         cL.mB = arma::randn(1, 1, 1, 8);
         arma::mat4D Z = cL.forward(A_prev);
-        std::vector<arma::mat4D> dval = cL.backward(Z);
+        arma::mat4D dval = cL.backward(Z);
     }
 
     static void adSlice_test() {
@@ -166,8 +166,8 @@ class PoolLayerTest {
         arma::mat4D A2 = cL2.forward(A_prev);
 
         arma::mat4D dA1 = arma::randn(5, 4, 2, 2);
-        arma::mat4D dA1_prev = cL1.backward(dA1)[0];
-        arma::mat4D dA2_prev = cL2.backward(dA1)[0];
+        arma::mat4D dA1_prev = cL1.backward(dA1);
+        arma::mat4D dA2_prev = cL2.backward(dA1);
 
         std::cout << "A1: " << dA1_prev << "\n";
         std::cout << "A2: " << dA2_prev << "\n";
@@ -214,7 +214,7 @@ public:
         std::cout << result;
         std::cout << std::endl;
         std::cout << "\n" << label << " backward result:\n";
-        arma::mat4D result2 = act.backward(result)[0]; // dZ = dA % activation_backward()
+        arma::mat4D result2 = act.backward(result); // dZ = dA % activation_backward()
         std::cout << result2 << std::endl << std::endl;
     }
 

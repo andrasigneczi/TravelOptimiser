@@ -5,8 +5,17 @@ arma::mat4D Sigmoid::forward(arma::mat4D Z) {
     return mCache;
 }
 
-std::vector<arma::mat4D> Sigmoid::backward(arma::mat4D dA) {
-    return {dA % mCache % (1. - mCache)};
+arma::mat4D Sigmoid::backward(arma::mat4D dA) {
+    return dA % mCache % (1. - mCache);
+}
+
+arma::mat Sigmoid::forward(arma::mat Z) {
+    mCache2 = 1.0/(1.0+arma::exp(-Z));
+    return mCache2;
+}
+
+arma::mat Sigmoid::backward(arma::mat dA) {
+    return dA % mCache2 % (1. - mCache2);
 }
 
 void Sigmoid::saveState(std::ofstream& output) {
@@ -18,18 +27,30 @@ void Sigmoid::loadState(std::ifstream& input) {
 }
 
 arma::mat4D Relu::forward(arma::mat4D Z) {
-    //Z.elem( arma::find(Z < 0.0) ).zeros();
     mCache = Z;
-    arma::Elem(mCache, arma::find(mCache < 0.0)).zeros();
-    return mCache;
+    //Z.elem( arma::find(Z < 0.0) ).zeros();
+    arma::Elem(Z, arma::find(Z < 0.0)).zeros();
+    return Z;
 }
 
-std::vector<arma::mat4D> Relu::backward(arma::mat4D dA) {
+arma::mat4D Relu::backward(arma::mat4D dA) {
     //gZ.elem( arma::find(gZ > 0.0) ).ones();
     //gZ.elem( arma::find(gZ <= 0.0) ).zeros();
     arma::Elem(mCache, arma::find(mCache > 0.0)).ones();
     arma::Elem(mCache, arma::find(mCache <= 0.0)).zeros();
-    return {dA % mCache};
+    return dA % mCache;
+}
+
+arma::mat Relu::forward(arma::mat Z) {
+    mCache2 = Z;
+    Z.elem( arma::find(Z < 0.0) ).zeros();
+    return Z;
+}
+
+arma::mat Relu::backward(arma::mat dA) {
+    mCache2.elem( arma::find(mCache2 > 0.0) ).ones();
+    mCache2.elem( arma::find(mCache2 <= 0.0) ).zeros();
+    return dA % mCache2;
 }
 
 void Relu::saveState(std::ofstream& output) {
@@ -47,8 +68,19 @@ arma::mat4D Tanh::forward(arma::mat4D Z) {
     return mCache;
 }
 
-std::vector<arma::mat4D> Tanh::backward(arma::mat4D dA) {
-    return {dA % (1. - arma::pow(mCache,2))};
+arma::mat4D Tanh::backward(arma::mat4D dA) {
+    return dA % (1. - arma::pow(mCache,2));
+}
+
+arma::mat Tanh::forward(arma::mat Z) {
+    const arma::mat pz = arma::exp(Z);
+    const arma::mat nz = arma::exp(-Z);
+    mCache2 = (pz - nz)/(pz + nz);
+    return mCache2;
+}
+
+arma::mat Tanh::backward(arma::mat dA) {
+    return dA % (1. - arma::pow(mCache2,2));
 }
 
 void Tanh::saveState(std::ofstream& output) {
@@ -66,12 +98,24 @@ arma::mat4D LeakyRelu::forward(arma::mat4D Z) {
     return Z;
 }
 
-std::vector<arma::mat4D> LeakyRelu::backward(arma::mat4D dA) {
+arma::mat4D LeakyRelu::backward(arma::mat4D dA) {
     //gZ.elem( arma::find(gZ > 0.0) ).fill(1.);
     //gZ.elem( arma::find(gZ < 0.0) ).fill(0.01);
     arma::Elem(dA, arma::find(mCache > 0.0)).fill(1.0);
     arma::Elem(dA, arma::find(mCache < 0.0)).fill(0.01);
-    return {dA};
+    return dA%mCache;
+}
+
+arma::mat LeakyRelu::forward(arma::mat Z) {
+    mCache2 = Z;
+    Z.elem( arma::find(Z <= 0.0) ) *= 0.01;
+    return Z;
+}
+
+arma::mat LeakyRelu::backward(arma::mat dA) {
+    mCache2.elem( arma::find(mCache2 > 0.0) ).fill(1.);
+    mCache2.elem( arma::find(mCache2 < 0.0) ).fill(0.01);
+    return dA % mCache2;
 }
 
 void LeakyRelu::saveState(std::ofstream& output) {

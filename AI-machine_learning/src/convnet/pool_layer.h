@@ -17,7 +17,13 @@ public:
     PoolLayer(std::string prefix);
 
     arma::mat4D forward(arma::mat4D A_prev) override;
-    std::vector<arma::mat4D> backward(arma::mat4D dZ) override;
+    arma::mat4D backward(arma::mat4D dZ) override;
+
+    arma::mat forward(arma::mat X) override { UNUSED(X); return arma::mat(); }
+    arma::mat backward(arma::mat dX) override  { UNUSED(dX); return arma::mat(); }
+    
+    bool is4D() { return true; }
+    void updateParameters(double learningRate) override { UNUSED(learningRate); };
 
     void saveState(std::ofstream& output) override;
     void loadState(std::ifstream& input) override;
