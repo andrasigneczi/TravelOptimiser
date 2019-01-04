@@ -19,7 +19,8 @@ public:
     
     bool is4D() { return false; }
     void updateParameters(double learningRate) override;
-
+    double getWeightSquareSum() override { return arma::accu(arma::square(mW)); }
+    
     void saveState(std::ofstream& output) override;
     void loadState(std::ifstream& input) override;
 

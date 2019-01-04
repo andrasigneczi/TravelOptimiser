@@ -33,7 +33,8 @@ public:
     arma::mat backward(arma::mat dX) override  { UNUSED(dX); return arma::mat(); }
     
     bool is4D() { return true; }
-    void updateParameters(double learningRate) override { UNUSED(learningRate); };
+    void updateParameters(double learningRate) override;
+    double getWeightSquareSum() override { return arma::accu(arma::square(mW)); }
 
     void saveState(std::ofstream& output) override;
     void loadState(std::ifstream& input) override;

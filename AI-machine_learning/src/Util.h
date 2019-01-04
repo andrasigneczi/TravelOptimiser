@@ -56,6 +56,7 @@ namespace arma {
     Q_DECL_EXPORT mat4D exp(const mat4D& x);
     Q_DECL_EXPORT mat4D operator+(double a, const mat4D& x);
     Q_DECL_EXPORT mat4D operator/(double a, const mat4D& x);
+    Q_DECL_EXPORT mat4D operator*(double a, const mat4D& x);
     Q_DECL_EXPORT mat4D operator-(double a, const mat4D& x);
     Q_DECL_EXPORT mat4D operator-(const mat4D& x, const mat4D& y);
     Q_DECL_EXPORT mat4D operator+(const mat4D& x, const mat4D& y);
@@ -67,6 +68,8 @@ namespace arma {
     Q_DECL_EXPORT mat4D operator>=(const mat4D& x, double y);
     Q_DECL_EXPORT mat4D pow(const mat4D& x, int y);
     Q_DECL_EXPORT uveclist find(const mat4D& x);
+    Q_DECL_EXPORT mat4D square(const mat4D& x);
+    Q_DECL_EXPORT double accu(const mat4D& x);
 
     class Q_DECL_EXPORT Elem {
     public:

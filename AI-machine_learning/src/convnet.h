@@ -1,6 +1,7 @@
-#ifndef CONVNET_H
-#define CONVNET_H
+#ifndef __CONVNET_H___
+#define __CONVNET_H__
 #include "convnet/forward_backward_if.h"
+#include <stack>
 
 /*
  * Layer types
@@ -35,32 +36,42 @@
 
 class ConvNet
 {
+    friend class ConvNetTest;
 public:
-    ConvNet();
+    ConvNet(arma::mat4D& X, arma::mat Y, double lambda);
     ConvNet(std::string prefix);
+    virtual ~ConvNet();
     ConvNet& operator<<(ForwardBackwardIF* obj) { mLayers.push_back(obj); return *this; }
 
-/*
     void miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate,
                                                     double beta, double beta1, double beta2,
                                                     double epsilon );
-
+/*
     bool saveState(std::string prefix);
     bool loadState(std::string prefix);
     void continueMinibatch(long long epoch);
+    */
 
-    arma::mat predict(const arma::mat& X, double* cost = 0, bool ignoreFeatureScaling = false);
+    arma::mat predict(const arma::mat4D& X, double* cost = 0);
     double accuracy(double* cost = 0);
 
-    double compute_cost_with_regularization(const arma::mat& A3, const arma::mat& Y, ActivationFunction af);
-    double compute_cost(const arma::mat& AL, const arma::mat& Y, ActivationFunction af = SIGMOID);
-    */
+    double compute_cost_with_regularization(const arma::mat& A3, const arma::mat& Y);
+    double compute_cost(const arma::mat& AL, const arma::mat& Y);
     
 private:
+    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon);
+    
     arma::mat forward(arma::mat4D X);
     void backward(arma::mat AL, arma::mat Y);
 
+    arma::mat flatten(const arma::mat4D& X);
+    arma::mat4D reshape(const arma::mat& X);
+    
+    std::stack<size_t> mFlattenedSizes;
     std::vector<ForwardBackwardIF*> mLayers;
+    arma::mat4D mX;
+    arma::mat mY;
+    double mLambda; // L2 regularization
 };
 
-#endif // CONVNET_H
+#endif // __CONVNET_H__

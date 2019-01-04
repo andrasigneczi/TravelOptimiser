@@ -348,13 +348,15 @@ namespace arma {
         // dim=0, return a row vector (of type urowvec or umat), with each column containing the index of the extremum value in the corresponding column of M
         // dim=1, return a column vector (of type uvec or umat), with each row containing the index of the extremum value in the corresponding row of M
         arma::mat p;
+        std::cerr << __FUNCTION__ << " A:" << A << "\n";
         arma::mat M = arma::max(A,dim);
         std::cerr << __FUNCTION__ << " M:" << size(M) << "\n";
         if( dim == 0 ) {
             p = arma::zeros(1, A.n_cols);
-        
+            std::cerr << __FUNCTION__ << " p:" << size(p) << "\n";
             for( size_t i=0; i < A.n_cols; ++i ) {
                 arma::uvec result = arma::find( A.col(i)==M(0,i) );
+                std::cerr << __FUNCTION__ << " result:" << size(result) << "\n";
                 p(0,i) = result(0,0);
             }
         } else {
@@ -409,6 +411,14 @@ namespace arma {
         mat4D retv = mat4D(x.size());
         for(size_t i = 0; i < retv.size(); ++i) {
             retv[i] = a/x[i];
+        }
+        return retv;
+    }
+
+    mat4D operator*(double a, const mat4D& x) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < retv.size(); ++i) {
+            retv[i] = a * x[i];
         }
         return retv;
     }
@@ -489,6 +499,22 @@ namespace arma {
         mat4D retv = mat4D(x.size());
         for(size_t i = 0; i < x.size(); ++i) {
             retv[i] = pow(x[i], y);
+        }
+        return retv;
+    }
+
+    mat4D square(const mat4D& x) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < x.size(); ++i) {
+            retv[i] = arma::square(x[i]);
+        }
+        return retv;
+    }
+    
+    double accu(const mat4D& x) {
+        double retv = 0;
+        for(size_t i = 0; i < x.size(); ++i) {
+            retv += arma::accu(x[i]);
         }
         return retv;
     }

@@ -8,6 +8,7 @@
 #include "convnet/pool_layer.h"
 #include "convnet/activation_layer.h"
 #include "convnet/fully_connected_layer.h"
+#include <convnet.h>
 
 using namespace Activation;
 using namespace Util;
@@ -116,10 +117,10 @@ public:
 
     static void conv_forward_test() {
         arma::arma_rng::set_seed_random();
-        ConvLayer cL(0, 0, 0, 0, 2, 2);
+        ConvLayer cL(2, 2, 3, 8, 2, 2);
         arma::mat4D A_prev = arma::randn(10, 4, 4, 3);
-        cL.mW = arma::randn(2, 2, 3, 8);
-        cL.mB = arma::randn(1, 1, 1, 8);
+        //cL.mW = arma::randn(2, 2, 3, 8);
+        //cL.mB = arma::randn(1, 1, 1, 8);
         arma::mat4D Z = cL.forward(A_prev);
         std::cout << "Z: " << Z << "\n";
         std::cout << Z[3](arma::span(2),arma::span(1), arma::span::all) << "\n";
@@ -277,6 +278,93 @@ public:
     }
 };
 
+class ConvNetTest {
+    static arma::mat4D initTestVal() {
+        // batch: 15
+        // image 32x32x1
+        arma::mat4D X(15, arma::cube(32,32,1));
+        double x = -20.5;
+        for(size_t i = 0; i < X.size(); ++i){
+            for(size_t j = 0; j < X[i].n_rows; ++j){
+                for(size_t k = 0; k < X[i].n_cols; ++k){
+                    for(size_t l = 0; l < X[i].n_slices; ++l){
+                        X[i](j, k, l) = x;
+                        x += 0.07;
+                    }
+                }
+            }
+        }
+        return X;
+    }
+
+public:
+    static void forward_backward_test() {
+        arma::mat4D X = initTestVal();
+        arma::mat Y(10, 15);
+        for(int i = 0; i < 15; ++i) {
+            Y(i % 10, i) = 1;
+        }
+        
+        
+        ConvNet convNet(X, Y, 1e-8);
+        
+        // No. of filters: 6
+        // Filter size: 5x5
+        // Padding: 0
+        // Stride: 1
+        // Input image: 32x32x1
+        //ConvLayer* convLayer = new ConvLayer(5, 5, 1, 6, 0, 1);
+
+        // No. of filters: 6
+        // Filter size: 2x2
+        // Stride: 2
+        // where are the 6 filters?
+        //PoolLayer* poolLayer = new PoolLayer(2, 2, 2, PoolLayer::AVG);
+
+        //PoolLayer AVG
+        //Sigmoid
+        //FullyConnectedLayer
+        //Sigmoid
+        //Softmax
+        
+        //FullyConnectedLayer* fullyConnectedLayer = new FullyConnectedLayer(40, 196 * 6);
+        
+        
+        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1);
+        Relu* relu1 = new Relu(true);
+        PoolLayer* poolLayer1 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
+
+        ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1);
+        Relu* relu2 = new Relu(true);
+        PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
+        
+        // 120x400 invalid 576x15
+        FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(120, 400);
+        Sigmoid* sigmoid3 = new Sigmoid(false);
+
+        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(84, 120);
+        Sigmoid* sigmoid4 = new Sigmoid(false);
+        
+        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(10, 84);
+        Softmax* softmax5 = new Softmax();
+        Sigmoid* sigmoid5 = new Sigmoid(false);
+
+        convNet << convLayer1 << relu1 << poolLayer1 
+        << convLayer2 << relu2 << poolLayer2 
+        << fullyConnectedLayer3 << sigmoid3
+        << fullyConnectedLayer4 << sigmoid4
+        << fullyConnectedLayer5 << sigmoid5; //softmax5;
+        
+        // arma::mat retv = convNet.forward(X);
+        // std::cout << "ConvNet forward result:" << retv << "\n";
+        // 
+        // std::cout << "cost: " << convNet.compute_cost_with_regularization(retv, Y) << "\n";
+        // 
+        // convNet.backward(retv, Y);
+        convNet.miniBatchGradientDescent(15, 15, 0.001, 0, 0, 0, 0);
+    }
+};
+
 void convLayerTest() {
     //ConvLayerTest::zero_pad_test();
     //ConvLayerTest::conv_single_step_test();
@@ -294,5 +382,6 @@ void convLayerTest() {
     ActivationLayerTest::lrelu_test();
     ActivationLayerTest::softmax_test();
     FullyConnectedLayerTest::fully_connected_test();
+    //ConvNetTest::forward_backward_test();
 }
 

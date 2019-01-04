@@ -58,16 +58,16 @@ arma::cube ConvLayer::copyBySlice(const arma::mat4D& W, size_t s) {
 }
 
 void ConvLayer::addSlice(arma::mat4D& W, size_t s, arma::cube val) {
-    std::cerr << __FUNCTION__ << ": dbg1\n";
-    std::cerr << __FUNCTION__ << ": val: "<< size(val) << "\n";
-    std::cerr << __FUNCTION__ << ": W: "<< size(W) << "\n";
+    // std::cerr << __FUNCTION__ << ": dbg1\n";
+    // std::cerr << __FUNCTION__ << ": val: "<< size(val) << "\n";
+    // std::cerr << __FUNCTION__ << ": W: "<< size(W) << "\n";
     for(size_t i = 0; i < W.size(); ++i) {
         W[i](arma::span::all,arma::span::all, arma::span(s)) += val(i);
     }
 }
 
 void ConvLayer::addSlice(arma::mat4D& W, size_t s, double val) {
-    std::cerr << __FUNCTION__ << ": dbg1\n";
+    //std::cerr << __FUNCTION__ << ": dbg1\n";
     for(size_t i = 0; i < W.size(); ++i) {
         W[i](arma::span::all,arma::span::all, arma::span(s)) += val;
     }
@@ -112,23 +112,23 @@ arma::mat4D ConvLayer::forward(arma::mat4D A_prev) {
                     size_t horiz_end = horiz_start + f_W;
 
                     // a_slice_prev = a_prev_pad[vert_start:vert_end,horiz_start:horiz_end,:]
-                    std::cerr << __FUNCTION__ << ": dbg3\n";
+                    // std::cerr << __FUNCTION__ << ": dbg3\n";
                     //arma::cube A_slice_prev = a_prev_pad_i.subcube(vert_start, horiz_start, 0, vert_end, horiz_end, a_prev_pad_i.n_slices - 1);
                     arma::cube A_slice_prev = a_prev_pad_i.subcube(arma::span(vert_start, vert_end - 1),
                                                                    arma::span(horiz_start, horiz_end - 1),
                                                                    arma::span::all);
                     // Z[i, h, w, c] = conv_single_step(a_slice_prev,W[:,:,:,c],b[:,:,:,c])
-                    std::cerr << __FUNCTION__ << ": dbg4\n";
-                    std::cerr << __FUNCTION__ << ": A_prev: " << size(A_prev) << "\n";
-                    std::cerr << __FUNCTION__ << ": A_prev_pad: " << size(A_prev_pad) << "\n";
-                    std::cerr << __FUNCTION__ << ": a_prev_pad_i: " << size(a_prev_pad_i) << "\n";
-                    std::cerr << __FUNCTION__ << ": A_slice_prev: " << size(A_slice_prev) << "\n";
-                    std::cerr << __FUNCTION__ << ": mW: " << size(mW) << "\n";
-                    std::cerr << __FUNCTION__ << ": mB: " << size(mB) << "\n";
-                    std::cerr << __FUNCTION__ << ": copyBySlice(mW, c): " << size(copyBySlice(mW, c)) << "\n";
-                    std::cerr << __FUNCTION__ << ": copyBySlice(mB, c): " << size(copyBySlice(mB, c)) << "\n";
+                    // std::cerr << __FUNCTION__ << ": dbg4\n";
+                    // std::cerr << __FUNCTION__ << ": A_prev: " << size(A_prev) << "\n";
+                    // std::cerr << __FUNCTION__ << ": A_prev_pad: " << size(A_prev_pad) << "\n";
+                    // std::cerr << __FUNCTION__ << ": a_prev_pad_i: " << size(a_prev_pad_i) << "\n";
+                    // std::cerr << __FUNCTION__ << ": A_slice_prev: " << size(A_slice_prev) << "\n";
+                    // std::cerr << __FUNCTION__ << ": mW: " << size(mW) << "\n";
+                    // std::cerr << __FUNCTION__ << ": mB: " << size(mB) << "\n";
+                    // std::cerr << __FUNCTION__ << ": copyBySlice(mW, c): " << size(copyBySlice(mW, c)) << "\n";
+                    // std::cerr << __FUNCTION__ << ": copyBySlice(mB, c): " << size(copyBySlice(mB, c)) << "\n";
                     Z[i](h, w, c) = convSingleStep(A_slice_prev, copyBySlice(mW, c), copyBySlice(mB, c));
-                    std::cerr << __FUNCTION__ << ": dbg5\n";
+                    // std::cerr << __FUNCTION__ << ": dbg5\n";
                 }
             }
         }
@@ -181,21 +181,21 @@ arma::mat4D ConvLayer::backward(arma::mat4D dZ) {
                     size_t horiz_start = w * mStride;
                     size_t horiz_end = horiz_start + f_W;
 
-                    std::cerr << __FUNCTION__ << ": dbg3\n";
+                    // std::cerr << __FUNCTION__ << ": dbg3\n";
                     arma::cube A_slice_prev = a_prev_pad_i.subcube(arma::span(vert_start, vert_end - 1),
                                                                    arma::span(horiz_start, horiz_end - 1),
                                                                    arma::span::all);
-                    std::cerr << __FUNCTION__ << ": dbg4\n";
+                    // std::cerr << __FUNCTION__ << ": dbg4\n";
                     da_prev_pad.subcube(arma::span(vert_start, vert_end - 1),
                                         arma::span(horiz_start, horiz_end - 1),
                                         arma::span::all) += copyBySlice(mW, c) * dZ[i](h, w, c);
-                    std::cerr << __FUNCTION__ << ": dbg5\n";
+                    // std::cerr << __FUNCTION__ << ": dbg5\n";
                     //dW[:,:,:,c] += A_slice_prev * dZ[i](h, w, c);
                     //db[:,:,:,c] += dZ[i](h, w, c);
                     addSlice(mdW, c, A_slice_prev * dZ[i](h, w, c));
-                    std::cerr << __FUNCTION__ << ": dbg6\n";
+                    // std::cerr << __FUNCTION__ << ": dbg6\n";
                     addSlice(mdb, c, dZ[i](h, w, c));
-                    std::cerr << __FUNCTION__ << ": dbg7\n";
+                    // std::cerr << __FUNCTION__ << ": dbg7\n";
                 }
 
             }
@@ -203,7 +203,7 @@ arma::mat4D ConvLayer::backward(arma::mat4D dZ) {
         mdA_prev[i] = da_prev_pad.subcube(arma::span(mPad,da_prev_pad.n_rows - mPad - 1),
                                          arma::span(mPad,da_prev_pad.n_cols - mPad - 1),
                                          arma::span::all);
-        std::cerr << __FUNCTION__ << ": dbg8\n";
+        //std::cerr << __FUNCTION__ << ": dbg8\n";
     }
     return mdA_prev;
     // return dA_prev, dW, db
@@ -215,4 +215,9 @@ void ConvLayer::saveState(std::ofstream& output) {
 
 void ConvLayer::loadState(std::ifstream& input) {
     UNUSED(input);
+}
+
+void ConvLayer::updateParameters(double learningRate) {
+    mW = mW - learningRate * mdW;
+    mB = mB - learningRate * mdb;
 }
