@@ -2,13 +2,14 @@
 #include <chrono>
 #include <armadillo>
 #include <ios>
-#include "Util.h"
+#include <Util.h>
 #include "activation.h"
-#include "convnet/conv_layer.h"
-#include "convnet/pool_layer.h"
-#include "convnet/activation_layer.h"
-#include "convnet/fully_connected_layer.h"
-#include <convnet.h>
+#include <convnet/conv_layer.h>
+#include <convnet/pool_layer.h>
+#include <convnet/activation_layer.h>
+#include <convnet/fully_connected_layer.h>
+#include <LeNet5.h>
+#include <CostAndGradient.h>
 
 using namespace Activation;
 using namespace Util;
@@ -90,6 +91,20 @@ void findTest() {
     std::cout << arma::find(Y < 0.5) << "\n";
 }
 
+void fill4D(arma::mat4D& X, double startVal, double step) {
+    double val = startVal;
+    for(size_t i = 0; i < X.size(); ++i) {
+        for(size_t j = 0; j < X[i].n_rows; ++j) {
+            for(size_t k = 0; k < X[i].n_cols; ++k) {
+                for(size_t l = 0; l < X[i].n_slices; ++l) {
+                    X[i](j, k, l) = val;
+                    val += step;
+                }
+            }
+        }
+    }
+}
+
 class ConvLayerTest {
 public:
     static void zero_pad_test() {
@@ -115,15 +130,190 @@ public:
         std::cout << "Z: " << Z << "\n";
     }
 
+    static arma::mat4D convForwardCalculation(ConvLayer& cL, arma::mat4D& A_prev) {
+        // number of images
+        size_t m = A_prev.size();
+
+        // image size: n_H_prev x n_W_prev x n_C_prev
+        // height
+        size_t n_H_prev = A_prev[0].n_rows;
+
+        // width
+        size_t n_W_prev = A_prev[0].n_cols;
+
+        // if it's RGB, then slices = 3, every color has its own layer
+        //size_t n_C_prev = A_prev[0].n_slices;
+
+
+        // filter: n_C x f_H x f_W x f_C_prev
+        // number of filters
+        size_t n_C      = cL.mW.size();
+
+        // height
+        size_t f_H      = cL.mW[0].n_rows;
+
+        // width
+        size_t f_W      = cL.mW[0].n_cols;
+
+        // number of channels, must be equal to n_C_prev
+        //size_t f_C_prev = cL.mW[0].n_slices;
+
+        // mB: n_C x 1 x 1 x 1
+
+        // Compute the dimensions of the CONV output volume.
+        int n_H = (n_H_prev - f_H + 2 * cL.mPad)/cL.mStride + 1;
+        int n_W = (n_W_prev - f_W + 2 * cL.mPad)/cL.mStride + 1;
+
+        // Z conv output, array of shape (m, n_H, n_W, n_C)
+        // Initialize the output volume Z with zeros.
+        arma::mat4D Z(m, arma::zeros(n_H, n_W, n_C));
+
+        // Create A_prev_pad by padding A_prev
+        arma::mat4D A_prev_pad = cL.zeroPad(A_prev);
+
+        for(size_t i = 0; i < m; ++i) {
+            arma::cube& a_prev_pad_i = A_prev_pad[i];
+            for(int h = 0; h < n_H; ++h) {
+                for(int w = 0; w < n_W; ++w) {
+                    for(size_t c = 0; c < n_C; ++c) {
+
+                        // position on a_prev_pad_i
+                        size_t vert_start = h * cL.mStride;
+                        size_t vert_end = vert_start + f_H;
+                        size_t horiz_start = w * cL.mStride;
+                        size_t horiz_end = horiz_start + f_W;
+
+                        // cube from a_prev_pad_i
+                        arma::cube slice = a_prev_pad_i(arma::span(vert_start, vert_end - 1),
+                                                        arma::span(horiz_start, horiz_end - 1),
+                                                        arma::span::all);
+                        Z[i](h, w, c) += cL.convSingleStep(slice, cL.mW[c], cL.mB[c]);
+                    } // c
+                } // w
+            } // h
+        } // i
+        return Z;
+    }
+
+    static void initA_prev(arma::mat4D& A_prev) {
+        std::vector<std::vector<int>> layer1;
+        layer1.push_back({1,2,3,4,5,1});
+        layer1.push_back({6,7,8,9,10,1});
+        layer1.push_back({11,12,13,14,15,2});
+        layer1.push_back({16,17,18,19,20,2});
+
+        std::vector<std::vector<int>> layer2;
+        layer2.push_back({-1,-2,-4, -6, -8, 1});
+        layer2.push_back({0, 1, 2, 3, 4, 2});
+        layer2.push_back({-10,-9,-8, -7, -6, 1});
+        layer2.push_back({5, 4, 3, 2, 1, 2});
+
+        std::vector<std::vector<int>> layer3;
+        layer3.push_back({2, 1, 0, 3, 4, 1});
+        layer3.push_back({-2, -1, 0, -3, -4, 2});
+        layer3.push_back({6, -3, 5, -4, 1, 1});
+        layer3.push_back({0, 1, 2, 0, 0, 2});
+
+        for(int row = 0; row < 4; ++row) {
+            for(int col = 0; col < 6; ++col) {
+                // there is only one image
+                A_prev[0](row, col, 0) = layer1[row][col];
+                A_prev[0](row, col, 1) = layer2[row][col];
+                A_prev[0](row, col, 2) = layer3[row][col];
+            }
+        }
+    }
+
+    static std::vector<std::vector<std::vector<int>>> initFilters() {
+        std::vector<std::vector<int>> layer1;
+        layer1.push_back({1, 0});
+        layer1.push_back({1, 0});
+
+        std::vector<std::vector<int>> layer2;
+        layer2.push_back({1, 0});
+        layer2.push_back({0, 1});
+
+        std::vector<std::vector<int>> layer3;
+        layer3.push_back({0, 1});
+        layer3.push_back({1, 0});
+
+        std::vector<std::vector<std::vector<int>>> filter;
+        filter.push_back(layer1);
+        filter.push_back(layer2);
+        filter.push_back(layer3);
+
+        return filter;
+    }
+
+    static void initW(arma::mat4D& W) {
+        auto filter = initFilters();
+        for(size_t w = 0; w < W.size(); ++w) { // index of filter
+            for(size_t row = 0; row < W[0].n_rows; ++row) { // index of row
+                for(size_t col = 0; col < W[0].n_cols; ++col) { // index of col
+                    for(size_t layer = 0; layer < W[0].n_slices; ++layer) { // index of layer
+                        W[w](row, col, layer) = filter[layer][row][col];
+                    }
+                }
+            }
+        }
+    }
+
+    static void initW2(arma::mat4D& W) {
+        auto filter = initFilters();
+
+        for(size_t row = 0; row < W.size(); ++row) { // index of row
+            for(size_t col = 0; col < W[0].n_rows; ++col) { // index of col
+                for(size_t layer = 0; layer < W[0].n_cols; ++layer) { // index of layer
+                    for(size_t w = 0; w < W[0].n_slices; ++w) { // index of filter
+                        W[row](col, layer, w) = filter[layer][row][col];
+                    }
+                }
+            }
+        }
+    }
+
+    static void initB(arma::mat4D& B) {
+        for(size_t i = 0; i < B[0].n_slices; ++i) {
+            B[0](0, 0, i) = 0;
+        }
+    }
+
+    static void initB2(arma::mat4D& B) {
+        for(size_t i = 0; i < B.size(); ++i) {
+            B[i](0, 0, 0) = 0;
+        }
+    }
+
     static void conv_forward_test() {
         arma::arma_rng::set_seed_random();
-        ConvLayer cL(2, 2, 3, 8, 2, 2);
-        arma::mat4D A_prev = arma::randn(10, 4, 4, 3);
-        //cL.mW = arma::randn(2, 2, 3, 8);
-        //cL.mB = arma::randn(1, 1, 1, 8);
+        // n_C: number of the filters
+        // n_C_prev: number of the layers/channels
+        // ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int stride);
+        int f_H = 2, f_W = 2, n_C_prev = 3, n_C = 4, pad = 1, stride = 2;
+        ConvLayer cL(f_H, f_W, n_C_prev, n_C, pad, stride);
+
+        // m x height x width x channels
+        int m = 1, height = 4, width = 6, channels = n_C_prev;
+        arma::mat4D A_prev(m, arma::cube(height, width, channels));
+        initA_prev(A_prev);
+        cL.mW = arma::mat4D(f_H, arma::cube(f_W, n_C_prev, n_C));
+        initW2(cL.mW);
+        initB(cL.mB);
+
         arma::mat4D Z = cL.forward(A_prev);
-        std::cout << "Z: " << Z << "\n";
-        std::cout << Z[3](arma::span(2),arma::span(1), arma::span::all) << "\n";
+        std::cout << "Z size: " << size(Z) << "\n";
+        std::cout << "Z: " << Z << "\n\n";
+
+        cL.mW = arma::mat4D(n_C, arma::cube(f_H, f_W, n_C_prev));
+        cL.mB = arma::mat4D(n_C, arma::cube(1, 1, 1));
+
+        initW(cL.mW);
+        initB2(cL.mB);
+
+        arma::mat4D Z2 = convForwardCalculation(cL, A_prev);
+        std::cout << "Z2 size: " << size(Z2) << "\n";
+        std::cout << "Z2: " << Z2 << std::endl;
+        std::cout << "equals: " << ( arma::accu(Z - Z2) == 0. ) << std::endl;
     }
 
     static void conv_backward_test() {
@@ -140,7 +330,7 @@ public:
         ConvLayer cL(0, 0, 0, 0, 2, 2);
         arma::mat4D dW = arma::zeros(2,2,3,8);
         arma::cube val = arma::ones(2,2,3);
-        cL.addSlice(dW, 1, val);
+        cL.addSlice(dW, 7, val);
         std::cout << dW << "\n";
     }
 };
@@ -194,17 +384,7 @@ class ActivationLayerTest {
 public:
     static arma::mat4D initTestVal() {
         arma::mat4D X(5, arma::cube(4,3,2));
-        double x = -2.5;
-        for(size_t i = 0; i < X.size(); ++i){
-            for(size_t j = 0; j < X[i].n_rows; ++j){
-                for(size_t k = 0; k < X[i].n_cols; ++k){
-                    for(size_t l = 0; l < X[i].n_slices; ++l){
-                        X[i](j, k, l) = x;
-                        x += 0.07;
-                    }
-                }
-            }
-        }
+        fill4D(X, -2.5, 0.07);
         return X;
     }
 
@@ -283,17 +463,7 @@ class ConvNetTest {
         // batch: 15
         // image 32x32x1
         arma::mat4D X(15, arma::cube(32,32,1));
-        double x = -20.5;
-        for(size_t i = 0; i < X.size(); ++i){
-            for(size_t j = 0; j < X[i].n_rows; ++j){
-                for(size_t k = 0; k < X[i].n_cols; ++k){
-                    for(size_t l = 0; l < X[i].n_slices; ++l){
-                        X[i](j, k, l) = x;
-                        x += 0.07;
-                    }
-                }
-            }
-        }
+        fill4D(X, -20.5, 0.07);
         return X;
     }
 
@@ -346,7 +516,7 @@ public:
         Sigmoid* sigmoid4 = new Sigmoid(false);
         
         FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(10, 84);
-        Softmax* softmax5 = new Softmax();
+        //Softmax* softmax5 = new Softmax();
         Sigmoid* sigmoid5 = new Sigmoid(false);
 
         convNet << convLayer1 << relu1 << poolLayer1 
@@ -363,6 +533,121 @@ public:
         // convNet.backward(retv, Y);
         convNet.miniBatchGradientDescent(15, 15, 0.001, 0, 0, 0, 0);
     }
+
+    static void ConvNet_test() {
+        arma::mat X, y, Xt, yt, Xtraining, Ytraining, Xval, Yval;
+
+        std::cout << "Loading training set and test set\n";
+
+        X.load("../TH_plus_BG_trainingset.bin");
+        y.load("../TH_plus_BG_trainingset_result.bin");
+
+        // I use only the first 3000 item for this test
+        const uint sampleCount = 1000;
+        if(X.n_rows > sampleCount) {
+            X = X.rows(0, sampleCount - 1);
+            y = y.rows(0, sampleCount - 1);
+        }
+        std::cout << "Data set size: " << X.n_rows << "\n";
+        std::cout << "Prepare training and validation set...\n";
+        Util::prepareTrainingAndValidationSet(X, y, Xtraining, Ytraining, Xval, Yval);
+        X = Xtraining;
+        y = Ytraining;
+        Xt = Xval;
+        yt = Yval;
+
+        std::cout << "Training set original size: " << size(X) << "\n";
+        std::cout << "Test set size: " << size(Xt) << "\n";
+        std::cout << "Training label set size: " << size(y) << "\n";
+        std::cout << "Test label result set size: " << size(yt) << "\n";
+
+        // Conversion to the new format
+        X = X.t();
+        Xt = Xt.t();
+
+        // finding the minimum and maximum label values
+        int minYVal = 100000;
+        int maxYVal = 0;
+
+        for(size_t i = 0; i < y.n_rows; ++i){
+            if(y(i,0) < minYVal) {
+                minYVal = y(i,0);
+            }
+            if(y(i,0) > maxYVal) {
+                maxYVal = y(i,0);
+            }
+        }
+        for(size_t i = 0; i < yt.n_rows; ++i){
+            if(yt(i,0) < minYVal) {
+                minYVal = yt(i,0);
+            }
+            if(yt(i,0) > maxYVal) {
+                maxYVal = yt(i,0);
+            }
+        }
+
+        std::cout << "Minumum and maximum y values: " << minYVal << ";" << maxYVal << std::endl;
+
+        int num_labels = maxYVal - minYVal + 1;
+        arma::mat yy = arma::zeros(num_labels, y.n_rows);
+        for(size_t i = 0; i < y.n_rows; ++i){
+            yy(y(i,0) - minYVal,i) = 1;
+        }
+        arma::mat yyt = arma::zeros(num_labels, yt.n_rows);
+        for(size_t i = 0; i < yt.n_rows; ++i){
+            yyt(yt(i,0) - minYVal,i) = 1;
+        }
+
+        // feature scaling
+        class CG : public CostAndGradient {
+        public:
+            CG(arma::mat&a, arma::mat& b) : CostAndGradient(a,b,0) {}
+            RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override {UNUSED(nn_params); UNUSED(costOnly); return mRetVal;}
+        };
+        arma::mat dummy1, dummy2;
+        CG cg(dummy1, dummy2);
+        X = cg.featureScaling(X, false, 0);
+
+        // arma::mat X ==> arma::mat4D X
+        arma::mat4D X4D = arma::mat4D(X.n_cols);
+        for(size_t i = 0; i < X.n_cols; ++i) {
+            X4D[i] = arma::join_slices(X4D[i], X.col(i));
+            X4D[i].reshape(24, 24, 1);
+        }
+
+        std::cout << "Training set converted (4D) size: " << size(X4D) << "\n";
+        std::cout << "Training result set size: " << size(yy) << "\n";
+        std::cout << "Test result set size: " << size(yyt) << "\n";
+        ConvNet convNet(X4D, yy, 0);
+
+
+
+
+        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1);
+        Sigmoid* relu1 = new Sigmoid(true);
+        PoolLayer* poolLayer1 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
+
+        ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1);
+        Sigmoid* relu2 = new Sigmoid(true);
+        PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
+
+        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(84, 144);
+        Sigmoid* sigmoid4 = new Sigmoid(false);
+
+        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, 84);
+        //Softmax* softmax5 = new Softmax();
+        Sigmoid* sigmoid5 = new Sigmoid(false);
+
+        convNet << convLayer1 << relu1 << poolLayer1
+        << convLayer2 << relu2 << poolLayer2
+        << fullyConnectedLayer4 << sigmoid4
+        << fullyConnectedLayer5 << sigmoid5; //softmax5;
+
+
+
+
+        convNet.miniBatchGradientDescent(10, 32, 0.001, 0, 0, 0, 0);
+    }
 };
 
 void convLayerTest() {
@@ -376,12 +661,13 @@ void convLayerTest() {
     //ConvLayerTest::distributeValue_test();
     //ConvLayerTest::pool_backward_test();
     //findTest();
-    ActivationLayerTest::sigmoid_test();
-    ActivationLayerTest::relu_test();
-    ActivationLayerTest::tanh_test();
-    ActivationLayerTest::lrelu_test();
-    ActivationLayerTest::softmax_test();
-    FullyConnectedLayerTest::fully_connected_test();
+    //ActivationLayerTest::sigmoid_test();
+    //ActivationLayerTest::relu_test();
+    //ActivationLayerTest::tanh_test();
+    //ActivationLayerTest::lrelu_test();
+    //ActivationLayerTest::softmax_test();
+    //FullyConnectedLayerTest::fully_connected_test();
     //ConvNetTest::forward_backward_test();
+    ConvNetTest::ConvNet_test();
 }
 

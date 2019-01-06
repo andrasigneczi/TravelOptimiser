@@ -35,7 +35,8 @@ enum IFName {
     LEAKY_RELU,
     SOFTMAX,
     POOL,
-    FULLY_CONNECTED
+    FULLY_CONNECTED,
+    UNKNOWN
 };
 
 class ForwardBackwardIF {
@@ -56,6 +57,40 @@ public:
     
     virtual void saveState(std::ofstream& output) = 0;
     virtual void loadState(std::ifstream& input) = 0;
+};
+
+class LayerNameVisitor final : public Visitor {
+public:
+        LayerNameVisitor() : mName(IFName::UNKNOWN) {}
+
+        virtual void visit(Softmax*)             final { mName = IFName::SOFTMAX; }
+        virtual void visit(Sigmoid*)             final { mName = IFName::SIGMOID; }
+        virtual void visit(Tanh*)                final { mName = IFName::TANH; }
+        virtual void visit(Relu*)                final { mName = IFName::RELU; }
+        virtual void visit(LeakyRelu*)           final { mName = IFName::LEAKY_RELU; }
+        virtual void visit(FullyConnectedLayer*) final { mName = IFName::FULLY_CONNECTED; }
+        virtual void visit(ConvLayer*)           final { mName = IFName::CONV; }
+        virtual void visit(PoolLayer*)           final { mName = IFName::POOL; }
+
+        virtual IFName getName(ForwardBackwardIF* fBIF) final { fBIF->accept(*this); return mName; }
+
+        virtual std::string getNameStr(ForwardBackwardIF* fBIF) final {
+            fBIF->accept(*this);
+            switch(mName) {
+            case CONV:            return "CONV"; break;
+            case SIGMOID:         return "SIGMOID"; break;
+            case RELU:            return "RELU"; break;
+            case TANH:            return "TANH"; break;
+            case LEAKY_RELU:      return "LEAKY_RELU"; break;
+            case SOFTMAX:         return "SOFTMAX"; break;
+            case POOL:            return "POOL"; break;
+            case FULLY_CONNECTED: return "FULLY_CONNECTED"; break;
+            case UNKNOWN:         return "UNKNOWN"; break;
+            }
+            return "UNKNOWN";
+        }
+private:
+        IFName mName;
 };
 
 #endif // __FORWARD_BACKWARD_IF_H__

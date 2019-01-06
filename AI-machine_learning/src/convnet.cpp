@@ -25,6 +25,7 @@ arma::mat ConvNet::forward(arma::mat4D X) {
     bool fD = true;
     mFlattenedSizes = std::stack<size_t>();
     
+    LayerNameVisitor layerNameVisitor;
     // Az utolsó layert is meg kell hívni (softmax)?
     for(ForwardBackwardIF* layer : mLayers) {
         if(layer->is4D()) {
@@ -34,9 +35,11 @@ arma::mat ConvNet::forward(arma::mat4D X) {
                 fD = true;
             }
             //std::cerr << "ConvNet::" << __FUNCTION__ << ": before layer forward1: " << X << "\n";
-            std::cerr << "ConvNet::" << __FUNCTION__ << ": dbg1 input size: " << size(X) << "\n";
+            std::cerr << "ConvNet::" << __FUNCTION__ << ": dbg1 " << layerNameVisitor.getNameStr(layer) << " input size: " << size(X) << "\n";
+            std::cerr << "ConvNet::" << __FUNCTION__ << ": X: " << X << "\n";
             X = layer->forward(X);
-            std::cerr << "ConvNet::" << __FUNCTION__ << ": dbg2 output size: " << size(X) << "\n";
+            std::cerr << "ConvNet::" << __FUNCTION__ << ": dbg2 " << layerNameVisitor.getNameStr(layer) << " output size: " << size(X) << "\n";
+            std::cerr << "ConvNet::" << __FUNCTION__ << ": X: " << X << "\n";
         } else {
             if(fD) {
                 // vectorize mat4D ==> mat
@@ -46,9 +49,11 @@ arma::mat ConvNet::forward(arma::mat4D X) {
                 fD = false;
             }
             //std::cerr << "ConvNet::" << __FUNCTION__ << ": before layer forward2: " << X2 << "\n";
-            std::cerr << "ConvNet::" << __FUNCTION__ << ": dbg3 output size: " << size(X2) << "\n";
+            std::cerr << "ConvNet::" << __FUNCTION__ << ": dbg3 " << layerNameVisitor.getNameStr(layer) << " input size: " << size(X2) << "\n";
+            std::cerr << "ConvNet::" << __FUNCTION__ << ": X2: " << X2 << "\n";
             X2 = layer->forward(X2);
-            std::cerr << "ConvNet::" << __FUNCTION__ << ": dbg4 output size: " << size(X2) << "\n";
+            std::cerr << "ConvNet::" << __FUNCTION__ << ": dbg4 " << layerNameVisitor.getNameStr(layer) << " output size: " << size(X2) << "\n";
+            std::cerr << "ConvNet::" << __FUNCTION__ << ": X2: " << X2 << "\n";
         }
     }
     return X2;
@@ -59,9 +64,9 @@ void ConvNet::backward(arma::mat AL, arma::mat Y) {
     bool fD = false;
     
     // Initializing the backpropagation from neural network v2
-    //AL = - (Y/AL - (1. - Y)/(1. - AL));
+    AL = - (Y/AL - (1. - Y)/(1. - AL));
     
-    AL = Y;
+    //AL = Y;
 
     for(size_t i = mLayers.size(); i >= 1; --i) {
         ForwardBackwardIF* layer = mLayers[i - 1];
@@ -110,7 +115,7 @@ arma::mat4D ConvNet::reshape(const arma::mat& X) {
     arma::mat4D retv = arma::mat4D(X.n_cols);
     
     for(size_t i = 0; i < X.n_cols; ++i) {
-        arma::join_slices(retv[i], X.col(i));
+        retv[i] = arma::join_slices(retv[i], X.col(i));
         retv[i].reshape(f_H, f_W, slice);
     }
     return retv;
@@ -143,17 +148,8 @@ double ConvNet::compute_cost(const arma::mat& AL, const arma::mat& Y) {
     double m = (double)Y.n_cols;
     double cost = 0;
     
-    class V : public Visitor {
-        public:
-            V() : mName(IFName::SIGMOID){}
-            void visit(Softmax*){ mName = IFName::SOFTMAX; }
-            IFName mName;
-    };
-    
-    V v;
-    mLayers[mLayers.size() - 1]->accept(v);
-    
-    if( v.mName == IFName::SOFTMAX) {
+    LayerNameVisitor v;
+    if( v.getName(mLayers[mLayers.size() - 1]) == IFName::SOFTMAX) {
         arma::mat maxY = arma::conv_to<arma::mat>::from(arma::index_max(Y,0));
         //CERR  << __FUNCTION__ << " maxY: " << size(maxY) << "\n";
         arma::mat ALt = arma::zeros(1,AL.n_cols);

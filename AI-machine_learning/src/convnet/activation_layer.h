@@ -16,6 +16,8 @@ public:
     bool is4D() { return m4D; }
     void updateParameters(double learningRate) override { UNUSED(learningRate); };
 
+    void accept(Visitor& visitor) override { visitor.visit(this); }
+
     void saveState(std::ofstream& output) override;
     void loadState(std::ifstream& input) override;
 
@@ -37,6 +39,8 @@ public:
     
     bool is4D() { return m4D; }
     void updateParameters(double learningRate) override { UNUSED(learningRate); };
+
+    void accept(Visitor& visitor) override { visitor.visit(this); }
 
     void saveState(std::ofstream& output) override;
     void loadState(std::ifstream& input) override;
@@ -60,6 +64,8 @@ public:
     bool is4D() { return m4D; }
     void updateParameters(double learningRate) override { UNUSED(learningRate); };
 
+    void accept(Visitor& visitor) override { visitor.visit(this); }
+
     void saveState(std::ofstream& output) override;
     void loadState(std::ifstream& input) override;
 
@@ -81,6 +87,8 @@ public:
     
     bool is4D() { return m4D; }
     void updateParameters(double learningRate) override { UNUSED(learningRate); };
+
+    void accept(Visitor& visitor) override { visitor.visit(this); }
 
     void saveState(std::ofstream& output) override;
     void loadState(std::ifstream& input) override;
@@ -106,6 +114,7 @@ public:
     void updateParameters(double learningRate) override { UNUSED(learningRate); };
 
     void accept(Visitor& visitor) override { visitor.visit(this); }
+
     void saveState(std::ofstream& output) override;
     void loadState(std::ifstream& input) override;
 private:

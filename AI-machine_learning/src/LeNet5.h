@@ -12,4 +12,4 @@ private:
     void init();
 };
 
-#endif
+#endif // __LENET5_H__

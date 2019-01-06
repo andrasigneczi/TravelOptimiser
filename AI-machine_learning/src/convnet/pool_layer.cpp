@@ -38,7 +38,7 @@ arma::mat4D PoolLayer::forward(arma::mat4D A_prev) {
 
                     arma::cube A_slice_prev = A_prev[i].subcube(arma::span(vert_start, vert_end - 1),
                                                                    arma::span(horiz_start, horiz_end - 1),
-                                                                   arma::span::all);
+                                                                   arma::span(c));
                     if(mMode == MAX) {
                         A[i](h, w, c) = A_slice_prev.max();
                     } else if(mMode == AVG) {
@@ -109,6 +109,6 @@ arma::mat PoolLayer::createMaskFromWindow(arma::mat x) {
 }
 
 arma::mat PoolLayer::distributeValue(double dZ, int n_H, int n_W) {
-    double average = dZ/(double)n_H/(double)n_W;
+    double average = dZ/((double)(n_H * n_W));
     return arma::ones(n_H, n_W) * average;
 }
