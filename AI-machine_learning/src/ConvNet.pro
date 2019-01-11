@@ -20,7 +20,8 @@ SOURCES += Util.cpp qcustomplot.cpp \
     convnet/pool_layer.cpp \
     convnet/activation_layer.cpp \
     convnet/fully_connected_layer.cpp \
-    LeNet5.cpp
+    LeNet5.cpp \
+    convnet/layerobserver.cpp
 HEADERS  += Util.h  qcustomplot.h \
     convnet.h \
     convnet/conv_layer.h \
@@ -28,7 +29,8 @@ HEADERS  += Util.h  qcustomplot.h \
     convnet/pool_layer.h \
     convnet/activation_layer.h \
     convnet/fully_connected_layer.h \
-    LeNet5.h
+    LeNet5.h \
+    convnet/layerobserver.h
 
 #FORMS    += mainwindow.ui
 

@@ -2,14 +2,15 @@
 #define __FULLY_CONNECTED_LAYER_H__
 
 #include "forward_backward_if.h"
+#include "layerobserver.h"
 
-class FullyConnectedLayer : public ForwardBackwardIF
+class FullyConnectedLayer : public ForwardBackwardIF, public LayerSubject
 {
     friend class FullyConnectedLayerTest;
 public:
      // size_H: number if output connections
      // size_W: number if input connections
-    FullyConnectedLayer(int size_H, int size_W, double lambda = 1e+6);
+    FullyConnectedLayer(int size_H, int size_W, double lambda);
 
     arma::mat4D forward(arma::mat4D A_prev) override { UNUSED(A_prev); return arma::mat4D(); };
     arma::mat4D backward(arma::mat4D dZ) override { UNUSED(dZ); return {arma::mat4D()}; };

@@ -36,10 +36,10 @@ arma::mat ConvNet::forward(arma::mat4D X) {
             }
             //std::cerr << "ConvNet::" << __FUNCTION__ << ": before layer forward1: " << X << "\n";
             std::cerr << "ConvNet::" << __FUNCTION__ << ": dbg1 " << layerNameVisitor.getNameStr(layer) << " input size: " << size(X) << "\n";
-            std::cerr << "ConvNet::" << __FUNCTION__ << ": X: " << X << "\n";
+            //std::cerr << "ConvNet::" << __FUNCTION__ << ": X: " << X << "\n";
             X = layer->forward(X);
             std::cerr << "ConvNet::" << __FUNCTION__ << ": dbg2 " << layerNameVisitor.getNameStr(layer) << " output size: " << size(X) << "\n";
-            std::cerr << "ConvNet::" << __FUNCTION__ << ": X: " << X << "\n";
+            //std::cerr << "ConvNet::" << __FUNCTION__ << ": X: " << X << "\n";
         } else {
             if(fD) {
                 // vectorize mat4D ==> mat
@@ -50,10 +50,10 @@ arma::mat ConvNet::forward(arma::mat4D X) {
             }
             //std::cerr << "ConvNet::" << __FUNCTION__ << ": before layer forward2: " << X2 << "\n";
             std::cerr << "ConvNet::" << __FUNCTION__ << ": dbg3 " << layerNameVisitor.getNameStr(layer) << " input size: " << size(X2) << "\n";
-            std::cerr << "ConvNet::" << __FUNCTION__ << ": X2: " << X2 << "\n";
+            //std::cerr << "ConvNet::" << __FUNCTION__ << ": X2: " << X2 << "\n";
             X2 = layer->forward(X2);
             std::cerr << "ConvNet::" << __FUNCTION__ << ": dbg4 " << layerNameVisitor.getNameStr(layer) << " output size: " << size(X2) << "\n";
-            std::cerr << "ConvNet::" << __FUNCTION__ << ": X2: " << X2 << "\n";
+            //std::cerr << "ConvNet::" << __FUNCTION__ << ": X2: " << X2 << "\n";
         }
     }
     return X2;
@@ -130,7 +130,6 @@ double ConvNet::compute_cost_with_regularization(const arma::mat& AL, const arma
     double L2_regularization_cost = 0;
     if( mLambda != 0. ){
         for(size_t l = 0; l < mLayers.size(); ++l) {
-            // TODO!!!!!!!!!!!!!!!!!!
             //L2_regularization_cost += arma::accu(arma::square(mParameters["W" + std::to_string(l)]));
             L2_regularization_cost += mLayers[l]->getWeightSquareSum();
         }
@@ -235,9 +234,9 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
 
             std::cerr  << "ConvNet::" << __FUNCTION__ << " X.size(): " << size(X) << "\n";
             std::cerr  << "ConvNet::" << __FUNCTION__ << " Y.size(): " << size(Y) << "\n";
-            std::cerr  << "ConvNet::" << __FUNCTION__ << " X: " << X << "\n";
+            //std::cerr  << "ConvNet::" << __FUNCTION__ << " X: " << X << "\n";
             arma::mat AL = forward(X);
-            std::cerr  << "ConvNet::" << __FUNCTION__ << " AL: " << AL << "\n";
+            //std::cerr  << "ConvNet::" << __FUNCTION__ << " AL: " << AL << "\n";
             //CERR  << __FUNCTION__ << " dbg2\n";
             // Compute cost.
             //double cost = compute_cost(AL, mY);
@@ -256,7 +255,7 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
         //mBatchNorm.setTrainOff();
 
         // Print the cost every 100 training example
-        if( i % 10 != 11 ){
+        if( i % 10 == 0 ){
             double cost=0;
             double acc = accuracy(&cost);
             std::cout << "Iteration: " << i << "; Accuracy: " << acc << "%; " << cost << "\n";

@@ -57,21 +57,21 @@ arma::cube ConvLayer::copyBySlice(const arma::mat4D& W, size_t s) {
     return retV;
 }
 
-void ConvLayer::addSlice(arma::mat4D& W, size_t s, arma::cube val) {
+void ConvLayer::addSlice(arma::mat4D& dW, size_t s, arma::cube val) {
     // std::cerr << __FUNCTION__ << ": dbg1\n";
     // std::cerr << __FUNCTION__ << ": val: "<< size(val) << "\n";
     // std::cerr << __FUNCTION__ << ": W: "<< size(W) << "\n";
     //dW[:,:,:,c] += A_slice_prev * dZ[i](h, w, c);
 
-    for(size_t i = 0; i < W.size(); ++i) {
-        W[i].slice(s) += val(i);
+    for(size_t i = 0; i < dW.size(); ++i) {
+        dW[i].slice(s) += val(i);
     }
 }
 
-void ConvLayer::addSlice(arma::mat4D& W, size_t s, double val) {
+void ConvLayer::addSlice(arma::mat4D& dB, size_t s, double val) {
     //std::cerr << __FUNCTION__ << ": dbg1\n";
-    for(size_t i = 0; i < W.size(); ++i) {
-        W[i].slice(s) += val;
+    for(size_t i = 0; i < dB.size(); ++i) {
+        dB[i].slice(s) += val;
     }
 }
 
@@ -93,8 +93,8 @@ arma::mat4D ConvLayer::forward(arma::mat4D A_prev) {
     size_t n_C = mW[0].n_slices;
 
     // Compute the dimensions of the CONV output volume.
-    int n_H = (int)(n_H_prev - f_H + 2 * mPad)/mStride + 1;
-    int n_W = (int)(n_W_prev - f_W + 2 * mPad)/mStride + 1;
+    int n_H = (n_H_prev - f_H + 2 * mPad)/mStride + 1;
+    int n_W = (n_W_prev - f_W + 2 * mPad)/mStride + 1;
 
     // Initialize the output volume Z with zeros.
     arma::mat4D Z(m, arma::zeros(n_H, n_W, n_C));

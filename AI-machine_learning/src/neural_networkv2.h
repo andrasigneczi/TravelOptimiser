@@ -9,8 +9,10 @@
 #include "Util.h"
 #include "neural_network/optimizer.h"
 #include "neural_network/batch_norm.h"
+#include "convnet/layerobserver.h"
 
-class NeuralNetworkV2 final : public CostAndGradient {
+class NeuralNetworkV2 final : public CostAndGradient, public LayerSubject {
+    friend class ConvNetTest;
     public:
     
     enum ActivationFunction {

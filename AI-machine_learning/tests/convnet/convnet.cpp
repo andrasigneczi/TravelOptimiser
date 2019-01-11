@@ -10,6 +10,7 @@
 #include <convnet/fully_connected_layer.h>
 #include <LeNet5.h>
 #include <CostAndGradient.h>
+#include <neural_networkv2.h>
 
 using namespace Activation;
 using namespace Util;
@@ -437,7 +438,7 @@ public:
 class FullyConnectedLayerTest {
 public:
     static void fully_connected_test() {
-        FullyConnectedLayer s(11, 20);
+        FullyConnectedLayer s(11, 20, 0);
         arma::mat X;
 
         X << -10.5 << -5.1 << -3.1 << -0.5 << -0.1 << 0 << 0.1 << 0.5 << 3.1 << 5.1 << 10.6 << -10.5 << -5.1 << -3.1 << -0.5 << -0.1 << 0 << 0.1 << 0.5 << 3.1 << arma::endr <<
@@ -455,6 +456,39 @@ public:
         std::cout << "\nFC backward result:\n";
         arma::mat result2 = s.backward(result);
         std::cout << result2.t() << std::endl << std::endl;
+    }
+
+    static void saveFC1(FullyConnectedLayer* layer, std::ofstream& o) {
+        o <<  "linear forward: A_prev:\n" << layer->mCache << "\n";
+    }
+    static void saveFC2(FullyConnectedLayer* layer, std::ofstream& o) {
+        o <<  "linear backward: dW:\n" << layer->mdW << "\n";
+        o <<  "linear backward: db:\n" << layer->mdb << "\n";
+        o <<  "linear backward: dA_prev:\n" << layer->mdA << "\n";
+    }
+    static void saveFC3(FullyConnectedLayer* layer, std::ofstream& o) {
+        o <<  "linear backward: A_prev:\n" << layer->mCache << "\n";
+        o <<  "linear backward: W:\n" << layer->mW << "\n";
+        o <<  "linear backward: mLambda:\n" << layer->mLambda << "\n";
+    }
+    static void saveFC4(FullyConnectedLayer* layer, std::ofstream& o) {
+        //Util::saveMat(o, layer->mCache);
+    }
+    static void saveFC5(FullyConnectedLayer* layer, std::ofstream& o) {
+        //Util::saveMat(o, layer->mCache);
+    }
+
+    static void printWeights(FullyConnectedLayer* layer, std::ofstream& o, std::string name, int index) {
+        o << "\n" << name << "\n";
+        o << "size(mParameters[W" << index << "]): " << size(layer->mW) << "\n";
+        o << "size(mParameters[b" << index << "]): " << size(layer->mB) << "\n";
+        //o << "mParameters[W" << index << "]:\n" << layer->mW << "\n";
+        //o << "mParameters[b" << index << "]:\n" << layer->mB << "\n";
+    }
+
+    static void copyWeights(FullyConnectedLayer* layer, Util::UStringMatMap& weights, int index) {
+        layer->mW = weights["W" + std::to_string(index)];
+        layer->mB = weights["b" + std::to_string(index)];
     }
 };
 
@@ -509,13 +543,13 @@ public:
         PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
         
         // 120x400 invalid 576x15
-        FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(120, 400);
+        FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(120, 400, 0);
         Sigmoid* sigmoid3 = new Sigmoid(false);
 
-        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(84, 120);
+        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(84, 120, 0);
         Sigmoid* sigmoid4 = new Sigmoid(false);
         
-        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(10, 84);
+        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(10, 84, 0);
         //Softmax* softmax5 = new Softmax();
         Sigmoid* sigmoid5 = new Sigmoid(false);
 
@@ -534,7 +568,8 @@ public:
         convNet.miniBatchGradientDescent(15, 15, 0.001, 0, 0, 0, 0);
     }
 
-    static void ConvNet_test() {
+    static void loadTrainingset(const uint sampleCount, arma::mat4D& X4D, arma::mat& xx, arma::mat& yy, int& num_labels) {
+        srand (time(NULL));
         arma::mat X, y, Xt, yt, Xtraining, Ytraining, Xval, Yval;
 
         std::cout << "Loading training set and test set\n";
@@ -542,8 +577,6 @@ public:
         X.load("../TH_plus_BG_trainingset.bin");
         y.load("../TH_plus_BG_trainingset_result.bin");
 
-        // I use only the first 3000 item for this test
-        const uint sampleCount = 1000;
         if(X.n_rows > sampleCount) {
             X = X.rows(0, sampleCount - 1);
             y = y.rows(0, sampleCount - 1);
@@ -588,8 +621,8 @@ public:
 
         std::cout << "Minumum and maximum y values: " << minYVal << ";" << maxYVal << std::endl;
 
-        int num_labels = maxYVal - minYVal + 1;
-        arma::mat yy = arma::zeros(num_labels, y.n_rows);
+        num_labels = maxYVal - minYVal + 1;
+        yy = arma::zeros(num_labels, y.n_rows);
         for(size_t i = 0; i < y.n_rows; ++i){
             yy(y(i,0) - minYVal,i) = 1;
         }
@@ -609,44 +642,244 @@ public:
         X = cg.featureScaling(X, false, 0);
 
         // arma::mat X ==> arma::mat4D X
-        arma::mat4D X4D = arma::mat4D(X.n_cols);
+        X4D = arma::mat4D(X.n_cols);
         for(size_t i = 0; i < X.n_cols; ++i) {
             X4D[i] = arma::join_slices(X4D[i], X.col(i));
             X4D[i].reshape(24, 24, 1);
         }
+        xx = X;
 
         std::cout << "Training set converted (4D) size: " << size(X4D) << "\n";
         std::cout << "Training result set size: " << size(yy) << "\n";
         std::cout << "Test result set size: " << size(yyt) << "\n";
+    }
+
+    static void ConvNet_test() {
+        arma::mat4D X4D;
+        arma::mat xx;
+        arma::mat yy;
+        int num_labels = 0;
+        loadTrainingset(132, X4D, xx, yy, num_labels);
+
         ConvNet convNet(X4D, yy, 0);
 
+        //ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1);
+        //Sigmoid* relu1 = new Sigmoid(true);
+        //PoolLayer* poolLayer1 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
+        //
+        //ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1);
+        //Sigmoid* relu2 = new Sigmoid(true);
+        //PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
 
-
-
-        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1);
-        Sigmoid* relu1 = new Sigmoid(true);
-        PoolLayer* poolLayer1 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
-
-        ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1);
-        Sigmoid* relu2 = new Sigmoid(true);
-        PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
-
-        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(84, 144);
+        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(4, 576, 0);
         Sigmoid* sigmoid4 = new Sigmoid(false);
 
-        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, 84);
+        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, 4, 0);
         //Softmax* softmax5 = new Softmax();
         Sigmoid* sigmoid5 = new Sigmoid(false);
 
-        convNet << convLayer1 << relu1 << poolLayer1
-        << convLayer2 << relu2 << poolLayer2
-        << fullyConnectedLayer4 << sigmoid4
+        // convNet << convLayer1 << relu1 << poolLayer1
+        // << convLayer2 << relu2 << poolLayer2
+        // << fullyConnectedLayer4 << sigmoid4
+        // << fullyConnectedLayer5 << sigmoid5; //softmax5;
+
+        convNet << fullyConnectedLayer4 << sigmoid4
         << fullyConnectedLayer5 << sigmoid5; //softmax5;
 
+        convNet.miniBatchGradientDescent(10, 132, 0.0001, 0, 0, 0, 0);
+    }
+
+    static void flatten_test() {
+        arma::mat4D X4D = arma::randn(5, 6, 7, 8);
+        arma::mat yy;
+        ConvNet convNet(X4D, yy, 0);
+        std::cout << "X4D: " << size(X4D) << "\n";
+        arma::mat flattened = convNet.flatten(X4D);
+        std::cout << "flattened: " << size(flattened) << "\n";
+        arma::mat4D X4D2 = convNet.reshape(flattened);
+        std::cout << "X4D2: " << size(X4D2) << "\n";
+        std::cout << "equals: " << (arma::accu(X4D2 - X4D) == 0) << "\n";
+    }
+
+    class NNv2Observer : public LayerObserver {
+    public:
+        NNv2Observer(NeuralNetworkV2* layer, std::ofstream& o, std::string name)
+            : LayerObserver(layer)
+            , mLayer(layer)
+            , mOut(o)
+            , mName(name) {
+        }
+
+        void notify(int state) override {
+
+            mOut << "\n" << mName << " : state : " << state << "\n";
+
+            switch(state) {
+            case 0: // parameters are initialized, I will save them for the convnet
+                mParameters = mLayer->mParameters;
+                mOut << "mParameters.size(): " << mParameters.size() << "\n";
+
+                mOut << "size(mParameters[W1]): " << size(mParameters["W1"]) << "\n";
+                mOut << "size(mParameters[b1]): " << size(mParameters["b1"]) << "\n";
+                //mOut << "mParameters[W1]:\n" << mParameters["W1"] << "\n";
+                //mOut << "mParameters[b1]:\n" << mParameters["b1"] << "\n";
+
+                mOut << "size(mParameters[W2]): " << size(mParameters["W2"]) << "\n";
+                mOut << "size(mParameters[b2]): " << size(mParameters["b2"]) << "\n";
+                //mOut << "mParameters[W2]:\n" << mParameters["W2"] << "\n";
+                //mOut << "mParameters[b2]:\n" << mParameters["Wb"] << "\n";
+                break;
+            case 1: ; break;
+            case 2: {
+                arma::mat* p = (arma::mat*)mLayer->getLocVar();
+                mOut <<  "linear forward: A_prev:\n" << *p << "\n";
+            }
+                break;
+            case 3: {
+                arma::mat* p = (arma::mat*)mLayer->getLocVar();
+                mOut <<  "linear backward dZ:\n" << *p << "\n";
+            }
+                break;
+            case 4: {
+                arma::mat* p = (arma::mat*)mLayer->getLocVar();
+                mOut <<  "linear backward dW:\n" << *p << "\n";
+            }
+                break;
+            case 5: {
+                arma::mat* p = (arma::mat*)mLayer->getLocVar();
+                mOut <<  "linear backward db:\n" << *p << "\n";
+            }
+                break;
+            case 6: {
+                arma::mat* p = (arma::mat*)mLayer->getLocVar();
+                mOut <<  "linear backward dA_prev:\n" << *p << "\n";
+            }
+                break;
+            case 7: {
+                arma::mat* p = (arma::mat*)mLayer->getLocVar();
+                mOut <<  "linear backward A_prev:\n" << *p << "\n";
+            }
+                break;
+            case 8: {
+                arma::mat* p = (arma::mat*)mLayer->getLocVar();
+                mOut <<  "linear backward W:\n" << *p << "\n";
+                mOut <<  "linear backward mLambda:\n" << mLayer->mLambda << "\n";
+            }
+                break;
+            }
+        }
+
+        Util::UStringMatMap& getWeights() {return mParameters; }
+
+    private:
+        NeuralNetworkV2* mLayer;
+        std::ofstream& mOut;
+        std::string mName;
+        Util::UStringMatMap mParameters;
+    };
+
+    class FCObserver : public LayerObserver {
+    public:
+        FCObserver(FullyConnectedLayer* layer, std::ofstream& o, std::string name)
+            : LayerObserver(layer)
+            , mLayer(layer)
+            , mOut(o)
+            , mName(name) {
+        }
+
+        void notify(int state) override {
+
+            mOut << "\n" << mName << " : state : " << state << "\n";
+
+            switch(state) {
+            case 0: FullyConnectedLayerTest::saveFC1(mLayer, mOut); break;
+            case 1: {
+                arma::mat* p = (arma::mat*)mLayer->getLocVar();
+                mOut <<  "linear backward dZ:\n" << *p << "\n";
+                FullyConnectedLayerTest::saveFC3(mLayer, mOut);
+            }
+                break;
+            case 2: FullyConnectedLayerTest::saveFC2(mLayer, mOut); break;
+            }
+        }
+
+    private:
+        FullyConnectedLayer* mLayer;
+        std::ofstream& mOut;
+        std::string mName;
+    };
 
 
+    static void NNv2_vs_ConvNet_test() {
+        arma::mat4D X4D;
+        arma::mat xx;
+        arma::mat yy;
+        int num_labels = 0;
+        loadTrainingset(5000, X4D, xx, yy, num_labels);
 
-        convNet.miniBatchGradientDescent(10, 32, 0.001, 0, 0, 0, 0);
+        // ----------------------------------------
+        // Neural Network v2 with one hidden layer
+        // ----------------------------------------
+        arma::umat thetaSizes;
+        int input_layer_size  = xx.n_rows;
+        int hidden_layer_size2 = 50;
+        double lambda = 0.; //0.5; // reguralization
+        int iteration = 100;
+        //double alpha = 0.3;
+        double alpha = 0.001; // learning rate
+        //int batch = X.n_rows;
+        int batch = 32;
+        double keep_prob = 1.; // drop out
+        Optimizer::Type optimization = Optimizer::Type::GD;
+        bool batchNorm = false;
+        bool featureScaling = false;
+        thetaSizes << input_layer_size << hidden_layer_size2 << num_labels; // input, hidden, output
+
+        //NeuralNetworkV2 nn(thetaSizes, xx, yy, lambda, featureScaling, NeuralNetworkV2::SIGMOID, NeuralNetworkV2::SIGMOID, keep_prob, batchNorm, optimization);
+        //std::ofstream osNNv2("NNv2Debug.txt", std::ios::binary | std::ios::trunc | std::ios::out);
+        //NNv2Observer obNNv2(&nn, osNNv2, "Neural Network v2");
+        //nn.miniBatchGradientDescent(iteration, batch, alpha);
+
+        // ----------------------------------------
+        // ConvNet with two fully connected layers
+        // ----------------------------------------
+        ConvNet convNet(X4D, yy, lambda);
+
+        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1);
+        Relu* relu1 = new Relu(true);
+        PoolLayer* poolLayer1 = new PoolLayer(2, 2, 2, PoolLayer::AVG);
+
+        ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1);
+        Relu* relu2 = new Relu(true);
+        PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::AVG);
+
+        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(hidden_layer_size2, 144, lambda);
+        Sigmoid* sigmoid4 = new Sigmoid(false);
+
+        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, hidden_layer_size2, lambda);
+        Sigmoid* sigmoid5 = new Sigmoid(false);
+
+        convNet << convLayer1 << relu1 << poolLayer1 << convLayer2 << relu2 << poolLayer2
+                << fullyConnectedLayer4 << sigmoid4
+        << fullyConnectedLayer5 << sigmoid5; //softmax5;
+
+        //std::ofstream osFC("ConvNetDebug.txt", std::ios::binary | std::ios::trunc | std::ios::out);
+        //FCObserver ob1(fullyConnectedLayer4, osFC, "FC Layer 1");
+        //FCObserver ob2(fullyConnectedLayer5, osFC, "FC Layer 2");
+        //
+        //osFC << "mParameters.size(): " << 2 << "\n";
+        //FullyConnectedLayerTest::printWeights(fullyConnectedLayer4, osFC, "FC Layer 1", 1);
+        //FullyConnectedLayerTest::printWeights(fullyConnectedLayer5, osFC, "FC Layer 2", 2);
+        //FullyConnectedLayerTest::copyWeights(fullyConnectedLayer4, obNNv2.getWeights(), 1);
+        //FullyConnectedLayerTest::copyWeights(fullyConnectedLayer5, obNNv2.getWeights(), 2);
+
+        convNet.miniBatchGradientDescent(iteration, batch, alpha, 0, 0, 0, 0);
+
+        // 0. prepare the same image for training
+        // 1. weight and bias initialization with the same values
+        // open one file for the NNv2 and one for ConvNet
+        // the ovservers have to save everything
+        // 2. compare the results
     }
 };
 
@@ -668,6 +901,8 @@ void convLayerTest() {
     //ActivationLayerTest::softmax_test();
     //FullyConnectedLayerTest::fully_connected_test();
     //ConvNetTest::forward_backward_test();
-    ConvNetTest::ConvNet_test();
+    //ConvNetTest::flatten_test();
+    //ConvNetTest::ConvNet_test();
+    ConvNetTest::NNv2_vs_ConvNet_test();
 }
 

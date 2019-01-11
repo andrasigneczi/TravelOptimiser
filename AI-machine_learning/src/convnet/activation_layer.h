@@ -2,8 +2,9 @@
 #define __ACTIVATION_LAYER_H__
 
 #include "forward_backward_if.h"
+#include "layerobserver.h"
 
-class Sigmoid : public ForwardBackwardIF {
+class Sigmoid : public ForwardBackwardIF, public LayerSubject {
     friend class ActivationLayerTest;
 public:
     Sigmoid(bool fD = true) : m4D(fD) {}

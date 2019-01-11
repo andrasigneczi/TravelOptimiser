@@ -216,6 +216,7 @@ arma::mat NeuralNetworkV2::linear_activation_forward(const arma::mat& A_prev, co
 // Z -- the input of the activation function, also called pre-activation parameter 
 // cache -- a python dictionary containing "A", "W" and "b" ; stored for computing the backward pass efficiently
 arma::mat NeuralNetworkV2::linear_forward(const arma::mat& A, const arma::mat& W, const arma::mat& b) {
+    checkPoint(2, (void*)&A);
     CERR  << __FUNCTION__ << ": dbg1\n";
     CERR  << "W: " << size(W) << "\nA: " << size(A) << "\nb: " << size(b) << "\n";
     //arma::mat Z = W * A + b; // broadcast
@@ -394,6 +395,9 @@ void NeuralNetworkV2::linear_activation_backward(const arma::mat& dA, NeuralNetw
 void NeuralNetworkV2::linear_backward(arma::mat dZ, const arma::mat& A_prev, const arma::mat& W, const arma::mat& b, size_t l) {
     size_t m = A_prev.n_cols;
 
+    checkPoint(3, &dZ);
+    checkPoint(7, (void*)&A_prev);
+    checkPoint(8, (void*)&W);
     if(mBatchNormEnabled) { dZ = mBatchNorm.batchNorm_backward(dZ, l); }
 
     CERR  << __FUNCTION__ << " dZ: " << size(dZ) << "\n";
@@ -403,6 +407,9 @@ void NeuralNetworkV2::linear_backward(arma::mat dZ, const arma::mat& A_prev, con
     arma::mat db = 1./m*arma::sum(dZ,1);
     arma::mat dA_prev = W.t() * dZ;
 
+    checkPoint(4, &dW);
+    checkPoint(5, &db);
+    checkPoint(6, &dA_prev);
     mGrads["dA" + std::to_string(l)]     = dA_prev;
     mGrads["dW" + std::to_string(l + 1)] = dW;
     mGrads["db" + std::to_string(l + 1)] = db;
@@ -424,8 +431,10 @@ void NeuralNetworkV2::miniBatchGradientDescent( long long epoch, size_t batchSiz
         mLearningRate = learning_rate;
 
         initializeParametersHe();
+        checkPoint(0);
 
         mOptimizer.initialize(mLayerSizes.n_cols - 1, mParameters);
+        checkPoint(1);
     }
 
     arma::mat dataset = arma::mat(1,mY.n_cols);

@@ -101,9 +101,11 @@ public class CurrencyHelper
     {
         final java.lang.String lUrlTemplate1 = "http://www.xe.com/currencyconverter/convert/?Amount=1&From=BGN&To=EUR";
         final java.lang.String lUrlTemplate2 = "https://transferwise.com/au/currency-converter/BGN-to-eur-rate?amount=1";
+	final java.lang.String lUrlTemplate3 = "https://www.google.de/search?q=1+BGN+to+EUR";
 
         return DownloadRecentCurrencyPrices( lUrlTemplate1, "//*[@id=\"converterResult\"]/div/div/div[2]/span[1]", "" ) ||
-            DownloadRecentCurrencyPrices( lUrlTemplate2, "/html/body/section/div/div/div/div/div[2]/div[2]/div[1]/div/h3[2]/span[2]", "" );
+            DownloadRecentCurrencyPrices( lUrlTemplate2, "/html/body/main/div[1]/div/div/div/div[2]/div[1]/div[1]/form/div[2]/div[2]/h3/span[3]", "" )
+	    || DownloadRecentCurrencyPrices( lUrlTemplate3, "//*[@id=\"knowledge-currency__tgt-amount\"]", "");
     }
 
     public static boolean DownloadRecentCurrencyPrices( String lUrlTemplate, String path1, String path2 ) throws InterruptedException
@@ -152,6 +154,16 @@ public class CurrencyHelper
             }
 
             String lInner = lElement.getInnerText();
+	    if(lInner.length() == 0) {
+		lInner = lElement.getAttribute("data-value");
+	    }
+	    if(lInner.length() == 0) {
+                lBrowser.dispose();
+                return false;
+	    }
+
+	    mLogger.info(lUrlTemplate);
+	    mLogger.info("'" + lInner + "'");
             //String lCurrencyValue = lElement.getInnerText().substring( 0, lInner.length() - 4 );
             String lCurrencyValue = "";
             for( int i = 0; i < lInner.length(); ++i) {

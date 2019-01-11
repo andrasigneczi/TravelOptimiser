@@ -27,13 +27,13 @@ void LeNet5::init() {
     PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
     
     // 120x400 invalid 576x15
-    FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(120, 400);
+    FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(120, 400, getLambda());
     Sigmoid* sigmoid3 = new Sigmoid(false);
 
-    FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(84, 120);
+    FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(84, 120, getLambda());
     Sigmoid* sigmoid4 = new Sigmoid(false);
     
-    FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(10, 84);
+    FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(10, 84, getLambda());
     //Softmax* softmax5 = new Softmax();
     Sigmoid* sigmoid5 = new Sigmoid(false);
 

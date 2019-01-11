@@ -58,6 +58,7 @@ public:
     double compute_cost_with_regularization(const arma::mat& A3, const arma::mat& Y);
     double compute_cost(const arma::mat& AL, const arma::mat& Y);
     
+    double getLambda() const { return mLambda; }
 private:
     void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon);
     
