@@ -110,7 +110,7 @@ class ConvLayerTest {
 public:
     static void zero_pad_test() {
         arma::arma_rng::set_seed_random();
-        ConvLayer cL(0, 0, 0, 0, 2, 0, CNOptimizer::GD);
+        ConvLayer cL(0, 0, 0, 0, 2, 0, CNOptimizerType::GD);
         arma::mat4D v(4, arma::randn(3, 3, 2));
         arma::mat4D v_pad = cL.zeroPad(v);
         std::cout.precision(11);
@@ -123,7 +123,7 @@ public:
 
     static void conv_single_step_test() {
         arma::arma_rng::set_seed_random();
-        ConvLayer cL(0, 0, 0, 0, 2, 0, CNOptimizer::GD);
+        ConvLayer cL(0, 0, 0, 0, 2, 0, CNOptimizerType::GD);
         arma::cube a_slice_prev = arma::randn(4, 4, 3);
         arma::cube W = arma::randn(4, 4, 3);
         arma::cube b = arma::randn(1, 1, 1);
@@ -291,7 +291,7 @@ public:
         // n_C_prev: number of the layers/channels
         // ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int stride);
         int f_H = 2, f_W = 2, n_C_prev = 3, n_C = 4, pad = 1, stride = 2;
-        ConvLayer cL(f_H, f_W, n_C_prev, n_C, pad, stride, CNOptimizer::GD);
+        ConvLayer cL(f_H, f_W, n_C_prev, n_C, pad, stride, CNOptimizerType::GD);
 
         // m x height x width x channels
         int m = 1, height = 4, width = 6, channels = n_C_prev;
@@ -319,7 +319,7 @@ public:
 
     static void conv_backward_test() {
         arma::arma_rng::set_seed_random();
-        ConvLayer cL(0, 0, 0, 0, 2, 2, CNOptimizer::GD);
+        ConvLayer cL(0, 0, 0, 0, 2, 2, CNOptimizerType::GD);
         arma::mat4D A_prev = arma::randn(10, 4, 4, 3);
         cL.mW = arma::randn(2, 2, 3, 8);
         cL.mB = arma::randn(1, 1, 1, 8);
@@ -328,7 +328,7 @@ public:
     }
 
     static void adSlice_test() {
-        ConvLayer cL(0, 0, 0, 0, 2, 2, CNOptimizer::GD);
+        ConvLayer cL(0, 0, 0, 0, 2, 2, CNOptimizerType::GD);
         arma::mat4D dW = arma::zeros(2,2,3,8);
         arma::cube val = arma::ones(2,2,3);
         cL.addSlice(dW, 7, val);
@@ -438,7 +438,7 @@ public:
 class FullyConnectedLayerTest {
 public:
     static void fully_connected_test() {
-        FullyConnectedLayer s(11, 20, 0, CNOptimizer::GD);
+        FullyConnectedLayer s(11, 20, 0, CNOptimizerType::GD);
         arma::mat X;
 
         X << -10.5 << -5.1 << -3.1 << -0.5 << -0.1 << 0 << 0.1 << 0.5 << 3.1 << 5.1 << 10.6 << -10.5 << -5.1 << -3.1 << -0.5 << -0.1 << 0 << 0.1 << 0.5 << 3.1 << arma::endr <<
@@ -534,22 +534,22 @@ public:
         //FullyConnectedLayer* fullyConnectedLayer = new FullyConnectedLayer(40, 196 * 6);
         
         
-        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1, CNOptimizer::GD);
+        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1, CNOptimizerType::GD);
         Relu* relu1 = new Relu(true);
         PoolLayer* poolLayer1 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
 
-        ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1, CNOptimizer::GD);
+        ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1, CNOptimizerType::GD);
         Relu* relu2 = new Relu(true);
         PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
         
         // 120x400 invalid 576x15
-        FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(120, 400, 0, CNOptimizer::GD);
+        FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(120, 400, 0, CNOptimizerType::GD);
         Sigmoid* sigmoid3 = new Sigmoid(false);
 
-        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(84, 120, 0, CNOptimizer::GD);
+        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(84, 120, 0, CNOptimizerType::GD);
         Sigmoid* sigmoid4 = new Sigmoid(false);
         
-        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(10, 84, 0, CNOptimizer::GD);
+        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(10, 84, 0, CNOptimizerType::GD);
         //Softmax* softmax5 = new Softmax();
         Sigmoid* sigmoid5 = new Sigmoid(false);
 
@@ -671,10 +671,10 @@ public:
         //Sigmoid* relu2 = new Sigmoid(true);
         //PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
 
-        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(4, 576, 0, CNOptimizer::GD);
+        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(4, 576, 0, CNOptimizerType::GD);
         Sigmoid* sigmoid4 = new Sigmoid(false);
 
-        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, 4, 0, CNOptimizer::GD);
+        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, 4, 0, CNOptimizerType::GD);
         //Softmax* softmax5 = new Softmax();
         Sigmoid* sigmoid5 = new Sigmoid(false);
 
@@ -815,49 +815,73 @@ public:
         arma::mat xx;
         arma::mat yy;
         int num_labels = 0;
-        loadTrainingset(5000, X4D, xx, yy, num_labels);
+        loadTrainingset(500, X4D, xx, yy, num_labels);
 
         // ----------------------------------------
         // Neural Network v2 with one hidden layer
         // ----------------------------------------
         arma::umat thetaSizes;
         int input_layer_size  = xx.n_rows;
-        int hidden_layer_size2 = 50;
-        double lambda = 0.; //0.5; // reguralization
-        int iteration = 100;
+        int hidden_layer_size2 = 90;
+        double lambda = 0.001; //0.5; // reguralization
+        int iteration = 2000;
         //double alpha = 0.3;
-        double alpha = 0.001; // learning rate
-        //int batch = X.n_rows;
+        double alpha = 0.0001; // learning rate
+        double beta = 0.9, beta1 = 0.9, beta2 = 0.999,  epsilon = 1e-8;
         int batch = 32;
         double keep_prob = 1.; // drop out
-        CNOptimizer::Type optimization = CNOptimizer::Type::GD;
+        CNOptimizerType optimization = CNOptimizerType::ADAM;
+        Optimizer::Type nnv2optimization = Optimizer::Type::ADAM;
         bool batchNorm = false;
         bool featureScaling = false;
         thetaSizes << input_layer_size << hidden_layer_size2 << num_labels; // input, hidden, output
 
-        //NeuralNetworkV2 nn(thetaSizes, xx, yy, lambda, featureScaling, NeuralNetworkV2::SIGMOID, NeuralNetworkV2::SIGMOID, keep_prob, batchNorm, optimization);
+        NeuralNetworkV2 nn(thetaSizes, xx, yy, lambda, featureScaling, NeuralNetworkV2::TANH, NeuralNetworkV2::SOFTMAX,
+                           keep_prob, batchNorm, nnv2optimization);
         //std::ofstream osNNv2("NNv2Debug.txt", std::ios::binary | std::ios::trunc | std::ios::out);
         //NNv2Observer obNNv2(&nn, osNNv2, "Neural Network v2");
+        std::cout << std::string(80, '*') << "\n";
+        std::cout << "Neural Network v2\n";
+        std::cout << std::string(80, '*') << "\n";
         //nn.miniBatchGradientDescent(iteration, batch, alpha);
+        //std::cout << "Training Set Accuracy: " << nn.accuracy() << "%\n";
+        //arma::mat pred = nn.predict(Xt);
+        //arma::mat temp = arma::conv_to<arma::mat>::from(arma::index_max(yyt,0));
+        //double acct = (double)arma::accu(pred==temp)/(double)yyt.n_cols*100.;
+        //std::cout << "Test Set Accuracy: " << acct << "%\n";
 
         // ----------------------------------------
         // ConvNet with two fully connected layers
         // ----------------------------------------
         ConvNet convNet(X4D, yy, lambda);
 
-        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1, CNOptimizer::GD);
+        std::cerr << "ConvNetTest::" << __FUNCTION__ << ": dbg1\n";
+
+        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1, optimization);
         Relu* relu1 = new Relu(true);
-        PoolLayer* poolLayer1 = new PoolLayer(2, 2, 2, PoolLayer::AVG);
+        PoolLayer* poolLayer1 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
 
-        ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1, CNOptimizer::GD);
+        std::cerr << "ConvNetTest::" << __FUNCTION__ << ": dbg2\n";
+
+        ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1, optimization);
         Relu* relu2 = new Relu(true);
-        PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::AVG);
+        PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
 
-        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(hidden_layer_size2, 144, lambda, CNOptimizer::GD);
+        std::cerr << "ConvNetTest::" << __FUNCTION__ << ": dbg3\n";
+
+        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(hidden_layer_size2, 144, lambda, optimization);
         Sigmoid* sigmoid4 = new Sigmoid(false);
 
-        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, hidden_layer_size2, lambda, CNOptimizer::GD);
+        std::cerr << "ConvNetTest::" << __FUNCTION__ << ": dbg4\n";
+
+        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, hidden_layer_size2, lambda, optimization);
         Sigmoid* sigmoid5 = new Sigmoid(false);
+
+        std::cerr << "ConvNetTest::" << __FUNCTION__ << ": dbg5\n";
+
+        std::cout << std::string(80, '*') << "\n";
+        std::cout << "ConvNet\n";
+        std::cout << std::string(80, '*') << "\n";
 
         convNet << convLayer1 << relu1 << poolLayer1 << convLayer2 << relu2 << poolLayer2
                 << fullyConnectedLayer4 << sigmoid4
@@ -873,7 +897,8 @@ public:
         //FullyConnectedLayerTest::copyWeights(fullyConnectedLayer4, obNNv2.getWeights(), 1);
         //FullyConnectedLayerTest::copyWeights(fullyConnectedLayer5, obNNv2.getWeights(), 2);
 
-        convNet.miniBatchGradientDescent(iteration, batch, alpha, 0, 0, 0, 0);
+        convNet.miniBatchGradientDescent(iteration, batch, alpha, beta, beta1, beta2, epsilon);
+        std::cout << "Training Set Accuracy: " << convNet.accuracy() << "%\n";
 
         // 0. prepare the same image for training
         // 1. weight and bias initialization with the same values

@@ -18,22 +18,22 @@ LeNet5::LeNet5(std::string prefix)
 }
 
 void LeNet5::init() {
-    ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1, CNOptimizer::GD);
+    ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1, CNOptimizerType::GD);
     Relu* relu1 = new Relu(true);
     PoolLayer* poolLayer1 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
 
-    ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1, CNOptimizer::GD);
+    ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1, CNOptimizerType::GD);
     Relu* relu2 = new Relu(true);
     PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
     
     // 120x400 invalid 576x15
-    FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(120, 400, getLambda(), CNOptimizer::GD);
+    FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(120, 400, getLambda(), CNOptimizerType::GD);
     Sigmoid* sigmoid3 = new Sigmoid(false);
 
-    FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(84, 120, getLambda(), CNOptimizer::GD);
+    FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(84, 120, getLambda(), CNOptimizerType::GD);
     Sigmoid* sigmoid4 = new Sigmoid(false);
     
-    FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(10, 84, getLambda(), CNOptimizer::GD);
+    FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(10, 84, getLambda(), CNOptimizerType::GD);
     //Softmax* softmax5 = new Softmax();
     Sigmoid* sigmoid5 = new Sigmoid(false);
 

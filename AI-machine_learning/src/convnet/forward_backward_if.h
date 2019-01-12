@@ -50,8 +50,8 @@ public:
 
     virtual bool is4D() = 0;
     
-    virtual void updateParameters(double learning_rate = 0.01, double beta = 0.9,
-                                  double beta1 = 0.9, double beta2 = 0.999,  double epsilon = 1e-8) = 0;
+    virtual void updateParameters(double learning_rate, double beta,
+                                  double beta1, double beta2,  double epsilon) = 0;
 
     virtual void accept(Visitor&){}
     virtual double getWeightSquareSum() { return 0; }

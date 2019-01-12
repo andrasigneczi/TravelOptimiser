@@ -2,11 +2,12 @@
 
 // size_H: number if output connections
 // size_W: number if input connections
-FullyConnectedLayer::FullyConnectedLayer(int size_H, int size_W, double lambda, CNOptimizer::Type optimizerType)
-    : mOptimizer(optimizerType, mW, mB, mdW, mdb){
+FullyConnectedLayer::FullyConnectedLayer(int size_H, int size_W, double lambda, CNOptimizerType optimizerType) {
     mW = arma::randu(size_H, size_W) * sqrt(2./size_W);
     mB = arma::zeros(size_H,1);
     mLambda = lambda;
+
+    mOptimizer.reset(new CNOptimizer<arma::mat>(optimizerType, mW, mB, mdW, mdb));
 }
 
 arma::mat FullyConnectedLayer::forward(arma::mat A_prev) {
@@ -35,9 +36,8 @@ arma::mat FullyConnectedLayer::backward(arma::mat dZ) {
     return mdA;
 }
 
-void FullyConnectedLayer::updateParameters(double learning_rate /*= 0.01*/, double beta /*= 0.9*/,
-                                           double beta1 /*= 0.9*/, double beta2 /*= 0.999*/,  double epsilon /*= 1e-8*/) {
-    mOptimizer.updateParameters(learning_rate, beta, beta1, beta2,  epsilon);
+void FullyConnectedLayer::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+    mOptimizer->updateParameters(learning_rate, beta, beta1, beta2,  epsilon);
 }
 
 void FullyConnectedLayer::saveState(std::ofstream& output) {

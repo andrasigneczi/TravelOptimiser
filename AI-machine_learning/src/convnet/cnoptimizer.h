@@ -3,17 +3,17 @@
 
 #include <armadillo>
 
+enum CNOptimizerType {
+    GD,
+    MOMENTUM,
+    ADAM
+};
+
+template<class Storage>
 class CNOptimizer
 {
 public:
-    enum Type {
-        GD,
-        MOMENTUM,
-        ADAM
-    };
-
-
-    CNOptimizer(Type optimizerType, arma::mat& W, arma::mat& B, arma::mat& dW, arma::mat& db);
+    CNOptimizer(CNOptimizerType optimizerType, Storage& W, Storage& B, Storage& dW, Storage& db);
     void updateParameters(double learning_rate, double beta,
                           double beta1, double beta2,  double epsilon);
 
@@ -23,24 +23,26 @@ private:
     void update_parameters_with_adam(double learning_rate, double beta1, double beta2,  double epsilon);
 
 
-    arma::mat& mW; // Weights, kernel
-    arma::mat& mB; // Biases
+    Storage& mW; // Weights, kernel
+    Storage& mB; // Biases
 
-    arma::mat mdW;
-    arma::mat mdb;
+    Storage& mdW;
+    Storage& mdb;
 
     // Optimizer parmeters
-    Type mOptimizerType;
+    CNOptimizerType mOptimizerType;
     int mAdamCounter;
     double mBeta;
     double mBeta1;
     double mBeta2;
     double mEpsilon;
 
-    arma::mat mdWVelocity;
-    arma::mat mdbVelocity;
-    arma::mat mdWAdamS;
-    arma::mat mdbAdamS;
+    Storage mdWVelocity;
+    Storage mdbVelocity;
+    Storage mdWAdamS;
+    Storage mdbAdamS;
 };
+
+#include "cnoptimizer.cpp"
 
 #endif // CNOPTIMIZER_H

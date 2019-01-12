@@ -24,8 +24,7 @@ SOURCES += linear_regression.cpp logistic_regression.cpp fmincg.cpp neural_netwo
     convnet/activation_layer.cpp \
     convnet/fully_connected_layer.cpp \
     convnet/layerobserver.cpp \
-    LeNet5.cpp \
-    convnet/cnoptimizer.cpp
+    LeNet5.cpp
 HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h CostAndGradient.h Util.h  qcustomplot.h logistic_regression_v2.h  anomaly_detection.h \
     neural_network/optimizer.h \
     neural_network/activation.h \

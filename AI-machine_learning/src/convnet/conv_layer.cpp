@@ -1,6 +1,6 @@
 #include "conv_layer.h"
 
-ConvLayer::ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int stride, CNOptimizer::Type optimizerType)
+ConvLayer::ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int stride, CNOptimizerType optimizerType)
     : mPad(pad)
     , mStride(stride)
 {
@@ -25,10 +25,10 @@ ConvLayer::ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int strid
         mW.push_back(arma::randu(f_W, n_C_prev, n_C));
     }
     mB.push_back(arma::randu(1, 1, n_C));
+    mOptimizer.reset(new CNOptimizer<arma::mat4D>(optimizerType, mW, mB, mdW, mdb));
 }
 
-ConvLayer::ConvLayer(std::string prefix)
-{
+ConvLayer::ConvLayer(std::string prefix) {
     UNUSED(prefix);
 }
 
@@ -220,8 +220,6 @@ void ConvLayer::loadState(std::ifstream& input) {
     UNUSED(input);
 }
 
-void ConvLayer::updateParameters(double learning_rate /*= 0.01*/, double beta /*= 0.9*/,
-                                 double beta1 /*= 0.9*/, double beta2 /*= 0.999*/,  double epsilon /*= 1e-8*/) {
-    mW = mW - learning_rate * mdW;
-    mB = mB - learning_rate * mdb;
+void ConvLayer::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+    mOptimizer->updateParameters(learning_rate, beta, beta1, beta2,  epsilon);
 }

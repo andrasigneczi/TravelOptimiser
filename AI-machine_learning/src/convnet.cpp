@@ -1,4 +1,5 @@
 #include "convnet.h"
+#include "convnet/activation_layer.h"
 
 ConvNet::ConvNet(arma::mat4D& X, arma::mat Y, double lambda) 
 : mX(X)
@@ -149,6 +150,10 @@ double ConvNet::compute_cost(const arma::mat& AL, const arma::mat& Y) {
     
     LayerNameVisitor v;
     if( v.getName(mLayers[mLayers.size() - 1]) == IFName::SOFTMAX) {
+    //if(true) {
+        // Softmax loss:
+        // self.loss = (-output * np.log(Y + epsilon)).sum() / Y.shape[0]
+
         arma::mat maxY = arma::conv_to<arma::mat>::from(arma::index_max(Y,0));
         //CERR  << __FUNCTION__ << " maxY: " << size(maxY) << "\n";
         arma::mat ALt = arma::zeros(1,AL.n_cols);
@@ -177,6 +182,8 @@ arma::mat ConvNet::predict(const arma::mat4D& X, double* cost) {
 
     // no drop out during the prediction
     arma::mat A = forward(X);
+    //Softmax softmax;
+    //A = softmax.forward(A);
     if(cost){
         // CERR  << __FUNCTION__ << ": dbg1\n";
         *cost = compute_cost_with_regularization(A, mY);
@@ -268,7 +275,7 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
 
 void ConvNet::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
     for(ForwardBackwardIF* layer : mLayers) {
-        layer->updateParameters(learning_rate);
+        layer->updateParameters(learning_rate, beta, beta1, beta2,  epsilon);
     }
     UNUSED(beta);
     UNUSED(beta1);

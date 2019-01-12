@@ -383,6 +383,10 @@ namespace arma {
         return mat4D(a, arma::zeros(b, c, d));
     }
 
+    mat4D zeros(SizeMat4D s) {
+        return mat4D(s.a, arma::zeros(s.b, s.c, s.d));
+    }
+
     mat4D operator-(const mat4D& x) {
         mat4D retv = x;
         for(size_t i = 0; i < retv.size(); ++i) {
@@ -407,10 +411,26 @@ namespace arma {
         return retv;
     }
 
+    mat4D operator+(const mat4D& x, double a) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < retv.size(); ++i) {
+            retv[i] = x[i] + a;
+        }
+        return retv;
+    }
+
     mat4D operator/(double a, const mat4D& x) {
         mat4D retv = mat4D(x.size());
         for(size_t i = 0; i < retv.size(); ++i) {
             retv[i] = a/x[i];
+        }
+        return retv;
+    }
+
+    mat4D operator/(const mat4D& x, double a) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < retv.size(); ++i) {
+            retv[i] = x[i]/a;
         }
         return retv;
     }
@@ -519,6 +539,14 @@ namespace arma {
         return retv;
     }
 
+    mat4D sqrt(const mat4D& x) {
+        mat4D retv = mat4D(x.size());
+        for(size_t i = 0; i < x.size(); ++i) {
+            retv[i] = arma::sqrt(x[i]);
+        }
+        return retv;
+    }
+
     uveclist find(const mat4D& x) {
         uveclist retv = uveclist(x.size());
         for(size_t i = 0; i < x.size(); ++i) {
@@ -554,13 +582,15 @@ namespace arma {
             mX[i] *= x;
         }
     }
-
 } // namespace arma
 
-std::string size(const arma::mat4D& c) {
-    return std::to_string(c.size()) + "x" + std::to_string(c[0].n_rows)
-            + "x" + std::to_string(c[0].n_cols) + "x" +
-            std::to_string(c[0].n_slices);
+arma::SizeMat4D size(const arma::mat4D& c) {
+    arma::SizeMat4D retv;
+    retv.a = c.size();
+    retv.b = c[0].n_rows;
+    retv.c = c[0].n_cols;
+    retv.d = c[0].n_slices;
+    return retv;
 }
 
 std::ostream& operator<<(std::ostream& o, arma::mat4D& c4) {
@@ -594,5 +624,10 @@ std::ostream& operator<<(std::ostream& o, arma::uveclist& c) {
     for(size_t i = 0; i < c.size(); ++i) {
         o << c[i] << "\n";
     }
+    return o;
+}
+
+std::ostream& operator<<(std::ostream& o, const arma::SizeMat4D& c) {
+    o << c.a << "x" << c.b << "x" << c.c << "x" << c.d;
     return o;
 }

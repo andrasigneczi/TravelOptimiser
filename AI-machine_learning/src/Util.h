@@ -46,16 +46,22 @@ namespace arma {
 
     using mat4D = std::vector<arma::cube>;
     using uveclist = std::vector<arma::uvec>;
+    struct SizeMat4D {
+        size_t a, b, c, d;
+    };
 
     // my declaration
     Q_DECL_EXPORT mat4D randn(int, int, int, int);
     Q_DECL_EXPORT mat4D randu(int, int, int, int);
     Q_DECL_EXPORT arma::cube mean(mat4D& X);
     Q_DECL_EXPORT mat4D zeros(int, int, int, int);
+    Q_DECL_EXPORT mat4D zeros(SizeMat4D s);
     Q_DECL_EXPORT mat4D operator-(const mat4D& x);
     Q_DECL_EXPORT mat4D exp(const mat4D& x);
     Q_DECL_EXPORT mat4D operator+(double a, const mat4D& x);
+    Q_DECL_EXPORT mat4D operator+(const mat4D& x, double a);
     Q_DECL_EXPORT mat4D operator/(double a, const mat4D& x);
+    Q_DECL_EXPORT mat4D operator/(const mat4D& x, double a);
     Q_DECL_EXPORT mat4D operator*(double a, const mat4D& x);
     Q_DECL_EXPORT mat4D operator-(double a, const mat4D& x);
     Q_DECL_EXPORT mat4D operator-(const mat4D& x, const mat4D& y);
@@ -70,6 +76,7 @@ namespace arma {
     Q_DECL_EXPORT uveclist find(const mat4D& x);
     Q_DECL_EXPORT mat4D square(const mat4D& x);
     Q_DECL_EXPORT double accu(const mat4D& x);
+    Q_DECL_EXPORT mat4D sqrt(const mat4D& x);
 
     class Q_DECL_EXPORT Elem {
     public:
@@ -82,11 +89,11 @@ namespace arma {
         mat4D& mX;
         uveclist mList;
     };
-
 } // namespace arma
 
-Q_DECL_EXPORT std::string size(const arma::mat4D& c);
+Q_DECL_EXPORT arma::SizeMat4D size(const arma::mat4D& c);
 Q_DECL_EXPORT std::ostream& operator<<(std::ostream& o, arma::mat4D& c);
 Q_DECL_EXPORT std::ostream& operator<<(std::ostream& o, arma::uveclist& c);
+Q_DECL_EXPORT std::ostream& operator<<(std::ostream& o, const arma::SizeMat4D& c);
 
 #endif // __UTIL_H__

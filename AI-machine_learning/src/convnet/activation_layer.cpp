@@ -26,6 +26,14 @@ void Sigmoid::loadState(std::ifstream& input) {
     UNUSED(input);
 }
 
+void Sigmoid::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+    UNUSED(learning_rate);
+    UNUSED(beta);
+    UNUSED(beta1);
+    UNUSED(beta2);
+    UNUSED(epsilon);
+}
+
 arma::mat4D Relu::forward(arma::mat4D Z) {
     mCache = Z;
     //Z.elem( arma::find(Z < 0.0) ).zeros();
@@ -61,6 +69,14 @@ void Relu::loadState(std::ifstream& input) {
     UNUSED(input);
 }
 
+void Relu::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+    UNUSED(learning_rate);
+    UNUSED(beta);
+    UNUSED(beta1);
+    UNUSED(beta2);
+    UNUSED(epsilon);
+}
+
 arma::mat4D Tanh::forward(arma::mat4D Z) {
     const arma::mat4D pz = arma::exp(Z);
     const arma::mat4D nz = arma::exp(-Z);
@@ -89,6 +105,14 @@ void Tanh::saveState(std::ofstream& output) {
 
 void Tanh::loadState(std::ifstream& input) {
     UNUSED(input);
+}
+
+void Tanh::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+    UNUSED(learning_rate);
+    UNUSED(beta);
+    UNUSED(beta1);
+    UNUSED(beta2);
+    UNUSED(epsilon);
 }
 
 arma::mat4D LeakyRelu::forward(arma::mat4D Z) {
@@ -126,7 +150,25 @@ void LeakyRelu::loadState(std::ifstream& input) {
     UNUSED(input);
 }
 
+void LeakyRelu::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+    UNUSED(learning_rate);
+    UNUSED(beta);
+    UNUSED(beta1);
+    UNUSED(beta2);
+    UNUSED(epsilon);
+}
+
 arma::mat Softmax::forward(arma::mat Z) {
+    // V1
+    // exps = np.exp(Z - np.max(Z))
+    // A = exps / np.sum(exps, axis=1, keepdims=True)
+
+    // V2
+    // dummy = np.exp(X)
+    // self.Y = dummy/np.sum(dummy, axis=1, keepdims=True)
+    // return self.Y, 0
+
+
     arma::mat exps = arma::exp(Util::minus(Z,arma::max(Z)));
     mCache = Util::div(exps,arma::sum(exps, 1));
     return mCache;
@@ -134,6 +176,14 @@ arma::mat Softmax::forward(arma::mat Z) {
 
 // Actually we don't need this function
 arma::mat Softmax::backward(arma::mat gZ) {
+    // V1
+    // gZ[Y.argmax(axis=0),range(m)] -= 1
+
+    // V2
+    // self.delta_X =  (self.Y - output) / self.Y.shape[0]
+    // return self.delta_X
+
+
     std::cerr << "Softmax::" << __FUNCTION__ << ": size(gZ): " << size(gZ) << "\n";
     std::cerr << "Softmax::" << __FUNCTION__ << ": size(mCache): " << size(mCache) << "\n";
     size_t m = mCache.n_cols;
@@ -156,4 +206,12 @@ void Softmax::saveState(std::ofstream& output) {
 
 void Softmax::loadState(std::ifstream& input) {
     UNUSED(input);
+}
+
+void Softmax::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+    UNUSED(learning_rate);
+    UNUSED(beta);
+    UNUSED(beta1);
+    UNUSED(beta2);
+    UNUSED(epsilon);
 }

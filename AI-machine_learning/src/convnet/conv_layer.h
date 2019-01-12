@@ -3,6 +3,7 @@
 
 #include "forward_backward_if.h"
 #include "cnoptimizer.h"
+#include <memory>
 
 /*
  * Convolutional layer parameters
@@ -24,7 +25,7 @@ class ConvLayer : public ForwardBackwardIF
 {
     friend class ConvLayerTest;
 public:
-    ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int stride, CNOptimizer::Type optimizerType);
+    ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int stride, CNOptimizerType optimizerType);
     ConvLayer(std::string prefix);
 
     arma::mat4D forward(arma::mat4D A_prev) override;
@@ -34,8 +35,7 @@ public:
     arma::mat backward(arma::mat dX) override  { UNUSED(dX); return arma::mat(); }
     
     bool is4D() { return true; }
-    void updateParameters(double learning_rate = 0.01, double beta = 0.9,
-                          double beta1 = 0.9, double beta2 = 0.999,  double epsilon = 1e-8) override;
+    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) override;
     void accept(Visitor& visitor) override { visitor.visit(this); }
     double getWeightSquareSum() override { return arma::accu(arma::square(mW)); }
 
@@ -58,7 +58,7 @@ private:
     arma::mat4D mdW;
     arma::mat4D mdb;
 
-    //Optimizer mOptimizer;
+    std::unique_ptr<CNOptimizer<arma::mat4D>> mOptimizer;
 };
 
 #endif // __CONVLAYER_H__

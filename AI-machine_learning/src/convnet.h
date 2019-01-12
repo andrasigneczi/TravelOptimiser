@@ -43,9 +43,8 @@ public:
     virtual ~ConvNet();
     ConvNet& operator<<(ForwardBackwardIF* obj) { mLayers.push_back(obj); return *this; }
 
-    void miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate,
-                                                    double beta, double beta1, double beta2,
-                                                    double epsilon );
+    void miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate = 0.01, double beta = 0.9,
+                                   double beta1 = 0.9, double beta2 = 0.999,  double epsilon = 1e-8 );
 /*
     bool saveState(std::string prefix);
     bool loadState(std::string prefix);
