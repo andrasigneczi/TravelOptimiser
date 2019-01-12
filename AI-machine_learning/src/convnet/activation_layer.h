@@ -15,7 +15,8 @@ public:
     arma::mat backward(arma::mat dX) override;
     
     bool is4D() { return m4D; }
-    void updateParameters(double learningRate) override { UNUSED(learningRate); };
+    void updateParameters(double learning_rate = 0.01, double beta = 0.9,
+                          double beta1 = 0.9, double beta2 = 0.999,  double epsilon = 1e-8) override { UNUSED(learning_rate); };
 
     void accept(Visitor& visitor) override { visitor.visit(this); }
 
@@ -39,7 +40,8 @@ public:
     arma::mat backward(arma::mat dX) override;
     
     bool is4D() { return m4D; }
-    void updateParameters(double learningRate) override { UNUSED(learningRate); };
+    void updateParameters(double learning_rate = 0.01, double beta = 0.9,
+                          double beta1 = 0.9, double beta2 = 0.999,  double epsilon = 1e-8) override { UNUSED(learning_rate); };
 
     void accept(Visitor& visitor) override { visitor.visit(this); }
 
@@ -63,7 +65,8 @@ public:
     arma::mat backward(arma::mat dX) override;
     
     bool is4D() { return m4D; }
-    void updateParameters(double learningRate) override { UNUSED(learningRate); };
+    void updateParameters(double learning_rate = 0.01, double beta = 0.9,
+                          double beta1 = 0.9, double beta2 = 0.999,  double epsilon = 1e-8) override { UNUSED(learning_rate); };
 
     void accept(Visitor& visitor) override { visitor.visit(this); }
 
@@ -87,7 +90,8 @@ public:
     arma::mat backward(arma::mat dX) override;
     
     bool is4D() { return m4D; }
-    void updateParameters(double learningRate) override { UNUSED(learningRate); };
+    void updateParameters(double learning_rate = 0.01, double beta = 0.9,
+                          double beta1 = 0.9, double beta2 = 0.999,  double epsilon = 1e-8) override { UNUSED(learning_rate); };
 
     void accept(Visitor& visitor) override { visitor.visit(this); }
 
@@ -112,7 +116,8 @@ public:
     arma::mat backward(arma::mat dX) override;
     
     bool is4D() { return false; }
-    void updateParameters(double learningRate) override { UNUSED(learningRate); };
+    void updateParameters(double learning_rate = 0.01, double beta = 0.9,
+                          double beta1 = 0.9, double beta2 = 0.999,  double epsilon = 1e-8) override { UNUSED(learning_rate); };
 
     void accept(Visitor& visitor) override { visitor.visit(this); }
 

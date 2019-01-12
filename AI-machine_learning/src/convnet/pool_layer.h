@@ -23,7 +23,8 @@ public:
     arma::mat backward(arma::mat dX) override  { UNUSED(dX); return arma::mat(); }
     
     bool is4D() { return true; }
-    void updateParameters(double learningRate) override { UNUSED(learningRate); };
+    void updateParameters(double learning_rate = 0.01, double beta = 0.9,
+                          double beta1 = 0.9, double beta2 = 0.999,  double epsilon = 1e-8) override { UNUSED(learning_rate); };
     void accept(Visitor& visitor) override { visitor.visit(this); }
 
     void saveState(std::ofstream& output) override;

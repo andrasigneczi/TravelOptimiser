@@ -110,7 +110,7 @@ class ConvLayerTest {
 public:
     static void zero_pad_test() {
         arma::arma_rng::set_seed_random();
-        ConvLayer cL(0, 0, 0, 0, 2, 0);
+        ConvLayer cL(0, 0, 0, 0, 2, 0, CNOptimizer::GD);
         arma::mat4D v(4, arma::randn(3, 3, 2));
         arma::mat4D v_pad = cL.zeroPad(v);
         std::cout.precision(11);
@@ -123,7 +123,7 @@ public:
 
     static void conv_single_step_test() {
         arma::arma_rng::set_seed_random();
-        ConvLayer cL(0, 0, 0, 0, 2, 0);
+        ConvLayer cL(0, 0, 0, 0, 2, 0, CNOptimizer::GD);
         arma::cube a_slice_prev = arma::randn(4, 4, 3);
         arma::cube W = arma::randn(4, 4, 3);
         arma::cube b = arma::randn(1, 1, 1);
@@ -291,7 +291,7 @@ public:
         // n_C_prev: number of the layers/channels
         // ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int stride);
         int f_H = 2, f_W = 2, n_C_prev = 3, n_C = 4, pad = 1, stride = 2;
-        ConvLayer cL(f_H, f_W, n_C_prev, n_C, pad, stride);
+        ConvLayer cL(f_H, f_W, n_C_prev, n_C, pad, stride, CNOptimizer::GD);
 
         // m x height x width x channels
         int m = 1, height = 4, width = 6, channels = n_C_prev;
@@ -319,7 +319,7 @@ public:
 
     static void conv_backward_test() {
         arma::arma_rng::set_seed_random();
-        ConvLayer cL(0, 0, 0, 0, 2, 2);
+        ConvLayer cL(0, 0, 0, 0, 2, 2, CNOptimizer::GD);
         arma::mat4D A_prev = arma::randn(10, 4, 4, 3);
         cL.mW = arma::randn(2, 2, 3, 8);
         cL.mB = arma::randn(1, 1, 1, 8);
@@ -328,7 +328,7 @@ public:
     }
 
     static void adSlice_test() {
-        ConvLayer cL(0, 0, 0, 0, 2, 2);
+        ConvLayer cL(0, 0, 0, 0, 2, 2, CNOptimizer::GD);
         arma::mat4D dW = arma::zeros(2,2,3,8);
         arma::cube val = arma::ones(2,2,3);
         cL.addSlice(dW, 7, val);
@@ -438,7 +438,7 @@ public:
 class FullyConnectedLayerTest {
 public:
     static void fully_connected_test() {
-        FullyConnectedLayer s(11, 20, 0);
+        FullyConnectedLayer s(11, 20, 0, CNOptimizer::GD);
         arma::mat X;
 
         X << -10.5 << -5.1 << -3.1 << -0.5 << -0.1 << 0 << 0.1 << 0.5 << 3.1 << 5.1 << 10.6 << -10.5 << -5.1 << -3.1 << -0.5 << -0.1 << 0 << 0.1 << 0.5 << 3.1 << arma::endr <<
@@ -534,22 +534,22 @@ public:
         //FullyConnectedLayer* fullyConnectedLayer = new FullyConnectedLayer(40, 196 * 6);
         
         
-        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1);
+        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1, CNOptimizer::GD);
         Relu* relu1 = new Relu(true);
         PoolLayer* poolLayer1 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
 
-        ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1);
+        ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1, CNOptimizer::GD);
         Relu* relu2 = new Relu(true);
         PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
         
         // 120x400 invalid 576x15
-        FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(120, 400, 0);
+        FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(120, 400, 0, CNOptimizer::GD);
         Sigmoid* sigmoid3 = new Sigmoid(false);
 
-        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(84, 120, 0);
+        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(84, 120, 0, CNOptimizer::GD);
         Sigmoid* sigmoid4 = new Sigmoid(false);
         
-        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(10, 84, 0);
+        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(10, 84, 0, CNOptimizer::GD);
         //Softmax* softmax5 = new Softmax();
         Sigmoid* sigmoid5 = new Sigmoid(false);
 
@@ -671,10 +671,10 @@ public:
         //Sigmoid* relu2 = new Sigmoid(true);
         //PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
 
-        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(4, 576, 0);
+        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(4, 576, 0, CNOptimizer::GD);
         Sigmoid* sigmoid4 = new Sigmoid(false);
 
-        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, 4, 0);
+        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, 4, 0, CNOptimizer::GD);
         //Softmax* softmax5 = new Softmax();
         Sigmoid* sigmoid5 = new Sigmoid(false);
 
@@ -830,7 +830,7 @@ public:
         //int batch = X.n_rows;
         int batch = 32;
         double keep_prob = 1.; // drop out
-        Optimizer::Type optimization = Optimizer::Type::GD;
+        CNOptimizer::Type optimization = CNOptimizer::Type::GD;
         bool batchNorm = false;
         bool featureScaling = false;
         thetaSizes << input_layer_size << hidden_layer_size2 << num_labels; // input, hidden, output
@@ -845,18 +845,18 @@ public:
         // ----------------------------------------
         ConvNet convNet(X4D, yy, lambda);
 
-        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1);
+        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1, CNOptimizer::GD);
         Relu* relu1 = new Relu(true);
         PoolLayer* poolLayer1 = new PoolLayer(2, 2, 2, PoolLayer::AVG);
 
-        ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1);
+        ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1, CNOptimizer::GD);
         Relu* relu2 = new Relu(true);
         PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::AVG);
 
-        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(hidden_layer_size2, 144, lambda);
+        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(hidden_layer_size2, 144, lambda, CNOptimizer::GD);
         Sigmoid* sigmoid4 = new Sigmoid(false);
 
-        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, hidden_layer_size2, lambda);
+        FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, hidden_layer_size2, lambda, CNOptimizer::GD);
         Sigmoid* sigmoid5 = new Sigmoid(false);
 
         convNet << convLayer1 << relu1 << poolLayer1 << convLayer2 << relu2 << poolLayer2

@@ -1,6 +1,6 @@
 #include "conv_layer.h"
 
-ConvLayer::ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int stride)
+ConvLayer::ConvLayer(int f_H, int f_W, int n_C_prev, int n_C, int pad, int stride, CNOptimizer::Type optimizerType)
     : mPad(pad)
     , mStride(stride)
 {
@@ -220,7 +220,8 @@ void ConvLayer::loadState(std::ifstream& input) {
     UNUSED(input);
 }
 
-void ConvLayer::updateParameters(double learningRate) {
-    mW = mW - learningRate * mdW;
-    mB = mB - learningRate * mdb;
+void ConvLayer::updateParameters(double learning_rate /*= 0.01*/, double beta /*= 0.9*/,
+                                 double beta1 /*= 0.9*/, double beta2 /*= 0.999*/,  double epsilon /*= 1e-8*/) {
+    mW = mW - learning_rate * mdW;
+    mB = mB - learning_rate * mdb;
 }
