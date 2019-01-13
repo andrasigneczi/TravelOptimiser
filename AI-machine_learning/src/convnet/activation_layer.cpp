@@ -159,7 +159,7 @@ void LeakyRelu::updateParameters(double learning_rate, double beta, double beta1
 }
 
 arma::mat Softmax::forward(arma::mat Z) {
-    // V1
+    // V1, stable softmax
     // exps = np.exp(Z - np.max(Z))
     // A = exps / np.sum(exps, axis=1, keepdims=True)
 
@@ -168,15 +168,16 @@ arma::mat Softmax::forward(arma::mat Z) {
     // self.Y = dummy/np.sum(dummy, axis=1, keepdims=True)
     // return self.Y, 0
 
+    std::cerr << "Softmax::" << __FUNCTION__ << ": size(Z): " << size(Z) << "\n";
 
-    arma::mat exps = arma::exp(Util::minus(Z,arma::max(Z)));
-    mCache = Util::div(exps,arma::sum(exps, 1));
+    arma::mat exps = arma::exp(Z - Z.max());
+    mCache = Util::div(exps,arma::sum(exps, 0));
     return mCache;
 }
 
 // Actually we don't need this function
 arma::mat Softmax::backward(arma::mat gZ) {
-    // V1
+    // V1, stable softmax
     // gZ[Y.argmax(axis=0),range(m)] -= 1
 
     // V2
@@ -186,18 +187,8 @@ arma::mat Softmax::backward(arma::mat gZ) {
 
     std::cerr << "Softmax::" << __FUNCTION__ << ": size(gZ): " << size(gZ) << "\n";
     std::cerr << "Softmax::" << __FUNCTION__ << ": size(mCache): " << size(mCache) << "\n";
-    size_t m = mCache.n_cols;
-    //gZ[Y.argmax(axis=0),range(m)] -= 1
-    arma::mat maxS = arma::conv_to<arma::mat>::from(arma::index_max(mCache,0));
-    std::cerr << "Softmax::" << __FUNCTION__ << ": size(maxS): " << size(maxS) << "\n";
-    arma::mat dZ = gZ;
-    for(size_t i = 0; i < m; ++i){
-        //gZ[maxS(0,i), i] -= 1;
-        dZ(maxS(0,i),i) -= 1;
-    }
-    dZ = dZ/(double)m;
     std::cerr << "Softmax::" << __FUNCTION__ << ": end\n";
-    return dZ;
+    return (mCache - gZ)/(double)mCache.n_rows;
 }
 
 void Softmax::saveState(std::ofstream& output) {

@@ -64,10 +64,13 @@ void ConvNet::backward(arma::mat AL, arma::mat Y) {
     arma::mat4D AL2;
     bool fD = false;
     
-    // Initializing the backpropagation from neural network v2
-    AL = - (Y/AL - (1. - Y)/(1. - AL));
-    
-    //AL = Y;
+    LayerNameVisitor layerNameVisitor;
+    // Initializing the backpropagation from neural network v2, for sigmoid output
+    if(layerNameVisitor.getName(mLayers[mLayers.size() - 1]) == IFName::SOFTMAX) {
+        AL = Y;
+    } else {
+        AL = - (Y/AL - (1. - Y)/(1. - AL));
+    }
 
     for(size_t i = mLayers.size(); i >= 1; --i) {
         ForwardBackwardIF* layer = mLayers[i - 1];
@@ -154,18 +157,9 @@ double ConvNet::compute_cost(const arma::mat& AL, const arma::mat& Y) {
         // Softmax loss:
         // self.loss = (-output * np.log(Y + epsilon)).sum() / Y.shape[0]
 
-        arma::mat maxY = arma::conv_to<arma::mat>::from(arma::index_max(Y,0));
-        //CERR  << __FUNCTION__ << " maxY: " << size(maxY) << "\n";
-        arma::mat ALt = arma::zeros(1,AL.n_cols);
-        for( size_t i=0; i < m; ++i ) {
-            ALt(0, i) = AL(maxY(0,i), i);
-        }
-        //cost = np.sum(-np.log(AL[Y.argmax(axis=0),range(m)]))/m;
-        //CERR  << __FUNCTION__ << " " << arma::accu(-arma::log(ALt)) << "\n";
-        cost = arma::accu(-arma::log(ALt))/(double)m;
-        
-        //- nd.sum(y * nd.log(yhat+1e-6)
-        //cost = -arma::accu(Y % arma::log(AL+1e-6))/m;
+        //or: - nd.sum(y * nd.log(yhat+1e-6)
+        // np.sum(-np.log(AL[range(m),Y.argmax(axis=1)]))/m
+        cost = arma::accu(-Y % arma::log(AL + 1e-6))/(double)m;
     } else {
         // Compute loss from aL and y.
         cost = -1./m*arma::accu(Y % arma::log(AL) + (1.-Y)%arma::log(1.-AL));

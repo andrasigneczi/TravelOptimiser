@@ -815,7 +815,7 @@ public:
         arma::mat xx;
         arma::mat yy;
         int num_labels = 0;
-        loadTrainingset(500, X4D, xx, yy, num_labels);
+        loadTrainingset(400, X4D, xx, yy, num_labels);
 
         // ----------------------------------------
         // Neural Network v2 with one hidden layer
@@ -826,7 +826,7 @@ public:
         double lambda = 0.001; //0.5; // reguralization
         int iteration = 2000;
         //double alpha = 0.3;
-        double alpha = 0.0001; // learning rate
+        double alpha = 0.001; // learning rate
         double beta = 0.9, beta1 = 0.9, beta2 = 0.999,  epsilon = 1e-8;
         int batch = 32;
         double keep_prob = 1.; // drop out
@@ -875,7 +875,7 @@ public:
         std::cerr << "ConvNetTest::" << __FUNCTION__ << ": dbg4\n";
 
         FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, hidden_layer_size2, lambda, optimization);
-        Sigmoid* sigmoid5 = new Sigmoid(false);
+        Softmax* sigmoid5 = new Softmax;
 
         std::cerr << "ConvNetTest::" << __FUNCTION__ << ": dbg5\n";
 
