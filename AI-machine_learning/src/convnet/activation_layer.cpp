@@ -175,7 +175,6 @@ arma::mat Softmax::forward(arma::mat Z) {
     return mCache;
 }
 
-// Actually we don't need this function
 arma::mat Softmax::backward(arma::mat gZ) {
     // V1, stable softmax
     // gZ[Y.argmax(axis=0),range(m)] -= 1

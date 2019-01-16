@@ -11,6 +11,7 @@
 #include <LeNet5.h>
 #include <CostAndGradient.h>
 #include <neural_networkv2.h>
+#include <MNIST.h>
 
 using namespace Activation;
 using namespace Util;
@@ -473,9 +474,13 @@ public:
     }
     static void saveFC4(FullyConnectedLayer* layer, std::ofstream& o) {
         //Util::saveMat(o, layer->mCache);
+        UNUSED(layer);
+        UNUSED(o);
     }
     static void saveFC5(FullyConnectedLayer* layer, std::ofstream& o) {
         //Util::saveMat(o, layer->mCache);
+        UNUSED(layer);
+        UNUSED(o);
     }
 
     static void printWeights(FullyConnectedLayer* layer, std::ofstream& o, std::string name, int index) {
@@ -565,7 +570,7 @@ public:
         // std::cout << "cost: " << convNet.compute_cost_with_regularization(retv, Y) << "\n";
         // 
         // convNet.backward(retv, Y);
-        convNet.miniBatchGradientDescent(15, 15, 0.001, 0, 0, 0, 0);
+        convNet.miniBatchGradientDescent(15, 15, 1., 0.001, 0, 0, 0, 0);
     }
 
     static void loadTrainingset(const uint sampleCount, arma::mat4D& X4D, arma::mat& xx, arma::mat& yy,
@@ -698,7 +703,7 @@ public:
         convNet << fullyConnectedLayer4 << sigmoid4
         << fullyConnectedLayer5 << sigmoid5; //softmax5;
 
-        convNet.miniBatchGradientDescent(10, 132, 0.0001, 0, 0, 0, 0);
+        convNet.miniBatchGradientDescent(10, 132, 1., 0.0001, 0, 0, 0, 0);
     }
 
     static void flatten_test() {
@@ -911,7 +916,7 @@ public:
         //FullyConnectedLayerTest::copyWeights(fullyConnectedLayer4, obNNv2.getWeights(), 1);
         //FullyConnectedLayerTest::copyWeights(fullyConnectedLayer5, obNNv2.getWeights(), 2);
 
-        convNet.miniBatchGradientDescent(iteration, batch, alpha, beta, beta1, beta2, epsilon);
+        convNet.miniBatchGradientDescent(iteration, batch, keep_prob, alpha, beta, beta1, beta2, epsilon);
         std::cout << "Training Set Accuracy: " << convNet.accuracy() << "%\n";
 
         arma::mat pred = convNet.predict(Xtest);
@@ -919,6 +924,11 @@ public:
         double acct = (double)arma::accu(pred==temp)/(double)Ytest.n_cols*100.;
         std::cout << "Test Set Accuracy: " << acct << "%\n";
 
+    }
+    
+    static void MNIST_test() {
+        Mnist mnist("./mnist");
+        mnist.load(Mnist::TRAINING);
     }
 };
 
@@ -942,6 +952,7 @@ void convLayerTest() {
     //ConvNetTest::forward_backward_test();
     //ConvNetTest::flatten_test();
     //ConvNetTest::ConvNet_test();
-    ConvNetTest::NNv2_vs_ConvNet_test();
+    //ConvNetTest::NNv2_vs_ConvNet_test();
+    ConvNetTest::MNIST_test();
 }
 
