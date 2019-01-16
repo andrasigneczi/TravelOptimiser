@@ -2,6 +2,7 @@
 #define __CONVNET_H__
 #include "convnet/forward_backward_if.h"
 #include <stack>
+#include "convnet/featurescaler.h"
 
 /*
  * Layer types
@@ -38,7 +39,7 @@ class ConvNet
 {
     friend class ConvNetTest;
 public:
-    ConvNet(arma::mat4D& X, arma::mat Y, double lambda);
+    ConvNet(arma::mat4D& X, arma::mat Y, double lambda, bool featureScaling);
     ConvNet(std::string prefix);
     virtual ~ConvNet();
     ConvNet& operator<<(ForwardBackwardIF* obj) { mLayers.push_back(obj); return *this; }
@@ -51,7 +52,7 @@ public:
     void continueMinibatch(long long epoch);
     */
 
-    arma::mat predict(const arma::mat4D& X, double* cost = 0);
+    arma::mat predict(const arma::mat4D& X, double* cost = 0, bool ignoreFeatureScaling = false);
     double accuracy(double* cost = 0);
 
     double compute_cost_with_regularization(const arma::mat& A3, const arma::mat& Y);
@@ -72,6 +73,9 @@ private:
     arma::mat4D mX;
     arma::mat mY;
     double mLambda; // L2 regularization
+    bool mFeatureScaling;
+
+    FeatureScaler mFeatureScaler;
 };
 
 #endif // __CONVNET_H__

@@ -5,7 +5,7 @@
 
 class LeNet5 : public ConvNet {
 public:
-    LeNet5(arma::mat4D& X, arma::mat Y, double lambda);
+    LeNet5(arma::mat4D& X, arma::mat Y, double lambda, bool featureScaling);
     LeNet5(std::string prefix);
 
 private:

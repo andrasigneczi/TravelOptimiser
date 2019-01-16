@@ -1,12 +1,16 @@
 #include "convnet.h"
 #include "convnet/activation_layer.h"
 
-ConvNet::ConvNet(arma::mat4D& X, arma::mat Y, double lambda) 
-: mX(X)
-, mY(Y)
+ConvNet::ConvNet(arma::mat4D& X, arma::mat Y, double lambda, bool featureScaling)
+: mY(Y)
 , mLambda(lambda)
+, mFeatureScaling(featureScaling)
 {
-
+    if(mFeatureScaling) {
+        mX = mFeatureScaler.featureScaling(X, true, 0);
+    } else {
+        mX = X;
+    }
 }
 
 ConvNet::ConvNet(std::string prefix)
@@ -153,7 +157,6 @@ double ConvNet::compute_cost(const arma::mat& AL, const arma::mat& Y) {
     
     LayerNameVisitor v;
     if( v.getName(mLayers[mLayers.size() - 1]) == IFName::SOFTMAX) {
-    //if(true) {
         // Softmax loss:
         // self.loss = (-output * np.log(Y + epsilon)).sum() / Y.shape[0]
 
@@ -172,12 +175,16 @@ double ConvNet::compute_cost(const arma::mat& AL, const arma::mat& Y) {
 }
 
 // X -- input data of size (n_x, m)
-arma::mat ConvNet::predict(const arma::mat4D& X, double* cost) {
+arma::mat ConvNet::predict(const arma::mat4D& X, double* cost, bool ignoreFeatureScaling) {
+    arma::mat4D X2;
+    if(!ignoreFeatureScaling && mFeatureScaling) {
+        X2 = mFeatureScaler.applyFeatureScalingValues(X,0);
+    } else {
+        X2 = X;
+    }
 
     // no drop out during the prediction
-    arma::mat A = forward(X);
-    //Softmax softmax;
-    //A = softmax.forward(A);
+    arma::mat A = forward(X2);
     if(cost){
         // CERR  << __FUNCTION__ << ": dbg1\n";
         *cost = compute_cost_with_regularization(A, mY);
@@ -187,7 +194,7 @@ arma::mat ConvNet::predict(const arma::mat4D& X, double* cost) {
 }
 
 double ConvNet::accuracy(double* cost) {
-    arma::mat p = predict(mX, cost);
+    arma::mat p = predict(mX, cost, true);
     arma::mat temp = arma::conv_to<arma::mat>::from(arma::index_max(mY,0));
     return (double)arma::accu(p==temp)/(double)mY.n_cols*100.;
 }

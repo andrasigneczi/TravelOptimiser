@@ -5,8 +5,8 @@
 #include "convnet/conv_layer.h"
 
 
-LeNet5::LeNet5(arma::mat4D& X, arma::mat Y, double lambda)
-: ConvNet(X, Y, lambda)
+LeNet5::LeNet5(arma::mat4D& X, arma::mat Y, double lambda, bool featureScaling)
+: ConvNet(X, Y, lambda, featureScaling)
 {
     init();
 }

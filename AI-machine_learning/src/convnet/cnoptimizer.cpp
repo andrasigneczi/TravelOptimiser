@@ -13,10 +13,12 @@ CNOptimizer<Storage>::CNOptimizer(CNOptimizerType optimizerType, Storage& W, Sto
         case GD:
             break;
         case ADAM:
+            mdWVelocity = arma::zeros(size(mW));
+            mdbVelocity = arma::zeros(size(mB));
             mdWAdamS = arma::zeros(size(mW));
             mdbAdamS = arma::zeros(size(mB));
             mAdamCounter = 0;
-            //break;
+            break;
         case MOMENTUM:
             mdWVelocity = arma::zeros(size(mW));
             mdbVelocity = arma::zeros(size(mB));

@@ -510,7 +510,7 @@ public:
         }
         
         
-        ConvNet convNet(X, Y, 1e-8);
+        ConvNet convNet(X, Y, 1e-8, false);
         
         // No. of filters: 6
         // Filter size: 5x5
@@ -568,7 +568,8 @@ public:
         convNet.miniBatchGradientDescent(15, 15, 0.001, 0, 0, 0, 0);
     }
 
-    static void loadTrainingset(const uint sampleCount, arma::mat4D& X4D, arma::mat& xx, arma::mat& yy, int& num_labels) {
+    static void loadTrainingset(const uint sampleCount, arma::mat4D& X4D, arma::mat& xx, arma::mat& yy,
+                                arma::mat4D& Xtest, arma::mat& Ytest, int& num_labels) {
         srand (time(NULL));
         arma::mat X, y, Xt, yt, Xtraining, Ytraining, Xval, Yval;
 
@@ -590,7 +591,7 @@ public:
         yt = Yval;
 
         std::cout << "Training set original size: " << size(X) << "\n";
-        std::cout << "Test set size: " << size(Xt) << "\n";
+        std::cout << "Test set original size: " << size(Xt) << "\n";
         std::cout << "Training label set size: " << size(y) << "\n";
         std::cout << "Test label result set size: " << size(yt) << "\n";
 
@@ -626,20 +627,21 @@ public:
         for(size_t i = 0; i < y.n_rows; ++i){
             yy(y(i,0) - minYVal,i) = 1;
         }
-        arma::mat yyt = arma::zeros(num_labels, yt.n_rows);
+
+        Ytest = arma::zeros(num_labels, yt.n_rows);
         for(size_t i = 0; i < yt.n_rows; ++i){
-            yyt(yt(i,0) - minYVal,i) = 1;
+            Ytest(yt(i,0) - minYVal,i) = 1;
         }
 
         // feature scaling
-        class CG : public CostAndGradient {
-        public:
-            CG(arma::mat&a, arma::mat& b) : CostAndGradient(a,b,0) {}
-            RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override {UNUSED(nn_params); UNUSED(costOnly); return mRetVal;}
-        };
-        arma::mat dummy1, dummy2;
-        CG cg(dummy1, dummy2);
-        X = cg.featureScaling(X, false, 0);
+        //class CG : public CostAndGradient {
+        //public:
+        //    CG(arma::mat&a, arma::mat& b) : CostAndGradient(a,b,0) {}
+        //    RetVal& calc( const arma::mat& nn_params, bool costOnly = false ) override {UNUSED(nn_params); UNUSED(costOnly); return mRetVal;}
+        //};
+        //arma::mat dummy1, dummy2;
+        //CG cg(dummy1, dummy2);
+        //X = cg.featureScaling(X, false, 0);
 
         // arma::mat X ==> arma::mat4D X
         X4D = arma::mat4D(X.n_cols);
@@ -649,19 +651,29 @@ public:
         }
         xx = X;
 
+        // arma::mat Xt ==> arma::mat4D Xtest
+        Xtest = arma::mat4D(Xt.n_cols);
+        for(size_t i = 0; i < Xt.n_cols; ++i) {
+            Xtest[i] = arma::join_slices(Xtest[i], Xt.col(i));
+            Xtest[i].reshape(24, 24, 1);
+        }
+
         std::cout << "Training set converted (4D) size: " << size(X4D) << "\n";
+        std::cout << "Test set converted (4D) size: " << size(Xtest) << "\n";
         std::cout << "Training result set size: " << size(yy) << "\n";
-        std::cout << "Test result set size: " << size(yyt) << "\n";
+        std::cout << "Test result set size: " << size(Ytest) << "\n";
     }
 
     static void ConvNet_test() {
         arma::mat4D X4D;
         arma::mat xx;
         arma::mat yy;
+        arma::mat4D Xtest;
+        arma::mat Ytest;
         int num_labels = 0;
-        loadTrainingset(132, X4D, xx, yy, num_labels);
+        loadTrainingset(132, X4D, xx, yy, Xtest, Ytest, num_labels);
 
-        ConvNet convNet(X4D, yy, 0);
+        ConvNet convNet(X4D, yy, 0, true);
 
         //ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1);
         //Sigmoid* relu1 = new Sigmoid(true);
@@ -692,7 +704,7 @@ public:
     static void flatten_test() {
         arma::mat4D X4D = arma::randn(5, 6, 7, 8);
         arma::mat yy;
-        ConvNet convNet(X4D, yy, 0);
+        ConvNet convNet(X4D, yy, 0, false);
         std::cout << "X4D: " << size(X4D) << "\n";
         arma::mat flattened = convNet.flatten(X4D);
         std::cout << "flattened: " << size(flattened) << "\n";
@@ -814,8 +826,10 @@ public:
         arma::mat4D X4D;
         arma::mat xx;
         arma::mat yy;
+        arma::mat4D Xtest;
+        arma::mat Ytest;
         int num_labels = 0;
-        loadTrainingset(400, X4D, xx, yy, num_labels);
+        loadTrainingset(100, X4D, xx, yy, Xtest, Ytest, num_labels);
 
         // ----------------------------------------
         // Neural Network v2 with one hidden layer
@@ -833,7 +847,7 @@ public:
         CNOptimizerType optimization = CNOptimizerType::ADAM;
         Optimizer::Type nnv2optimization = Optimizer::Type::ADAM;
         bool batchNorm = false;
-        bool featureScaling = false;
+        bool featureScaling = true;
         thetaSizes << input_layer_size << hidden_layer_size2 << num_labels; // input, hidden, output
 
         NeuralNetworkV2 nn(thetaSizes, xx, yy, lambda, featureScaling, NeuralNetworkV2::TANH, NeuralNetworkV2::SOFTMAX,
@@ -853,7 +867,7 @@ public:
         // ----------------------------------------
         // ConvNet with two fully connected layers
         // ----------------------------------------
-        ConvNet convNet(X4D, yy, lambda);
+        ConvNet convNet(X4D, yy, lambda, featureScaling);
 
         std::cerr << "ConvNetTest::" << __FUNCTION__ << ": dbg1\n";
 
@@ -900,11 +914,11 @@ public:
         convNet.miniBatchGradientDescent(iteration, batch, alpha, beta, beta1, beta2, epsilon);
         std::cout << "Training Set Accuracy: " << convNet.accuracy() << "%\n";
 
-        // 0. prepare the same image for training
-        // 1. weight and bias initialization with the same values
-        // open one file for the NNv2 and one for ConvNet
-        // the ovservers have to save everything
-        // 2. compare the results
+        arma::mat pred = convNet.predict(Xtest);
+        arma::mat temp = arma::conv_to<arma::mat>::from(arma::index_max(Ytest,0));
+        double acct = (double)arma::accu(pred==temp)/(double)Ytest.n_cols*100.;
+        std::cout << "Test Set Accuracy: " << acct << "%\n";
+
     }
 };
 
