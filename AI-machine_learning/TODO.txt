@@ -5,11 +5,10 @@ TODO
 - learning rate dacey
 - CNN drop out
 - CNN batch norm
-- CUDA
+- CUDA + multithreading
 - speed optimizations
 
 - tensorlow
-- ArrayFire with my data set http://arrayfire.org/docs/index.htm
 - online learning algorithm
 - Map Reduce
 - PCA

@@ -1,5 +1,6 @@
 #include "convnet.h"
 #include "convnet/activation_layer.h"
+#include "convnet/Dropout.h"
 
 ConvNet::ConvNet(arma::mat4D& X, arma::mat Y, double lambda) 
 : mX(X)
@@ -176,8 +177,6 @@ arma::mat ConvNet::predict(const arma::mat4D& X, double* cost) {
 
     // no drop out during the prediction
     arma::mat A = forward(X);
-    //Softmax softmax;
-    //A = softmax.forward(A);
     if(cost){
         // CERR  << __FUNCTION__ << ": dbg1\n";
         *cost = compute_cost_with_regularization(A, mY);
@@ -192,7 +191,8 @@ double ConvNet::accuracy(double* cost) {
     return (double)arma::accu(p==temp)/(double)mY.n_cols*100.;
 }
 
-void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate,
+void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, double keep_prob,
+                                                double learning_rate,
                                                 double beta, double beta1, double beta2,
                                                 double epsilon ) {
     //if(!mInitializedFromFile) {
@@ -203,11 +203,20 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
 
     //    mOptimizer.initialize(mLayerSizes.n_cols - 1, mParameters);
     //}
-
+    mKeepProb = keep_prob;
+    initDroputLayers();
+    
+    const double alpha0 = learning_rate;
+    const double decay_rate = 1.0;
+    
     arma::mat dataset = arma::mat(1,mY.n_cols);
     for(size_t t = 0; t < mY.n_cols;++t) dataset(0,t) = t;
 
     for( long long i = 0; i < epoch; ++i ) {
+        
+        learning_rate = 1./(1. + decay_rate * i) * alpha0;
+        //learning_rate = pow(0.95, I) * alpha0;
+        
         dataset = shuffle(dataset,1);
         for( size_t index = 0; ;++index) {
             size_t l = index * batchSize;
@@ -276,3 +285,36 @@ void ConvNet::updateParameters(double learning_rate, double beta, double beta1, 
     UNUSED(beta2);
     UNUSED(epsilon);
 }
+
+void ConvNet::initDroputLayers() {
+    struct LocV : public Visitor {
+        LocV(double keepProb) : mKeepProb(keepProb){}
+        void visit(Dropout* d) {
+            d->setKeepProb(mKeepProb);
+        }
+        double mKeepProb;
+    };
+    LocV v(mKeepProb);
+    
+    for(ForwardBackwardIF* layer : mLayers) {
+        layer->accept(v);
+    }
+}
+
+/*
+
+Learning rate decay:
+--------------------
+
+alpha = 1/(1 + decay_rate*epoch_num)*alpha0
+e.g decay_rate=1, alpha0=0.2, epoch_num=current epoch index
+
+Exponential decay:
+------------------
+alpha=pow(0.95,epuch_num)*alpha0
+
+manual decay
+------------
+continueMinibatch should receive the alpha parameter
+
+*/

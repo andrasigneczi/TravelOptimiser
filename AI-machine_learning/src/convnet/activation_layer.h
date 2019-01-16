@@ -107,8 +107,6 @@ public:
     arma::mat4D backward(arma::mat4D dZ) override { UNUSED(dZ); return {arma::mat4D()}; };
 
     arma::mat forward(arma::mat X) override;
-
-    // Actually we don't need this function
     arma::mat backward(arma::mat dX) override;
     
     bool is4D() { return false; }

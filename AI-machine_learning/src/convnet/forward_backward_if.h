@@ -14,6 +14,7 @@ class LeakyRelu;
 class FullyConnectedLayer;
 class PoolLayer;
 class ConvLayer;
+class Dropout;
 
 class Visitor {
 public:
@@ -25,6 +26,7 @@ public:
     virtual void visit(FullyConnectedLayer*){}
     virtual void visit(PoolLayer*){}
     virtual void visit(ConvLayer*){}
+    virtual void visit(Dropout*){}
 };
 
 enum IFName {
@@ -36,6 +38,7 @@ enum IFName {
     SOFTMAX,
     POOL,
     FULLY_CONNECTED,
+    DROPOUT,
     UNKNOWN
 };
 
@@ -72,6 +75,7 @@ public:
         virtual void visit(FullyConnectedLayer*) final { mName = IFName::FULLY_CONNECTED; }
         virtual void visit(ConvLayer*)           final { mName = IFName::CONV; }
         virtual void visit(PoolLayer*)           final { mName = IFName::POOL; }
+        virtual void visit(Dropout*)             final { mName = IFName::DROPOUT; }
 
         virtual IFName getName(ForwardBackwardIF* fBIF) final { fBIF->accept(*this); return mName; }
 
@@ -86,6 +90,7 @@ public:
             case SOFTMAX:         return "SOFTMAX"; break;
             case POOL:            return "POOL"; break;
             case FULLY_CONNECTED: return "FULLY_CONNECTED"; break;
+            case DROPOUT:         return "DROPOUT"; break;
             case UNKNOWN:         return "UNKNOWN"; break;
             }
             return "UNKNOWN";

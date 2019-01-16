@@ -474,9 +474,13 @@ public:
     }
     static void saveFC4(FullyConnectedLayer* layer, std::ofstream& o) {
         //Util::saveMat(o, layer->mCache);
+        UNUSED(layer);
+        UNUSED(o);
     }
     static void saveFC5(FullyConnectedLayer* layer, std::ofstream& o) {
         //Util::saveMat(o, layer->mCache);
+        UNUSED(layer);
+        UNUSED(o);
     }
 
     static void printWeights(FullyConnectedLayer* layer, std::ofstream& o, std::string name, int index) {
@@ -566,7 +570,7 @@ public:
         // std::cout << "cost: " << convNet.compute_cost_with_regularization(retv, Y) << "\n";
         // 
         // convNet.backward(retv, Y);
-        convNet.miniBatchGradientDescent(15, 15, 0.001, 0, 0, 0, 0);
+        convNet.miniBatchGradientDescent(15, 15, 1., 0.001, 0, 0, 0, 0);
     }
 
     static void loadTrainingset(const uint sampleCount, arma::mat4D& X4D, arma::mat& xx, arma::mat& yy, int& num_labels) {
@@ -687,7 +691,7 @@ public:
         convNet << fullyConnectedLayer4 << sigmoid4
         << fullyConnectedLayer5 << sigmoid5; //softmax5;
 
-        convNet.miniBatchGradientDescent(10, 132, 0.0001, 0, 0, 0, 0);
+        convNet.miniBatchGradientDescent(10, 132, 1., 0.0001, 0, 0, 0, 0);
     }
 
     static void flatten_test() {
@@ -898,7 +902,7 @@ public:
         //FullyConnectedLayerTest::copyWeights(fullyConnectedLayer4, obNNv2.getWeights(), 1);
         //FullyConnectedLayerTest::copyWeights(fullyConnectedLayer5, obNNv2.getWeights(), 2);
 
-        convNet.miniBatchGradientDescent(iteration, batch, alpha, beta, beta1, beta2, epsilon);
+        convNet.miniBatchGradientDescent(iteration, batch, keep_prob, alpha, beta, beta1, beta2, epsilon);
         std::cout << "Training Set Accuracy: " << convNet.accuracy() << "%\n";
 
         // 0. prepare the same image for training

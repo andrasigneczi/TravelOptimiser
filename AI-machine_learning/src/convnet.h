@@ -43,7 +43,8 @@ public:
     virtual ~ConvNet();
     ConvNet& operator<<(ForwardBackwardIF* obj) { mLayers.push_back(obj); return *this; }
 
-    void miniBatchGradientDescent( long long epoch, size_t batchSize, double learning_rate = 0.01, double beta = 0.9,
+    void miniBatchGradientDescent( long long epoch, size_t batchSize, double keep_prob = 1.,
+                                    double learning_rate = 0.01, double beta = 0.9,
                                    double beta1 = 0.9, double beta2 = 0.999,  double epsilon = 1e-8 );
 /*
     bool saveState(std::string prefix);
@@ -67,11 +68,14 @@ private:
     arma::mat flatten(const arma::mat4D& X);
     arma::mat4D reshape(const arma::mat& X);
     
+    void initDroputLayers();
+    
     std::stack<size_t> mFlattenedSizes;
     std::vector<ForwardBackwardIF*> mLayers;
     arma::mat4D mX;
     arma::mat mY;
     double mLambda; // L2 regularization
+    double mKeepProb;
 };
 
 #endif // __CONVNET_H__
