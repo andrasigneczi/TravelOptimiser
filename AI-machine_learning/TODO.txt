@@ -1,22 +1,22 @@
 TODO
 ----
-- Optimization külön osztályba
-- Activation functions külön ösztályba
-- 
-- feature mapping
+- MNIST
+- feature scaling
 - learning rate dacey
+- CNN drop out
+- CNN batch norm
+- CUDA
+- speed optimizations
 
 - tensorlow
 - ArrayFire with my data set http://arrayfire.org/docs/index.htm
 - online learning algorithm
-- CUDA
 - Map Reduce
 - PCA
 
 BUG
 ---
 - batch norm doesn't work well with ADAM?
-- it seems, the softmax doesn't work well
 
 
 DONE
@@ -30,124 +30,6 @@ DONE
 Removing CERR messages from neural network
 ------------------------------------------
 cat ../src/neural_networkv2.cpp | sed "s/^\s*CERR\s*<<.*$//" >nv2.cpp; mv nv2.cpp ../src/neural_networkv2.cpp
-
-
-RELU-SIGMOID:
--------------
-Iteration: 0; Accuracy: 10%; 4.09534
-Iteration: 100; Accuracy: 80.6%; 0.497498
-Iteration: 200; Accuracy: 88.06%; 0.34096
-Iteration: 300; Accuracy: 90.4%; 0.263189
-Iteration: 400; Accuracy: 92.66%; 0.176562
-error: Mat::operator(): index out of bounds
-
-RELU-SIGMOID-MOMENTUM:
-----------------------
-Iteration: 0; Accuracy: 9.62%; 3.62371
-Iteration: 100; Accuracy: 48.84%; 2.15311
-Iteration: 200; Accuracy: 61.64%; 1.94867
-Iteration: 300; Accuracy: 65.52%; 1.57691
-Iteration: 400; Accuracy: 65.76%; 1.54866
-Iteration: 500; Accuracy: 66%; 1.54139
-
-Time difference = 496577 ms 
-Training Set Accuracy: 66.26%
-
-LEAKY-RELU-SIGMOID:
--------------------
-Iteration: 0; Accuracy: 10%; 6.56449
-Iteration: 100; Accuracy: 80.88%; 1.14731
-Iteration: 200; Accuracy: 88.48%; 0.819116
-Iteration: 300; Accuracy: 91.92%; 0.685102
-Iteration: 400; Accuracy: 94.14%; 0.576878
-error: Mat::operator(): index out of bounds
-
-LEAKY-RELU-SIGMOID-MOMENTUM:
-----------------------------
-Iteration: 0; Accuracy: 10%; 3.70067
-Iteration: 100; Accuracy: 75.66%; 1.29691
-Iteration: 200; Accuracy: 88.98%; 0.88061
-Iteration: 300; Accuracy: 90.82%; 0.797913
-Iteration: 400; Accuracy: 91.44%; 0.777623
-Iteration: 500; Accuracy: 91.56%; 0.756539
-Time difference = 270787 ms 
-Training Set Accuracy: 91.9%
-
-TANH-SIGMOID:
--------------
-Iteration: 0; Accuracy: 10%; 3.17002
-Iteration: 100; Accuracy: 88.34%; 0.382454
-Iteration: 200; Accuracy: 93.5%; 0.225564
-Iteration: 300; Accuracy: 95.52%; 0.161867
-Iteration: 400; Accuracy: 96.96%; 0.123479
-Iteration: 500; Accuracy: 98%; 0.0929841
-
-Time difference = 316195 ms 
-Training Set Accuracy: 98.78%
-
-TANH-SIGMOID-MOMENTUM:
-----------------------
-Iteration: 0; Accuracy: 10%; 4.00393
-Iteration: 100; Accuracy: 95.64%; 0.347683
-Iteration: 200; Accuracy: 97.32%; 0.219611
-Iteration: 300; Accuracy: 98.26%; 0.162225
-Iteration: 400; Accuracy: 98.9%; 0.126211
-Iteration: 500; Accuracy: 99.16%; 0.102471
-
-Time difference = 402995 ms 
-Training Set Accuracy: 99.3%
-
-
-TANH-SIGMOID-ADAM:
-----------------------
-Iteration: 0; Accuracy: 18.46%; 3.32794
-Iteration: 100; Accuracy: 95.34%; 0.375779
-Iteration: 200; Accuracy: 98.02%; 0.192595
-Iteration: 300; Accuracy: 98.88%; 0.116841
-Iteration: 400; Accuracy: 99.12%; 0.0795168
-Iteration: 500; Accuracy: 99.56%; 0.051767
-
-Time difference = 551011 ms 
-Training Set Accuracy: 99.76%
-
-TANH-SIGMOID-ADAM and SOFTMAX for prediction/accuracy:
-------------------------------------------------------
-Iteration: 0; Accuracy: 20.94%; 8.5036
-Iteration: 100; Accuracy: 95.52%; 6.3881
-Iteration: 200; Accuracy: 98%; 6.29954
-Iteration: 300; Accuracy: 98.88%; 6.26437
-Iteration: 400; Accuracy: 99.12%; 6.24656
-Iteration: 500; Accuracy: 99.56%; 6.23301
-
-Time difference = 1032556 ms 
-Training Set Accuracy: 99.76%
-
-TANH-SIGMOID-MOMENTUM and SOFTMAX for prediction/accuracy:
-----------------------------------------------------------
-Iteration: 0; Accuracy: 22.64%; 8.51638
-Iteration: 100; Accuracy: 95.66%; 6.38473
-Iteration: 200; Accuracy: 97.32%; 6.31429
-Iteration: 300; Accuracy: 98.26%; 6.28322
-Iteration: 400; Accuracy: 98.9%; 6.26403
-Iteration: 500; Accuracy: 99.16%; 6.25293
-
-Time difference = 291568 ms 
-Training Set Accuracy: 99.3%
-
-TANH-SOFTMAX:
--------------
-Iteration: 0; Accuracy: 11.4%; 8.52285
-Iteration: 100; Accuracy: 16.24%; 8.5545
-Iteration: 200; Accuracy: 14.7%; 8.55506
-Iteration: 300; Accuracy: 13.76%; 8.55198
-Iteration: 400; Accuracy: 13.28%; 8.54888
-Iteration: 500; Accuracy: 12.92%; 8.5462
-
-Time difference = 320209 ms 
-Training Set Accuracy: 12.78%
-
-
-
 
 
 

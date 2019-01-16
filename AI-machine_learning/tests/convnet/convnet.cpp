@@ -11,6 +11,7 @@
 #include <LeNet5.h>
 #include <CostAndGradient.h>
 #include <neural_networkv2.h>
+#include <MNIST.h>
 
 using namespace Activation;
 using namespace Util;
@@ -906,6 +907,11 @@ public:
         // the ovservers have to save everything
         // 2. compare the results
     }
+    
+    static void MNIST_test() {
+        Mnist mnist("./mnist");
+        mnist.load(Mnist::TRAINING);
+    }
 };
 
 void convLayerTest() {
@@ -928,6 +934,7 @@ void convLayerTest() {
     //ConvNetTest::forward_backward_test();
     //ConvNetTest::flatten_test();
     //ConvNetTest::ConvNet_test();
-    ConvNetTest::NNv2_vs_ConvNet_test();
+    //ConvNetTest::NNv2_vs_ConvNet_test();
+    ConvNetTest::MNIST_test();
 }
 
