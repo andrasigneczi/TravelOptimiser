@@ -25,7 +25,7 @@ SOURCES += linear_regression.cpp logistic_regression.cpp fmincg.cpp neural_netwo
     convnet/fully_connected_layer.cpp \
     convnet/layerobserver.cpp \
     LeNet5.cpp \
-    convnet/featurescaler.cpp
+    convnet/featurescaler.cpp \
     MNIST.cpp \
     convnet/Dropout.cpp
 HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h CostAndGradient.h Util.h  qcustomplot.h logistic_regression_v2.h  anomaly_detection.h \
@@ -41,7 +41,7 @@ HEADERS  += linear_regression.h logistic_regression.h fmincg.h neural_network.h 
     convnet/layerobserver.h \
     LeNet5.h \
     convnet/cnoptimizer.h \
-    convnet/featurescaler.h
+    convnet/featurescaler.h \
     MNIST.h \
     convnet/Dropout.h
 

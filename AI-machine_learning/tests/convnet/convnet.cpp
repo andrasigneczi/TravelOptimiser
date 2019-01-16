@@ -845,7 +845,7 @@ public:
         double lambda = 0.001; //0.5; // reguralization
         int iteration = 2000;
         //double alpha = 0.3;
-        double alpha = 0.001; // learning rate
+        double alpha = 0.1; // learning rate
         double beta = 0.9, beta1 = 0.9, beta2 = 0.999,  epsilon = 1e-8;
         int batch = 32;
         double keep_prob = 1.; // drop out
