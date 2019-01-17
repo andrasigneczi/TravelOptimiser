@@ -47,13 +47,14 @@ public:
     void miniBatchGradientDescent( long long epoch, size_t batchSize, double keep_prob = 1.,
                                     double learning_rate = 0.01, double beta = 0.9,
                                    double beta1 = 0.9, double beta2 = 0.999,  double epsilon = 1e-8 );
+
 /*
     bool saveState(std::string prefix);
     bool loadState(std::string prefix);
     void continueMinibatch(long long epoch);
     */
 
-    arma::mat predict(const arma::mat4D& X, double* cost = 0, bool ignoreFeatureScaling = false);
+    arma::mat predict(const arma::mat4D& X);
     double accuracy(double* cost = 0);
 
     double compute_cost_with_regularization(const arma::mat& A3, const arma::mat& Y);
@@ -70,16 +71,25 @@ private:
     arma::mat4D reshape(const arma::mat& X);
     
     void initDroputLayers();
-    
+    arma::mat halfMiniBatch(arma::mat4D& X);
+
     std::stack<size_t> mFlattenedSizes;
     std::vector<ForwardBackwardIF*> mLayers;
     arma::mat4D mX;
     arma::mat mY;
+
+    // minibatch parameters
     double mLambda; // L2 regularization
     bool mFeatureScaling;
     double mKeepProb;
+    size_t mBatchSize;
+    double mLearningRate;
+    bool mInitializedFromFile;
+    bool mBatchNormEnabled;
 
     FeatureScaler mFeatureScaler;
+    double mAccuracy;
+    double mCost;
 };
 
 #endif // __CONVNET_H__
