@@ -20,7 +20,8 @@ public:
     void begin(int batchSize);
     void isEnd();
     void next(arma::mat4D& X, arma::mat& Y);
-    
+
+    void printTestImage(int index);
 private:
     uint32_t readBigEndian(std::ifstream& stream);
     

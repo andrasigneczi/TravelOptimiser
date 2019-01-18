@@ -961,7 +961,7 @@ public:
         PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
         FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(hidden_layer_size, 256, lambda, optimization);
         Sigmoid* sigmoid4 = new Sigmoid(false);
-        Dropout* dropout = new Dropout;
+        //Dropout* dropout = new Dropout;
         FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, hidden_layer_size, lambda, optimization);
         Softmax* sigmoid5 = new Softmax;
         std::cout << std::string(80, '*') << "\n";
@@ -969,7 +969,7 @@ public:
         std::cout << std::string(80, '*') << "\n";
 
         convNet << convLayer1 << relu1 << poolLayer1 << convLayer2 << relu2 << poolLayer2
-                << fullyConnectedLayer4 << sigmoid4 << dropout
+                << fullyConnectedLayer4 << sigmoid4 //<< dropout
         << fullyConnectedLayer5 << sigmoid5;
 
         convNet.miniBatchGradientDescent(iteration, batch, keep_prob, alpha, beta, beta1, beta2, epsilon);
@@ -982,6 +982,11 @@ public:
         arma::mat temp = arma::conv_to<arma::mat>::from(arma::index_max(Y,0));
         double acct = (double)arma::accu(pred==temp)/(double)Y.n_cols*100.;
         std::cout << "Test Set Accuracy: " << acct << "%\n";
+
+        for(size_t i = 0; i < X4D.size(); ++i) {
+            mnist.printTestImage(i);
+            std::cout << "prediction: " << pred(0, i) << "\n";
+        }
     }
 };
 

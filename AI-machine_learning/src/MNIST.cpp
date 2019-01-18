@@ -93,16 +93,21 @@ void Mnist::load(Mnist::Type type) {
     }
     
 	std::cout << "Image:" << std::endl;
-	for (uint32_t j = 0; j < rows; ++j) {
-		for (uint32_t i = 0; i < cols; ++i) {
-			std::cout << (*X)[0](i, j, 0);
-		}
-		std::cout << std::endl;
-	}
+    for (uint32_t j = 0; j < rows; ++j) {
+        for (uint32_t i = 0; i < cols; ++i) {
+            std::cout.width(3);
+            if((*X)[0](i, j, 0) == 0) {
+                std::cout << " ";
+            } else {
+                std::cout << (*X)[0](i, j, 0);
+            }
+        }
+        std::cout << std::endl;
+    }
 
 	// Reading label
     for (uint32_t q = 0; q < numberOfLabels; ++q) {
-        image.read(&number, sizeof(unsigned char));
+        label.read(&number, sizeof(unsigned char));
 		(*Y)(0, q) = (unsigned char)number; 
     }
 }
@@ -127,4 +132,18 @@ void Mnist::isEnd() {
 
 void Mnist::next(arma::mat4D& X, arma::mat& Y) {
     
+}
+
+void Mnist::printTestImage(int index) {
+    for (uint32_t j = 0; j < mXtest[0].n_rows; ++j) {
+        for (uint32_t i = 0; i < mXtest[0].n_cols; ++i) {
+            std::cout.width(3);
+            if(mXtest[index](i, j, 0) == 0) {
+                std::cout << " ";
+            } else {
+                std::cout << mXtest[index](i, j, 0);
+            }
+        }
+        std::cout << std::endl;
+    }
 }
