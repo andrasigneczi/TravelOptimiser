@@ -13,6 +13,10 @@ public class TeamDevJxBrowser
 	{
 	}
 
+	public static void init() {
+		BrowserCore.initialize();
+	}
+
 	public static TeamDevJxBrowser getInstance()
 	{
 		if (mInstance != null)
