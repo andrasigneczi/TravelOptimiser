@@ -61,6 +61,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 	public void Init() throws Exception
 	{
 		InitJMS();
+		TeamDevJxBrowser.init();
 		getBrowserLogger().setLevel( Level.WARNING );
 		getChromiumProcessLogger().setLevel( Level.WARNING );
 		getIPCLogger().setLevel( Level.WARNING );
@@ -669,10 +670,11 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 
 	private void clickLeftArrow() {
 		mLogger.trace( "begin, thread name: " + getThreadName());
-		DOMElement leftArrow = mBrowser2.getDocument().findElement( By.xpath( "//*[@id=\"fare-selector-outbound\"]/div[1]/div[3]/button[2]" ));
-		if( leftArrow  != null )
+		DOMElement rightArrow = mBrowser2.getDocument().findElement( By.xpath( "//*[@id=\"outbound-fare-selector\"]/div[2]/div[1]/button[2]" ));
+
+		if( rightArrow  != null )
 		{
-			jxClick( mBrowser2, leftArrow );
+			jxClick( mBrowser2, rightArrow );
 		}
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
