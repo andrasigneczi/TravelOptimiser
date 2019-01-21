@@ -15,6 +15,7 @@ class FullyConnectedLayer;
 class PoolLayer;
 class ConvLayer;
 class Dropout;
+class BatchNormCN;
 
 class Visitor {
 public:
@@ -27,6 +28,7 @@ public:
     virtual void visit(PoolLayer*){}
     virtual void visit(ConvLayer*){}
     virtual void visit(Dropout*){}
+    virtual void visit(BatchNormCN*){}
 };
 
 enum IFName {
@@ -39,6 +41,7 @@ enum IFName {
     POOL,
     FULLY_CONNECTED,
     DROPOUT,
+    BATCHNORMCN,
     UNKNOWN
 };
 
@@ -76,6 +79,7 @@ public:
         virtual void visit(ConvLayer*)           final { mName = IFName::CONV; }
         virtual void visit(PoolLayer*)           final { mName = IFName::POOL; }
         virtual void visit(Dropout*)             final { mName = IFName::DROPOUT; }
+        virtual void visit(BatchNormCN*)         final { mName = IFName::BATCHNORMCN; }
 
         virtual IFName getName(ForwardBackwardIF* fBIF) final { fBIF->accept(*this); return mName; }
 
@@ -91,6 +95,7 @@ public:
             case POOL:            return "POOL"; break;
             case FULLY_CONNECTED: return "FULLY_CONNECTED"; break;
             case DROPOUT:         return "DROPOUT"; break;
+            case BATCHNORMCN:     return "BATCHNORMCN"; break;
             case UNKNOWN:         return "UNKNOWN"; break;
             }
             return "UNKNOWN";

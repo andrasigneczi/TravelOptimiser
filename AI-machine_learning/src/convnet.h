@@ -60,6 +60,7 @@ public:
     double compute_cost(const arma::mat& AL, const arma::mat& Y);
     
     double getLambda() const { return mLambda; }
+    
 private:
     void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon);
     
@@ -70,6 +71,7 @@ private:
     arma::mat4D reshape(const arma::mat& X);
     
     void initDroputLayers();
+    void initBatchNormLayers(int epoch);
     
     std::stack<size_t> mFlattenedSizes;
     std::vector<ForwardBackwardIF*> mLayers;
@@ -80,6 +82,7 @@ private:
     double mKeepProb;
 
     FeatureScaler mFeatureScaler;
+    bool mBatchNormEnabled;
 };
 
 #endif // __CONVNET_H__

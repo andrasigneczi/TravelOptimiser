@@ -53,7 +53,9 @@ namespace arma {
     // my declaration
     Q_DECL_EXPORT mat4D randn(int, int, int, int);
     Q_DECL_EXPORT mat4D randu(int, int, int, int);
-    Q_DECL_EXPORT arma::cube mean(mat4D& X);
+    Q_DECL_EXPORT arma::cube mean(mat4D& X, int axis);
+    Q_DECL_EXPORT arma::mat mean(mat4D& X, int axis1, int axis2);
+    Q_DECL_EXPORT arma::mat mean(mat4D& X, int axis1, int axis2, int axis3);
     Q_DECL_EXPORT mat4D zeros(int, int, int, int);
     Q_DECL_EXPORT mat4D zeros(SizeMat4D s);
     Q_DECL_EXPORT mat4D operator-(const mat4D& x);

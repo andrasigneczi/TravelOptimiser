@@ -1,4 +1,4 @@
-#include "Dropout.h"
+#include "dropout.h"
 
 arma::mat Dropout::forward(arma::mat A) {
     // D1 = np.random.rand(A1.shape[0],A1.shape[1])      # Step 1: initialize matrix D1 = np.random.rand(..., ...)

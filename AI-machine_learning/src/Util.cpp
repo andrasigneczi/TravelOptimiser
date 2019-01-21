@@ -379,6 +379,133 @@ namespace arma {
         return mat4D(a, arma::randu(b, c, d));
     }
 
+    arma::cube mean(mat4D& X, int axis) {
+        // ret val 3D
+        arma::cube retval;
+        if(axis == 0) {
+            retval = arma::zeros(X[0].n_rows, X[0].n_cols, X[0].n_slices);
+            for(size_t i = 0; i < X.size(); ++i) {
+                retval += X[i];
+            }
+            retval /= (double)X.size();
+        } else {
+            std::vector<int> dims; // return value shape
+            std::vector<int> axes; // axes for filling the matrix
+            double divider = 1.;
+            for(int i = 0; i  < 4; ++i) {
+                if(axis != i) {
+                    axes.push_back(i);
+                    switch(i) {
+                        case 0: dims.push_back(X.size());      break;
+                        case 1: dims.push_back(X[0].n_rows);   break;
+                        case 2: dims.push_back(X[0].n_cols);   break;
+                        case 3: dims.push_back(X[0].n_slices); break;
+                    }
+                } else {
+                    switch(i) {
+                        case 0: divider *= X.size();      break;
+                        case 1: divider *= X[0].n_rows;   break;
+                        case 2: divider *= X[0].n_cols;   break;
+                        case 3: divider *= X[0].n_slices; break;
+                    }
+                }
+            }
+            
+            retval = arma::zeros(dims[0], dims[1], dims[2]);
+            std::vector<size_t> indices(4, 0);
+            for(indices[0] = 0; indices[0] < X.size(); ++indices[0]) {
+                for(indices[1] = 0; indices[1] < X[0].n_rows; ++indices[1]) {
+                    for(indices[2] = 0; indices[2] < X[0].n_cols; ++indices[2]) {
+                        for(indices[3] = 0; indices[3] < X[0].n_slices; ++indices[3]) {
+                            retval(indices[axes[0]], indices[axes[1]], indices[axes[2]]) += X[indices[0]](indices[1], indices[2], indices[3]);
+                        }
+                    }
+                }
+            }
+            retval /= divider;
+        }
+        return retval;
+    }
+    
+    // axis1 < axis2
+    arma::mat mean(mat4D& X, int axis1, int axis2) {
+        // ret val 2D
+        std::vector<int> dims; // return value shape
+        std::vector<int> axes; // axes for filling the matrix
+        double divider = 1.;
+        for(int i = 0; i  < 4; ++i) {
+            if(axis1 != i && axis2 != i) {
+                axes.push_back(i);
+                switch(i) {
+                    case 0: dims.push_back(X.size());      break;
+                    case 1: dims.push_back(X[0].n_rows);   break;
+                    case 2: dims.push_back(X[0].n_cols);   break;
+                    case 3: dims.push_back(X[0].n_slices); break;
+                }
+            } else {
+                switch(i) {
+                    case 0: divider *= X.size();      break;
+                    case 1: divider *= X[0].n_rows;   break;
+                    case 2: divider *= X[0].n_cols;   break;
+                    case 3: divider *= X[0].n_slices; break;
+                }
+            }
+        }
+        
+        arma::mat retval = arma::zeros(dims[0], dims[1]);
+        std::vector<size_t> indices(4, 0);
+        for(indices[0] = 0; indices[0] < X.size(); ++indices[0]) {
+            for(indices[1] = 0; indices[1] < X[0].n_rows; ++indices[1]) {
+                for(indices[2] = 0; indices[2] < X[0].n_cols; ++indices[2]) {
+                    for(indices[3] = 0; indices[3] < X[0].n_slices; ++indices[3]) {
+                        retval(indices[axes[0]], indices[axes[1]]) += X[indices[0]](indices[1], indices[2], indices[3]);
+                    }
+                }
+            }
+        }
+        retval /= divider;
+        return retval;
+    }
+    
+    arma::mat mean(mat4D& X, int axis1, int axis2, int axis3) {
+        // ret val a row vector
+        int dim = 0; // return value shape
+        int axis = 0; // axes for filling the matrix
+        double divider = 1.;
+        for(int i = 0; i  < 4; ++i) {
+            if(axis1 != i && axis2 != i && axis3 != i) {
+                axis = i;
+                switch(i) {
+                    case 0: dim = X.size();      break;
+                    case 1: dim = X[0].n_rows;   break;
+                    case 2: dim = X[0].n_cols;   break;
+                    case 3: dim = X[0].n_slices; break;
+                }
+            } else {
+                switch(i) {
+                    case 0: divider *= X.size();      break;
+                    case 1: divider *= X[0].n_rows;   break;
+                    case 2: divider *= X[0].n_cols;   break;
+                    case 3: divider *= X[0].n_slices; break;
+                }
+            }
+        }
+        
+        arma::mat retval = arma::zeros(1, dim);
+        std::vector<size_t> indices(4, 0);
+        for(indices[0] = 0; indices[0] < X.size(); ++indices[0]) {
+            for(indices[1] = 0; indices[1] < X[0].n_rows; ++indices[1]) {
+                for(indices[2] = 0; indices[2] < X[0].n_cols; ++indices[2]) {
+                    for(indices[3] = 0; indices[3] < X[0].n_slices; ++indices[3]) {
+                        retval(0, indices[axis]) += X[indices[0]](indices[1], indices[2], indices[3]);
+                    }
+                }
+            }
+        }
+        retval /= divider;
+        return retval;
+    }
+    
     mat4D zeros(int a, int b, int c, int d) {
         return mat4D(a, arma::zeros(b, c, d));
     }
