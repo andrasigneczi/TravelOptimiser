@@ -7,6 +7,9 @@ ConvNet::ConvNet(arma::mat4D& X, arma::mat Y, double lambda, bool featureScaling
 : mY(Y)
 , mLambda(lambda)
 , mFeatureScaling(featureScaling)
+, mAccuracy(0)
+, mCost(0)
+, mInitializedFromFile(false)
 {
     if(mFeatureScaling) {
         mX = mFeatureScaler.featureScaling(X, true, 0);
@@ -16,6 +19,7 @@ ConvNet::ConvNet(arma::mat4D& X, arma::mat Y, double lambda, bool featureScaling
 }
 
 ConvNet::ConvNet(std::string prefix)
+: mInitializedFromFile(true)
 {
     UNUSED(prefix);
 }
@@ -177,36 +181,27 @@ double ConvNet::compute_cost(const arma::mat& AL, const arma::mat& Y) {
 }
 
 // X -- input data of size (n_x, m)
-arma::mat ConvNet::predict(const arma::mat4D& X, double* cost, bool ignoreFeatureScaling) {
+arma::mat ConvNet::predict(const arma::mat4D& X) {
     arma::mat4D X2;
-    if(!ignoreFeatureScaling && mFeatureScaling) {
+    if(mFeatureScaling) {
         X2 = mFeatureScaler.applyFeatureScalingValues(X,0);
     } else {
         X2 = X;
     }
 
     // no drop out during the prediction
-    bool keepProb = mKeepProb;
+    const int keepProb = mKeepProb;
     mKeepProb = 1.0;
-    initDroputLayers();
-
-    arma::mat A = forward(X2);
-    
+    arma::mat p = halfMiniBatch(X2);
     mKeepProb = keepProb;
-    initDroputLayers();
-
-    if(cost){
-        // CERR  << __FUNCTION__ << ": dbg1\n";
-        *cost = compute_cost_with_regularization(A, mY);
-    }
-    arma::mat p = arma::conv_to<arma::mat>::from(arma::index_max(A,0));
-    return p;   
+    return p;
 }
 
 double ConvNet::accuracy(double* cost) {
-    arma::mat p = predict(mX, cost, true);
-    arma::mat temp = arma::conv_to<arma::mat>::from(arma::index_max(mY,0));
-    return (double)arma::accu(p==temp)/(double)mY.n_cols*100.;
+    if(cost) {
+        *cost = mCost;
+    }
+    return mAccuracy;
 }
 
 void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, double keep_prob,
@@ -223,10 +218,13 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
     //}
     mKeepProb = keep_prob;
     initDroputLayers();
-    
+    mBatchSize = batchSize;
+    //mBatchNormEnabled;
+    mCost = 0;
+    mAccuracy = 0;
+
     const double alpha0 = learning_rate;
     const double decay_rate = 1.0;
-    
     arma::mat dataset = arma::mat(1,mY.n_cols);
     for(size_t t = 0; t < mY.n_cols;++t) dataset(0,t) = t;
 
@@ -234,14 +232,22 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
         
         learning_rate = 1./(1. + decay_rate * i) * alpha0;
         //learning_rate = pow(0.95, I) * alpha0;
-        
+
+        arma::mat prediction;
+        double cost = 0;
         dataset = shuffle(dataset,1);
+        std::vector<double> subAccuracy;
+
         for( size_t index = 0; ;++index) {
             size_t l = index * batchSize;
             size_t l_end = l + batchSize - 1;
 
             if( l >= mX.size() )
                 break;
+
+            if(index % 100 == 0) {
+                std::cout << "index: " << index << "\n";
+            }
 
             if( l_end >= mX.size() )
                 l_end = mX.size() - 1;
@@ -268,8 +274,13 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
             arma::mat AL = forward(X);
             //std::cerr  << "ConvNet::" << __FUNCTION__ << " AL: " << AL << "\n";
             //CERR  << __FUNCTION__ << " dbg2\n";
+
             // Compute cost.
-            //double cost = compute_cost(AL, mY);
+            cost += compute_cost_with_regularization(AL, Y) * (double)Y.n_cols;
+            prediction = arma::conv_to<arma::mat>::from(arma::index_max(AL,0));
+            arma::mat maxIndex = arma::conv_to<arma::mat>::from(arma::index_max(Y,0));
+            subAccuracy.push_back((double)arma::accu(prediction == maxIndex)/(double)Y.n_cols*100.);
+
             //CERR  << __FUNCTION__ << " dbg3\n";
             // Backward propagation.
             backward(AL, Y);
@@ -284,26 +295,51 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
         }
         //mBatchNorm.setTrainOff();
 
-        // Print the cost every 100 training example
-        if( i % 10 == 0 ){
-            double cost=0;
-            double acc = accuracy(&cost);
-            std::cout << "Iteration: " << i << "; Accuracy: " << acc << "%; " << cost << "\n";
-            if(acc == 100. || std::isnan(cost)) {
-                break;
-            }
+        // Print the cost in every epoch
+        mCost = cost / (double)mY.n_cols;
+        mAccuracy = 0;
+        std::for_each(subAccuracy.begin(), subAccuracy.end(), [this](const double x){ mAccuracy += x; });
+        mAccuracy /=  subAccuracy.size();
+        std::cout << "Iteration: " << i << "; Accuracy: " << mAccuracy << "%; " << mCost << "\n";
+        if(mAccuracy == 100. || std::isnan(mCost)) {
+            break;
         }
     }
+    mLearningRate = learning_rate;
+}
+
+arma::mat ConvNet::halfMiniBatch(arma::mat4D& X4D) {
+    arma::mat prediction;
+    for( size_t index = 0; ;++index) {
+        size_t l = index * mBatchSize;
+        size_t l_end = l + mBatchSize - 1;
+
+        if( l >= X4D.size() )
+            break;
+
+        if(index % 100 == 0) {
+            std::cout << "index: " << index << "\n";
+        }
+
+        if( l_end >= X4D.size() )
+            l_end = X4D.size() - 1;
+
+        arma::mat4D X(l_end - l + 1);
+
+        for(size_t t = l; t <= l_end;++t){
+            X[t-l] = X4D[t];
+        }
+
+        arma::mat AL = forward(X);
+        prediction = arma::join_rows(prediction, arma::conv_to<arma::mat>::from(arma::index_max(AL,0)));
+    }
+    return prediction;
 }
 
 void ConvNet::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
     for(ForwardBackwardIF* layer : mLayers) {
         layer->updateParameters(learning_rate, beta, beta1, beta2,  epsilon);
     }
-    UNUSED(beta);
-    UNUSED(beta1);
-    UNUSED(beta2);
-    UNUSED(epsilon);
 }
 
 void ConvNet::initDroputLayers() {

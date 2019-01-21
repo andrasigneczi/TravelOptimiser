@@ -1,6 +1,9 @@
 #include "dropout.h"
 
 arma::mat Dropout::forward(arma::mat A) {
+    if(mKeepProb == 1.0) {
+        return A;
+    }
     // D1 = np.random.rand(A1.shape[0],A1.shape[1])      # Step 1: initialize matrix D1 = np.random.rand(..., ...)
     // D1 = (D1 < keep_prob)                             # Step 2: convert entries of D1 to 0 or 1 (using keep_prob as the threshold)
     // A1 = A1 * D1                                      # Step 3: shut down some neurons of A1
@@ -15,6 +18,9 @@ arma::mat Dropout::forward(arma::mat A) {
 }
 
 arma::mat Dropout::backward(arma::mat dA) {
+    if(mKeepProb == 1.0) {
+        return dA;
+    }
     // dA2 = dA2 * D2          # Step 1: Apply mask D2 to shut down the same neurons as during the forward propagation
     // dA2 = dA2 / keep_prob   # Step 2: Scale the value of neurons that haven't been shut down
     return (dA % mCache)/mKeepProb;
