@@ -83,8 +83,8 @@ def anyTest2():
     print("mask:{}\n".format(x == np.max(x)))
 
 def meanTest():
-    X = np.random.randn(2,2,3,4)
-    print("X:{}\n".format(X))
+    X = initTestValue()
+    #print("X:{}\n".format(X))
     print("mean1:{}\n".format(np.mean(X, axis=(0)).shape))
     # output: mean1:(2, 3, 4)
     print("mean1:{}\n".format(np.mean(X, axis=(0))))

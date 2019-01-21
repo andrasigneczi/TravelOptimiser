@@ -61,12 +61,11 @@ void BatchNormCN::loadState(std::ifstream& input) {
     UNUSED(input);
 }
 
-void BatchNormCN::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
-    UNUSED(learning_rate);
-    UNUSED(beta);
-    UNUSED(beta1);
-    UNUSED(beta2);
-    UNUSED(epsilon);
+void BatchNormCN::updateParameters(double learning_rate, double beta, double beta1, double beta2, double epsilon/*, batch_size*/) {
+    for(size_t i = 0; i < mBatches.size(); ++i) {
+            mBatches[i].mGamma -= learning_rate * mBatches[i].mdGamma;
+            mBatches[i].mBeta  -= learning_rate * mBatches[i].mdBeta;
+    }
 }
 
 void BatchNormCN::initializeByBatch(size_t batchIndex) {

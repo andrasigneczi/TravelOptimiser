@@ -107,6 +107,24 @@ void fill4D(arma::mat4D& X, double startVal, double step) {
     }
 }
 
+void meanMat4DTest() {
+    arma::mat4D X(5, arma::cube(4,3,2));
+    fill4D(X, -2.5, 0.07);
+    arma::cube r = mean(X, 0);
+    arma::mat4D q(1, arma::cube(size(r)));
+    q[0] = r;
+    std::cout << size(r) << "\n" << q << "\n";
+    std::cout << std::string(80, '-') << "\n";
+    
+    arma::mat m2 = mean(X, 0, 2);
+    std::cout << size(m2) << "\n" << m2 << "\n";
+    std::cout << std::string(80, '-') << "\n";
+
+    arma::mat m3 = mean(X, 0, 2, 3);
+    std::cout << size(m3) << "\n" << m3 << "\n";
+    std::cout << std::string(80, '-') << "\n";
+}
+
 class ConvLayerTest {
 public:
     static void zero_pad_test() {
@@ -953,6 +971,7 @@ void convLayerTest() {
     //ConvNetTest::flatten_test();
     //ConvNetTest::ConvNet_test();
     //ConvNetTest::NNv2_vs_ConvNet_test();
-    ConvNetTest::MNIST_test();
+    //ConvNetTest::MNIST_test();
+    meanMat4DTest();
 }
 
