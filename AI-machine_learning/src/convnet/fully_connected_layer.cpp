@@ -36,8 +36,8 @@ arma::mat FullyConnectedLayer::backward(arma::mat dZ) {
     return mdA;
 }
 
-void FullyConnectedLayer::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
-    mOptimizer->updateParameters(learning_rate, beta, beta1, beta2,  epsilon);
+void FullyConnectedLayer::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) {
+    mOptimizer->updateParameters(learning_rate, beta, beta1, beta2,  epsilon, batch_size);
 }
 
 void FullyConnectedLayer::saveState(std::ofstream& output) {

@@ -32,7 +32,7 @@ uint32_t Mnist::readBigEndian(std::ifstream& stream) {
     return retv;
 }
 
-void Mnist::load(Mnist::Type type) {
+void Mnist::load(Mnist::Type type, size_t num) {
     std::ifstream image;
     std::ifstream label;
 
@@ -72,6 +72,9 @@ void Mnist::load(Mnist::Type type) {
     numberOfImages = readBigEndian(image);
     rows = readBigEndian(image);
     cols = readBigEndian(image);
+
+    numberOfImages = numberOfImages < num ? numberOfImages : num;
+    numberOfLabels = numberOfLabels < num ? numberOfLabels : num;
 
     std::cout  << "rows: " << rows << std::endl;
     std::cout  << "cols: " << cols << std::endl;

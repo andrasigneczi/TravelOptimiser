@@ -54,7 +54,7 @@ public:
     virtual bool is4D() = 0;
     
     virtual void updateParameters(double learning_rate, double beta,
-                                  double beta1, double beta2,  double epsilon) = 0;
+                                  double beta1, double beta2,  double epsilon, int batch_size) = 0;
 
     virtual void accept(Visitor&){}
     virtual double getWeightSquareSum() { return 0; }

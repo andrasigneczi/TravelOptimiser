@@ -113,10 +113,11 @@ arma::mat PoolLayer::distributeValue(double dZ, int n_H, int n_W) {
     return arma::ones(n_H, n_W) * average;
 }
 
-void PoolLayer::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+void PoolLayer::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) {
     UNUSED(learning_rate);
     UNUSED(beta);
     UNUSED(beta1);
     UNUSED(beta2);
     UNUSED(epsilon);
+    UNUSED(batch_size);
 }

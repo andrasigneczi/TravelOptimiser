@@ -12,7 +12,7 @@ public:
     };
     
     Mnist(std::string folderName);
-    void load(Type type);
+    void load(Type type, size_t num);
     
     void getTrainingData(arma::mat4D& X, arma::mat& Y);
     void getTestData(arma::mat4D& X, arma::mat& Y);

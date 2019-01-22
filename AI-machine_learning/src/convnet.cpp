@@ -222,16 +222,11 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
     mCost = 0;
     mAccuracy = 0;
 
-    const double alpha0 = learning_rate;
-    const double decay_rate = 1.0;
     arma::mat dataset = arma::mat(1,mY.n_cols);
     for(size_t t = 0; t < mY.n_cols;++t) dataset(0,t) = t;
 
     for( long long i = 0; i < epoch; ++i ) {
         
-        learning_rate = 1./(1. + decay_rate * i) * alpha0;
-        //learning_rate = pow(0.95, I) * alpha0;
-
         arma::mat prediction;
         double cost = 0;
         dataset = shuffle(dataset,1);
@@ -243,10 +238,6 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
 
             if( l >= mX.size() )
                 break;
-
-            if(index % 100 == 0) {
-                std::cout << "index: " << index << "\n";
-            }
 
             if( l_end >= mX.size() )
                 l_end = mX.size() - 1;
@@ -278,13 +269,15 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
             arma::mat maxIndex = arma::conv_to<arma::mat>::from(arma::index_max(Y,0));
             subAccuracy.push_back((double)arma::accu(prediction == maxIndex)/(double)Y.n_cols*100.);
 
+            std::cout << "Step: " << index << "; Batch accuracy: " << subAccuracy.back() << "\n";
+
             //CERR  << __FUNCTION__ << " dbg3\n";
             // Backward propagation.
             backward(AL, Y);
             std::cerr  << "ConvNet::" << __FUNCTION__ << " dbg4\n";
             // Update parameters.
             //mOptimizer.updateParameters(mParameters, mGrads, learning_rate, beta, beta1, beta2,  epsilon);
-            updateParameters(learning_rate, beta, beta1, beta2,  epsilon);
+            updateParameters(learning_rate, beta, beta1, beta2,  epsilon, X.size());
 
             //if(mBatchNormEnabled) { mBatchNorm.updateParameters(mLayerSizes.n_cols - 1, learning_rate); }
             
@@ -297,7 +290,8 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
         mAccuracy = 0;
         std::for_each(subAccuracy.begin(), subAccuracy.end(), [this](const double x){ mAccuracy += x; });
         mAccuracy /=  subAccuracy.size();
-        std::cout << "Iteration: " << i << "; Accuracy: " << mAccuracy << "%; " << mCost << "\n";
+        std::cout << "Learning rate: " << learning_rate << "\n";
+        std::cout << "Iteration: " << i << "; Accuracy: " << mAccuracy << "%; Cost with regularization: " << mCost << "\n";
         if(mAccuracy == 100. || std::isnan(mCost)) {
             break;
         }
@@ -333,9 +327,9 @@ arma::mat ConvNet::halfMiniBatch(arma::mat4D& X4D) {
     return prediction;
 }
 
-void ConvNet::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+void ConvNet::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) {
     for(ForwardBackwardIF* layer : mLayers) {
-        layer->updateParameters(learning_rate, beta, beta1, beta2,  epsilon);
+        layer->updateParameters(learning_rate, beta, beta1, beta2,  epsilon, batch_size);
     }
 }
 

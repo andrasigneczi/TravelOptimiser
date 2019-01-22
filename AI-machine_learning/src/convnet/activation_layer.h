@@ -15,7 +15,7 @@ public:
     arma::mat backward(arma::mat dX) override;
     
     bool is4D() { return m4D; }
-    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) override;
+    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) override;
 
     void accept(Visitor& visitor) override { visitor.visit(this); }
 
@@ -39,7 +39,7 @@ public:
     arma::mat backward(arma::mat dX) override;
     
     bool is4D() { return m4D; }
-    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) override;
+    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) override;
 
     void accept(Visitor& visitor) override { visitor.visit(this); }
 
@@ -63,7 +63,7 @@ public:
     arma::mat backward(arma::mat dX) override;
     
     bool is4D() { return m4D; }
-    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) override;
+    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) override;
 
     void accept(Visitor& visitor) override { visitor.visit(this); }
 
@@ -87,7 +87,7 @@ public:
     arma::mat backward(arma::mat dX) override;
     
     bool is4D() { return m4D; }
-    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) override;
+    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) override;
 
     void accept(Visitor& visitor) override { visitor.visit(this); }
 
@@ -110,7 +110,7 @@ public:
     arma::mat backward(arma::mat dX) override;
     
     bool is4D() { return false; }
-    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) override;
+    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) override;
 
     void accept(Visitor& visitor) override { visitor.visit(this); }
 

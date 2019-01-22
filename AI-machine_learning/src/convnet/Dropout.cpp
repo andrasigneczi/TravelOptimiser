@@ -34,10 +34,11 @@ void Dropout::loadState(std::ifstream& input) {
     UNUSED(input);
 }
 
-void Dropout::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+void Dropout::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) {
     UNUSED(learning_rate);
     UNUSED(beta);
     UNUSED(beta1);
     UNUSED(beta2);
     UNUSED(epsilon);
+    UNUSED(batch_size);
 }

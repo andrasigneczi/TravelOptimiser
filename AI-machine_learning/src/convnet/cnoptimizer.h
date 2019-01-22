@@ -15,12 +15,12 @@ class CNOptimizer
 public:
     CNOptimizer(CNOptimizerType optimizerType, Storage& W, Storage& B, Storage& dW, Storage& db);
     void updateParameters(double learning_rate, double beta,
-                          double beta1, double beta2,  double epsilon);
+                          double beta1, double beta2,  double epsilon, int batch_size);
 
 private:
     void update_parameters_with_gd(double learning_rate);
     void update_parameters_with_momentum(double learning_rate, double beta);
-    void update_parameters_with_adam(double learning_rate, double beta1, double beta2,  double epsilon);
+    void update_parameters_with_adam(double learning_rate, double beta1, double beta2,  double epsilon, int batch_size);
 
 
     Storage& mW; // Weights, kernel

@@ -62,7 +62,7 @@ public:
     
     double getLambda() const { return mLambda; }
 private:
-    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon);
+    void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size);
     
     arma::mat forward(arma::mat4D X);
     void backward(arma::mat AL, arma::mat Y);
