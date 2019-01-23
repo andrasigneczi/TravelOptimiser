@@ -8,7 +8,7 @@
 #include <convnet/pool_layer.h>
 #include <convnet/activation_layer.h>
 #include <convnet/fully_connected_layer.h>
-#include <convnet/Dropout.h>
+#include <convnet/dropout.h>
 #include <LeNet5.h>
 #include <CostAndGradient.h>
 #include <neural_networkv2.h>
@@ -953,18 +953,28 @@ public:
         mnist.load(Mnist::TRAINING);
         mnist.getTrainingData(X4D, Y);
 
+        QSettings settings("LeNet5.ini", QSettings::IniFormat);
+        settings.beginGroup("MNIST");
+        
         int hidden_layer_size = 90;
-        double lambda = 0.001; //0.5; // reguralization
-        int iteration = 2000;
-        double alpha = 0.1; // learning rate
-        double beta = 0.9, beta1 = 0.9, beta2 = 0.999,  epsilon = 1e-8;
-        int batch = 32;
-        double keep_prob = 1.; // drop out
-        CNOptimizerType optimization = CNOptimizerType::ADAM;
-        bool batchNorm = false;
-        bool featureScaling = true;
-        int num_labels = 10;
-
+        double lambda = settings.value("lambda").toDouble(); // reguralization
+        int iteration = settings.value("epoc_num").toInt();
+        double alpha = settings.value("alpha").toDouble(); // learning rate
+        double beta = settings.value("beta").toDouble(), beta1 = settings.value("beta1").toDouble(), 
+                beta2 = settings.value("beta2").toDouble(),  epsilon = 1e-8;
+        int batch = settings.value("batch_size").toInt();
+        double keep_prob = settings.value("keep_prob").toDouble(); // drop out
+        CNOptimizerType optimization = CNOptimizerType::GD;
+        if(settings.value("optimization").toString().toLower() == "adam")
+            optimization = CNOptimizerType::ADAM;
+        else if(settings.value("optimization").toString().toLower() == "momentum")
+            optimization = CNOptimizerType::MOMENTUM;
+        bool batchNorm = settings.value("batch_norm").toInt();
+        bool featureScaling = settings.value("feature_scaling").toInt();
+        int num_labels = settings.value("output_labels").toInt();
+        
+        settings.endGroup();
+        
         arma::mat yy = arma::zeros(num_labels, Y.n_cols);
         for(size_t i = 0; i < Y.n_cols; ++i){
             yy(Y(0,i),i) = 1;
@@ -1024,7 +1034,7 @@ void convLayerTest() {
     //ConvNetTest::flatten_test();
     //ConvNetTest::ConvNet_test();
     //ConvNetTest::NNv2_vs_ConvNet_test();
-    //ConvNetTest::MNIST_test();
-    meanMat4DTest();
+    ConvNetTest::MNIST_test();
+    //meanMat4DTest();
 }
 

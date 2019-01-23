@@ -88,7 +88,6 @@ private:
     size_t mBatchSize;
     double mLearningRate;
     bool mInitializedFromFile;
-    bool mBatchNormEnabled;
 
     FeatureScaler mFeatureScaler;
     bool mBatchNormEnabled;

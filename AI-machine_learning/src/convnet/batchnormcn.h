@@ -3,6 +3,7 @@
 
 #include "forward_backward_if.h"
 #include "layerobserver.h"
+#include <stack>
 
 class BatchNormCN : public ForwardBackwardIF, public LayerSubject {
     friend class BatchNormTest;
@@ -16,7 +17,7 @@ public:
     arma::mat4D forward(arma::mat4D A_prev) override;
     arma::mat4D backward(arma::mat4D dZ) override;
 
-    arma::mat forward(arma::mat X) override;
+    arma::mat forward(arma::mat Z) override;
     arma::mat backward(arma::mat dX) override;
     
     bool is4D() { return false; }
@@ -28,7 +29,22 @@ public:
     void loadState(std::ifstream& input) override;
 
     void initializeByBatch(size_t batchIndex);
+    
+    void setTrainOff() { mBatchIndex = -1; }
+    bool isTrainOff() const { return mBatchIndex == -1; }
+    
 private:
+
+    enum Param {
+        GAMMA,
+        BETA,
+        RUNNING_MEAN,
+        RUNNING_VAR,
+        DGAMMA,
+        DBETA
+    };
+    arma::mat avgBatchParam(BatchNormCN::Param param);
+    
     struct Item {
         arma::mat mGamma;
         arma::mat mBeta;
@@ -40,6 +56,7 @@ private:
     std::vector<Item> mBatches;
     int mWeightRows;
     int mBatchIndex;
+    std::stack<arma::mat> mCache;
 };
 
 class BatchNormVisitor : public Visitor {

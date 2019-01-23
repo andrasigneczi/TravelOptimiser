@@ -102,7 +102,7 @@ void Mnist::load(Mnist::Type type) {
 
 	// Reading label
     for (uint32_t q = 0; q < numberOfLabels; ++q) {
-        image.read(&number, sizeof(unsigned char));
+        label.read(&number, sizeof(unsigned char));
 		(*Y)(0, q) = (unsigned char)number; 
     }
 }
