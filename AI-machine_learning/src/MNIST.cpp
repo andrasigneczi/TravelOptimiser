@@ -32,7 +32,7 @@ uint32_t Mnist::readBigEndian(std::ifstream& stream) {
     return retv;
 }
 
-void Mnist::load(Mnist::Type type) {
+void Mnist::load(Mnist::Type type, size_t num) {
     std::ifstream image;
     std::ifstream label;
 
@@ -73,6 +73,9 @@ void Mnist::load(Mnist::Type type) {
     rows = readBigEndian(image);
     cols = readBigEndian(image);
 
+    numberOfImages = numberOfImages < num ? numberOfImages : num;
+    numberOfLabels = numberOfLabels < num ? numberOfLabels : num;
+
     std::cout  << "rows: " << rows << std::endl;
     std::cout  << "cols: " << cols << std::endl;
     std::cout  << "number of labels: " << numberOfLabels << std::endl;
@@ -93,12 +96,17 @@ void Mnist::load(Mnist::Type type) {
     }
     
 	std::cout << "Image:" << std::endl;
-	for (uint32_t j = 0; j < rows; ++j) {
-		for (uint32_t i = 0; i < cols; ++i) {
-			std::cout << (*X)[0](i, j, 0);
-		}
-		std::cout << std::endl;
-	}
+    for (uint32_t j = 0; j < rows; ++j) {
+        for (uint32_t i = 0; i < cols; ++i) {
+            std::cout.width(3);
+            if((*X)[0](i, j, 0) == 0) {
+                std::cout << " ";
+            } else {
+                std::cout << (*X)[0](i, j, 0);
+            }
+        }
+        std::cout << std::endl;
+    }
 
 	// Reading label
     for (uint32_t q = 0; q < numberOfLabels; ++q) {
@@ -127,4 +135,18 @@ void Mnist::isEnd() {
 
 void Mnist::next(arma::mat4D& X, arma::mat& Y) {
     
+}
+
+void Mnist::printTestImage(int index) {
+    for (uint32_t j = 0; j < mXtest[0].n_rows; ++j) {
+        for (uint32_t i = 0; i < mXtest[0].n_cols; ++i) {
+            std::cout.width(3);
+            if(mXtest[index](i, j, 0) == 0) {
+                std::cout << " ";
+            } else {
+                std::cout << mXtest[index](i, j, 0);
+            }
+        }
+        std::cout << std::endl;
+    }
 }

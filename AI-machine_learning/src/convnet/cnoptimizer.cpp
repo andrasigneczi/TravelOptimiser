@@ -27,7 +27,7 @@ CNOptimizer<Storage>::CNOptimizer(CNOptimizerType optimizerType, Storage& W, Sto
 }
 
 template<class Storage>
-void CNOptimizer<Storage>::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+void CNOptimizer<Storage>::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) {
     // gradient descent
 
     switch(mOptimizerType) {
@@ -35,8 +35,7 @@ void CNOptimizer<Storage>::updateParameters(double learning_rate, double beta, d
             update_parameters_with_gd(learning_rate);
             break;
         case ADAM:
-            ++mAdamCounter;
-            update_parameters_with_adam(learning_rate, beta1, beta2, epsilon);
+            update_parameters_with_adam(learning_rate, beta1, beta2, epsilon, batch_size);
             break;
         case MOMENTUM:
             update_parameters_with_momentum(learning_rate, beta);
@@ -60,11 +59,23 @@ void CNOptimizer<Storage>::update_parameters_with_momentum(double learning_rate,
 }
 
 template<class Storage>
-void CNOptimizer<Storage>::update_parameters_with_adam(double learning_rate, double beta1, double beta2,  double epsilon) {
+void CNOptimizer<Storage>::update_parameters_with_adam(double learning_rate, double beta1, double beta2,  double epsilon, int batch_size) {
     Storage v_corrected_dW;
     Storage v_corrected_db;
     Storage s_corrected_dW;
     Storage s_corrected_db;
+
+    ++mAdamCounter;
+    /*
+    alpha = alpha * np.sqrt(1 - np.power(beta2, self.timestamp)) / (1 - np.power(beta1, self.timestamp))
+    self.m_kernel = beta1 * self.m_kernel + (1 - beta1) * (self.delta_K + (zeta*self.kernel/batch_size))
+    self.m_bias = beta1 * self.m_bias + (1 - beta1) * self.delta_b
+    self.v_kernel = beta2 * self.v_kernel + (1 - beta2) * np.square((self.delta_K + (zeta*self.kernel/batch_size)))
+    self.v_bias = beta2 * self.v_bias + (1 - beta2) * np.square(self.delta_b)
+
+    self.kernel -= np.divide(alpha * self.m_kernel, (np.sqrt(self.v_kernel) + fudge_factor))
+    self.bias -= np.divide(alpha * self.m_bias, (np.sqrt(self.v_bias) + fudge_factor))
+     */
 
     std::cerr << "CNOptimizer<Storage>::" << __FUNCTION__ << ": dbg1\n";
     // Moving average of the gradients. Inputs: "v, grads, beta1". Output: "v".
@@ -80,8 +91,8 @@ void CNOptimizer<Storage>::update_parameters_with_adam(double learning_rate, dou
     std::cerr << "CNOptimizer<Storage>::" << __FUNCTION__ << ": dbg3\n";
 
     // Moving average of the squared gradients. Inputs: "s, grads, beta2". Output: "s".
-    mdWAdamS = beta2 * mdWAdamS + (1.-beta2) * arma::pow(mdW,2.);
-    mdbAdamS = beta2 * mdbAdamS + (1.-beta2) * arma::pow(mdb,2.);
+    mdWAdamS = beta2 * mdWAdamS + (1.-beta2) * arma::pow(mdW, 2);
+    mdbAdamS = beta2 * mdbAdamS + (1.-beta2) * arma::pow(mdb, 2);
 
     std::cerr << "CNOptimizer<Storage>::" << __FUNCTION__ << ": dbg4\n";
 

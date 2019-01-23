@@ -12,7 +12,7 @@ public:
     };
     
     Mnist(std::string folderName);
-    void load(Type type);
+    void load(Type type, size_t num);
     
     void getTrainingData(arma::mat4D& X, arma::mat& Y);
     void getTestData(arma::mat4D& X, arma::mat& Y);
@@ -20,7 +20,8 @@ public:
     void begin(int batchSize);
     void isEnd();
     void next(arma::mat4D& X, arma::mat& Y);
-    
+
+    void printTestImage(int index);
 private:
     uint32_t readBigEndian(std::ifstream& stream);
     

@@ -26,12 +26,13 @@ void Sigmoid::loadState(std::ifstream& input) {
     UNUSED(input);
 }
 
-void Sigmoid::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+void Sigmoid::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) {
     UNUSED(learning_rate);
     UNUSED(beta);
     UNUSED(beta1);
     UNUSED(beta2);
     UNUSED(epsilon);
+    UNUSED(batch_size);
 }
 
 arma::mat4D Relu::forward(arma::mat4D Z) {
@@ -69,12 +70,13 @@ void Relu::loadState(std::ifstream& input) {
     UNUSED(input);
 }
 
-void Relu::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+void Relu::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) {
     UNUSED(learning_rate);
     UNUSED(beta);
     UNUSED(beta1);
     UNUSED(beta2);
     UNUSED(epsilon);
+    UNUSED(batch_size);
 }
 
 arma::mat4D Tanh::forward(arma::mat4D Z) {
@@ -107,12 +109,13 @@ void Tanh::loadState(std::ifstream& input) {
     UNUSED(input);
 }
 
-void Tanh::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+void Tanh::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) {
     UNUSED(learning_rate);
     UNUSED(beta);
     UNUSED(beta1);
     UNUSED(beta2);
     UNUSED(epsilon);
+    UNUSED(batch_size);
 }
 
 arma::mat4D LeakyRelu::forward(arma::mat4D Z) {
@@ -150,12 +153,13 @@ void LeakyRelu::loadState(std::ifstream& input) {
     UNUSED(input);
 }
 
-void LeakyRelu::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+void LeakyRelu::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) {
     UNUSED(learning_rate);
     UNUSED(beta);
     UNUSED(beta1);
     UNUSED(beta2);
     UNUSED(epsilon);
+    UNUSED(batch_size);
 }
 
 arma::mat Softmax::forward(arma::mat Z) {
@@ -198,10 +202,11 @@ void Softmax::loadState(std::ifstream& input) {
     UNUSED(input);
 }
 
-void Softmax::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon) {
+void Softmax::updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size) {
     UNUSED(learning_rate);
     UNUSED(beta);
     UNUSED(beta1);
     UNUSED(beta2);
     UNUSED(epsilon);
+    UNUSED(batch_size);
 }

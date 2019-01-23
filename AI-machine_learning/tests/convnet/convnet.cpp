@@ -950,13 +950,13 @@ public:
         arma::mat Y;
 
         Mnist mnist("./mnist");
-        mnist.load(Mnist::TRAINING);
+        mnist.load(Mnist::TRAINING, 50000);
         mnist.getTrainingData(X4D, Y);
 
         QSettings settings("LeNet5.ini", QSettings::IniFormat);
         settings.beginGroup("MNIST");
         
-        int hidden_layer_size = 90;
+        int hidden_layer_size = 84;
         double lambda = settings.value("lambda").toDouble(); // reguralization
         int iteration = settings.value("epoc_num").toInt();
         double alpha = settings.value("alpha").toDouble(); // learning rate
@@ -974,39 +974,48 @@ public:
         int num_labels = settings.value("output_labels").toInt();
         
         settings.endGroup();
-        
+    
         arma::mat yy = arma::zeros(num_labels, Y.n_cols);
         for(size_t i = 0; i < Y.n_cols; ++i){
             yy(Y(0,i),i) = 1;
         }
 
         ConvNet convNet(X4D, yy, lambda, featureScaling);
-        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 0, 1, optimization);
+        ConvLayer* convLayer1 = new ConvLayer(5, 5, 1, 6, 2, 1, optimization);
         Relu* relu1 = new Relu(true);
         PoolLayer* poolLayer1 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
         ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1, optimization);
         Relu* relu2 = new Relu(true);
         PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
-        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(hidden_layer_size, 256, lambda, optimization);
+        FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(120, 400, lambda, optimization);
+        Sigmoid* sigmoid3 = new Sigmoid(false);
+        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(hidden_layer_size, 120, lambda, optimization);
         Sigmoid* sigmoid4 = new Sigmoid(false);
-        Dropout* dropout = new Dropout;
+        //Dropout* dropout = new Dropout;
         FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, hidden_layer_size, lambda, optimization);
-        Softmax* sigmoid5 = new Softmax;
+        Softmax* softmax = new Softmax;
         std::cout << std::string(80, '*') << "\n";
         std::cout << "ConvNet\n";
         std::cout << std::string(80, '*') << "\n";
 
         convNet << convLayer1 << relu1 << poolLayer1 << convLayer2 << relu2 << poolLayer2
-                << fullyConnectedLayer4 << sigmoid4 << dropout
-        << fullyConnectedLayer5 << sigmoid5;
+                << fullyConnectedLayer3 << sigmoid3 //<< dropout
+                << fullyConnectedLayer4 << sigmoid4 //<< dropout
+        << fullyConnectedLayer5 << softmax;
 
         convNet.miniBatchGradientDescent(iteration, batch, keep_prob, alpha, beta, beta1, beta2, epsilon);
         std::cout << "Training Set Accuracy: " << convNet.accuracy() << "%\n";
 
-        mnist.load(Mnist::TEST);
+        mnist.load(Mnist::TEST, 50000);
         mnist.getTestData(X4D, Y);
 
         arma::mat pred = convNet.predict(X4D);
+        for(size_t i = 0; i < X4D.size(); ++i) {
+            mnist.printTestImage(i);
+            std::cout << "prediction: " << pred(0, i) << "\n";
+            std::cout << "actual: " << Y(0, i) << "\n";
+        }
+
         arma::mat temp = arma::conv_to<arma::mat>::from(arma::index_max(Y,0));
         double acct = (double)arma::accu(pred==temp)/(double)Y.n_cols*100.;
         std::cout << "Test Set Accuracy: " << acct << "%\n";
