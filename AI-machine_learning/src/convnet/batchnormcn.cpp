@@ -155,7 +155,7 @@ void BatchNormCN::loadState(std::ifstream& input) {
     UNUSED(input);
 }
 
-void BatchNormCN::updateParameters(double learning_rate, double beta, double beta1, double beta2, double epsilon/*, int batch_size*/) {
+void BatchNormCN::updateParameters(double learning_rate, double beta, double beta1, double beta2, double epsilon, int batch_size) {
     for(size_t i = 0; i < mBatches.size(); ++i) {
         mBatches[i].mGamma -= learning_rate * mBatches[i].mdGamma;
         mBatches[i].mBeta  -= learning_rate * mBatches[i].mdBeta;

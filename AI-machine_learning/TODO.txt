@@ -4,7 +4,7 @@ TODO
 - CNN batch norm
     Az initializeEpoch használja az indexét a batcheknek. Tehát mindegyik 
     batch-nek (nem epoch-nak) és minden layernek van egy batchnormja.
-- Config file
+- CNN drop out
 - CUDA + multithreading
 - speed optimizations
 
@@ -20,7 +20,7 @@ BUG
 
 DONE
 ----
-- CNN drop out
+- Config file
 - learning rate dacey
 - feature scaling
 - MNIST
