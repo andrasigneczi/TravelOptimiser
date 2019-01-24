@@ -1,4 +1,4 @@
-#include "Dropout.h"
+#include "dropout.h"
 
 arma::mat Dropout::forward(arma::mat A) {
     if(mKeepProb == 1.0) {

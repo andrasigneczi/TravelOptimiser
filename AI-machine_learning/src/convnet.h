@@ -61,6 +61,7 @@ public:
     double compute_cost(const arma::mat& AL, const arma::mat& Y);
     
     double getLambda() const { return mLambda; }
+    
 private:
     void updateParameters(double learning_rate, double beta, double beta1, double beta2,  double epsilon, int batch_size);
     
@@ -71,6 +72,8 @@ private:
     arma::mat4D reshape(const arma::mat& X);
     
     void initDroputLayers();
+    void initBatchNormLayers(int epoch);
+    
     arma::mat halfMiniBatch(arma::mat4D& X);
 
     std::stack<size_t> mFlattenedSizes;
@@ -85,9 +88,9 @@ private:
     size_t mBatchSize;
     double mLearningRate;
     bool mInitializedFromFile;
-    bool mBatchNormEnabled;
 
     FeatureScaler mFeatureScaler;
+    bool mBatchNormEnabled;
     double mAccuracy;
     double mCost;
 };

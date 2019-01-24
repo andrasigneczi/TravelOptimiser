@@ -27,4 +27,14 @@ private:
     arma::mat mCache;
 };
 
+class DropoutVisitor : public Visitor {
+public:
+    DropoutVisitor(double keepProb) : mKeepProb(keepProb){}
+    void visit(Dropout* d) {
+        d->setKeepProb(mKeepProb);
+    }
+private:
+    double mKeepProb;
+};
+
 #endif // __DROPOUT_LAYER_H__

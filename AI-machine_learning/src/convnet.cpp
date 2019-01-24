@@ -1,6 +1,7 @@
 #include "convnet.h"
 #include "convnet/activation_layer.h"
-#include "convnet/Dropout.h"
+#include "convnet/dropout.h"
+#include "convnet/batchnormcn.h"
 
 ConvNet::ConvNet(arma::mat4D& X, arma::mat Y, double lambda, bool featureScaling)
 : mY(Y)
@@ -254,7 +255,9 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
                 Y.col(t-l) = mY.col(dataset(0,t));
             }
 
-            // if(mBatchNormEnabled) { mBatchNorm.initializeEpoch(index, mLayerSizes.n_cols - 1, mParameters); }
+            if(mBatchNormEnabled) {
+                initBatchNormLayers(index);
+            }
 
             std::cerr  << "ConvNet::" << __FUNCTION__ << " X.size(): " << size(X) << "\n";
             std::cerr  << "ConvNet::" << __FUNCTION__ << " Y.size(): " << size(Y) << "\n";
@@ -334,15 +337,14 @@ void ConvNet::updateParameters(double learning_rate, double beta, double beta1, 
 }
 
 void ConvNet::initDroputLayers() {
-    struct LocV : public Visitor {
-        LocV(double keepProb) : mKeepProb(keepProb){}
-        void visit(Dropout* d) {
-            d->setKeepProb(mKeepProb);
-        }
-        double mKeepProb;
-    };
-    LocV v(mKeepProb);
-    
+    DropoutVisitor v(mKeepProb);
+    for(ForwardBackwardIF* layer : mLayers) {
+        layer->accept(v);
+    }
+}
+
+void ConvNet::initBatchNormLayers(int epoch) {
+    BatchNormVisitor v(epoch);
     for(ForwardBackwardIF* layer : mLayers) {
         layer->accept(v);
     }

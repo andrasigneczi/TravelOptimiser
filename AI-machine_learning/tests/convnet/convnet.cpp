@@ -8,7 +8,7 @@
 #include <convnet/pool_layer.h>
 #include <convnet/activation_layer.h>
 #include <convnet/fully_connected_layer.h>
-#include <convnet/Dropout.h>
+#include <convnet/dropout.h>
 #include <LeNet5.h>
 #include <CostAndGradient.h>
 #include <neural_networkv2.h>
@@ -106,6 +106,24 @@ void fill4D(arma::mat4D& X, double startVal, double step) {
             }
         }
     }
+}
+
+void meanMat4DTest() {
+    arma::mat4D X(5, arma::cube(4,3,2));
+    fill4D(X, -2.5, 0.07);
+    arma::cube r = mean(X, 0);
+    arma::mat4D q(1, arma::cube(size(r)));
+    q[0] = r;
+    std::cout << size(r) << "\n" << q << "\n";
+    std::cout << std::string(80, '-') << "\n";
+    
+    arma::mat m2 = mean(X, 0, 2);
+    std::cout << size(m2) << "\n" << m2 << "\n";
+    std::cout << std::string(80, '-') << "\n";
+
+    arma::mat m3 = mean(X, 0, 2, 3);
+    std::cout << size(m3) << "\n" << m3 << "\n";
+    std::cout << std::string(80, '-') << "\n";
 }
 
 class ConvLayerTest {
@@ -935,18 +953,28 @@ public:
         mnist.load(Mnist::TRAINING, 50000);
         mnist.getTrainingData(X4D, Y);
 
+        QSettings settings("LeNet5.ini", QSettings::IniFormat);
+        settings.beginGroup("MNIST");
+        
         int hidden_layer_size = 84;
-        double lambda = 0.0; //0.5; // L2 reguralization
-        int iteration = 4;
-        double alpha = 0.001; // learning rate
-        double beta = 0.9, beta1 = 0.9, beta2 = 0.999,  epsilon = 1e-8;
-        int batch = 64;
-        double keep_prob = 1.; // drop out
-        CNOptimizerType optimization = CNOptimizerType::ADAM;
-        bool batchNorm = false;
-        bool featureScaling = false;
-        int num_labels = 10;
-
+        double lambda = settings.value("lambda").toDouble(); // reguralization
+        int iteration = settings.value("epoc_num").toInt();
+        double alpha = settings.value("alpha").toDouble(); // learning rate
+        double beta = settings.value("beta").toDouble(), beta1 = settings.value("beta1").toDouble(), 
+                beta2 = settings.value("beta2").toDouble(),  epsilon = 1e-8;
+        int batch = settings.value("batch_size").toInt();
+        double keep_prob = settings.value("keep_prob").toDouble(); // drop out
+        CNOptimizerType optimization = CNOptimizerType::GD;
+        if(settings.value("optimization").toString().toLower() == "adam")
+            optimization = CNOptimizerType::ADAM;
+        else if(settings.value("optimization").toString().toLower() == "momentum")
+            optimization = CNOptimizerType::MOMENTUM;
+        bool batchNorm = settings.value("batch_norm").toInt();
+        bool featureScaling = settings.value("feature_scaling").toInt();
+        int num_labels = settings.value("output_labels").toInt();
+        
+        settings.endGroup();
+    
         arma::mat yy = arma::zeros(num_labels, Y.n_cols);
         for(size_t i = 0; i < Y.n_cols; ++i){
             yy(Y(0,i),i) = 1;
@@ -1016,5 +1044,6 @@ void convLayerTest() {
     //ConvNetTest::ConvNet_test();
     //ConvNetTest::NNv2_vs_ConvNet_test();
     ConvNetTest::MNIST_test();
+    //meanMat4DTest();
 }
 
