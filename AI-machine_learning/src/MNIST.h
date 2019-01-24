@@ -16,7 +16,10 @@ public:
     
     void getTrainingData(arma::mat4D& X, arma::mat& Y);
     void getTestData(arma::mat4D& X, arma::mat& Y);
-    
+
+    void getTrainingData(arma::mat& X, arma::mat& Y);
+    void getTestData(arma::mat& X, arma::mat& Y);
+
     void begin(int batchSize);
     void isEnd();
     void next(arma::mat4D& X, arma::mat& Y);

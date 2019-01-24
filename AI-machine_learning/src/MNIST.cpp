@@ -84,8 +84,14 @@ void Mnist::load(Mnist::Type type, size_t num) {
     *X = arma::mat4D(numberOfImages, arma::zeros(rows, cols, 1));
     *Y = arma::zeros(1, numberOfLabels);
 
-	// Reading image
+    // Reading label
     char number;
+    for (uint32_t q = 0; q < numberOfLabels; ++q) {
+        label.read(&number, sizeof(unsigned char));
+        (*Y)(0, q) = (unsigned char)number;
+    }
+
+	// Reading image
     for (uint32_t q = 0; q < numberOfImages; ++q) {
         for (uint32_t j = 0; j < rows; ++j) {
             for (uint32_t i = 0; i < cols; ++i) {
@@ -108,11 +114,6 @@ void Mnist::load(Mnist::Type type, size_t num) {
         std::cout << std::endl;
     }
 
-	// Reading label
-    for (uint32_t q = 0; q < numberOfLabels; ++q) {
-        label.read(&number, sizeof(unsigned char));
-		(*Y)(0, q) = (unsigned char)number; 
-    }
 }
 
 void Mnist::getTrainingData(arma::mat4D& X, arma::mat& Y) {
@@ -122,6 +123,25 @@ void Mnist::getTrainingData(arma::mat4D& X, arma::mat& Y) {
 
 void Mnist::getTestData(arma::mat4D& X, arma::mat& Y) {
     X = mXtest;
+    Y = mYtest;
+}
+
+void Mnist::getTrainingData(arma::mat& X, arma::mat& Y) {
+    //X = arma::mat(mX[0].n_rows * mX[0].n_cols, mX.size());
+    X = arma::mat();
+
+    for(size_t i = 0; i < mX.size(); ++i) {
+        X = arma::join_rows(X, arma::vectorise(mX[i].slice(0)));
+    }
+    Y = mY;
+}
+
+void Mnist::getTestData(arma::mat& X, arma::mat& Y) {
+    X = arma::mat();
+
+    for(size_t i = 0; i < mX.size(); ++i) {
+        X = arma::join_rows(X, arma::vectorise(mXtest[i].slice(0)));
+    }
     Y = mYtest;
 }
 
