@@ -36,7 +36,7 @@ AI-machine_learning/src/MachineLearning.pro.user
 AI-machine_learning/src/Makefile
 AI-machine_learning/tensorflow/
 AI-machine_learning/tensorflow_c/
-AI-machine_learning/tensorflow_dev/log.txt
+log.txt
 AI-machine_learning/tensorflow_dev/test.c
 AI-machine_learning/tests/Screenshots/
 AI-machine_learning/tests/coc_testset_filelist.txt
@@ -46,9 +46,8 @@ AI-machine_learning/tests/convnet/Convolution model - Step by Step - v2.pdf
 AI-machine_learning/tests/convnet/Convolution+model+-+Application+-+v1.ipynb
 AI-machine_learning/tests/convnet/Convolution+model+-+Step+by+Step+-+v2.ipynb
 AI-machine_learning/tests/convnet/__pycache__/
-AI-machine_learning/tests/convnet/log.txt
-AI-machine_learning/tests/convnet/log1.txt
-AI-machine_learning/tests/convnet/log2.txt
+log1.txt
+log2.txt
 AI-machine_learning/tests/convnet/test
 AI-machine_learning/tests/ex3data1.csv
 AI-machine_learning/tests/lrv2_minibatch_onevsall_feature_maps_file_names.txt
@@ -74,7 +73,6 @@ AI-machine_learning/tests/.TH_plus_BG_trainingset.bin-TQEY1TVh6RUr3ufK2~
 AI-machine_learning/tests/bird_small.txt
 AI-machine_learning/tests/coc_trainingset.txt
 AI-machine_learning/tests/ex7data2.txt
-AI-machine_learning/tests/log.txt
 AI-machine_learning/tests/t.log
 AI-searching/Dummy.txt
 AI-searching/unit_test/TestBarcelona/t.log
@@ -85,7 +83,6 @@ AI-searching/unit_test/TestIgelBudapest/test_results
 AI-searching/unit_test/TestSQLite/test
 AI-searching/unit_test/TestSQLite/test.db
 AI-searching/unit_test/TestSQLite/test_results
-AI-searching/unit_test/TestTimetableRules/log.txt
 AI-searching/unit_test/TestTimetableRules/test
 AI-searching/unit_test/TestTimetableRules/test_results
 AI-searching/unit_test/TestTimezone/test
@@ -108,5 +105,4 @@ AI-machine_learning/mlpack-3.0.4.tar.gz
 AI-machine_learning/mlpack-3.0.4/
 AI-machine_learning/tests/convnet/ConvNetDebug.txt
 AI-machine_learning/tests/convnet/NNv2Debug.txt
-AI-machine_learning/tests/convnet/log.tx
-AI-machine_learning/tests/convnet/out.txt
+out.txt

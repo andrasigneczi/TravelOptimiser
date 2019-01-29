@@ -1,0 +1,7 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH=/src/TravelOptimizer/AI-machine_learning/mlpack-3.0.4/build/lib:../../src:../../libsvm-3.22:$LD_LiBRARY_PATH
+#gdb --args 
+date
+./test
+date
