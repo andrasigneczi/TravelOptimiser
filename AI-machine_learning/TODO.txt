@@ -1,12 +1,12 @@
 TODO
 ----
 - mlpack
-- CNN batch norm
+- CNN batch norm teszt
     Az initializeEpoch használja az indexét a batcheknek. Tehát mindegyik 
     batch-nek (nem epoch-nak) és minden layernek van egy batchnormja.
-- CNN drop out
+- CNN drop out teszt
 - CUDA + multithreading
-- speed optimizations
+- speed optimizations: reimplement the layers from lenet_numpy?
 
 - tensorlow
 - online learning algorithm
@@ -15,6 +15,8 @@ TODO
 
 BUG
 ---
+- The LeNet5 cost too slowly goes down, accuracy slowly increase, ConvLayer test,
+  pool layer test
 - batch norm doesn't work well with ADAM?
 
 

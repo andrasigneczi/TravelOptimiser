@@ -22,9 +22,10 @@ using namespace mlpack::optimization;
 void firstTraining() {
     arma::mat X, Xtest;
     arma::mat Y, Ytest;
-
+    
+    const int trainingSize = 50000;
     Mnist mnist("../convnet/mnist");
-    mnist.load(Mnist::TRAINING, 50000);
+    mnist.load(Mnist::TRAINING, trainingSize);
     mnist.getTrainingData(X, Y);
 
     mnist.load(Mnist::TEST, 50000);
@@ -135,7 +136,7 @@ void firstTraining() {
                       true); // shuffle =
 */
 
-    AdaDelta optimizer;
+    //AdaDelta optimizer;
 /*
     AdaDelta(const double stepSize = 1.0,
              const size_t batchSize = 32,
@@ -145,11 +146,20 @@ void firstTraining() {
              const double tolerance = 1e-5,
              const bool shuffle = true);
 */
+    SGD<AdaDeltaUpdate> optimizer(1, // stepSize
+                  32,    // batchSize
+                  //0.9,   // beta1
+                  //0.999, // beta2
+                              1000,     // maxIterations
+                              1e-8,  // tolerance
+                              true, // shuffle
+                  AdaDeltaUpdate());
+                  
     arma::mat assignments;
     // Train the model.
     for(int i = 0; i <= 40; ++i) {
         model.Train(X, Y, optimizer);
-        //optimizer.ResetPolicy() = false;
+        optimizer.ResetPolicy() = false;
 
         // Test set accuracy calculation
         model.Predict(Xtest, assignments);
@@ -162,8 +172,8 @@ void firstTraining() {
         std::cout << "Test Set Accuracy: " << acct << "%\n";
         std::cout.flush();
 
-        optimizer.StepSize() /= 1.01;
-        if(i % 10 == 0 && i > 0) optimizer.StepSize() /= 2.;
+        //optimizer.StepSize() /= 1.01;
+        //if(i % 10 == 0 && i > 0) optimizer.StepSize() /= 2.;
     }
 
     // Training set accuracy calculation

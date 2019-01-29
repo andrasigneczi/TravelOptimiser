@@ -1000,20 +1000,19 @@ public:
         ConvLayer* convLayer2 = new ConvLayer(5, 5, 6, 16, 0, 1, optimization);
         Relu* relu2 = new Relu(true);
         PoolLayer* poolLayer2 = new PoolLayer(2, 2, 2, PoolLayer::MAX);
-        FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(120, 400, lambda, optimization);
+
+        FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(hidden_layer_size, 400, lambda, optimization);
         Sigmoid* sigmoid3 = new Sigmoid(false);
-        FullyConnectedLayer* fullyConnectedLayer4 = new FullyConnectedLayer(hidden_layer_size, 120, lambda, optimization);
-        Sigmoid* sigmoid4 = new Sigmoid(false);
-        //Dropout* dropout = new Dropout;
         FullyConnectedLayer* fullyConnectedLayer5 = new FullyConnectedLayer(num_labels, hidden_layer_size, lambda, optimization);
         Softmax* softmax = new Softmax;
+
         std::cout << std::string(80, '*') << "\n";
         std::cout << "ConvNet\n";
         std::cout << std::string(80, '*') << "\n";
 
         convNet << convLayer1 << relu1 << poolLayer1 << convLayer2 << relu2 << poolLayer2
                 << fullyConnectedLayer3 << sigmoid3 //<< dropout
-                << fullyConnectedLayer4 << sigmoid4 //<< dropout
+                //<< fullyConnectedLayer4 << sigmoid4 //<< dropout
         << fullyConnectedLayer5 << softmax;
 
         convNet.miniBatchGradientDescent(iteration, batch, keep_prob, alpha, beta, beta1, beta2, epsilon);

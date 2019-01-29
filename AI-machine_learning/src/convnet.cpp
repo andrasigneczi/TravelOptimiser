@@ -272,7 +272,7 @@ void ConvNet::miniBatchGradientDescent( long long epoch, size_t batchSize, doubl
             arma::mat maxIndex = arma::conv_to<arma::mat>::from(arma::index_max(Y,0));
             subAccuracy.push_back((double)arma::accu(prediction == maxIndex)/(double)Y.n_cols*100.);
 
-            std::cout << "Step: " << index << "; Batch accuracy: " << subAccuracy.back() << "\n";
+            std::cout << "Step: " << index << "; Batch accuracy: " << subAccuracy.back() << "%\n";
 
             //CERR  << __FUNCTION__ << " dbg3\n";
             // Backward propagation.
