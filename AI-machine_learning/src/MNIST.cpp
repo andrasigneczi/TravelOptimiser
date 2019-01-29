@@ -101,18 +101,18 @@ void Mnist::load(Mnist::Type type, size_t num) {
     	}
     }
     
-	std::cout << "Image:" << std::endl;
-    for (uint32_t j = 0; j < rows; ++j) {
-        for (uint32_t i = 0; i < cols; ++i) {
-            std::cout.width(3);
-            if((*X)[0](i, j, 0) == 0) {
-                std::cout << " ";
-            } else {
-                std::cout << (*X)[0](i, j, 0);
-            }
-        }
-        std::cout << std::endl;
-    }
+    //std::cout << "Image:" << std::endl;
+    //for (uint32_t j = 0; j < rows; ++j) {
+    //    for (uint32_t i = 0; i < cols; ++i) {
+    //        std::cout.width(3);
+    //        if((*X)[0](i, j, 0) == 0) {
+    //            std::cout << " ";
+    //        } else {
+    //            std::cout << (*X)[0](i, j, 0);
+    //        }
+    //    }
+    //    std::cout << std::endl;
+    //}
 
 }
 
@@ -127,20 +127,19 @@ void Mnist::getTestData(arma::mat4D& X, arma::mat& Y) {
 }
 
 void Mnist::getTrainingData(arma::mat& X, arma::mat& Y) {
-    //X = arma::mat(mX[0].n_rows * mX[0].n_cols, mX.size());
-    X = arma::mat();
+    X = arma::mat(mX[0].n_rows * mX[0].n_cols, mX.size());
 
     for(size_t i = 0; i < mX.size(); ++i) {
-        X = arma::join_rows(X, arma::vectorise(mX[i].slice(0)));
+        X.col(i) = arma::vectorise(mX[i].slice(0), 0);
     }
     Y = mY;
 }
 
 void Mnist::getTestData(arma::mat& X, arma::mat& Y) {
-    X = arma::mat();
+    X = arma::mat(mXtest[0].n_rows * mXtest[0].n_cols, mXtest.size());
 
-    for(size_t i = 0; i < mX.size(); ++i) {
-        X = arma::join_rows(X, arma::vectorise(mXtest[i].slice(0)));
+    for(size_t i = 0; i < mXtest.size(); ++i) {
+        X.col(i) = arma::vectorise(mXtest[i].slice(0), 0);
     }
     Y = mYtest;
 }

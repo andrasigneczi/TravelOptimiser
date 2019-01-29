@@ -106,3 +106,7 @@ cookies.txt
 AI-machine_learning/tests/convnet/mnist/
 AI-machine_learning/mlpack-3.0.4.tar.gz
 AI-machine_learning/mlpack-3.0.4/
+AI-machine_learning/tests/convnet/ConvNetDebug.txt
+AI-machine_learning/tests/convnet/NNv2Debug.txt
+AI-machine_learning/tests/convnet/log.tx
+AI-machine_learning/tests/convnet/out.txt

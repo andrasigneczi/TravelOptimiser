@@ -975,6 +975,19 @@ public:
         
         settings.endGroup();
     
+        std::cout << "Lambda: " << lambda << "\n";
+        std::cout << "Epoch: " << iteration << "\n";
+        std::cout << "alpha: " << alpha << "\n";
+        std::cout << "beta: " << beta << "\n";
+        std::cout << "beta1: " << beta1 << "\n";
+        std::cout << "beta2: " << beta2 << "\n";
+        std::cout << "batch_size: " << batch << "\n";
+        std::cout << "keep_prob: " << keep_prob << "\n";
+        std::cout << "optimization: " << optimization << "\n";
+        std::cout << "batchNorm: " << batchNorm << "\n";
+        std::cout << "featureScaling: " << featureScaling << "\n";
+        std::cout << "num_labels: " << num_labels << "\n";
+
         arma::mat yy = arma::zeros(num_labels, Y.n_cols);
         for(size_t i = 0; i < Y.n_cols; ++i){
             yy(Y(0,i),i) = 1;
