@@ -315,7 +315,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 			ArrayList<TravelData_INPUT> lSearchList = Configuration.getInstance().getSearchListAirlines();
 			for (TravelData_INPUT lTDI : lSearchList)
 			{
-				if (!lTDI.mAirline.equals(getAirline()))
+				if (!lTDI.mAirline.equalsIgnoreCase(getAirline()))
 					continue;
 
 				DateValidity lValidity = ValidateDate(lTDI.mDepartureDay, lTDI.mReturnDay);
@@ -402,7 +402,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 			Double lAmount = lDiscountedPrice.getDouble( "amount" );
 			String lCurrency = ConvertFrom3Digits( lDiscountedPrice.getString( "currencyCode" ));
 
-			if( lBundle.equals( "BASIC" ))
+			if( lBundle.equalsIgnoreCase( "BASIC" ))
 			{
 				if( lWdc )
 					aTrip.mPrices_BasicFare_Discount = lAmount + " " + lCurrency;

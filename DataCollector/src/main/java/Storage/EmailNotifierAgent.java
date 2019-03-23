@@ -153,6 +153,10 @@ public class EmailNotifierAgent extends ArchiverAgent
 			mPrice = lResultSet.getString( "Prices_BasicFare_Discount");
 			if( mPrice.length() == 0 )
 				mPrice = lResultSet.getString( "Prices_BasicFare_Normal");
+			if( mPrice.length() == 0 )
+				mPrice = lResultSet.getString( "Prices_PlusFare_Discount");
+			if( mPrice.length() == 0 )
+				mPrice = lResultSet.getString( "Prices_PlusFare_Normal");
 
 			mCurrencyPriceInEuro = lResultSet.getFloat( "Currency_Price_In_Euro" );
 			if( lResultSet.wasNull())
@@ -201,6 +205,11 @@ public class EmailNotifierAgent extends ArchiverAgent
 		String lPrice = aTrip.mPrices_BasicFare_Discount;
 		if( lPrice.length() == 0 )
 			lPrice = aTrip.mPrices_BasicFare_Normal;
+		if( lPrice.length() == 0 )
+			lPrice = aTrip.mPrices_PlusFare_Discount;
+		if( lPrice.length() == 0 )
+			lPrice = aTrip.mPrices_PlusFare_Normal;
+
 		mNewPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice, true );
 
 		return  mOldPrice - mNewPrice;
