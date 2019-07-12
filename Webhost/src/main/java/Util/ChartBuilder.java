@@ -332,6 +332,7 @@ public class ChartBuilder
 	                                  final ArrayList<TravelData_INPUT.BoughtTicket> aBoughtTickets,
 	                                  final ArrayList<TravelData_INPUT.Discount> aDiscounts )
 	{
+		mLogger.info("Generating Html Content for " + aAirline + " " + aAirportFrom + "-" + aAirportTo + " " + aDateTime1 + "-" + aDateTime2);
 		mTDI = new TravelData_INPUT();
 		mTDI.mDepartureDatetime       = aDateTime1;
 		mTDI.mReturnDatetime          = aDateTime2;
