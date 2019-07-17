@@ -31,8 +31,8 @@ public class DefaultApp
 			//lSQLiteAgent2.InitializeDatabase();
 			//HelloWorld.SQLiteHelloWorld.Test7();
 			//HelloWorld.XmlHelloWorld.Test();
-			//HelloWorld.JxBrowserHelloWorld2.HelloWorld();
-			//Thread.sleep(50000);
+			HelloWorld.JxBrowserHelloWorld2.HelloWorld();
+			Thread.sleep(100000);
 			//TestDatetimeParser();
 //            mLogger.trace( "trace teszt" );
 //            mLogger.error( "debug teszt" );
@@ -41,49 +41,6 @@ public class DefaultApp
 			//HelloWorld.JxBrowserHelloWorld.HelloWorld();
 			//HelloWorld.JxBrowserHelloWorld.FlashSample();
 
-			Configuration lConfiguration = Configuration.getInstance();
-			getBrowserLogger().setLevel( Level.WARNING );
-			getChromiumProcessLogger().setLevel( Level.WARNING );
-			getIPCLogger().setLevel( Level.WARNING );
-
-			if( !CurrencyHelper.DownloadRecentCurrencyPrices())
-			{
-				mLogger.error( "Currency values are not available!" );
-				return;
-			}
-
-			final PageGuest.PageGuest lGuestR = PageGuestFactory.Create( "RyanAir" );
-			final PageGuest.PageGuest lGuestW = PageGuestFactory.Create( "WizzAir" );
-
-			lGuestW.DoSearchFromConfig();
-			lGuestR.DoSearchFromConfig();
-
-
-			SQLiteAgent lSQLiteAgent = new SQLiteAgent();
-			lSQLiteAgent.InitializeDatabase();
-
-			final int WaitBeforeStop = 120;
-			int i = WaitBeforeStop;
-			while( i > 0 )
-			{
-				Object lResult = ResultQueue.getInstance().pop();
-				if (lResult != null)
-				{
-					lSQLiteAgent.Archive(lResult);
-					i = WaitBeforeStop;
-					continue;
-				}
-				Thread.sleep(1000);
-				i--;
-			}
-
-			lGuestW.stop();
-			lGuestR.stop();
-
-			lSQLiteAgent.ConnectionClose();
-			lSQLiteAgent.ArchiveDatabaseFile();
-
-			System.exit(-1);
 		}
 		catch (Exception e)
 		{

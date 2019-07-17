@@ -20,7 +20,8 @@ public class JxBrowserHelloWorld2 {
 
 		//final JTextField addressBar = new JTextField("http://www.teamdev.com/jxbrowser");
 		//final JTextField addressBar = new JTextField("http://www.momondo.com");
-		final JTextField addressBar = new JTextField("http://www.google.com");
+		//final JTextField addressBar = new JTextField("http://www.google.com");
+		final JTextField addressBar = new JTextField("https://www.wizzair.com");
 		addressBar.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

@@ -55,7 +55,6 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 	private Browser mBrowser2 = null;
 	private BrowserView mBrowserView = null;
 	private JTabbedPane mTabbedPane = null;
-	private Integer mLoadReadyTimeout = -1;
 	private Integer mEventCounter = 0;
 
 	public void Init() throws Exception
@@ -214,11 +213,11 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 			{
 				if( event.isMainFrame())
 				{
-					System.out.println( "Main frame has finished loading, status: " + mEventCounter);
+					mLogger.trace( "Main frame has finished loading, status: " + mEventCounter);
 					boolean search = false;
 					synchronized (mMutex)
 					{
-						if( mEventCounter == 1 )
+						if( mEventCounter == 0 )
 							search = true;
 					}
 					if(search)
@@ -246,10 +245,6 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 
 		@Override
 		public void onDocumentLoadedInFrame(FrameLoadEvent event) {
-			synchronized( mLoadReadyTimeout )
-			{
-				mLoadReadyTimeout = 50;
-			}
 		}
 
 		@Override
@@ -699,7 +694,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 				int lSearQueueSize;
 				synchronized (mMutex)
 				{
-					if(mEventCounter < 2)
+					if(mEventCounter < 1)
 						continue;
 
 					lSearQueueSize = mSearchQueue.isEmpty();
