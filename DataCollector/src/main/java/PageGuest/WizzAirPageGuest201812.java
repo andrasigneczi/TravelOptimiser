@@ -642,7 +642,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
         jxTypeText( mBrowser, "Budap" );
 		Sleep(4000);
 
-        DOMElement value0 = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"flight-search\"]/div/div/div[3]/form/div[1]/fieldset/div[3]/div/div[3]/div[1]/label" ) );
+        DOMElement value0 = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"flight-search\"]/div/div/div[2]/form/div[1]/fieldset/div[3]/div/div[3]/div[1]/label" ) );
         value0.click();
         Sleep(4000);
         // destionation text field
@@ -654,7 +654,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
         Sleep(4000);
 
         // click the submit
-        DOMElement link = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"flight-search\"]/div/div/div[3]/form/div[4]/button" ) );
+        DOMElement link = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"flight-search\"]/div/div/div[2]/form/div[3]/button" ) );
 
         if( link != null )
         {
