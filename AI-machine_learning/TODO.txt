@@ -1,5 +1,8 @@
 TODO
 ----
+- router port forwarding to c9sdk
+- x11vnc installation
+- MobaXterm a laptopra
 - mlpack
 - CNN batch norm teszt
     Az initializeEpoch használja az indexét a batcheknek. Tehát mindegyik 

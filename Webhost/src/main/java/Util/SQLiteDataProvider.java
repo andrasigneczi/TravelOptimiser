@@ -106,6 +106,8 @@ public class SQLiteDataProvider implements DataProvider
 		String lAirportCode_LeavingFrom = "";
 		String lAirportCode_GoingTo = "";
 		String lAirline = "";
+		String lFromCol;
+		String lToCol;
 
 		Statement lStmt = null;
 		try
@@ -115,15 +117,30 @@ public class SQLiteDataProvider implements DataProvider
 			ResultSet lResultSet = lStmt.executeQuery( lQuery );
 			while ( lResultSet.next() )
 			{
-				if( lAirportCode_LeavingFrom.length() == 0 )
-					lAirportCode_LeavingFrom = lResultSet.getString( "AirportCode_LeavingFrom" );
-				else if( !lAirportCode_LeavingFrom.equals( lResultSet.getString( "AirportCode_LeavingFrom" ) ))
-					mLogger.warn( "'AirportCode_LeavingFrom' inconsistency?!" );
+				if( lResultSet.getString( "OutboundTrip").equals("false"))  {
+					lFromCol = "AirportCode_GoingTo";
+					lToCol = "AirportCode_LeavingFrom";
+				} else {
+					lFromCol = "AirportCode_LeavingFrom";
+					lToCol = "AirportCode_GoingTo";
+				}
+				if( lAirportCode_LeavingFrom.length() == 0 ) {
+					lAirportCode_LeavingFrom = lResultSet.getString( lFromCol );
+				}
+				else if( !lAirportCode_LeavingFrom.equals( lResultSet.getString( lFromCol ) )) {
+					mLogger.warn("'AirportCode_LeavingFrom' inconsistency?!");
+					mLogger.warn("'" + lAirportCode_LeavingFrom + "'");
+					mLogger.warn("'" + lResultSet.getString( lFromCol ) + "'");
+				}
 
-				if( lAirportCode_GoingTo.length() == 0 )
-					lAirportCode_GoingTo = lResultSet.getString( "AirportCode_GoingTo" );
-				else if( !lAirportCode_GoingTo.equals( lResultSet.getString( "AirportCode_GoingTo" ) ))
+				if( lAirportCode_GoingTo.length() == 0 ) {
+					lAirportCode_GoingTo = lResultSet.getString( lToCol );
+				}
+				else if( !lAirportCode_GoingTo.equals( lResultSet.getString( lToCol ) )) {
 					mLogger.warn( "'AirportCode_GoingTo' inconsistency?!" );
+					mLogger.warn("'" + lAirportCode_GoingTo + "'");
+					mLogger.warn("'" + lResultSet.getString( lToCol ) + "'");
+				}
 
 				if( lAirline.length() == 0 )
 					lAirline = lResultSet.getString( "Airline" );
@@ -133,6 +150,10 @@ public class SQLiteDataProvider implements DataProvider
 				String lPrice = lResultSet.getString( "Prices_BasicFare_Discount");
 				if( lPrice.length() == 0 )
 					lPrice = lResultSet.getString( "Prices_BasicFare_Normal");
+				if( lPrice.length() == 0 )
+					lPrice = lResultSet.getString( "Prices_PlusFare_Discount");
+				if( lPrice.length() == 0 )
+					lPrice = lResultSet.getString( "Prices_PlusFare_Normal");
 
 				Float lCurrencyPriceInEuro = lResultSet.getFloat( "Currency_Price_In_Euro" );
 				if( lResultSet.wasNull())

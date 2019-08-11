@@ -145,14 +145,26 @@ public class EmailNotifierAgent extends ArchiverAgent
 					+ "' and pt.OutBoundTrip='" + ( !aTrip.getOutbound() ? "true" : "false" ) + "')) AND "
 					+ "pt.DepartureDateTime='" + aTrip.getDatetime() + "' "
 					+ "order by pt.SearchDateTime desc "
-					+ "limit 1";
+					+ "limit 2";
 
+			// The newest record is already written in the DB, so the old one is the one before the newest one.
 			ResultSet lResultSet = mSQLiteAgent.Query( query );
 			if( lResultSet == null )
 				return false;
+
+			if( !lResultSet.next()) {
+				lResultSet.close();
+				lResultSet.getStatement().close();
+				return false;
+			}
+
 			mPrice = lResultSet.getString( "Prices_BasicFare_Discount");
 			if( mPrice.length() == 0 )
 				mPrice = lResultSet.getString( "Prices_BasicFare_Normal");
+			if( mPrice.length() == 0 )
+				mPrice = lResultSet.getString( "Prices_PlusFare_Discount");
+			if( mPrice.length() == 0 )
+				mPrice = lResultSet.getString( "Prices_PlusFare_Normal");
 
 			mCurrencyPriceInEuro = lResultSet.getFloat( "Currency_Price_In_Euro" );
 			if( lResultSet.wasNull())
@@ -201,6 +213,11 @@ public class EmailNotifierAgent extends ArchiverAgent
 		String lPrice = aTrip.mPrices_BasicFare_Discount;
 		if( lPrice.length() == 0 )
 			lPrice = aTrip.mPrices_BasicFare_Normal;
+		if( lPrice.length() == 0 )
+			lPrice = aTrip.mPrices_PlusFare_Discount;
+		if( lPrice.length() == 0 )
+			lPrice = aTrip.mPrices_PlusFare_Normal;
+
 		mNewPrice = CurrencyHelper.convertPriceToPriceInEuro( lPrice, true );
 
 		return  mOldPrice - mNewPrice;

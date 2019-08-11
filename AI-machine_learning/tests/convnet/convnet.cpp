@@ -945,7 +945,7 @@ public:
 
     }
     
-    static void MNIST_test() {
+    static void MNIST_Convnet_test() {
         arma::mat4D X4D;
         arma::mat Y;
 
@@ -1032,6 +1032,87 @@ public:
         double acct = (double)arma::accu(pred==temp)/(double)Y.n_cols*100.;
         std::cout << "Test Set Accuracy: " << acct << "%\n";
     }
+    static void MNIST_Convnet_FC_test() {
+        arma::mat4D X4D;
+        arma::mat Y;
+
+        Mnist mnist("./mnist");
+        mnist.load(Mnist::TRAINING, 50000);
+        mnist.getTrainingData(X4D, Y);
+
+        QSettings settings("LeNet5.ini", QSettings::IniFormat);
+        settings.beginGroup("MNIST");
+        
+        int hidden_layer_size = 84;
+        double lambda = settings.value("lambda").toDouble(); // reguralization
+        int iteration = settings.value("epoc_num").toInt();
+        double alpha = settings.value("alpha").toDouble(); // learning rate
+        double beta = settings.value("beta").toDouble(), beta1 = settings.value("beta1").toDouble(), 
+                beta2 = settings.value("beta2").toDouble(),  epsilon = 1e-8;
+        int batch = settings.value("batch_size").toInt();
+        double keep_prob = settings.value("keep_prob").toDouble(); // drop out
+        CNOptimizerType optimization = CNOptimizerType::GD;
+        if(settings.value("optimization").toString().toLower() == "adam")
+            optimization = CNOptimizerType::ADAM;
+        else if(settings.value("optimization").toString().toLower() == "momentum")
+            optimization = CNOptimizerType::MOMENTUM;
+        bool batchNorm = settings.value("batch_norm").toInt();
+        bool featureScaling = settings.value("feature_scaling").toInt();
+        int num_labels = settings.value("output_labels").toInt();
+        
+        settings.endGroup();
+    
+        std::cout << "Lambda: " << lambda << "\n";
+        std::cout << "Epoch: " << iteration << "\n";
+        std::cout << "alpha: " << alpha << "\n";
+        std::cout << "beta: " << beta << "\n";
+        std::cout << "beta1: " << beta1 << "\n";
+        std::cout << "beta2: " << beta2 << "\n";
+        std::cout << "batch_size: " << batch << "\n";
+        std::cout << "keep_prob: " << keep_prob << "\n";
+        std::cout << "optimization: " << optimization << "\n";
+        std::cout << "batchNorm: " << batchNorm << "\n";
+        std::cout << "featureScaling: " << featureScaling << "\n";
+        std::cout << "num_labels: " << num_labels << "\n";
+
+        arma::mat yy = arma::zeros(num_labels, Y.n_cols);
+        for(size_t i = 0; i < Y.n_cols; ++i){
+            yy(Y(0,i),i) = 1;
+        }
+
+        ConvNet convNet(X4D, yy, lambda, featureScaling);
+        FullyConnectedLayer* fullyConnectedLayer1 = new FullyConnectedLayer(100, 784, lambda, optimization);
+        Relu* relu = new Relu(false);
+        FullyConnectedLayer* fullyConnectedLayer2 = new FullyConnectedLayer(50, 100, lambda, optimization);
+        Sigmoid* sigmoid = new Sigmoid(false);
+        FullyConnectedLayer* fullyConnectedLayer3 = new FullyConnectedLayer(num_labels, 50, lambda, optimization);
+        Softmax* softmax = new Softmax;
+
+        std::cout << std::string(80, '*') << "\n";
+        std::cout << "ConvNet FC\n";
+        std::cout << std::string(80, '*') << "\n";
+
+        convNet << fullyConnectedLayer1 << relu //<< dropout
+                << fullyConnectedLayer2 << sigmoid //<< dropout
+                << fullyConnectedLayer3 << softmax;
+
+        convNet.miniBatchGradientDescent(iteration, batch, keep_prob, alpha, beta, beta1, beta2, epsilon);
+        std::cout << "Training Set Accuracy: " << convNet.accuracy() << "%\n";
+
+        mnist.load(Mnist::TEST, 50000);
+        mnist.getTestData(X4D, Y);
+
+        arma::mat pred = convNet.predict(X4D);
+        for(size_t i = 0; i < X4D.size(); ++i) {
+            mnist.printTestImage(i);
+            std::cout << "prediction: " << pred(0, i) << "\n";
+            std::cout << "actual: " << Y(0, i) << "\n";
+        }
+
+        arma::mat temp = arma::conv_to<arma::mat>::from(arma::index_max(Y,0));
+        double acct = (double)arma::accu(pred==temp)/(double)Y.n_cols*100.;
+        std::cout << "Test Set Accuracy: " << acct << "%\n";
+    }
 };
 
 void convLayerTest() {
@@ -1055,7 +1136,8 @@ void convLayerTest() {
     //ConvNetTest::flatten_test();
     //ConvNetTest::ConvNet_test();
     //ConvNetTest::NNv2_vs_ConvNet_test();
-    ConvNetTest::MNIST_test();
+    //ConvNetTest::MNIST_Convnet_test();
+    ConvNetTest::MNIST_Convnet_FC_test();
     //meanMat4DTest();
 }
 
