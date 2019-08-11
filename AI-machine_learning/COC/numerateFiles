@@ -1,5 +1,0 @@
-#!/bin/bash
-
-#echo $1;
-
-find $1 -type f | awk 'BEGIN {a=1;}{++a;} END {print a;}';

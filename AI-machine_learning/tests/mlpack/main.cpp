@@ -111,12 +111,12 @@ void firstTraining() {
     // Add the second pooling layer.
     model.Add<MaxPooling<> >(2, 2, 2, 2, true);
 
-
-    model.Add<Linear<> >(16*4*4, 90);
+    int hiddenSize = 150;
+    model.Add<Linear<> >(16*4*4, hiddenSize);
     model.Add<SigmoidLayer<> >();
     //model.Add<Dropout<>>(0.6);
     //model.Add<BatchNorm<> >(80);
-    model.Add<Linear<> >(90, 10);
+    model.Add<Linear<> >(hiddenSize, 10);
     model.Add<LogSoftMax<> >();
 /*
     SGD<AdaMaxUpdate> optimizer(0.001, // stepSize
@@ -150,7 +150,7 @@ void firstTraining() {
                   32,    // batchSize
                   //0.9,   // beta1
                   //0.999, // beta2
-                              1000,     // maxIterations
+                              40000,     // maxIterations
                               1e-8,  // tolerance
                               true, // shuffle
                   AdaDeltaUpdate());
@@ -172,8 +172,9 @@ void firstTraining() {
         std::cout << "Test Set Accuracy: " << acct << "%\n";
         std::cout.flush();
 
-        //optimizer.StepSize() /= 1.01;
-        //if(i % 10 == 0 && i > 0) optimizer.StepSize() /= 2.;
+        optimizer.StepSize() /= 1.01;
+        optimizer.MaxIterations() += 5000;
+        if(i % 10 == 0 && i > 0) optimizer.StepSize() /= 2.;
     }
 
     // Training set accuracy calculation
