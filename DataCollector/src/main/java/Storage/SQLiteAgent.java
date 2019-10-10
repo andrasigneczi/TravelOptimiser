@@ -150,8 +150,8 @@ public class SQLiteAgent extends ArchiverAgent
 		if( lFileList == null || lFileList.length == 0 )
 			return null;
 
-		// 20 database file backup is enough
-		for( int i = 0; i < lFileList.length - 20; i++ )
+		// 10 database file backup is enough
+		for( int i = 0; i < lFileList.length - 10; i++ )
 			Files.delete( new File(lFileList[ i ]).toPath() );
 
 		if( lFileList[ lFileList.length - 1 ].length() == 0 )
