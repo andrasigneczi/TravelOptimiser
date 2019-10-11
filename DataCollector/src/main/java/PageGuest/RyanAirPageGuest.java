@@ -289,27 +289,30 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         //lTokener = new JSONTokener(new ByteArrayInputStream( lTestJsonString.getBytes() ));
 
         String strResponse;
-        strResponse = mRequest.sendGet( lUrl, 0 );
+        for(int attempt = 3; attempt > 0; --attempt) {
+            strResponse = mRequest.sendGet(lUrl, 0);
 
-        if( mRequest.getResponseCode() != 404 && strResponse.length() > 0 )
-            lTokener = new JSONTokener(new ByteArrayInputStream( strResponse.getBytes() ));
+            if (mRequest.getResponseCode() != 404 && strResponse.length() > 0) {
+                lTokener = new JSONTokener(new ByteArrayInputStream(strResponse.getBytes()));
 
 
-        JSONObject root = new JSONObject( lTokener );
-        String lCurrency = ConvertFrom3Digits( root.getString( "currency" ));
-        JSONArray lTrips = root.getJSONArray( "trips" );
+                JSONObject root = new JSONObject(lTokener);
+                String lCurrency = ConvertFrom3Digits(root.getString("currency"));
+                JSONArray lTrips = root.getJSONArray("trips");
 
-        mTravelDataResult = new TravelData_RESULT();
-        mTravelDataResult.mAirline = aTravelDataInput.mAirline;
-        mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
-        mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
-        mTravelDataResult.mTravelDataInput = aTravelDataInput;
+                mTravelDataResult = new TravelData_RESULT();
+                mTravelDataResult.mAirline = aTravelDataInput.mAirline;
+                mTravelDataResult.mAirportCode_GoingTo = aTravelDataInput.mAirportCode_GoingTo;
+                mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
+                mTravelDataResult.mTravelDataInput = aTravelDataInput;
 
-        for( int lTripIndex = 0; lTripIndex < lTrips.length(); lTripIndex++ )
-        {
-            ParseTrip( lTrips.getJSONObject( lTripIndex ), lCurrency );
+                for (int lTripIndex = 0; lTripIndex < lTrips.length(); lTripIndex++) {
+                    ParseTrip(lTrips.getJSONObject(lTripIndex), lCurrency);
+                }
+                ResultQueue.getInstance().push(mTravelDataResult);
+                break;
+            }
         }
-        ResultQueue.getInstance().push( mTravelDataResult );
     }
 
     private void TimeoutTest()

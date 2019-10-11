@@ -207,6 +207,7 @@ public class HttpRequest
 			catch ( java.io.EOFException e )
 			{
 				mLogger.warn( StringHelper.getTraceInformation( e ) );
+				lReturnValue = "";
 			}
 		}
 		else

@@ -264,6 +264,6 @@ public class EmailNotifierAgent extends ArchiverAgent
 				"recorded datetime: " + recordedDatetime + "\n";
 
 		//GMailSender.send( fromAddress, fromName, toAddress, toName, subject, msgBody );
-		mGmailSender.add( fromAddress, fromName, toAddress, toName, subject, msgBody );
+		mGmailSender.add( fromAddress, fromName, toAddress, toName, subject, msgBody, aOWTrip.getDatetime() );
 	}
 }

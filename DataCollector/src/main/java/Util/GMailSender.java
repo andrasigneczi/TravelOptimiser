@@ -26,10 +26,10 @@ public class GMailSender
 		public String mToName;
 		public String mSubject;
 		public String mMsgBody;
+		public String mDepartureDatetime;
 
-		public Email( String fromAddress, String fromName,
-		       String toAddress, String toName,
-		       String subject, String msgBody )
+		public Email( String fromAddress, String fromName, String toAddress, String toName,
+		       String subject, String msgBody, String departureDatetime )
 		{
 			mFromAddress = fromAddress;
 			mFromName    = fromName;
@@ -37,10 +37,24 @@ public class GMailSender
 			mToName      = toName;
 			mSubject     = subject;
 			mMsgBody     = msgBody;
+			mDepartureDatetime = departureDatetime;
 		}
 	}
 
 	public static class EmailComparator implements Comparator<Email>
+	{
+		public int compare( Email s1, Email s2 ) {
+			int r = s1.mDepartureDatetime.compareTo( s2.mDepartureDatetime );
+			if( r != 0 ) return r;
+			r = s1.mFromAddress.compareTo( s2.mFromAddress );
+			if( r != 0 ) return r;
+			r = s1.mToAddress.compareTo( s2.mToAddress );
+			if( r != 0 ) return r;
+			return s1.mSubject.compareTo( s2.mSubject );
+		}
+	}
+
+	public static class EmailComparatorV2 implements Comparator<Email>
 	{
 		public int compare( Email s1, Email s2 ) {
 			int r = s1.mFromAddress.compareTo( s2.mFromAddress );
@@ -108,11 +122,10 @@ public class GMailSender
 		}
 	}
 
-	public void add( String fromAddress, String fromName,
-	                         String toAddress, String toName,
-	                         String subject, String msgBody )
+	public void add( String fromAddress, String fromName, String toAddress, String toName,
+					 String subject, String msgBody, String departureDatetime )
 	{
-		Email emailToFind = new Email( fromAddress, fromName, toAddress, toName, subject, msgBody );
+		Email emailToFind = new Email( fromAddress, fromName, toAddress, toName, subject, msgBody, departureDatetime );
 		if( mEmails.contains( emailToFind ))
 		{
 			Email original = mEmails.floor( emailToFind );
@@ -124,8 +137,31 @@ public class GMailSender
 		}
 	}
 
+	private void mergeEmails()
+	{
+		TreeSet<Email> mergedEmails = new TreeSet<Email>( new EmailComparatorV2() );
+		for( Email emailToFind : mEmails )
+		{
+			if( mergedEmails.contains( emailToFind ))
+			{
+				Email original = mergedEmails.floor( emailToFind );
+				original.mMsgBody += "\n" + emailToFind.mMsgBody;
+			}
+			else
+			{
+				mergedEmails.add( emailToFind );
+			}
+		}
+		mEmails.clear();
+		for( Email email : mergedEmails )
+		{
+			mEmails.add(email);
+		}
+	}
+
 	public void sendAll()
 	{
+		mergeEmails();
 		for( Email email : mEmails )
 		{
 			send( email.mFromAddress, email.mFromName, email.mToAddress, email.mToName, email.mSubject, email.mMsgBody );
