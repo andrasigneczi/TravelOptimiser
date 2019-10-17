@@ -37,7 +37,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
 
     private long mTimeoutStart;
     private HttpRequest mRequest = new HttpRequest();
-    private static String mServerApiUrl = "https://desktopapps.ryanair.com/v4";
+    private static String mServerApiUrl = "https://www.ryanair.com";
 
     public RyanAirPageGuest()
     {
@@ -53,18 +53,32 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
     private void InitHttpRequest()
     {
         mRequest.addRequestProperties( "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" );
-        mRequest.addRequestProperties( "Host", "desktopapps.ryanair.com" );
+        mRequest.addRequestProperties( "Host", "www.ryanair.com" );
         mRequest.addRequestProperties( "Connection", "keep-alive" );
         mRequest.addRequestProperties( "Upgrade-Insecure-Requests", "1" );
     }
 
     private void InitServerApiUrl( String response ) {
-        Pattern reg = Pattern.compile( "window\\.SERVER_CFG_REZAPI = \"(.*?)\";" );
+        /*
+        Pattern reg = Pattern.compile( "window\\.SERVER_CFG_MSERV = \"(.*?)\";" );
         Matcher m = reg.matcher( response );
         if( m.find() )
         {
             mServerApiUrl = m.group(1).toString().trim();
             mServerApiUrl = mServerApiUrl.replaceAll( "\\\\", "" );
+            mLogger.info( "RyanAir API SERVER URL: " + mServerApiUrl );
+        }
+        */
+        Pattern reg = Pattern.compile( "window\\.SERVER_CFG_REZAPI = \"(.*?)\";" );
+        Matcher m = reg.matcher( response );
+        if( m.find() )
+        {
+            String url = m.group(1).toString().trim().replaceAll("\\\\", "");
+            if(url.startsWith("https://")) {
+                mServerApiUrl = url;
+            } else {
+                mServerApiUrl += url;
+            }
             mLogger.info( "RyanAir API Url: " + mServerApiUrl );
         }
     }
@@ -248,7 +262,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
                 }
                 catch ( JSONException e)
                 {
-                    mLogger.info( "businessFare JSONObject not found: " + StringHelper.getTraceInformation( e ) );
+                    //mLogger.info( "businessFare JSONObject not found: " + StringHelper.getTraceInformation( e ) );
                 }
 
                 ParseFares( lRegularFare, FareType.Normal, lTripClone, aCurrency );
@@ -261,7 +275,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
 
     private void FillTheForm( TravelData_INPUT aTravelDataInput ) throws Exception
     {
-        // https://desktopapps.ryanair.com/v4/en-ie/availability?ADT=1&CHD=0&DateOut=2018-02-07&Destination=BUD&FlexDaysOut=4&INF=0&IncludeConnectingFlights=true&Origin=EDI&RoundTrip=false&TEEN=0&ToUs=AGREED&exists=false&promoCode=
+        // https://www.ryanair.com/api/booking/v4/en-ie/availability?ADT=1&CHD=0&DateOut=2018-02-07&Destination=BUD&FlexDaysOut=4&INF=0&IncludeConnectingFlights=true&Origin=EDI&RoundTrip=false&TEEN=0&ToUs=AGREED&exists=false&promoCode=
         String lUrl = mServerApiUrl + "/en-gb/availability?ADT="
                 + aTravelDataInput.mAdultNumber
                 + "&CHD=" + aTravelDataInput.mChildNumber

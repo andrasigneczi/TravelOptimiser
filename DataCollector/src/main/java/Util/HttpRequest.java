@@ -187,7 +187,7 @@ public class HttpRequest
 
 		if( available != readCount )
 		{
-			int iDebug = 10;
+			mLogger.warn( "readResponse:  available != readCount" );
 		}
 
 		String lReturnValue = "";
@@ -207,7 +207,7 @@ public class HttpRequest
 			catch ( java.io.EOFException e )
 			{
 				mLogger.warn( StringHelper.getTraceInformation( e ) );
-				lReturnValue = "";
+				//mLogger.warn( "response: '" + new String(response, StandardCharsets.UTF_8) + "'" );
 			}
 		}
 		else
