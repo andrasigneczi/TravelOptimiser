@@ -14,7 +14,7 @@ public class DefaultApp
 	{
 		try
 		{
-			HelloWorld.JxBrowserHelloWorld2.HelloWorld();
+			//HelloWorld.JxBrowserHelloWorld2.HelloWorld();
 			Thread.sleep(100000);
 		}
 		catch (Exception e)

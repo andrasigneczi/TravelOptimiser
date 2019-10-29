@@ -10,12 +10,6 @@ import Util.GMailSender;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
 
-import java.util.logging.Level;
-
-import static com.teamdev.jxbrowser.chromium.LoggerProvider.getBrowserLogger;
-import static com.teamdev.jxbrowser.chromium.LoggerProvider.getChromiumProcessLogger;
-import static com.teamdev.jxbrowser.chromium.LoggerProvider.getIPCLogger;
-
 /**
  * Created by Andras on 02/08/2016.
  */
@@ -30,10 +24,6 @@ public class DBAgentApp
 		SQLiteAgent lSQLiteAgent = null;
 		try
 		{
-			getBrowserLogger().setLevel( Level.WARNING );
-			getChromiumProcessLogger().setLevel( Level.WARNING );
-			getIPCLogger().setLevel( Level.WARNING );
-
 			for( int DownloadProbes = 5; DownloadProbes > 0; DownloadProbes-- )
 			{
 				if( CurrencyHelper.DownloadRecentCurrencyPrices() )
