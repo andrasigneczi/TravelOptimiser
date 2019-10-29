@@ -1,12 +1,12 @@
 package Util;
 
-import com.teamdev.jxbrowser.chromium.Browser;
-import com.teamdev.jxbrowser.chromium.Callback;
-import com.teamdev.jxbrowser.chromium.dom.By;
-import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
-import com.teamdev.jxbrowser.chromium.dom.DOMElement;
-import com.traveloptimizer.browserengine.TeamDevJxBrowser;
 import org.apache.log4j.Logger;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.By;
 
 import java.lang.*;
 import java.lang.System;
@@ -101,7 +101,7 @@ public class CurrencyHelper
     {
         final java.lang.String lUrlTemplate1 = "http://www.xe.com/currencyconverter/convert/?Amount=1&From=BGN&To=EUR";
         final java.lang.String lUrlTemplate2 = "https://transferwise.com/au/currency-converter/BGN-to-eur-rate?amount=1";
-	final java.lang.String lUrlTemplate3 = "https://www.google.de/search?q=1+BGN+to+EUR";
+	    final java.lang.String lUrlTemplate3 = "https://www.google.de/search?q=1+BGN+to+EUR";
 
         return DownloadRecentCurrencyPrices( lUrlTemplate1, "//*[@id=\"converterResult\"]/div/div/div[2]/span[1]", "" ) ||
             DownloadRecentCurrencyPrices( lUrlTemplate2, "/html/body/main/div[1]/div/div/div/div[2]/div[1]/div[1]/form/div[2]/div[2]/h3/span[3]", "" )
@@ -110,7 +110,9 @@ public class CurrencyHelper
 
     public static boolean DownloadRecentCurrencyPrices( String lUrlTemplate, String path1, String path2 ) throws InterruptedException
     {
-        Browser lBrowser = TeamDevJxBrowser.getInstance().getJxBrowser("wwww");
+        System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
+        WebDriver driver = new ChromeDriver();
+
         for( Map.Entry<String,String> lItem : mCurrencies.entrySet())
         {
             if( lItem.getKey().equals( "EUR" ))
@@ -124,12 +126,10 @@ public class CurrencyHelper
             {
                 try
                 {
-                    Browser.invokeAndWaitFinishLoadingMainFrame(lBrowser, new Callback<Browser>() {
-                        @Override
-                        public void invoke(Browser browser) {
-                            browser.loadURL(lUrl);
-                        }
-                    });
+                    driver.get(lUrl);
+                    WebDriverWait wait = new WebDriverWait(driver, 15);
+                    wait.until(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete"));
+                    Thread.sleep(2000);  // Just to be sure! May crash occur wothout this sleep.
                     break;
                 }
                 catch( RuntimeException e )
@@ -140,30 +140,28 @@ public class CurrencyHelper
                 }
             }
 
-            // Wait until Chromium renders web page content
-            Thread.sleep( 1000 );
-
-            DOMDocument lDocument = lBrowser.getDocument();
-            DOMElement lElement = lDocument.findElement( By.xpath( path1 ) );
+            WebElement lElement = driver.findElement( By.xpath( path1 ) );
             if( lElement == null && path2.length() > 0 )
-                lElement = lDocument.findElement( By.xpath( path2 ));
+                lElement = driver.findElement( By.xpath( path2 ));
             if( lElement == null )
             {
-                lBrowser.dispose();
+                driver.close();
+                driver.quit();
                 return false;
             }
 
-            String lInner = lElement.getInnerText();
-	    if(lInner.length() == 0) {
-		lInner = lElement.getAttribute("data-value");
-	    }
-	    if(lInner.length() == 0) {
-                lBrowser.dispose();
+            String lInner = lElement.getText();
+            if(lInner.length() == 0) {
+                lInner = lElement.getAttribute("data-value");
+            }
+            if(lInner.length() == 0) {
+                driver.close();
+                driver.quit();
                 return false;
-	    }
+            }
 
-	    mLogger.info(lUrlTemplate);
-	    mLogger.info("'" + lInner + "'");
+            mLogger.info(lUrl);
+            mLogger.info("'" + lInner + "'");
             //String lCurrencyValue = lElement.getInnerText().substring( 0, lInner.length() - 4 );
             String lCurrencyValue = "";
             for( int i = 0; i < lInner.length(); ++i) {
@@ -173,12 +171,14 @@ public class CurrencyHelper
             //String lCurrencyValue = lInner;
             double currencyValue = Double.valueOf( lCurrencyValue );
             if( currencyValue == 0.0 ) {
-                lBrowser.dispose();
+                driver.close();
+                driver.quit();
                 return false;
             }
             mMultipliers.put( lItem.getValue().toString(), currencyValue );
         }
-        lBrowser.dispose();
+        driver.close();
+        driver.quit();
         return true;
     }
 }

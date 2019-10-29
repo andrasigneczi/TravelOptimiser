@@ -2,7 +2,6 @@ package Apps;
 
 import Configuration.Configuration;
 import Favorites.*;
-import PageGuest.TravelData_RESULT;
 import QueueHandlers.ResultQueue;
 import Storage.EmailNotifierAgent;
 import Storage.SQLiteAgent;
