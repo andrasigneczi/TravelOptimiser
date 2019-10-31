@@ -13,8 +13,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.8</java.version>
-        <jna.version>4.1.0</jna.version>
+        <java.version>1.11</java.version>
+        <jna.version>5.5.0</jna.version>
     </properties>
 
     <repositories>
@@ -32,33 +32,18 @@
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-jms_1.1_spec</artifactId>
-            <version>1.1</version>
+            <version>1.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.qpid</groupId>
             <artifactId>qpid-jms-client</artifactId>
-            <version>0.9.0</version>
+            <version>0.46.0</version>
         </dependency>
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
             <version>${jna.version}</version>
         </dependency>
-        <!-- if tess4j is in the dependency, the log4j doesn't write the log file -->
-        <!--<dependency>-->
-            <!--<groupId>net.sourceforge.tess4j</groupId>-->
-            <!--<artifactId>tess4j</artifactId>-->
-            <!--<version>3.1.0</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>com.teamdev.jxbrowser</groupId>-->
-            <!--<artifactId>jxbrowser-cross-platform</artifactId>-->
-            <!--<version>6.2</version>-->
-            <!--&lt;!&ndash;<type>pom</type>&ndash;&gt;-->
-            <!--&lt;!&ndash;<scope>import</scope>&ndash;&gt;-->
-            <!--&lt;!&ndash;<scope>system</scope>&ndash;&gt;-->
-            <!--&lt;!&ndash;<systemPath>${project.basedir}/lib/jxbrowser-6.2.jar</systemPath>&ndash;&gt;-->
-        <!--</dependency>-->
         <dependency>
             <groupId>com.teamdev.jxbrowser</groupId>
             <artifactId>jxbrowser-linux64</artifactId>
@@ -68,13 +53,6 @@
             <groupId>com.teamdev.jxbrowser</groupId>
             <artifactId>jxbrowser</artifactId>
             <version>6.24</version>
-        </dependency>
-        <dependency>
-            <groupId>mylibid</groupId>
-            <artifactId>licence</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
-            <!--<scope>provided</scope>-->
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java -->
         <dependency>
@@ -86,12 +64,12 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.4</version>
+            <version>3.9</version>
         </dependency>
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.27.2.1</version>
+            <version>3.28.0</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
@@ -101,22 +79,28 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <version>4.12</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20160212</version>
+            <version>20190722</version>
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
-            <version>1.5.4</version>
+            <version>1.6.2</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
+            <version>4.0.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.netty/netty-tcnative -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-tcnative</artifactId>
+            <version>2.0.26.Final</version>
         </dependency>
     </dependencies>
 
@@ -125,10 +109,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.8.1</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <release>11</release>
+                    <argLine>
+                        --illegal-access=permit
+                    </argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -153,7 +139,16 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.qpid</groupId>
+                <artifactId>qpid-jms-client</artifactId>
+                <version>0.46.0</version>
+                <configuration>
+                    <argLine>
+                        --illegal-access=permit
+                    </argLine>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-
 </project>

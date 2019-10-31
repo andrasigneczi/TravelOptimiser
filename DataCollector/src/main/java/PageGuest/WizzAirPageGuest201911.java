@@ -1,12 +1,10 @@
 package PageGuest;
 
-import com.teamdev.jxbrowser.chromium.*;
-import com.teamdev.jxbrowser.chromium.Browser;
-import com.teamdev.jxbrowser.chromium.BrowserMouseEvent;
-import com.teamdev.jxbrowser.chromium.LoadURLParams;
-import com.teamdev.jxbrowser.chromium.dom.*;
-import com.teamdev.jxbrowser.chromium.events.*;
-import com.teamdev.jxbrowser.chromium.swing.BrowserView;
+import Util.HttpRequest;
+import Util.WizzairHelper;
+import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.chrome.ChromeDriver;
 
 import QueueHandlers.JMSStack;
 import QueueHandlers.LocalStack;
@@ -28,47 +26,29 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
 import static Util.CurrencyHelper.ConvertFrom3Digits;
 import static Util.DatetimeHelper.FormatDate;
-import java.util.logging.Level;
+
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static com.teamdev.jxbrowser.chromium.LoggerProvider.getBrowserLogger;
-import static com.teamdev.jxbrowser.chromium.LoggerProvider.getChromiumProcessLogger;
-import static com.teamdev.jxbrowser.chromium.LoggerProvider.getIPCLogger;
-import com.traveloptimizer.browserengine.TeamDevJxBrowser;
 
 
-public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
+public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 {
-	private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuest201812.class);
+	private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuest201911.class);
 
 	private long mTimeoutStart;
 	private static String mApiSearchUrl = "https://be.wizzair.com/9.0.0/Api/search/search";
 	private static String mHeader = "origin: https://wizzair.com\naccept-encoding: gzip, deflate, br\naccept-language: en-US,en;q=0.9,hu;q=0.8\nuser-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36\ncontent-type: application/json;charset=UTF-8\naccept: application/json, text/plain, */*\nreferer: https://wizzair.com/\nauthority: be.wizzair.com";
-	private Browser mBrowser = null;
-	private Browser mBrowser2 = null;
-	private BrowserView mBrowserView = null;
-	private JTabbedPane mTabbedPane = null;
+	private WebDriver driver = null;
 	private Integer mEventCounter = 0;
 
 	public void Init() throws Exception
 	{
 		InitJMS();
-		TeamDevJxBrowser.init();
-		getBrowserLogger().setLevel( Level.WARNING );
-		getChromiumProcessLogger().setLevel( Level.WARNING );
-		getIPCLogger().setLevel( Level.WARNING );
 
-
-		mTabbedPane = new JTabbedPane();
-		JFrame frame = new JFrame( "Travel Optimizer - Wizzair.com - jxBrowser " + ProductInfo.getVersion());
-
+		/* close event from the browser
 		frame.addWindowListener(new WindowAdapter()
 		{
 			@Override
@@ -78,64 +58,26 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 				mThreadStopped = true;
 				e.getWindow().dispose();
 			}
-		});
+		});*/
 
-		frame.getContentPane().add( mTabbedPane, BorderLayout.CENTER );
-		frame.setSize( 800, 800 );
-		frame.setLocation( 50, 50 );
-		frame.setVisible( true );
+		driver = new ChromeDriver();
+		driver.get("https://wizzair.com");
+		WebDriverWait wait = new WebDriverWait(driver, 15);
+		wait.until(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete"));
+		Thread.sleep(2000);  // Just to be sure! May crash occur wothout this sleep.
 
-		mBrowser = TeamDevJxBrowser.getInstance().getJxBrowser("wizzair.com");
-		mBrowserView = new BrowserView( mBrowser );
-		mTabbedPane.addTab( "Browser", mBrowserView );
-		for( int i = 0; i < 13; i++ )
-		{
-			try
-			{
-				Browser.invokeAndWaitFinishLoadingMainFrame( mBrowser, new com.teamdev.jxbrowser.chromium.Callback<Browser>()
-				{
-					@Override
-					public void invoke( Browser browser )
-					{
-						browser.loadURL( "https://wizzair.com" );
-					}
-				} );
-				break;
-			}
-			catch( RuntimeException e )
-			{
-				mLogger.error( "WizzairHelper(" + i + "): " + StringHelper.getTraceInformation( e ));
-				if( i == 2 )
-					throw e;
-			}
-			Sleep( 1000 );
-		}
-		// Wait until Chromium renders web page content
-		Sleep( 8000 );
-
-		DOMDocument lDocument = mBrowser.getDocument();
-		String lContent = lDocument.getDocumentElement().getInnerHTML();
-
-		Pattern reg = Pattern.compile( "https\\://be\\.wizzair\\.com/(\\d{1,2}\\.\\d{1,2}\\.\\d{1,2})/Api" );
-		Matcher m = reg.matcher( lContent );
-		String lApiVersion = "9.0.0";
-		if( m.find() )
-		{
-			lApiVersion = m.group(1).toString().trim();
-			mLogger.info( "WizzAir API version: " + lApiVersion );
-		}
-		//lBrowser.dispose();
+		String lApiVersion = WizzairHelper.getApiVersion(driver);
+		mLogger.info("Wizzair Api version: " + lApiVersion);
 		mApiSearchUrl = "https://be.wizzair.com/" + lApiVersion + "/Api/search/search";
 
-		mBrowser.addLoadListener(new BrowserLoadAdapter( this ));
-		mBrowser.setPopupHandler(new BrowserPopupHandler(this));
-
 		FillTheFormWithDummy();
+		DoSearchFromConfig();
+		synchronized (mMutex) { ++mEventCounter; }
 	}
-
+/*
 	public class BrowserPopupHandler implements PopupHandler {
-		private WizzAirPageGuest201812 mGuest;
-		public BrowserPopupHandler( WizzAirPageGuest201812 guest )
+		private WizzAirPageGuest201911 mGuest;
+		public BrowserPopupHandler( WizzAirPageGuest201911 guest )
 		{
 			mGuest = guest;
 		}
@@ -174,8 +116,8 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 			};
 		}
 	}
-
-	public WizzAirPageGuest201812()
+*/
+	public WizzAirPageGuest201911()
 	{
 		super("wizzair", "https://wizzair.com");
 		mSearchQueue = new LocalStack<>();
@@ -183,11 +125,11 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 		mThread.setName("WizzAirThread201812 " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 		mThread.start();
 	}
-
+/*
 	public class BrowserLoadAdapter extends LoadAdapter
 	{
-		private WizzAirPageGuest201812 mGuest;
-		public BrowserLoadAdapter( WizzAirPageGuest201812 guest )
+		private WizzAirPageGuest201911 mGuest;
+		public BrowserLoadAdapter( WizzAirPageGuest201911 guest )
 		{
 			mGuest = guest;
 		}
@@ -253,7 +195,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 		}
 
 	}
-
+*/
 	public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate)
 	{
 		mLogger.trace( "begin, thread name: " + getThreadName());
@@ -536,7 +478,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 		mTravelDataResult = null;
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
-
+/*
 	class MainFrameCallback implements com.teamdev.jxbrowser.chromium.Callback<Browser>
 	{
 		private String mApiSearchUrl;
@@ -560,9 +502,8 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 	        ));
 		}
 	}
-
-	private void FillTheForm( TravelData_INPUT aTravelDataInput ) throws URISyntaxException, IOException
-	{
+*/
+	private void FillTheForm( TravelData_INPUT aTravelDataInput ) throws URISyntaxException, IOException, InterruptedException {
 		mLogger.trace( "begin, thread name: " + getThreadName());
 
 		String lParameters = "";
@@ -593,17 +534,45 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 					+ ",\"wdc\":true}";
 		}
 
-		System.out.println( mApiSearchUrl + "\n" + lParameters );
+		//System.out.println( mApiSearchUrl + "\n" + lParameters );
+		HttpRequest request = new HttpRequest();
+
+		String strResponse = "";
+		request.addRequestProperties("origin", "https://wizzair.com");
+		request.addRequestProperties("accept-encoding", "gzip, deflate, br");
+		request.addRequestProperties("accept-language", "en-US,en;q=0.9,hu;q=0.8");
+		request.addRequestProperties("user-agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36");
+		request.addRequestProperties("content-type", "application/json;charset=UTF-8");
+		request.addRequestProperties("accept", "application/json, text/plain, */*");
+		request.addRequestProperties("referer", "https://wizzair.com/");
+		request.addRequestProperties("authority", "be.wizzair.com");
+
+		// copy cookies from browser
+		Set<Cookie> allCookies = driver.manage().getCookies();
+		String cookies = "";
+		for(Cookie cookie : allCookies) {
+			if(cookies.length() > 0) {
+				cookies += ";";
+			}
+			cookies += cookie.toString();
+		}
+
+		if(cookies.length() > 0) {
+			request.addRequestProperties("Cookie", cookies);
+		}
+
 		for( int i = 0; i < 3; i++ )
 		{
 			try
 			{
-				Browser.invokeAndWaitFinishLoadingMainFrame( mBrowser, new MainFrameCallback(mApiSearchUrl, lParameters, mHeader));
+				strResponse = request.sendPost( mApiSearchUrl, lParameters );
+				if( request.getResponseCode() != 404 && strResponse.length() > 0 ) {
+				}
 				break;
 			}
 			catch( RuntimeException e )
 			{
-				mLogger.error( "WizzAirPageGuest201812(" + i + "): " + StringHelper.getTraceInformation( e ));
+				mLogger.error( "WizzAirPageGuest201911(" + i + "): " + StringHelper.getTraceInformation( e ));
 				if( i == 2 )
 					throw e;
 			}
@@ -616,61 +585,61 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 		mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
 		mTravelDataResult.mTravelDataInput = aTravelDataInput;
 
-		DOMDocument lDocument = mBrowser.getDocument();
-		String lContent = lDocument.getDocumentElement().getInnerHTML();
-
 		Pattern reg = Pattern.compile( "\\{.*\\}" );
-		Matcher m = reg.matcher( lContent );
+		Matcher m = reg.matcher( strResponse );
 		String lJson = "";
 		if( m.find() )
 		{
 			lJson = m.group(0).toString().trim();
 		}
 
-		mLogger.trace( lContent );
+		mLogger.trace( strResponse );
 		//DOMElement pre = mBrowser.getDocument().findElement( By.tagName( "pre" ));
 		ParseTheResponse(lJson);
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
-	private void FillTheFormWithDummy() {
+	private void FillTheFormWithDummy() throws InterruptedException {
 		mLogger.trace( "begin, thread name: " + getThreadName());
-        // origin text field
-        Sleep(4000);
-        DOMNode origin = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"search-departure-station\"]" ) );
-        origin.click();
-        jxTypeText( mBrowser, "Budap" );
-		Sleep(4000);
+		WebElement departureBox = driver.findElement(By.id("search-departure-station"));
+		departureBox.click();
+		Thread.sleep(1000);
 
-        DOMElement value0 = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"flight-search\"]/div/div/div[2]/form/div[1]/fieldset/div[3]/div/div[3]/div[1]/label" ) );
-        value0.click();
-        Sleep(4000);
-        // destionation text field
-        DOMNode destionation = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"search-arrival-station\"]" ) );
-        destionation.click();
-        jxTypeText( mBrowser, "CHARLE" );
-		Sleep(4000);
-        value0.click();
-        Sleep(4000);
+		departureBox.sendKeys("Budapest");
+		Thread.sleep(2000);
 
-        // click the submit
-        DOMElement link = mBrowser.getDocument().findElement( By.xpath( "//*[@id=\"flight-search\"]/div/div/div[2]/form/div[3]/button" ) );
+		WebElement value0 = driver.findElement(By.xpath( "//*[@id=\"flight-search\"]/div/div/div[2]/form/div[1]/fieldset/div[3]/div/div[3]/div[1]/label" ));
+		value0.click();
+		Thread.sleep(1000);
 
-        if( link != null )
-        {
-	        jxClick( mBrowser, link );
-        }
+		WebElement arrivalBox = driver.findElement(By.id("search-arrival-station"));
+		arrivalBox.click();
+		Thread.sleep(1000);
+
+		arrivalBox.sendKeys("Charleroi");
+		Thread.sleep(2000);
+
+		value0.click();
+		Thread.sleep(2000);
+
+		WebElement searchButton = driver.findElement(By.xpath( "//*[@id=\"flight-search\"]/div/div/div[2]/form/div[3]/button" ));
+		searchButton.click();
+		// the wait.until doesn't work here, it's a complex page, and slow with the booking at the same time
+		Thread.sleep(60000);
+
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
-	private void clickLeftArrow() {
+	private void clickLeftArrow() throws InterruptedException {
 		mLogger.trace( "begin, thread name: " + getThreadName());
-		DOMElement rightArrow = mBrowser2.getDocument().findElement( By.xpath( "//*[@id=\"outbound-fare-selector\"]/div[2]/div[1]/button[2]" ));
 
-		if( rightArrow  != null )
-		{
-			jxClick( mBrowser2, rightArrow );
-		}
+		ArrayList tabs = new ArrayList (driver.getWindowHandles());
+		driver.switchTo().window(tabs.get(tabs.size() - 1).toString());
+
+		WebElement rightArrow = driver.findElement( By.xpath( "//*[@id=\"outbound-fare-selector\"]/div[2]/div[1]/button[2]" ));
+		Thread.sleep(2000);
+
+		if( rightArrow  != null ) {rightArrow.click();}
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
@@ -741,7 +710,7 @@ public class WizzAirPageGuest201812 extends WebPageGuest implements Runnable
 		{
 			mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
 		}
-		mBrowser.dispose();
+		driver.quit();
 	}
 }
 

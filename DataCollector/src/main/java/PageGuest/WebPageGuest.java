@@ -238,21 +238,6 @@ public abstract class WebPageGuest extends PageGuest
         aBrowser.executeJavaScript( String.format( mGetElementByXPathPattern + ".focus();", aXPath ));
     }
 
-    public void javaScriptSubmit( Browser aBrowser, String aXPath )
-    {
-        aBrowser.executeJavaScript( String.format( mGetElementByXPathPattern + ".submit();", aXPath ));
-    }
-
-    private void javaSendKeys( Browser aBrowser, String aXPath, int aKey )
-    {
-        String lSendKeys = ";TraveDataOptimizer.sendkeys(" + String.format( "%d", aKey ) + ");";
-        aBrowser.executeJavaScript( String.format( "var TraveDataOptimizer = " + mGetElementByXPathPattern + lSendKeys, aXPath ));
-    }
-
-    private void javaScriptClick( Browser aBrowser, String aXPath )
-    {
-        aBrowser.executeJavaScript( String.format( mGetElementByXPathPattern + ".click();", aXPath ));
-    }
 
     public static DOMElement findElementByAttrib( DOMDocument aDOMDocument, String tagName, String attribName, String attribValue )
     {
@@ -308,39 +293,5 @@ public abstract class WebPageGuest extends PageGuest
         keyCodeHashMap.put( '7', BrowserKeyEvent.KeyCode.VK_7);
         keyCodeHashMap.put( '8', BrowserKeyEvent.KeyCode.VK_8);
         keyCodeHashMap.put( '9', BrowserKeyEvent.KeyCode.VK_9);
-    }
-
-    public static void jxTypeText( Browser browser, String aText)
-    {
-        for (int i = 0; i < aText.length(); i++)
-        {
-            Sleep( 200 );
-            char lC = aText.charAt(i);
-            if ((lC >= 'A' && lC <= 'Z') || lC == '\t' || lC == '\n' || (lC >= '0' && lC <= '9'))
-            {
-                browser.forwardKeyEvent(new BrowserKeyEvent(TYPED, keyCodeHashMap.getOrDefault( lC, BrowserKeyEvent.KeyCode.VK_A ), lC ));
-                Sleep(200);
-            } else if (lC >= 'a' && lC <= 'z') {
-                browser.forwardKeyEvent(new BrowserKeyEvent(TYPED, keyCodeHashMap.getOrDefault( 'A' + lC - 'a', BrowserKeyEvent.KeyCode.VK_A ), lC ));
-                Sleep(200);
-            }
-        }
-    }
-
-    public static void jxClick(Browser browser, DOMElement element) {
-        Rectangle rect = element.getBoundingClientRect();
-        BrowserMouseEvent.BrowserMouseEventBuilder meb = new BrowserMouseEvent.BrowserMouseEventBuilder();
-        meb.setButtonType( BrowserMouseEvent.MouseButtonType.PRIMARY );
-        meb.setClickCount( 1 );
-        meb.setEventType( BrowserMouseEvent.MouseEventType.MOUSE_PRESSED );
-        meb.setGlobalX( 0);
-        meb.setGlobalY( 0);
-        meb.setX( (int)rect.getX() );
-        meb.setY( (int)rect.getY() );
-        meb.setWhen( 1 );
-        browser.forwardMouseEvent( meb.build() );
-        meb.setEventType( BrowserMouseEvent.MouseEventType.MOUSE_RELEASED );
-        browser.forwardMouseEvent( meb.build() );
-        //Sleep( 2000 );
     }
 }

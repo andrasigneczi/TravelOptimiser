@@ -61,6 +61,8 @@ public class Main
 
     public static void main(String[] argv)
     {
+        System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
+        //System.setProperty("io.netty.tryReflectionSetAccessible", "true");
         CurrencyHelper.Init();
         Configuration lConfiguration = Configuration.getInstance();
         StartApp( argv );

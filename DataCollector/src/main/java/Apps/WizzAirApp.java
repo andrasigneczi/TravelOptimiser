@@ -17,9 +17,8 @@ public class WizzAirApp
 		mLogger.trace( "WizzAirApp start" );
 		try
 		{
-			//PageGuest.WizzAirPageGuest201609.InitApirURL();
 			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
-			final PageGuest.WizzAirPageGuest201812 lGuestW = (PageGuest.WizzAirPageGuest201812)PageGuestFactory.Create( "WizzAir" );
+			final PageGuest.WizzAirPageGuest201911 lGuestW = (PageGuest.WizzAirPageGuest201911)PageGuestFactory.Create( "WizzAir" );
 			lGuestW.Init();
 			lGuestW.WaitForFinish();
 			//lGuestW.stop();

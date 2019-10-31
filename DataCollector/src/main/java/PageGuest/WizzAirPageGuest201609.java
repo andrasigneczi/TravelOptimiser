@@ -40,11 +40,13 @@ public class WizzAirPageGuest201609 extends PageGuest implements Runnable
 
 	public static void InitApirURL() throws Exception
 	{
+/*
 		String lApiVersion = WizzairHelper.getApiVersion();
 		if( lApiVersion.length() == 0 )
 			throw new RuntimeException( "Wrong API version!" );
 
 		mApiSearchUrl = "https://be.wizzair.com/" + lApiVersion + "/Api/search/search";
+ */
 	}
 
 	public WizzAirPageGuest201609()

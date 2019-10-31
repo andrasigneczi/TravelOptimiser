@@ -11,7 +11,7 @@ public class PageGuestFactory
 	{
 		if( PageType.equalsIgnoreCase( "wizzair" ))
 		{
-			return new WizzAirPageGuest201812();
+			return new WizzAirPageGuest201911();
 		}
 		else if( PageType.equalsIgnoreCase( "wizzairtimetable" ))
 		{

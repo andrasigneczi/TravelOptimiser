@@ -110,7 +110,6 @@ public class CurrencyHelper
 
     public static boolean DownloadRecentCurrencyPrices( String lUrlTemplate, String path1, String path2 ) throws InterruptedException
     {
-        System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
         WebDriver driver = new ChromeDriver();
 
         for( Map.Entry<String,String> lItem : mCurrencies.entrySet())

@@ -13,6 +13,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import javax.jms.JMSException;
 import java.io.ByteArrayInputStream;
@@ -61,7 +65,14 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 
 	public static void InitApirURL() throws Exception
 	{
-		String lApiVersion = WizzairHelper.getApiVersion();
+		WebDriver driver = new ChromeDriver();
+		driver.get("https://wizzair.com");
+		WebDriverWait wait = new WebDriverWait(driver, 15);
+		wait.until(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete"));
+		Thread.sleep(2000);  // Just to be sure! May crash occur wothout this sleep.
+
+		String lApiVersion = WizzairHelper.getApiVersion(driver);
+		driver.close();
 		if( lApiVersion.length() == 0 )
 			throw new RuntimeException( "Wrong API version!" );
 
