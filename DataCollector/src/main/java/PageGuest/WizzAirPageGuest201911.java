@@ -41,7 +41,6 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 	private long mTimeoutStart;
 	private static String mApiSearchUrl = "https://be.wizzair.com/9.0.0/Api/search/search";
 	private static String mHeader = "origin: https://wizzair.com\naccept-encoding: gzip, deflate, br\naccept-language: en-US,en;q=0.9,hu;q=0.8\nuser-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36\ncontent-type: application/json;charset=UTF-8\naccept: application/json, text/plain, */*\nreferer: https://wizzair.com/\nauthority: be.wizzair.com";
-	private WebDriver driver = null;
 	private Integer mEventCounter = 0;
 
 	public void Init() throws Exception
@@ -59,8 +58,7 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 				e.getWindow().dispose();
 			}
 		});*/
-
-		driver = new ChromeDriver();
+		WebDriver driver = new ChromeDriver();
 		driver.get("https://wizzair.com");
 		WebDriverWait wait = new WebDriverWait(driver, 15);
 		wait.until(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete"));
@@ -69,54 +67,12 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 		String lApiVersion = WizzairHelper.getApiVersion(driver);
 		mLogger.info("Wizzair Api version: " + lApiVersion);
 		mApiSearchUrl = "https://be.wizzair.com/" + lApiVersion + "/Api/search/search";
+		driver.quit();
 
-		FillTheFormWithDummy();
 		DoSearchFromConfig();
 		synchronized (mMutex) { ++mEventCounter; }
 	}
-/*
-	public class BrowserPopupHandler implements PopupHandler {
-		private WizzAirPageGuest201911 mGuest;
-		public BrowserPopupHandler( WizzAirPageGuest201911 guest )
-		{
-			mGuest = guest;
-		}
-		public PopupContainer handlePopup(PopupParams params) {
-			return new PopupContainer() {
-				public void insertBrowser(final Browser browser, final Rectangle initialBounds) {
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							mBrowser2 = browser;
-							//mBrowser2.addLoadListener(new BrowserLoadAdapter( mGuest ));
-							BrowserView popupView = new BrowserView(browser);
-							popupView.setPreferredSize(new Rectangle(800,800).getSize());
 
-							final JFrame popupFrame = new JFrame("Popup");
-							popupFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-							popupFrame.add(popupView, BorderLayout.CENTER);
-							popupFrame.pack();
-							popupFrame.setLocation(new Rectangle( 800, 0, 0, 0 ).getLocation());
-							popupFrame.setVisible(true);
-							popupFrame.addWindowListener(new WindowAdapter() {
-								@Override
-								public void windowClosing(WindowEvent e) {
-									browser.dispose();
-								}
-							});
-
-							browser.addDisposeListener(new DisposeListener<Browser>() {
-								public void onDisposed(DisposeEvent<Browser> event) {
-									popupFrame.setVisible(false);
-								}
-							});
-						}
-					});
-				}
-			};
-		}
-	}
-*/
 	public WizzAirPageGuest201911()
 	{
 		super("wizzair", "https://wizzair.com");
@@ -125,77 +81,7 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 		mThread.setName("WizzAirThread201812 " + LocalDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 		mThread.start();
 	}
-/*
-	public class BrowserLoadAdapter extends LoadAdapter
-	{
-		private WizzAirPageGuest201911 mGuest;
-		public BrowserLoadAdapter( WizzAirPageGuest201911 guest )
-		{
-			mGuest = guest;
-		}
 
-		@Override
-		public void onStartLoadingFrame(StartLoadingEvent event) {
-			if (event.isMainFrame()) {
-				//System.out.println("Main frame has started loading");
-			}
-		}
-
-		@Override
-		public void onProvisionalLoadingFrame(ProvisionalLoadingEvent event) {
-			if (event.isMainFrame()) {
-				//System.out.println("Provisional load was committed for a frame");
-			}
-		}
-
-		@Override
-		public void onFinishLoadingFrame(FinishLoadingEvent event) {
-			// A click után újra bejövök ide, erre ügyelni kell!!!!
-			synchronized( this )
-			{
-				if( event.isMainFrame())
-				{
-					mLogger.trace( "Main frame has finished loading, status: " + mEventCounter);
-					boolean search = false;
-					synchronized (mMutex)
-					{
-						if( mEventCounter == 0 )
-							search = true;
-					}
-					if(search)
-					{
-							Sleep( 2000 );
-							// I don't need the first submit's result!
-							//mGuest.mainFrameLoaded( event.getBrowser().getHTML() );
-							mGuest.DoSearchFromConfig();
-					}
-					synchronized (mMutex)
-					{
-						++mEventCounter;
-					}
-				}
-			}
-		}
-
-		@Override
-		public void onFailLoadingFrame(FailLoadingEvent event) {
-			NetError errorCode = event.getErrorCode();
-			if (event.isMainFrame()) {
-				mLogger.error("Main frame has failed loading: " + errorCode);
-			}
-		}
-
-		@Override
-		public void onDocumentLoadedInFrame(FrameLoadEvent event) {
-		}
-
-		@Override
-		public void onDocumentLoadedInMainFrame(LoadEvent event) {
-			//System.out.println("Main frame document is loaded.");
-		}
-
-	}
-*/
 	public void DoSearch(String aFrom, String aTo, String aDepartureDate, String aReturnDate)
 	{
 		mLogger.trace( "begin, thread name: " + getThreadName());
@@ -478,31 +364,7 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 		mTravelDataResult = null;
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
-/*
-	class MainFrameCallback implements com.teamdev.jxbrowser.chromium.Callback<Browser>
-	{
-		private String mApiSearchUrl;
-		private String mParameters;
-		private String mHeader;
-		public MainFrameCallback(String apiSearchUrl, String parameters, String header)
-		{
-			mApiSearchUrl = apiSearchUrl;
-			mParameters   = parameters;
-			mHeader       = header;
-		}
 
-		@Override
-		public void invoke( Browser browser )
-		{
-			// POST to the wizzair API
-	        browser.loadURL( new LoadURLParams(
-	                mApiSearchUrl,
-	                mParameters,
-	                mHeader
-	        ));
-		}
-	}
-*/
 	private void FillTheForm( TravelData_INPUT aTravelDataInput ) throws URISyntaxException, IOException, InterruptedException {
 		mLogger.trace( "begin, thread name: " + getThreadName());
 
@@ -547,21 +409,6 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 		dcHttpClient.addProperties("referer", "https://wizzair.com/");
 		dcHttpClient.addProperties("authority", "be.wizzair.com");
 
-		// copy cookies from browser
-		/*
-		Set<Cookie> allCookies = driver.manage().getCookies();
-		String cookies = "";
-		for(Cookie cookie : allCookies) {
-			if(cookies.length() > 0) {
-				cookies += ";";
-			}
-			cookies += cookie.toString();
-		}
-
-		if(cookies.length() > 0) {
-			dcHttpClient.addProperties("Cookie", cookies);
-		}
-		*/
 		for( int i = 0; i < 3; i++ )
 		{
 			try
@@ -597,50 +444,6 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 		mLogger.trace( strResponse );
 		//DOMElement pre = mBrowser.getDocument().findElement( By.tagName( "pre" ));
 		ParseTheResponse(lJson);
-		mLogger.trace( "end, thread name: " + getThreadName());
-	}
-
-	private void FillTheFormWithDummy() throws InterruptedException {
-		mLogger.trace( "begin, thread name: " + getThreadName());
-		WebElement departureBox = driver.findElement(By.id("search-departure-station"));
-		departureBox.click();
-		Thread.sleep(1000);
-
-		departureBox.sendKeys("Budapest");
-		Thread.sleep(2000);
-
-		WebElement value0 = driver.findElement(By.xpath( "//*[@id=\"flight-search\"]/div/div/div[2]/form/div[1]/fieldset/div[3]/div/div[3]/div[1]/label" ));
-		value0.click();
-		Thread.sleep(1000);
-
-		WebElement arrivalBox = driver.findElement(By.id("search-arrival-station"));
-		arrivalBox.click();
-		Thread.sleep(1000);
-
-		arrivalBox.sendKeys("Charleroi");
-		Thread.sleep(2000);
-
-		value0.click();
-		Thread.sleep(2000);
-
-		WebElement searchButton = driver.findElement(By.xpath( "//*[@id=\"flight-search\"]/div/div/div[2]/form/div[3]/button" ));
-		searchButton.click();
-		// the wait.until doesn't work here, it's a complex page, and slow with the booking at the same time
-		Thread.sleep(60000);
-
-		mLogger.trace( "end, thread name: " + getThreadName());
-	}
-
-	private void clickLeftArrow() throws InterruptedException {
-		mLogger.trace( "begin, thread name: " + getThreadName());
-
-		ArrayList tabs = new ArrayList (driver.getWindowHandles());
-		driver.switchTo().window(tabs.get(tabs.size() - 1).toString());
-		Thread.sleep(2000);
-
-		WebElement rightArrow = driver.findElement( By.xpath( "//*[@id=\"outbound-fare-selector\"]/div[2]/div[1]/button[2]" ));
-
-		if( rightArrow  != null ) {rightArrow.click();}
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
@@ -685,8 +488,6 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 				try
 				{
 					FillTheForm( lTravelDataInput );
-					//mEventCounter = 10;
-					clickLeftArrow();
 				}
 				catch( URISyntaxException e )
 				{
@@ -711,7 +512,6 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 		{
 			mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
 		}
-		driver.quit();
 	}
 }
 
