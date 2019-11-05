@@ -4,8 +4,8 @@ import Configuration.Configuration;
 import QueueHandlers.JMSPublisher;
 import QueueHandlers.LocalStack;
 import ResultFilter.ResultFilter;
+import Util.DCHttpClient;
 import Util.DatetimeHelper;
-import Util.HttpRequest;
 import Util.StringHelper;
 import Util.WizzairHelper;
 import org.apache.log4j.Logger;
@@ -51,7 +51,7 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 
 	private long mTimeoutStart;
 	private static String mApiTimetableUrl = "https://be.wizzair.com/5.1.4/Api/search/timetable";
-	private HttpRequest mRequest = new HttpRequest();
+	private DCHttpClient dcHttpClient = new DCHttpClient();
 
 	public WizzAirPageGuestTimetable( boolean dummy )
 	{
@@ -80,11 +80,11 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 	}
 
 	private void InitHttpRequest() {
-		mRequest.addRequestProperties( "Origin",          "https://wizzair.com" );
-		mRequest.addRequestProperties( "Authority",       "be.wizzair.com" );
-		mRequest.addRequestProperties( "Referer",         "https://wizzair.com/" );
-		mRequest.addRequestProperties( "Accept",          "application/json, text/plain, */*" );
-		mRequest.addRequestProperties( "Content-Type",    "application/json" );
+		dcHttpClient.addProperties( "Origin",          "https://wizzair.com" );
+		dcHttpClient.addProperties( "Authority",       "be.wizzair.com" );
+		dcHttpClient.addProperties( "Referer",         "https://wizzair.com/" );
+		dcHttpClient.addProperties( "Accept",          "application/json, text/plain, */*" );
+		dcHttpClient.addProperties( "Content-Type",    "application/json" );
 	}
 
 	public WizzAirPageGuestTimetable()
@@ -200,7 +200,7 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 //		return lTrip;
 //	}
 
-	public void FillTheForm( TravelData_INPUT aTravelDataInput ) throws URISyntaxException, IOException, JMSException,
+	public void FillTheForm( TravelData_INPUT aTravelDataInput ) throws Exception,
 			CloneNotSupportedException
 	{
 		LocalDate lDate = LocalDate.now();
@@ -336,7 +336,13 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream( ("[" + aResponse + "]").getBytes(
 				Charset.forName("UTF-8") ) );
 		JSONTokener lTokener = new JSONTokener( byteArrayInputStream );
-		JSONArray lRoot = new JSONArray( lTokener );
+
+		JSONArray lRoot;
+		try { lRoot = new JSONArray( lTokener ); } catch (JSONException e) {
+			mLogger.error( "Exception in ParseTheResponse: " + StringHelper.getTraceInformation( e ) );
+			mLogger.error( "Response string: " + aResponse );
+			return;
+		}
 
 		for( int lDateIndex = 0; lDateIndex < lRoot.length(); lDateIndex++ )
 		{
@@ -368,7 +374,7 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
-	private void FillTheForm( TravelData_INPUT aTravelDataInput, int aYear, int aMonth, int aDay, ArrayList<TravelData_RESULT> aResultList ) throws URISyntaxException, IOException
+	private void FillTheForm( TravelData_INPUT aTravelDataInput, int aYear, int aMonth, int aDay, ArrayList<TravelData_RESULT> aResultList ) throws Exception
 	{
 		mLogger.trace( "begin, thread name: " + getThreadName());
 		// JSON post
@@ -397,9 +403,9 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 				+ String.format( "%04d-%02d-%02d", aYear, aMonth, aDay ) + "\",\"to\":\""
 				+ String.format( "%04d-%02d-%02d", lNextYear, lNextMonth, lNextDay ) + "\"}],\"priceType\":\"regular\",\"adultCount\":1,\"childCount\":0,\"infantCount\":0}";
 		String strResponse;
-		strResponse = mRequest.sendPost( mApiTimetableUrl, lParameters );
+		strResponse = dcHttpClient.sendPost( mApiTimetableUrl, lParameters );
 
-		if( mRequest.getResponseCode() != 404 && strResponse.length() > 0 )
+		if( dcHttpClient.getResponseCode() != 404 && strResponse.length() > 0 )
 			ParseTheResponse( strResponse, aResultList, aTravelDataInput );
 
 		mLogger.trace( "end, thread name: " + getThreadName());
@@ -616,11 +622,7 @@ public class WizzAirPageGuestTimetable extends PageGuest implements Runnable
 				{
 					FillTheForm( lTravelDataInput );
 				}
-				catch( URISyntaxException e )
-				{
-					mLogger.error( StringHelper.getTraceInformation( e ));
-				}
-				catch( IOException e )
+				catch( Exception e )
 				{
 					mLogger.error( StringHelper.getTraceInformation( e ));
 				}

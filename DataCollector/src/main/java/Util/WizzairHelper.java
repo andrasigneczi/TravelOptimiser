@@ -27,21 +27,4 @@ public class WizzairHelper
 		if( m.find() )	{ mApiVersionNumber = m.group(1).toString().trim(); }
 		return mApiVersionNumber;
 	}
-
-	public static String getApiVersion_new() throws Exception
-	{
-		if( mApiVersionNumber.length() > 0 )
-			return mApiVersionNumber;
-
-		HttpRequest request = new HttpRequest();
-		String response = request.sendGet( "https://wizzair.com", 0 );
-		Pattern reg = Pattern.compile( "https\\://be\\.wizzair\\.com/(\\d{1,2}\\.\\d{1,2}\\.\\d{1,2})/Api" );
-		Matcher m = reg.matcher( response );
-		if( m.find() )
-		{
-			mApiVersionNumber = m.group(1).toString().trim();
-			mLogger.info( "WizzAir API version: " + mApiVersionNumber );
-		}
-		return mApiVersionNumber;
-	}
 }

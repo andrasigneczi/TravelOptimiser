@@ -1,6 +1,6 @@
 package PageGuest;
 
-import Util.HttpRequest;
+import Util.DCHttpClient;
 import Util.WizzairHelper;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -64,7 +64,7 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 		driver.get("https://wizzair.com");
 		WebDriverWait wait = new WebDriverWait(driver, 15);
 		wait.until(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete"));
-		Thread.sleep(2000);  // Just to be sure! May crash occur wothout this sleep.
+		Thread.sleep(4000);  // Just to be sure! May crash occur wothout this sleep.
 
 		String lApiVersion = WizzairHelper.getApiVersion(driver);
 		mLogger.info("Wizzair Api version: " + lApiVersion);
@@ -535,19 +535,20 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 		}
 
 		//System.out.println( mApiSearchUrl + "\n" + lParameters );
-		HttpRequest request = new HttpRequest();
+		DCHttpClient dcHttpClient = new DCHttpClient();
 
 		String strResponse = "";
-		request.addRequestProperties("origin", "https://wizzair.com");
-		request.addRequestProperties("accept-encoding", "gzip, deflate, br");
-		request.addRequestProperties("accept-language", "en-US,en;q=0.9,hu;q=0.8");
-		request.addRequestProperties("user-agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36");
-		request.addRequestProperties("content-type", "application/json;charset=UTF-8");
-		request.addRequestProperties("accept", "application/json, text/plain, */*");
-		request.addRequestProperties("referer", "https://wizzair.com/");
-		request.addRequestProperties("authority", "be.wizzair.com");
+		dcHttpClient.addProperties("origin", "https://wizzair.com");
+		dcHttpClient.addProperties("accept-encoding", "gzip, deflate, br");
+		dcHttpClient.addProperties("accept-language", "en-US,en;q=0.9,hu;q=0.8");
+		dcHttpClient.addProperties("user-agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36");
+		dcHttpClient.addProperties("content-type", "application/json;charset=UTF-8");
+		dcHttpClient.addProperties("accept", "application/json, text/plain, */*");
+		dcHttpClient.addProperties("referer", "https://wizzair.com/");
+		dcHttpClient.addProperties("authority", "be.wizzair.com");
 
 		// copy cookies from browser
+		/*
 		Set<Cookie> allCookies = driver.manage().getCookies();
 		String cookies = "";
 		for(Cookie cookie : allCookies) {
@@ -558,19 +559,19 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 		}
 
 		if(cookies.length() > 0) {
-			request.addRequestProperties("Cookie", cookies);
+			dcHttpClient.addProperties("Cookie", cookies);
 		}
-
+		*/
 		for( int i = 0; i < 3; i++ )
 		{
 			try
 			{
-				strResponse = request.sendPost( mApiSearchUrl, lParameters );
-				if( request.getResponseCode() != 404 && strResponse.length() > 0 ) {
+				strResponse = dcHttpClient.sendPost( mApiSearchUrl, lParameters );
+				if( dcHttpClient.getResponseCode() != 404 && strResponse.length() > 0 ) {
 				}
 				break;
 			}
-			catch( RuntimeException e )
+			catch( Exception e )
 			{
 				mLogger.error( "WizzAirPageGuest201911(" + i + "): " + StringHelper.getTraceInformation( e ));
 				if( i == 2 )
@@ -635,9 +636,9 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 
 		ArrayList tabs = new ArrayList (driver.getWindowHandles());
 		driver.switchTo().window(tabs.get(tabs.size() - 1).toString());
+		Thread.sleep(2000);
 
 		WebElement rightArrow = driver.findElement( By.xpath( "//*[@id=\"outbound-fare-selector\"]/div[2]/div[1]/button[2]" ));
-		Thread.sleep(2000);
 
 		if( rightArrow  != null ) {rightArrow.click();}
 		mLogger.trace( "end, thread name: " + getThreadName());

@@ -4,8 +4,8 @@ import QueueHandlers.JMSStack;
 import QueueHandlers.LocalStack;
 import QueueHandlers.ResultQueue;
 import Configuration.Configuration;
+import Util.DCHttpClient;
 import Util.DatetimeHelper;
-import Util.HttpRequest;
 import Util.StringHelper;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -36,7 +36,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
     private static org.apache.log4j.Logger mLogger = Logger.getLogger(RyanAirPageGuest.class);
 
     private long mTimeoutStart;
-    private HttpRequest mRequest = new HttpRequest();
+    private DCHttpClient dcHttpClient = new DCHttpClient();
     private static String mServerApiUrl = "https://desktopapps.ryanair.com/v4";
 
     public RyanAirPageGuest()
@@ -52,10 +52,10 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
 
     private void InitHttpRequest()
     {
-        mRequest.addRequestProperties( "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" );
-        mRequest.addRequestProperties( "Host", "desktopapps.ryanair.com" );
-        mRequest.addRequestProperties( "Connection", "keep-alive" );
-        mRequest.addRequestProperties( "Upgrade-Insecure-Requests", "1" );
+        dcHttpClient.addProperties( "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" );
+        dcHttpClient.addProperties( "Host", "desktopapps.ryanair.com" );
+        dcHttpClient.addProperties( "Connection", "keep-alive" );
+        dcHttpClient.addProperties( "Upgrade-Insecure-Requests", "1" );
     }
 
     private void InitServerApiUrl( String response ) {
@@ -289,9 +289,9 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         //lTokener = new JSONTokener(new ByteArrayInputStream( lTestJsonString.getBytes() ));
 
         String strResponse;
-        strResponse = mRequest.sendGet( lUrl, 0 );
+        strResponse = dcHttpClient.sendGet( lUrl );
 
-        if( mRequest.getResponseCode() != 404 && strResponse.length() > 0 )
+        if( dcHttpClient.getResponseCode() != 404 && strResponse.length() > 0 )
             lTokener = new JSONTokener(new ByteArrayInputStream( strResponse.getBytes() ));
 
 
@@ -325,7 +325,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         {
             System.out.println("Thread::run");
             // we need the cookie to get the flight information in the FillTheForm
-            String response = mRequest.sendGet( "https://www.ryanair.com", 0 );
+            String response = dcHttpClient.sendGet( "https://www.ryanair.com" );
             InitServerApiUrl( response );
 
             mThreadStopped = false;
