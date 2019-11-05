@@ -128,7 +128,7 @@ public class CurrencyHelper
                     driver.get(lUrl);
                     WebDriverWait wait = new WebDriverWait(driver, 15);
                     wait.until(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete"));
-                    Thread.sleep(2000);  // Just to be sure! May crash occur wothout this sleep.
+                    Thread.sleep(4000);  // Just to be sure! May crash occur without this sleep.
                     break;
                 }
                 catch( RuntimeException e )

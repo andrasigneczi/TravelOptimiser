@@ -62,7 +62,7 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 		driver.get("https://wizzair.com");
 		WebDriverWait wait = new WebDriverWait(driver, 15);
 		wait.until(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete"));
-		Thread.sleep(4000);  // Just to be sure! May crash occur wothout this sleep.
+		Thread.sleep(4000);  // Just to be sure! May crash occur without this sleep.
 
 		String lApiVersion = WizzairHelper.getApiVersion(driver);
 		mLogger.info("Wizzair Api version: " + lApiVersion);
