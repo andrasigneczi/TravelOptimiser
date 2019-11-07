@@ -316,9 +316,9 @@ public class SQLiteDataProvider implements DataProvider
 		{
 			String pattern;
 			if( System.getProperty("os.name").contains( "Windows" )) {
-				pattern = "^.*\\\\database_\\d{4}-\\d{2}-\\d{2}T\\d{6}(\\.\\d{1,3})?\\.db$";
+				pattern = "^.*\\\\database_\\d{4}-\\d{2}-\\d{2}T\\d{6}(\\.\\d{1,6})?\\.db$";
 			} else {
-				pattern = "^.*/database_\\d{4}-\\d{2}-\\d{2}T\\d{6}(\\.\\d{1,3})?\\.db$";
+				pattern = "^.*/database_\\d{4}-\\d{2}-\\d{2}T\\d{6}(\\.\\d{1,6})?\\.db$";
 			}
 
 			lJoinedString = stream
