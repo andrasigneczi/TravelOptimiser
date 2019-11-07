@@ -44,16 +44,6 @@
             <artifactId>jna</artifactId>
             <version>${jna.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.teamdev.jxbrowser</groupId>
-            <artifactId>jxbrowser-linux64</artifactId>
-            <version>6.24</version>
-        </dependency>
-        <dependency>
-            <groupId>com.teamdev.jxbrowser</groupId>
-            <artifactId>jxbrowser</artifactId>
-            <version>6.24</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
@@ -112,9 +102,6 @@
                 <version>3.8.1</version>
                 <configuration>
                     <release>11</release>
-                    <argLine>
-                        --illegal-access=permit
-                    </argLine>
                 </configuration>
             </plugin>
             <plugin>

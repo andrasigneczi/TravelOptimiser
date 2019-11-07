@@ -41,16 +41,6 @@ public class Main
                 WizzAirTimetableApp.Run();
                 break;
             }
-            else if( arg.equals( "-booking.com" ))
-            {
-                BookingDotComApp.Run();
-                break;
-            }
-            else if( arg.equals( "-airbnb.com" ))
-            {
-                AirbnbDotComApp.Run();
-                break;
-            }
             else if( arg.equals( "-dbagent" ))
             {
                 DBAgentApp.Run();

@@ -1,6 +1,5 @@
 package PageGuestTest;
 
-import PageGuest.BookingDotComPageGuest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

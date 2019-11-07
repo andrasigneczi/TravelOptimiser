@@ -33,14 +33,6 @@ public class PageGuestFactory
 		{
 			return new BulgarianAirPageGuest();
 		}
-		else if( PageType.equalsIgnoreCase( "booking.com" ))
-		{
-			return new BookingDotComPageGuest();
-		}
-		else if( PageType.equalsIgnoreCase( "airbnb.com" ))
-		{
-			return new AirbnbDotComPageGuest();
-		}
 		return null;
 	}
 }

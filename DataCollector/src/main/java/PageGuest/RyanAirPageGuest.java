@@ -251,6 +251,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
                 catch ( JSONException e)
                 {
                     mLogger.info( "businessFare JSONObject not found: " + StringHelper.getTraceInformation( e ) );
+                    mLogger.info(lFlight.toString());
                 }
 
                 ParseFares( lRegularFare, FareType.Normal, lTripClone, aCurrency );
