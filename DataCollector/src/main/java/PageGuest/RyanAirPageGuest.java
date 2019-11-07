@@ -53,8 +53,9 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
     private void InitHttpRequest()
     {
         dcHttpClient.addProperties( "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" );
-        dcHttpClient.addProperties( "Host", "desktopapps.ryanair.com" );
-        dcHttpClient.addProperties( "Connection", "keep-alive" );
+        //dcHttpClient.addProperties( "Host", "desktopapps.ryanair.com" );
+        //Connection-specific header fields such as Connection must not be used with HTTP/2.
+        //dcHttpClient.addProperties( "Connection", "keep-alive" );
         dcHttpClient.addProperties( "Upgrade-Insecure-Requests", "1" );
     }
 
@@ -63,8 +64,9 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
         Matcher m = reg.matcher( response );
         if( m.find() )
         {
-            mServerApiUrl = m.group(1).toString().trim();
-            mServerApiUrl = mServerApiUrl.replaceAll( "\\\\", "" );
+            String lServerApiUrl = m.group(1).toString().trim();
+            if(!lServerApiUrl.startsWith("https:")) lServerApiUrl = "https://www.ryanair.com" + lServerApiUrl;
+            mServerApiUrl = lServerApiUrl.replaceAll( "\\\\", "" );
             mLogger.info( "RyanAir API Url: " + mServerApiUrl );
         }
     }
