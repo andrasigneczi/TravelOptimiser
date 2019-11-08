@@ -17,17 +17,6 @@
         <jna.version>5.5.0</jna.version>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>com.teamdev</id>
-            <url>http://maven.teamdev.com/repository/products</url>
-        </repository>
-        <repository>
-            <id>mylibid</id>
-            <url>file:${basedir}/lib</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>

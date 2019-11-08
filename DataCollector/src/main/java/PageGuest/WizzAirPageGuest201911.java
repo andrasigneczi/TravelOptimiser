@@ -221,7 +221,14 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 			JSONObject lFare = aFares.getJSONObject( lFaresIndex );
 			String lBundle = lFare.getString( "bundle" );
 			Boolean lWdc = lFare.getBoolean( "wdc" );
-			JSONObject lDiscountedPrice = lFare.getJSONObject( "discountedPrice" );
+			JSONObject lDiscountedPrice = null;
+			if(lFare.isNull( "discountedPrice" )) {
+				if(lFare.isNull( "discountedPriceWithoutFamilyDiscount" )) continue;
+				lDiscountedPrice = lFare.getJSONObject( "discountedPriceWithoutFamilyDiscount" );
+			} else {
+				lDiscountedPrice = lFare.getJSONObject( "discountedPrice" );
+			}
+
 			Double lAmount = lDiscountedPrice.getDouble( "amount" );
 			String lCurrency = ConvertFrom3Digits( lDiscountedPrice.getString( "currencyCode" ));
 
@@ -239,6 +246,7 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 				else
 					aTrip.mPrices_PlusFare_Normal = lAmount + " " + lCurrency;
 			}
+			break;
 		}
 
 //		myArrayList = {ArrayList@1835}  size = 4
@@ -336,6 +344,7 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 
 		for( int lDateIndex = 0; lDateIndex < lRoot.length(); lDateIndex++ )
 		{
+			JSONArray outboundFlights = null;
 			try
 			{
 				JSONObject jobj = lRoot.getJSONObject( lDateIndex );
@@ -347,7 +356,7 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 
 				//JSONArray outboundBundles = jobj.getJSONArray( "outboundBundles" );
 				//JSONArray returnBundles = jobj.getJSONArray( "returnBundles" );
-				JSONArray outboundFlights = jobj.getJSONArray( "outboundFlights" );
+				outboundFlights = jobj.getJSONArray( "outboundFlights" );
 
 				ParseFlights( outboundFlights, true );
 				if( returnFlights != null )
@@ -356,6 +365,9 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 			catch (JSONException e)
 			{
 				mLogger.error( "Exception in ParseTheResponse: " + StringHelper.getTraceInformation( e ) );
+				if(outboundFlights != null) {
+					mLogger.error(outboundFlights.toString());
+				}
 			}
 		}
 
