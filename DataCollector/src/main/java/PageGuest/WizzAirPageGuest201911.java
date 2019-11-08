@@ -246,7 +246,6 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 				else
 					aTrip.mPrices_PlusFare_Normal = lAmount + " " + lCurrency;
 			}
-			break;
 		}
 
 //		myArrayList = {ArrayList@1835}  size = 4
