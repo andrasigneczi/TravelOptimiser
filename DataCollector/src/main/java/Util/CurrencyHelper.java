@@ -1,12 +1,9 @@
 package Util;
 
 import org.apache.log4j.Logger;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.By;
 
 import java.lang.*;
 import java.lang.System;
@@ -139,9 +136,11 @@ public class CurrencyHelper
                 }
             }
 
-            WebElement lElement = driver.findElement( By.xpath( path1 ) );
+            WebElement lElement = null;
+
+            try { lElement = driver.findElement( By.xpath( path1 ) ); } catch(NoSuchElementException e){}
             if( lElement == null && path2.length() > 0 )
-                lElement = driver.findElement( By.xpath( path2 ));
+                try { lElement = driver.findElement( By.xpath( path2 )); } catch(NoSuchElementException e){}
             if( lElement == null )
             {
                 driver.close();

@@ -69,6 +69,8 @@ public class DCHttpClient {
 		// print status code
 		//System.out.println(response.statusCode());
 		mResponseCode = response.statusCode();
+		mLogger.trace("response: " + response.toString());
+		mLogger.trace("isgzipped: " + String.valueOf(isContentGzipped(response)));
 
 		String returnValue;
 		if(isContentGzipped(response)) {
