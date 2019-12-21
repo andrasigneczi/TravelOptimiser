@@ -22,7 +22,7 @@ public class WizzairHelper
 			return mApiVersionNumber;
 
 		String lContent = driver.getPageSource();
-		Pattern reg = Pattern.compile( "https\\://be\\.wizzair\\.com/(\\d{1,2}\\.\\d{1,2}\\.\\d{1,2})/Api" );
+		Pattern reg = Pattern.compile( "https\\://be\\.wizzair\\.com/(\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}) " );
 		Matcher m = reg.matcher( lContent );
 		if( m.find() )	{ mApiVersionNumber = m.group(1).toString().trim(); }
 		return mApiVersionNumber;

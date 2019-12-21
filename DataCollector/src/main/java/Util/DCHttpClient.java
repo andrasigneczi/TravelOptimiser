@@ -32,13 +32,23 @@ public class DCHttpClient {
 	private int mResponseCode = 0;
 
 	public DCHttpClient() {
-
 		if(httpClient == null) {
 			CookieHandler.setDefault(new CookieManager());
 			httpClient = HttpClient.newBuilder()
 					.cookieHandler(CookieHandler.getDefault())
 					.followRedirects(HttpClient.Redirect.NORMAL)
 					.version(HttpClient.Version.HTTP_2)
+					.build();
+		}
+	}
+	public DCHttpClient(HttpClient.Version v) {
+
+		if(httpClient == null) {
+			CookieHandler.setDefault(new CookieManager());
+			httpClient = HttpClient.newBuilder()
+					.cookieHandler(CookieHandler.getDefault())
+					.followRedirects(HttpClient.Redirect.NORMAL)
+					.version(v)
 					.build();
 		}
 	}
@@ -85,6 +95,7 @@ public class DCHttpClient {
 
 	public String sendPost(String url, String parameters) throws IOException, InterruptedException {
 
+		mLogger.trace("sendPost dbg1: " + parameters);
 		HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
 				.POST(HttpRequest.BodyPublishers.ofString(parameters))
 				.uri(URI.create(url))
@@ -98,13 +109,23 @@ public class DCHttpClient {
 			requestBuilder.setHeader(entry.getKey().toString(), entry.getValue().toString());
 		}
 		addCookies(requestBuilder);
+		mLogger.trace("sendPost dbg2");
 		HttpRequest request = requestBuilder.build();
+		mLogger.trace("sendPost dbg3");
 
 		HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+		mLogger.trace("sendPost dbg4");
 
 		// print status code
 		//System.out.println(response.statusCode());
 		mResponseCode = response.statusCode();
+		mLogger.trace("sendPost dbg5");
+
+		//mLogger.trace("POST RESPONSE HEADERS: " + response.headers().toString());
+		//mLogger.trace("POST RESPONSE BODY length: " + response.body().length);
+		//mLogger.trace("POST RESPONSE BODY: " + response.body().toString());
+		writeByte(response.body());
+		mLogger.trace("sendPost dbg6");
 
 		String returnValue;
 		if(isContentGzipped(response)) {
@@ -112,9 +133,35 @@ public class DCHttpClient {
 		} else {
 			returnValue = response.body().toString();
 		}
+		mLogger.trace("sendPost dbg7");
+
 		saveCookies(response);
 		mLogger.trace("POST RETURN VALUE: " + returnValue);
 		return returnValue;
+	}
+
+	private void writeByte(byte[] bytes)
+	{
+		try {
+			File file = new File("POST-BODY.txt");
+			// Initialize a pointer
+			// in file using OutputStream
+			OutputStream
+					os
+					= new FileOutputStream(file, true);
+
+			// Starts writing the bytes in it
+			os.write(bytes);
+			mLogger.trace("Successfully"
+					+ " byte inserted");
+
+			// Close the file
+			os.close();
+		}
+
+		catch (Exception e) {
+			mLogger.error("Exception: " + e);
+		}
 	}
 
 	private boolean isContentGzipped( HttpResponse<byte[]> response )
@@ -159,13 +206,21 @@ public class DCHttpClient {
 	private void addCookies(HttpRequest.Builder requestBuilder) {
 		if(mCookies == null) return;
 		for(String pair : mCookies ) {
-			//Pattern reg = Pattern.compile( "(.+?)=(.+?);" );
-			//Matcher m = reg.matcher( pair );
-			//if (m.groupCount() != 3)
-			//	continue;
+			Pattern reg = Pattern.compile( "(.+?)=(.+?);" );
+			Matcher m = reg.matcher( pair );
+			while (m.find()) {
+				if(m.group(1).equals("RequestVerificationToken")) {
+					requestBuilder.setHeader("X-RequestVerificationToken", m.group(2));
+					mLogger.trace("New X-RequestVerificationToken:" + m.group(2));
+					break;
+				}
+			}
+		}
+		for(String pair : mCookies ) {
 			mLogger.trace("cookie: '" + pair + "'");
 			requestBuilder.header("Cookie", pair);
 		}
+		mLogger.trace("addCookies end");
 	}
 }
 

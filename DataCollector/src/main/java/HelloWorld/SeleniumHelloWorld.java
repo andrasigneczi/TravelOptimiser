@@ -8,6 +8,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.JavascriptExecutor;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,9 +30,9 @@ public class SeleniumHelloWorld {
 
         WebDriverWait wait = new WebDriverWait(driver, 15);
         wait.until(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete"));
-        Thread.sleep(4000);  // Just to be sure! May crash occur without this sleep.
+        Thread.sleep(25000);  // Just to be sure! May crash occur without this sleep.
 
-        System.out.println("Api version: " + getApiVersion(driver));
+        //System.out.println("Api version: " + getApiVersion(driver));
 
         WebElement departureBox = driver.findElement(By.id("search-departure-station"));
         departureBox.click();
@@ -49,24 +50,44 @@ public class SeleniumHelloWorld {
         Thread.sleep(1000);
 
         arrivalBox.sendKeys("Charleroi");
-        Thread.sleep(2000);
+        Thread.sleep(4000);
 
         value0.click();
-        Thread.sleep(2000);
+        Thread.sleep(20000);
 
         WebElement searchButton = driver.findElement(By.xpath( "//*[@id=\"flight-search\"]/div/div/div[2]/form/div[3]/button" ));
         searchButton.click();
         // the wait.until doesn't work here, it's a complex page, and slow with the booking at the same time
-        Thread.sleep(20000);
+        Thread.sleep(10000);
 
         // switch to the first page
-        ArrayList tabs = new ArrayList (driver.getWindowHandles());
-        driver.switchTo().window(tabs.get(0).toString());
+        //ArrayList tabs = new ArrayList (driver.getWindowHandles());
+        //driver.switchTo().window(tabs.get(0).toString());
         Thread.sleep(3000);
 
         // closing the current page
-        driver.close();
-        Thread.sleep(3000);
+        //driver.close();
+        Thread.sleep(60000);
+
+        try {
+            //WebElement element = driver.findElement(By.xpath("//*[@id=\"outbound-fare-selector\"]/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/span"));
+            List<WebElement> divs = driver.findElements(By.cssSelector("#outbound-fare-selector > div:nth-child(2) > div.flight-select__flight-list > div > div > div.flight-select__flight__fare-buttons > div:nth-child(2) > div.fare-type-button__title > span"));
+            for(WebElement div : divs) {
+                 //System.out.println(i++);
+                 System.out.println("Price: " + div.getText());
+            }
+            // List<WebElement> divs = driver.findElements(By.tagName("div"));
+            // int i = 0;
+            // for(WebElement div : divs) {
+            //     //System.out.println(i++);
+            //     if(div.getAttribute("data-test") == "fare-type-button-title") {
+            //         System.out.println("Price: " + div.getText());
+            //         break;
+            //     }
+            // }
+        } catch(Exception e) {
+            System.out.println("Exception");
+        }
 
         driver.quit();
     }

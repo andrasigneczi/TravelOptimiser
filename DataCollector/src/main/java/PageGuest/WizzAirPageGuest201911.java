@@ -42,32 +42,25 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 	private static String mApiSearchUrl = "https://be.wizzair.com/9.0.0/Api/search/search";
 	private static String mHeader = "origin: https://wizzair.com\naccept-encoding: gzip, deflate, br\naccept-language: en-US,en;q=0.9,hu;q=0.8\nuser-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36\ncontent-type: application/json;charset=UTF-8\naccept: application/json, text/plain, */*\nreferer: https://wizzair.com/\nauthority: be.wizzair.com";
 	private Integer mEventCounter = 0;
+	WebDriver driver;
 
 	public void Init() throws Exception
 	{
 		InitJMS();
 
-		/* close event from the browser
-		frame.addWindowListener(new WindowAdapter()
-		{
-			@Override
-			public void windowClosing(WindowEvent e)
-			{
-				mLogger.info( "Window is closing" );
-				mThreadStopped = true;
-				e.getWindow().dispose();
-			}
-		});*/
-		WebDriver driver = new ChromeDriver();
-		driver.get("https://wizzair.com");
+		driver = new ChromeDriver();
+		driver.get("https://wizzair.com/buildnumber");
 		WebDriverWait wait = new WebDriverWait(driver, 15);
 		wait.until(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete"));
 		Thread.sleep(4000);  // Just to be sure! May crash occur without this sleep.
 
 		String lApiVersion = WizzairHelper.getApiVersion(driver);
+		//driver.close();
+		//driver.quit();
+		if( lApiVersion.length() == 0 )
+			throw new RuntimeException( "Wrong API version!" );
 		mLogger.info("Wizzair Api version: " + lApiVersion);
 		mApiSearchUrl = "https://be.wizzair.com/" + lApiVersion + "/Api/search/search";
-		driver.quit();
 
 		DoSearchFromConfig();
 		synchronized (mMutex) { ++mEventCounter; }
@@ -408,6 +401,7 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 		}
 
 		//System.out.println( mApiSearchUrl + "\n" + lParameters );
+
 		DCHttpClient dcHttpClient = new DCHttpClient();
 
 		String strResponse = "";
@@ -458,6 +452,41 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 		mLogger.trace( "end, thread name: " + getThreadName());
 	}
 
+	private void FillTheFormWithDummy() throws InterruptedException {
+		mLogger.trace( "begin, thread name: " + getThreadName());
+		driver.get(getURL());
+		Thread.sleep(24000);  // Just to be sure! May crash occur without this sleep.
+
+		WebElement departureBox = driver.findElement(By.id("search-departure-station"));
+		departureBox.click();
+		Thread.sleep(1000);
+
+		departureBox.sendKeys("Budapest");
+		Thread.sleep(2000);
+
+		WebElement value0 = driver.findElement(By.xpath( "//*[@id=\"flight-search\"]/div/div/div[2]/form/div[1]/fieldset/div[3]/div/div[3]/div[1]/label" ));
+		value0.click();
+		Thread.sleep(1000);
+
+		WebElement arrivalBox = driver.findElement(By.id("search-arrival-station"));
+		arrivalBox.click();
+		Thread.sleep(1000);
+
+		arrivalBox.sendKeys("Charleroi");
+		Thread.sleep(2000);
+
+		value0.click();
+		Thread.sleep(2000);
+
+		WebElement searchButton = driver.findElement(By.xpath( "//*[@id=\"flight-search\"]/div/div/div[2]/form/div[3]/button" ));
+		searchButton.click();
+		// the wait.until doesn't work here, it's a complex page, and slow with the booking at the same time
+		Thread.sleep(60000);
+
+		mLogger.trace( "end, thread name: " + getThreadName());
+		driver.quit();
+	}
+
 	private void TimeoutTest()
 	{
 		Sleep( 100 );
@@ -498,16 +527,22 @@ public class WizzAirPageGuest201911 extends WebPageGuest implements Runnable
 
 				try
 				{
-					FillTheForm( lTravelDataInput );
+					FillTheFormWithDummy();System.exit(0);
+					//FillTheForm( lTravelDataInput );
 				}
+/*
 				catch( URISyntaxException e )
 				{
 					mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
 				}
+
+
 				catch( IOException e )
 				{
 					mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
 				}
+
+ */
 				catch( IllegalStateException e )
 				{
 					mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
