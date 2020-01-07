@@ -18,7 +18,7 @@ public class WizzAirApp
 		try
 		{
 			ResultQueue.setQueueType( ResultQueue.RESULT_QUEUE_TYPE.JMS, "DBAgent" );
-			final PageGuest.WizzAirPageGuest201911 lGuestW = (PageGuest.WizzAirPageGuest201911)PageGuestFactory.Create( "WizzAir" );
+			final PageGuest.WizzAirPageGuest202001 lGuestW = (PageGuest.WizzAirPageGuest202001)PageGuestFactory.Create( "WizzAir" );
 			lGuestW.Init();
 			lGuestW.WaitForFinish();
 			//lGuestW.stop();

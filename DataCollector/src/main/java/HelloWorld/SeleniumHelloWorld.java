@@ -1,14 +1,23 @@
 package HelloWorld;
 
+import com.google.common.base.Preconditions;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriverService;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.By;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.JavascriptExecutor;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,7 +31,104 @@ public class SeleniumHelloWorld {
         return lApiVersion;
     }
 
+    public static void mainX(String[] args) throws InterruptedException {
+        System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
+
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--no-proxy-server");
+        options.addArguments("--disable-gpu");
+
+        WebDriver driver = new ChromeDriver(options);
+        driver.get("https://wizzair.com/");
+        WebDriverWait wait = new WebDriverWait(driver, 120);
+        wait.until(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete"));
+        //driver.quit();
+    }
+
+    public static ChromeDriverService createService(String... args) {
+        Preconditions.checkArgument(args.length % 2 == 0, "arguments should be pairs");
+
+        Map<String, String> environment = new HashMap<>();
+        for (int i = 1; i < args.length; i += 2) {
+            environment.put(args[i - 1], args[i]);
+        }
+
+        ChromeDriverService service = new ChromeDriverService.Builder()
+                .withVerbose(false)
+                .withEnvironment(environment)
+                .usingAnyFreePort()
+                .build();
+
+        String fileName = "./service.log";
+        FileOutputStream fos;
+        try {
+            fos = new FileOutputStream(fileName);
+            service.sendOutputTo(fos);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return service;
+    }
+
     public static void main(String[] args) throws InterruptedException {
+        java.util.Date date = new java.util.Date();
+        System.out.println(date);
+
+        System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
+
+        ChromeOptions options = new ChromeOptions();
+        //options.setProxy(null);
+       options.addArguments("--no-proxy-server");
+       // options.addArguments("--disable-gpu");
+        options.addArguments("--proxy-server='direct://'");
+        options.addArguments("--proxy-bypass-list=*");
+        //options.addArguments("--headless");
+        options.addArguments("--verbose");
+        options.addArguments("--no-sandbox");
+
+        WebDriver driver = new ChromeDriver(createService(), options);
+
+
+        //System.setProperty("webdriver.gecko.driver", "/usr/bin/geckodriver");
+        //WebDriver driver = new FirefoxDriver();
+
+        driver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
+        driver.get("https://wizzair.com/#/booking/select-flight/BUD/CRL/2020-03-07/null/1/0/0/0/null");
+
+        //WebDriverWait wait = new WebDriverWait(driver, 120);
+        //wait.until(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete"));
+        //Thread.sleep(50000);  // Just to be sure! May crash occur without this sleep.
+
+        //WebElement element = driver.findElement(By.xpath( "//*[@id=\"outbound-fare-selector\"]/div[2]/div[2]/div/div/div[1]/div[2]/div[1]/span[1]" ));
+        List<WebElement> elements = driver.findElements(By.className("hour"));
+        for( WebElement element : elements) {
+            System.out.println(element.getText());
+        }
+
+        WebElement fare = driver.findElement(By.className("fare-type-button__title"));
+        if(fare != null) {
+            System.out.println(fare.getText());
+        }
+        date = new java.util.Date();
+        System.out.println(date);
+
+        driver.get("https://wizzair.com/#/booking/select-flight/BUD/CRL/2020-04-07/null/1/0/0/0/null");
+        elements = driver.findElements(By.className("hour"));
+        for( WebElement element : elements) {
+            System.out.println(element.getText());
+        }
+
+        fare = driver.findElement(By.className("fare-type-button__title"));
+        if(fare != null) {
+            System.out.println(fare.getText());
+        }
+        driver.quit();
+        date = new java.util.Date();
+        System.out.println(date);
+    }
+
+    public static void main__(String[] args) throws InterruptedException {
         System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
 
         WebDriver driver = new ChromeDriver();

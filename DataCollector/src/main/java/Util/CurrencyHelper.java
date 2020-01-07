@@ -77,7 +77,7 @@ public class CurrencyHelper
         return Double.parseDouble( aList[ aList.length - 1 ].replace( ",", "" )) * mMultipliers.getOrDefault( aSymbol, 1.0 );
     }
 
-    public static String ConvertFromRyanairFormat( String aPrice )
+    public static String ConvertFromPrefixFormat( String aPrice )
     {
         // Ft 5,149
         int lPos;

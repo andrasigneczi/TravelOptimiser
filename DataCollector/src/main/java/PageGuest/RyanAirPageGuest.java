@@ -347,7 +347,7 @@ public class RyanAirPageGuest extends PageGuest implements Runnable
             mLogger.error( "ryanair: " + StringHelper.getTraceInformation( e ));
         }
         strResponse = driver.getPageSource();
-        Pattern reg = Pattern.compile( "<body>(.*)</body>" );
+        Pattern reg = Pattern.compile( "(\\{.*\\})" );
         Matcher m = reg.matcher( strResponse );
         if( m.find() )	{ strResponse = m.group(1).toString().trim(); }
 
