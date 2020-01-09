@@ -5,6 +5,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.By;
@@ -74,7 +75,7 @@ public class SeleniumHelloWorld {
     public static void main(String[] args) throws InterruptedException {
         java.util.Date date = new java.util.Date();
         System.out.println(date);
-
+/*
         System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
 
         ChromeOptions options = new ChromeOptions();
@@ -88,31 +89,32 @@ public class SeleniumHelloWorld {
         options.addArguments("--no-sandbox");
 
         WebDriver driver = new ChromeDriver(createService(), options);
+*/
 
+        System.setProperty("webdriver.gecko.driver", "/usr/bin/geckodriver");
+        WebDriver driver = new FirefoxDriver();
 
-        //System.setProperty("webdriver.gecko.driver", "/usr/bin/geckodriver");
-        //WebDriver driver = new FirefoxDriver();
+        //driver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
+        driver.get("https://wizzair.com/#/booking/select-flight/CRL/BUD/2020-03-27/null/1/0/0/0/null");
 
-        driver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
-        driver.get("https://wizzair.com/#/booking/select-flight/BUD/CRL/2020-03-07/null/1/0/0/0/null");
-
-        //WebDriverWait wait = new WebDriverWait(driver, 120);
-        //wait.until(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete"));
-        //Thread.sleep(50000);  // Just to be sure! May crash occur without this sleep.
-
-        //WebElement element = driver.findElement(By.xpath( "//*[@id=\"outbound-fare-selector\"]/div[2]/div[2]/div/div/div[1]/div[2]/div[1]/span[1]" ));
+        System.out.println("Hours:");
+        WebElement e = (new WebDriverWait(driver, 60)).until(ExpectedConditions.presenceOfElementLocated(By.className("hour")));
         List<WebElement> elements = driver.findElements(By.className("hour"));
         for( WebElement element : elements) {
             System.out.println(element.getText());
         }
 
-        WebElement fare = driver.findElement(By.className("fare-type-button__title"));
-        if(fare != null) {
+        System.out.println("Fares:");
+        List<WebElement> fares = driver.findElements(By.xpath("/html/body/div[2]/div/main/div/div/div[1]/div[2]/div[1]/div[5]/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/span"));
+        if(fares.size() == 0) {
+            fares = driver.findElements(By.xpath("/html/body/div[2]/div/main/div/div/div[1]/div[2]/div[1]/div[4]/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/span"));
+        }
+        for( WebElement fare : fares) {
             System.out.println(fare.getText());
         }
         date = new java.util.Date();
         System.out.println(date);
-
+/*
         driver.get("https://wizzair.com/#/booking/select-flight/BUD/CRL/2020-04-07/null/1/0/0/0/null");
         elements = driver.findElements(By.className("hour"));
         for( WebElement element : elements) {
@@ -123,6 +125,7 @@ public class SeleniumHelloWorld {
         if(fare != null) {
             System.out.println(fare.getText());
         }
+ */
         driver.quit();
         date = new java.util.Date();
         System.out.println(date);

@@ -30,6 +30,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class WizzAirPageGuest202001 extends WebPageGuest implements Runnable {
     private static org.apache.log4j.Logger mLogger = Logger.getLogger(WizzAirPageGuest202001.class);
@@ -56,7 +58,7 @@ public class WizzAirPageGuest202001 extends WebPageGuest implements Runnable {
          */
         System.setProperty("webdriver.gecko.driver", "/usr/bin/geckodriver");
         driver = new FirefoxDriver();
-        driver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
+        //driver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
         DoSearchFromConfig();
         synchronized (mMutex) { ++mEventCounter; }
     }
@@ -230,15 +232,20 @@ public class WizzAirPageGuest202001 extends WebPageGuest implements Runnable {
 
     private void ParseResult(String departureDay) {
         // reading the departure and arrival hours
+        WebElement e = (new WebDriverWait(driver, 60)).until(ExpectedConditions.presenceOfElementLocated(By.className("hour")));
         List<WebElement> hours = driver.findElements(By.className("hour"));
-        List<WebElement> discoutFares = driver.findElements(By.className("fare-type-button__title"));
+        List<WebElement> discoutFares = driver.findElements(By.xpath("/html/body/div[2]/div/main/div/div/div[1]/div[2]/div[1]/div[4]/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/span"));
+        if(discoutFares.size() == 0) {
+            discoutFares = driver.findElements(By.xpath("/html/body/div[2]/div/main/div/div/div[1]/div[2]/div[1]/div[5]/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/span"));
+        }
 
         TravelData_RESULT.TravelData_PossibleTrip lTDRTrip = new TravelData_RESULT.TravelData_PossibleTrip();
         //lTDRTrip.mOutboundTrip = aOutbound;
         lTDRTrip.mOutboundTrip = true;
 
         for(int i = 0; i < discoutFares.size() && 2 * i + 1 < hours.size(); ++i) {
-            WebElement fareElement = discoutFares.get(i).findElement(By.tagName("SPAN"));
+            //WebElement fareElement = discoutFares.get(i).findElement(By.tagName("SPAN"));
+            WebElement fareElement = discoutFares.get(i);
             String hour1 = hours.get(2 * i).getText().trim();
             String hour2 = hours.get(2 * i + 1).getText().trim();
             String fare = ConvertFromPrefixFormat(fareElement.getText()).replace(",", "");
