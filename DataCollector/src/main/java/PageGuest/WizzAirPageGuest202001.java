@@ -212,6 +212,10 @@ public class WizzAirPageGuest202001 extends WebPageGuest implements Runnable {
                 {
                     FillTheForm( lTravelDataInput );
                 }
+                catch (TimeoutException e)
+                {
+                    mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
+                }
                 catch( IllegalStateException e )
                 {
                     mLogger.error( "Exception in WizzAir.run: " + StringHelper.getTraceInformation( e ) );
@@ -279,7 +283,9 @@ public class WizzAirPageGuest202001 extends WebPageGuest implements Runnable {
             mTravelDataResult.mAirportCode_LeavingFrom = aTravelDataInput.mAirportCode_LeavingFrom;
             mTravelDataResult.mTravelDataInput = aTravelDataInput;
             ParseResult(FormatDate( aTravelDataInput.mDepartureDay));
-            ResultQueue.getInstance().push( mTravelDataResult );
+            if(mTravelDataResult.mTrips.size() > 0) {
+                ResultQueue.getInstance().push(mTravelDataResult);
+            }
             mTravelDataResult = null;
 
             // aTravelDataInput.mAdultNumber
