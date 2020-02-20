@@ -90,13 +90,18 @@ public class SQLiteAgent_TravelData
 		mLogger.trace( "begin" );
 		for( int i = 0; i < mResult.mTrips.size(); i++ )
 		{
-			String lQuery = mComposer.insertTravelDataResult_PossibleTrips( mResult.mTrips.get( i ),
-					aTravelDataResultId,
-					recordedDatetime );
+			try
+			{
+				String lQuery = mComposer.insertTravelDataResult_PossibleTrips( mResult.mTrips.get( i ),
+						aTravelDataResultId,
+						recordedDatetime );
 
-			mLogger.trace( lQuery );
+				mLogger.trace( lQuery );
 
-			mSQLiteAgent.ExecuteStatement( lQuery );
+				mSQLiteAgent.ExecuteStatement( lQuery );
+			} catch (java.time.format.DateTimeParseException e) {
+				mLogger.error(e.getMessage());
+			}
 		}
 		mLogger.trace( "end" );
 	}
